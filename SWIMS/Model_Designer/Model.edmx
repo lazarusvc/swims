@@ -1,0 +1,138 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+  <!-- EF Runtime content -->
+  <edmx:Runtime>
+    <!-- SSDL content -->
+    <edmx:StorageModels>
+    <Schema Namespace="Model.Store" Alias="Self" Provider="System.Data.SqlClient" ProviderManifestToken="2012" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+  <EntityContainer Name="ModelStoreContainer">
+    <EntitySet Name="SW_users" EntityType="Model.Store.SW_users" store:Type="Tables" Schema="dbo" />
+    <EntitySet Name="SW_roles" EntityType="Model.Store.SW_roles" store:Type="Tables" Schema="dbo" />
+    <AssociationSet Name="SW_rolesSW_users" Association="Model.Store.SW_rolesSW_users">
+      <End Role="SW_roles" EntitySet="SW_roles" />
+      <End Role="SW_users" EntitySet="SW_users" />
+    </AssociationSet>
+  </EntityContainer>
+  <EntityType Name="SW_users">
+    <Key>
+      <PropertyRef Name="Id" />
+    </Key>
+    <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+    <Property Name="fullName" Type="nvarchar(max)" Nullable="false" />
+    <Property Name="userName" Type="nvarchar(max)" Nullable="false" />
+    <Property Name="email" Type="nvarchar(max)" Nullable="false" />
+    <Property Name="password" Type="nvarchar(max)" Nullable="false" />
+    <Property Name="SW_rolesId" Type="int" Nullable="false" />
+  </EntityType>
+  <EntityType Name="SW_roles">
+    <Key>
+      <PropertyRef Name="Id" />
+    </Key>
+    <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+    <Property Name="name" Type="nvarchar(max)" Nullable="false" />
+  </EntityType>
+  <Association Name="SW_rolesSW_users">
+    <End Role="SW_roles" Type="Model.Store.SW_roles" Multiplicity="1" />
+    <End Role="SW_users" Type="Model.Store.SW_users" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="SW_roles">
+        <PropertyRef Name="Id" />
+      </Principal>
+      <Dependent Role="SW_users">
+        <PropertyRef Name="SW_rolesId" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+</Schema></edmx:StorageModels>
+    <!-- CSDL content -->
+    <edmx:ConceptualModels>
+      <Schema xmlns="http://schemas.microsoft.com/ado/2009/11/edm" xmlns:cg="http://schemas.microsoft.com/ado/2006/04/codegeneration" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" Namespace="Model" Alias="Self" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" annotation:UseStrongSpatialTypes="false">
+        <EntityContainer Name="ModelContainer" annotation:LazyLoadingEnabled="true">
+          <EntitySet Name="SW_users" EntityType="Model.SW_users" />
+          <EntitySet Name="SW_roles" EntityType="Model.SW_roles" />
+          <AssociationSet Name="SW_rolesSW_users" Association="Model.SW_rolesSW_users">
+            <End Role="SW_roles" EntitySet="SW_roles" />
+            <End Role="SW_users" EntitySet="SW_users" />
+          </AssociationSet>
+        </EntityContainer>
+        <EntityType Name="SW_users">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="fullName" Type="String" Nullable="false" />
+          <Property Name="userName" Type="String" Nullable="false" />
+          <Property Name="email" Type="String" Nullable="false" />
+          <Property Name="password" Type="String" Nullable="false" />
+          <NavigationProperty Name="SW_roles" Relationship="Model.SW_rolesSW_users" FromRole="SW_users" ToRole="SW_roles" />
+          <Property Name="SW_rolesId" Type="Int32" Nullable="false" />
+        </EntityType>
+        <EntityType Name="SW_roles">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="name" Type="String" Nullable="false" />
+          <NavigationProperty Name="SW_users" Relationship="Model.SW_rolesSW_users" FromRole="SW_roles" ToRole="SW_users" />
+        </EntityType>
+        <Association Name="SW_rolesSW_users">
+          <End Type="Model.SW_roles" Role="SW_roles" Multiplicity="1" />
+          <End Type="Model.SW_users" Role="SW_users" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="SW_roles">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="SW_users">
+              <PropertyRef Name="SW_rolesId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+      </Schema>
+    </edmx:ConceptualModels>
+    <!-- C-S mapping content -->
+    <edmx:Mappings>
+    <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
+  <EntityContainerMapping StorageEntityContainer="ModelStoreContainer" CdmEntityContainer="ModelContainer">
+    <EntitySetMapping Name="SW_users">
+      <EntityTypeMapping TypeName="IsTypeOf(Model.SW_users)">
+        <MappingFragment StoreEntitySet="SW_users">
+          <ScalarProperty Name="Id" ColumnName="Id" />
+          <ScalarProperty Name="fullName" ColumnName="fullName" />
+          <ScalarProperty Name="userName" ColumnName="userName" />
+          <ScalarProperty Name="email" ColumnName="email" />
+          <ScalarProperty Name="password" ColumnName="password" />
+          <ScalarProperty Name="SW_rolesId" ColumnName="SW_rolesId" />
+        </MappingFragment>
+      </EntityTypeMapping>
+    </EntitySetMapping>
+    <EntitySetMapping Name="SW_roles">
+      <EntityTypeMapping TypeName="IsTypeOf(Model.SW_roles)">
+        <MappingFragment StoreEntitySet="SW_roles">
+          <ScalarProperty Name="Id" ColumnName="Id" />
+          <ScalarProperty Name="name" ColumnName="name" />
+        </MappingFragment>
+      </EntityTypeMapping>
+    </EntitySetMapping>
+  </EntityContainerMapping>
+</Mapping></edmx:Mappings>
+  </edmx:Runtime>
+  <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <edmx:Connection>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="MetadataArtifactProcessing" Value="EmbedInOutputAssembly" />
+      </DesignerInfoPropertySet>
+    </edmx:Connection>
+    <edmx:Options>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="ValidateOnBuild" Value="true" />
+        <DesignerProperty Name="EnablePluralization" Value="True" />
+        <DesignerProperty Name="CodeGenerationStrategy" Value="None" />
+        <DesignerProperty Name="UseLegacyProvider" Value="False" />
+      </DesignerInfoPropertySet>
+    </edmx:Options>
+    <!-- Diagram content (shape and connector positions) -->
+    <edmx:Diagrams>
+    </edmx:Diagrams>
+  </edmx:Designer>
+</edmx:Edmx>

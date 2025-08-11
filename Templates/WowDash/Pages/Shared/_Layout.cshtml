@@ -1,0 +1,37 @@
+﻿@*
+    WowDash - ASP.Net Core 8 & Bootstrap Admin Dashboard Multipurpose Template design by Parv Infotech
+*@
+
+<!-- meta tags and other links -->
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<partial name="~/Pages/Shared/Partials/_Head.cshtml" />
+
+<body>
+    <partial name="~/Pages/Shared/Partials/_Sidebar.cshtml" />
+
+    <main class="dashboard-main">
+        <partial name="~/Pages/Shared/Partials/_Navbar.cshtml" />
+
+        <div class="dashboard-main-body">
+            @{
+                string BreadcrumbTitle = ViewData.ContainsKey("title") ? ViewData["title"] as string ?? "" : "";
+                string BreadcrumbSubTitle = ViewData.ContainsKey("subTitle") ? ViewData["subTitle"] as string ?? "" : "";
+            }
+            <partial name="~/Pages/Shared/Partials/_Breadcrumb.cshtml" view-data='new ViewDataDictionary(ViewData) {{ "BreadcrumbTitle", BreadcrumbTitle }, { "BreadcrumbSubTitle", BreadcrumbSubTitle }}' />
+            @RenderBody()
+        </div>
+
+        <partial name="~/Pages/Shared/Partials/_Footer.cshtml" />
+    </main>
+    <partial name="~/Pages/Shared/Partials/_Scripts.cshtml" />
+    
+    @* Render the script if it exists in ViewData *@
+    @if (ViewData.ContainsKey("script"))
+    {
+        @Html.Raw(ViewData["script"] as string)
+    }
+</body>
+
+</html>

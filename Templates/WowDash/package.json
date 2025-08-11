@@ -1,0 +1,9 @@
+{
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "sass --watch wwwroot/sass/main.scss:wwwroot/css/style.css",
+        "build": "sass wwwroot/sass/main.scss:wwwroot/css/style.css",
+        "minify": "sass wwwroot/sass/main.scss:wwwroot/css/style.css --style=compressed"
+    }
+}

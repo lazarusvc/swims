@@ -1,0 +1,80 @@
+﻿@model IEnumerable<SWIMS.Models.UserWithRolesViewModel>
+
+@{
+    ViewData["title"] = "User Management";
+    ViewData["subTitle"] = "All Users";
+    ViewData["script"] = @"<script>
+     let table = new DataTable('#dataTable');
+</script>";
+}
+
+<div class="card basic-data-table h-100 p-0 radius-12">
+    <div class="card-header border-bottom bg-base py-16 px-24 d-flex align-items-center flex-wrap gap-3 justify-content-between">
+       
+        <a asp-action="Create" class="btn btn-primary text-sm btn-sm px-12 py-12 radius-8 d-flex align-items-center gap-2">
+            <iconify-icon icon="ic:baseline-plus" class="icon text-xl line-height-1"></iconify-icon>
+            Add New User
+        </a>
+    </div>
+    <div class="card-body p-24">
+        <div class="table-responsive scroll-sm">
+            <table class="table bordered-table sm-table mb-0" id="dataTable" data-page-length='10'>
+            <thead>
+                <tr>
+                    <th scope="col">
+                        @Html.DisplayNameFor(model => model.Id)
+                    <th scope="col">
+                        @Html.DisplayNameFor(model => model.FirstName)
+                    </th>
+                    <th scope="col">
+                        @Html.DisplayNameFor(model => model.LastName)
+                    </th>
+                    <th scope="col">
+                        @Html.DisplayNameFor(model => model.UserName)
+                    </th>
+                    <th scope="col">
+                        @Html.DisplayNameFor(model => model.Email)
+                    </th>
+                    <th scope="col">
+                        @Html.DisplayNameFor(model => model.Roles)
+                    </th>
+                    <th scope="col">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var item in Model) {
+                <tr>
+                        <td><a href="javascript:void(0)" class="text-primary-600">@Html.DisplayFor(modelItem => item.Id)</a></td>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <img src="~/images/user-list/user-list1.png" alt="" class="flex-shrink-0 me-12 radius-8">
+                                <h6 class="text-md mb-0 fw-medium flex-grow-1">@Html.DisplayFor(model => item.FirstName)</h6>
+                        </div>
+                    </td>
+                    <td>
+                            <h6 class="text-md mb-0 fw-medium flex-grow-1">@Html.DisplayFor(model => item.LastName)</h6>
+                    </td>
+                    <td>@Html.DisplayFor(modelItem => item.UserName)</td>
+                    <td>@Html.DisplayFor(modelItem => item.Email)</td>
+                    <td>@string.Join(", ", item.Roles)</td>
+                    <td class="text-center">
+                        <div class="d-flex align-items-center gap-10 justify-content-center">
+                            <a asp-action="Details" asp-route-id="@item.Id" class="bg-info-focus bg-hover-info-200 text-info-600 fw-medium w-40-px h-40-px d-flex justify-content-center align-items-center rounded-circle">
+                                <iconify-icon icon="iconamoon:eye-light"></iconify-icon>
+                            </a>
+                            <a asp-action="Edit" asp-route-id="@item.Id" class="bg-success-focus text-success-600 bg-hover-success-200 fw-medium w-40-px h-40-px d-flex justify-content-center align-items-center rounded-circle">
+                                <iconify-icon icon="lucide:edit"></iconify-icon>
+                            </a>
+                            <a asp-action="Delete" asp-route-id="@item.Id" class="remove-item-btn bg-danger-focus bg-hover-danger-200 text-danger-600 fw-medium w-40-px h-40-px d-flex justify-content-center align-items-center rounded-circle">
+                                <iconify-icon icon="mingcute:delete-2-line"></iconify-icon>
+                            </a>
+                        </div>
+                    </td>   
+                </tr>
+
+            }
+            </tbody>
+        </table>
+        </div>
+    </div>
+</div>

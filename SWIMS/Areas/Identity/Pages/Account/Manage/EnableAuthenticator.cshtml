@@ -1,0 +1,76 @@
+﻿@page
+@model EnableAuthenticatorModel
+@{
+    ViewData["title"] = "Configure authenticator app";
+    ViewData["subTitle"] = "Configure authenticator app";
+    ViewData["ActivePage"] = ManageNavPages.TwoFactorAuthentication;
+}
+
+
+<partial name="_StatusMessage" for="StatusMessage" />
+<h6 class="text-lg mb-8">@ViewData["title"]</h6>
+<div class="row gy-3">
+    <div class="col-md">
+
+        <div>
+            <p>To use an authenticator app go through the following steps:</p>
+            <ol class="list">
+                <li>
+                    <p>
+                        Download a two-factor authenticator app like Microsoft Authenticator for
+                        <a href="https://go.microsoft.com/fwlink/?Linkid=825072">Android</a> and
+                        <a href="https://go.microsoft.com/fwlink/?Linkid=825073">iOS</a> or
+                        Google Authenticator for
+                        <a href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2&amp;hl=en">Android</a> and
+                        <a href="https://itunes.apple.com/us/app/google-authenticator/id388497605?mt=8">iOS</a>.
+                    </p>
+                </li>
+                <li>
+                    <p>Scan the QR Code or enter this key <kbd>@Model.SharedKey</kbd> into your two factor authenticator app. Spaces and casing do not matter.</p>
+
+
+                    @if (!string.IsNullOrEmpty(Model.QrCodeImage))
+                    {
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>Scan this QR code with your authenticator app</h6>
+                                <img src="@Model.QrCodeImage" alt="QR code for TOTP setup" class="auth-qr" />
+                            </div>
+                        </div>
+                    }
+
+                </li>
+                <li>
+                    <p>
+                        Once you have scanned the QR code or input the key above, your two factor authentication app will provide you
+                        with a unique code. Enter the code in the confirmation box below.
+                    </p>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <form id="send-code" method="post">
+                                <div class="mb-0">
+                                    <label asp-for="Input.Code" class="control-label form-label">Verification Code</label>
+                                    <div class="icon-field mb-0">
+                                        <span class="icon top-50 translate-middle-y">
+                                            <iconify-icon icon="solar:lock-password-outline"></iconify-icon>
+                                        </span>
+                                        <input asp-for="Input.Code" class="form-control h-56-px bg-neutral-50 radius-12" placeholder="Enter Authenticator Code">
+                                    </div>
+                                    <span asp-validation-for="Input.Code" class="text-danger"></span>
+
+                                </div>
+                                <button type="submit" class="btn btn-primary text-sm btn-sm px-12 py-16 w-100 radius-12 mt-32">Verify</button>
+                                <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+                            </form>
+                        </div>
+                    </div>
+                </li>
+            </ol>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
