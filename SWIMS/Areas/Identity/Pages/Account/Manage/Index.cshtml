@@ -1,0 +1,42 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["title"] = "Profile";
+    ViewData["subTitle"] = "Profile";
+    ViewData["ActivePage"] = ManageNavPages.Index;
+}
+
+
+<h6 class="text-lg mb-8">@ViewData["title"]</h6>
+<partial name="_StatusMessage" for="StatusMessage" />
+<div class="row gy-3">
+    <div class="col-md-6">
+        <form id="profile-form" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+            <div class="mb-0">
+                <label asp-for="Username" class="form-label"></label>
+                <div class="icon-field mb-0">
+                    <span class="icon top-50 translate-middle-y">
+                        <iconify-icon icon="mage:email"></iconify-icon>
+                    </span>
+                    <input asp-for="Username" class="form-control h-56-px bg-neutral-50 radius-12" placeholder="Please choose your username." disabled />
+                </div>
+            </div>
+            <span asp-validation-for="Input.PhoneNumber" class="text-danger"></span>
+            <div class="mb-0">
+                <label asp-for="Input.PhoneNumber" class="form-label"></label>
+                <div class="icon-field mb-0">
+                    <span class="icon top-50 translate-middle-y">
+                        <iconify-icon icon="solar:phone-calling-linear"></iconify-icon>
+                    </span>
+                    <input asp-for="Input.PhoneNumber" class="form-control h-56-px bg-neutral-50 radius-12" placeholder="Please enter your phone number." />
+                </div>
+            </div>
+            <button id="update-profile-button" type="submit" class="btn btn-primary text-sm btn-sm px-12 py-16 w-100 radius-12 mt-32">Save</button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

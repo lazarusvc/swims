@@ -1,0 +1,121 @@
+﻿@*
+    WowDash - ASP.Net Core 8 & Bootstrap Admin Dashboard Multipurpose Template design by Parv Infotech
+*@
+
+@using Microsoft.AspNetCore.Identity
+@using SWIMS.Models
+
+@inject SignInManager<SwUser> SignInManager
+@inject UserManager<SwUser> UserManager
+@inject RoleManager<SwRole> RoleManager
+
+
+<aside class="sidebar">
+    <button type="button" class="sidebar-close-btn">
+        <iconify-icon icon="radix-icons:cross-2"></iconify-icon>
+    </button>
+    <div>
+        <a asp-area="" asp-controller="Home" asp-action="Index" class="sidebar-logo">
+            <img src="~/WowDash/images/logo.png" alt="site logo" class="light-logo">
+            <img src="~/WowDash/images/logo-light.png" alt="site logo" class="dark-logo">
+            <img src="~/WowDash/images/logo-icon.png" alt="site logo" class="logo-icon">
+        </a>
+    </div>
+    <div class="sidebar-menu-area">
+        <ul class="sidebar-menu" id="sidebar-menu">
+            <li class="dropdown">
+                <a href="javascript:void(0)">
+                    <iconify-icon icon="solar:home-smile-angle-outline" class="menu-icon"></iconify-icon>
+                    <span>Dashboard</span>
+                </a>
+                <ul class="sidebar-submenu">
+                    
+                    <li>
+                        <a asp-area="" asp-controller="Home" asp-action="Index">
+                            <i class="ri-circle-fill circle-icon text-warning-main w-auto"></i> Home
+                        </a>
+                    </li>
+                 
+
+                </ul>
+            </li>
+
+            @if (SignInManager.IsSignedIn(User) && User.IsInRole("Admin"))
+            {
+
+                <li class="sidebar-menu-group-title">Users & Roles</li>
+
+                <li class="dropdown">
+                    <a href="javascript:void(0)">
+                        <iconify-icon icon="flowbite:users-group-outline" class="menu-icon"></iconify-icon>
+                        <span>Users</span>
+                    </a>
+                    <ul class="sidebar-submenu">
+                        <li>
+                            <a asp-area="" asp-controller="users" asp-action="Index"><i class="ri-circle-fill circle-icon text-primary-600 w-auto"></i> Users List</a>
+                        </li>
+                        <li>
+                            <a asp-area="" asp-controller="users" asp-action="Create"><i class="ri-circle-fill circle-icon text-info-main w-auto"></i> Add User</a>
+                        </li>
+
+                    </ul>
+                </li>
+
+                <li class="dropdown">
+                    <a href="javascript:void(0)">
+                        <i class="ri-user-settings-line text-xl me-6 d-flex w-auto"></i>
+                        <span>Role & Access</span>
+                    </a>
+                    <ul class="sidebar-submenu">
+                        <li>
+                            <a asp-area="" asp-controller="roles" asp-action="Index"><i class="ri-circle-fill circle-icon text-primary-600 w-auto"></i> Roles</a>
+                        </li>
+                        <li>
+                            <a asp-area="" asp-controller="roles" asp-action="Create"><i class="ri-circle-fill circle-icon text-warning-main w-auto"></i> Add Role</a>
+                        </li>
+                    </ul>
+                </li>
+
+            }
+
+            
+
+            <li class="sidebar-menu-group-title">Administration</li>
+
+            <li class="dropdown">
+                <a href="javascript:void(0)">
+                    <iconify-icon icon="simple-line-icons:vector" class="menu-icon"></iconify-icon>
+                    <span>Authentication</span>
+                </a>
+                <ul class="sidebar-submenu">
+                    <li>
+                        <a asp-area="Identity" asp-page="/Account/Login"><i class="ri-circle-fill circle-icon text-primary-600 w-auto"></i> Sign In</a>
+                    </li>
+                    <li>
+                        <a asp-area="Identity" asp-page="/Account/Register"><i class="ri-circle-fill circle-icon text-warning-main w-auto"></i> Sign Up</a>
+                    </li>
+                    <li>
+                        <a asp-area="Identity" asp-page="/Account/ForgotPassword"><i class="ri-circle-fill circle-icon text-info-main w-auto"></i> Forgot Password</a>
+                    </li>
+                </ul>
+            </li>
+
+            
+            
+            @if (SignInManager.IsSignedIn(User))
+            {
+                <li>
+                    <a asp-area="Identity" asp-page="/Account/Manage/Index"><i class="ri-user-settings-line text-xl me-6 d-flex w-auto"></i> View Profile</a>
+                </li>
+
+                <li>
+                    <a asp-area="Identity" asp-page="/Account/Logout">
+                        <iconify-icon icon="lucide:power" class="menu-icon"></iconify-icon>
+                        <span>Log Out</span>
+                    </a>
+                </li>
+            }
+            
+        </ul>
+    </div>
+</aside>

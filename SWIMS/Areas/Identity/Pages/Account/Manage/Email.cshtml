@@ -1,0 +1,69 @@
+﻿@page
+@model EmailModel
+@{
+    ViewData["title"] = "Manage Email";
+    ViewData["subTitle"] = "Manage Email";
+    ViewData["ActivePage"] = ManageNavPages.Email;
+}
+
+
+
+<h6 class="text-lg mb-8">@ViewData["title"]</h6>
+<partial name="_StatusMessage" for="StatusMessage" />
+<div class="row gy-3">
+    <div class="col-md-6">
+        <form id="email-form" method="post">
+            <div asp-validation-summary="All" class="text-danger" role="alert"></div>
+            @if (Model.IsEmailConfirmed)
+            {
+                <div class="mb-0">
+                    <label asp-for="Email" class="form-label"></label>
+                    <div class="position-relative mb-0">
+                        <!-- Left Email Icon -->
+                        <span class="icon position-absolute top-50 start-0 translate-middle-y ms-3">
+                            <iconify-icon icon="mage:email"></iconify-icon>
+                        </span>
+
+                        <!-- Input Field -->
+                        <input asp-for="Email" class="form-control h-56-px bg-neutral-50 radius-12 ps-40 pe-40" placeholder="Please enter your email." disabled />
+
+                        <!-- Right Check Icon -->
+                        <span class="icon position-absolute top-50 end-0 translate-middle-y me-3 text-success font-weight-bold">
+                            <iconify-icon icon="mdi:check-bold"></iconify-icon>
+                        </span>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="mb-0">
+                    <label asp-for="Email" class="form-label"></label>
+                    <div class="icon-field mb-0">
+                        <span class="icon top-50 translate-middle-y">
+                            <iconify-icon icon="mage:email"></iconify-icon>
+                        </span>
+                        <input asp-for="Email" class="form-control h-56-px bg-neutral-50 radius-12" placeholder="Please enter your email." disabled />
+                    </div>
+
+                    <button id="email-verification" type="submit" asp-page-handler="SendVerificationEmail" class="btn btn-primary text-sm btn-sm px-12 py-16 w-100 radius-12 mt-32">Send verification email</button>
+                </div>
+            }
+            <span asp-validation-for="Input.NewEmail" class="text-danger"></span>
+            <div class="mb-0">
+                <label asp-for="Input.NewEmail" class="form-label"></label>
+                <div class="icon-field mb-0">
+                    <span class="icon top-50 translate-middle-y">
+                        <iconify-icon icon="mage:email"></iconify-icon>
+                    </span>
+                    <input asp-for="Input.NewEmail" class="form-control h-56-px bg-neutral-50 radius-12" placeholder="Please enter your email." disabled />
+                </div>
+            </div>
+
+            <button id="change-email-button" type="submit" asp-page-handler="ChangeEmail" class="btn btn-primary text-sm btn-sm px-12 py-16 w-100 radius-12 mt-32">Change email</button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
