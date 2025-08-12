@@ -46,6 +46,10 @@
 		<Folder Include="wwwroot\docs\" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <None Include="efpt.config.json.user" />
+	</ItemGroup>
+
 	<!-- Auto-generate DocFX site after each build -->
 	<Target Name="GenerateDocFX" AfterTargets="Build" Condition="'$(DocFxBuildEnabled)'=='true'">
 		<!-- restore local tools -->

@@ -26,6 +26,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<SwimsDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+builder.Services.AddDbContext<SwimsDb_moreContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
 // Configure Razor Pages
 builder.Services.AddRazorPages();
 
