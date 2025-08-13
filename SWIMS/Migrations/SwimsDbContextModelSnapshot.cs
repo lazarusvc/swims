@@ -10,7 +10,7 @@ using SWIMS.Models;
 
 namespace SWIMS.Migrations
 {
-    [DbContext(typeof(SwimsDbContext))]
+    [DbContext(typeof(SwimsDb_moreContext))]
     partial class SwimsDbContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)

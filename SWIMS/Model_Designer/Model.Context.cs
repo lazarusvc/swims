@@ -25,7 +25,10 @@ namespace Model_Designer
             throw new UnintentionalCodeFirstException();
         }
     
-        public virtual DbSet<SW_users> SW_users { get; set; }
+        public virtual DbSet<SW_forms> SW_forms { get; set; }
+        public virtual DbSet<SW_formTableName> SW_formTableName { get; set; }
+        public virtual DbSet<SW_identity> SW_identity { get; set; }
         public virtual DbSet<SW_roles> SW_roles { get; set; }
+        public virtual DbSet<SW_users> SW_users { get; set; }
     }
 }

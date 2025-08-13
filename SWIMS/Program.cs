@@ -87,8 +87,10 @@ using var scope = app.Services.CreateScope();
 var services = scope.ServiceProvider;
 
 // Run pending migrations and seed default data
-var db = services.GetRequiredService<SwimsDbContext>();
-// db.Database.Migrate();
+var db_1 = services.GetRequiredService<SwimsDbContext>();
+// var db_2 = services.GetRequiredService<SwimsDb_moreContext>();
+db_1.Database.Migrate();
+// db_2.Database.Migrate();
 await SeedData.EnsureSeedDataAsync(services);
 
 
@@ -122,7 +124,6 @@ app.UseFileServer(new FileServerOptions
 
 
 app.UseRouting();
-
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -133,5 +134,4 @@ app.MapControllerRoute(
     .WithStaticAssets();
 
 app.MapRazorPages();
-
 app.Run();

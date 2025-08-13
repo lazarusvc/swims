@@ -11,7 +11,7 @@ using SWIMS.Models;
 
 namespace SWIMS.Migrations
 {
-    [DbContext(typeof(SwimsDbContext))]
+    [DbContext(typeof(SwimsDb_moreContext))]
     [Migration("20250805205823_Init")]
     partial class Init
     {
