@@ -24,10 +24,16 @@ var builder = WebApplication.CreateBuilder(args);
 // Configure database context and EF Core migrations
 // ------------------------------------------------------
 builder.Services.AddDbContext<SwimsIdentityDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        sql => sql.MigrationsHistoryTable("__EFMigrationsHistory_Identity", "auth")
+    ));
 
 builder.Services.AddDbContext<SwimsDb_moreContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        sql => sql.MigrationsHistoryTable("__EFMigrationsHistory_More", "dbo")
+    ));
 
 builder.Services.AddDbContext<SwimsStoredProcsDbContext>(options =>
     options.UseSqlServer(
