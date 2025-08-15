@@ -5,7 +5,7 @@
 // Purpose: Entry point for SWIMS ASP.NET Core application; configures services, middleware, and runs the web host.
 // Dependencies:
 //   - Microsoft.AspNetCore.Builder, Hosting, Identity, EF Core, Configuration
-//   - SWIMS.Data.SwimsDbContext, SWIMS.Models.SwUser, SWIMS.Models.SwRole
+//   - SWIMS.Data.SwimsIdentityDbContext, SWIMS.Models.SwUser, SWIMS.Models.SwRole
 //   - SWIMS.Services.BcryptPasswordHasher, LdapAuthService, SeedData
 // -------------------------------------------------------------------
 
@@ -23,11 +23,18 @@ var builder = WebApplication.CreateBuilder(args);
 // ------------------------------------------------------
 // Configure database context and EF Core migrations
 // ------------------------------------------------------
-builder.Services.AddDbContext<SwimsDbContext>(options =>
+builder.Services.AddDbContext<SwimsIdentityDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddDbContext<SwimsDb_moreContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddDbContext<SwimsStoredProcsDbContext>(options =>
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        sql => sql.MigrationsHistoryTable("__EFMigrationsHistory", "sp")
+    ));
+
 
 // Configure Razor Pages
 builder.Services.AddRazorPages();
@@ -48,7 +55,7 @@ builder.Services
         options.Tokens.AuthenticatorTokenProvider = TokenOptions.DefaultAuthenticatorProvider;
     })
     .AddRoles<SwRole>()
-    .AddEntityFrameworkStores<SwimsDbContext>()
+    .AddEntityFrameworkStores<SwimsIdentityDbContext>()
     .AddDefaultTokenProviders();
 
 // Use BCrypt for password hashing
@@ -56,6 +63,10 @@ builder.Services.AddScoped<IPasswordHasher<SwUser>, BcryptPasswordHasher>();
 
 // LDAP authentication service singleton
 builder.Services.AddSingleton<ILdapAuthService, LdapAuthService>();
+
+// Stored Procedures Module
+builder.Services.AddDataProtection(); // optional but recommended if using per-proc SQL logins
+builder.Services.AddSingleton<StoredProcedureRunner>();
 
 
 // Configure application cookie paths
@@ -87,7 +98,7 @@ using var scope = app.Services.CreateScope();
 var services = scope.ServiceProvider;
 
 // Run pending migrations and seed default data
-var db_1 = services.GetRequiredService<SwimsDbContext>();
+var db_1 = services.GetRequiredService<SwimsIdentityDbContext>();
 // var db_2 = services.GetRequiredService<SwimsDb_moreContext>();
 db_1.Database.Migrate();
 // db_2.Database.Migrate();
