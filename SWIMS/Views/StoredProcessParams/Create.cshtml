@@ -1,0 +1,30 @@
+﻿@model SWIMS.Models.ViewModels.StoredProcessParamEditViewModel
+@{
+    ViewData["Title"] = "Add Parameter";
+    var proc = (SWIMS.Models.StoredProcess)ViewBag.Process;
+}
+<h2>Add Parameter for: @proc.Name</h2>
+<form asp-action="Create" method="post">
+  @Html.AntiForgeryToken()
+  <input type="hidden" asp-for="StoredProcessId" />
+
+  <div class="mb-3">
+    <label asp-for="Key" class="form-label"></label>
+    <input asp-for="Key" class="form-control" placeholder="@@ParamName (include @@)" />
+    <span asp-validation-for="Key" class="text-danger"></span>
+  </div>
+
+  <div class="mb-3">
+    <label asp-for="DataType" class="form-label"></label>
+    <select asp-for="DataType" class="form-select" asp-items="new SelectList(SWIMS.Models.ViewModels.StoredProcDataTypes.Allowed)"></select>
+    <span asp-validation-for="DataType" class="text-danger"></span>
+  </div>
+
+  <div class="mb-3">
+    <label asp-for="Value" class="form-label"></label>
+    <input asp-for="Value" class="form-control" />
+  </div>
+
+  <button type="submit" class="btn btn-success">Save</button>
+  <a class="btn btn-outline-secondary" asp-action="Index" asp-route-processId="@proc.Id">Cancel</a>
+</form>
