@@ -19,6 +19,7 @@ namespace SWIMS.Controllers
         }
 
         // GET: identities
+
         public async Task<IActionResult> Index()
         {
             return View(await _context.SwIdentities.ToListAsync());

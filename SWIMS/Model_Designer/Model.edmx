@@ -654,7 +654,6 @@
           <Property Name="FormData250" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
           <NavigationProperty Name="SW_formTableName" Relationship="Model.FK_SW_formsSW_formTableName" FromRole="SW_forms" ToRole="SW_formTableName" />
           <NavigationProperty Name="SW_identity" Relationship="Model.FK_SW_identitySW_forms" FromRole="SW_forms" ToRole="SW_identity" />
-          <Property Name="Property1" Type="String" Nullable="false" />
         </EntityType>
         <EntityType Name="SW_formTableName">
           <Key>

@@ -280,7 +280,6 @@ namespace Model_Designer
         public string FormData248 { get; set; }
         public string FormData249 { get; set; }
         public string FormData250 { get; set; }
-        public string Property1 { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<SW_formTableName> SW_formTableName { get; set; }

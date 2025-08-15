@@ -1,0 +1,1583 @@
+﻿@model IEnumerable<SWIMS.Models.SwForm>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Uuid)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Name)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Desc)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Form)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.IsApproval01)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.IsApproval02)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.IsApproval03)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DateModified)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData01)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData02)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData03)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData04)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData05)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData06)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData07)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData08)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData09)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData10)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData11)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData12)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData13)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData14)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData15)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData16)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData17)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData18)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData19)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData20)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData21)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData22)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData23)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData24)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData25)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData26)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData27)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData28)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData29)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData30)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData31)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData32)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData33)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData34)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData35)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData36)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData37)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData38)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData39)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData40)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData41)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData42)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData43)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData44)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData45)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData46)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData47)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData48)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData49)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData50)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData51)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData52)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData53)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData54)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData55)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData56)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData57)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData58)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData59)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData60)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData61)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData62)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData63)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData64)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData65)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData66)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData67)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData68)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData69)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData70)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData71)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData72)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData73)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData74)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData75)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData76)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData77)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData78)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData79)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData80)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData81)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData82)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData83)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData84)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData85)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData86)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData87)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData88)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData89)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData90)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData91)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData92)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData93)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData94)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData95)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData96)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData97)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData98)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData99)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData100)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData101)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData102)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData103)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData104)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData105)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData106)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData107)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData108)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData109)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData110)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData111)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData112)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData113)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData114)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData115)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData116)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData117)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData118)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData119)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData120)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData121)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData122)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData123)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData124)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData125)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData126)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData127)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData128)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData129)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData130)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData131)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData132)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData133)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData134)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData135)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData136)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData137)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData138)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData139)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData140)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData141)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData142)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData143)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData144)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData145)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData146)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData147)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData148)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData149)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData150)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData151)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData152)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData153)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData154)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData155)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData156)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData157)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData158)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData159)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData160)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData161)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData162)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData163)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData164)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData165)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData166)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData167)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData168)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData169)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData170)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData171)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData172)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData173)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData174)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData175)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData176)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData177)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData178)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData179)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData180)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData181)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData182)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData183)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData184)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData185)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData186)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData187)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData188)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData189)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData190)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData191)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData192)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData193)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData194)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData195)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData196)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData197)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData198)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData199)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData200)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData201)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData202)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData203)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData204)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData205)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData206)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData207)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData208)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData209)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData210)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData211)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData212)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData213)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData214)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData215)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData216)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData217)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData218)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData219)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData220)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData221)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData222)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData223)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData224)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData225)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData226)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData227)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData228)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData229)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData230)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData231)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData232)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData233)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData234)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData235)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData236)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData237)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData238)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData239)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData240)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData241)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData242)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData243)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData244)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData245)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData246)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData247)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData248)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData249)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FormData250)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.SwIdentity)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Uuid)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Desc)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Form)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.IsApproval01)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.IsApproval02)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.IsApproval03)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.DateModified)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData01)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData02)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData03)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData04)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData05)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData06)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData07)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData08)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData09)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData10)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData11)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData12)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData13)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData14)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData15)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData16)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData17)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData18)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData19)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData20)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData21)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData22)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData23)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData24)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData25)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData26)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData27)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData28)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData29)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData30)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData31)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData32)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData33)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData34)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData35)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData36)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData37)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData38)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData39)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData40)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData41)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData42)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData43)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData44)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData45)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData46)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData47)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData48)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData49)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData50)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData51)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData52)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData53)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData54)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData55)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData56)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData57)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData58)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData59)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData60)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData61)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData62)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData63)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData64)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData65)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData66)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData67)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData68)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData69)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData70)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData71)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData72)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData73)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData74)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData75)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData76)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData77)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData78)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData79)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData80)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData81)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData82)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData83)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData84)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData85)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData86)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData87)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData88)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData89)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData90)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData91)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData92)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData93)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData94)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData95)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData96)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData97)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData98)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData99)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData100)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData101)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData102)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData103)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData104)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData105)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData106)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData107)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData108)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData109)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData110)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData111)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData112)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData113)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData114)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData115)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData116)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData117)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData118)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData119)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData120)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData121)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData122)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData123)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData124)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData125)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData126)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData127)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData128)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData129)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData130)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData131)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData132)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData133)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData134)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData135)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData136)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData137)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData138)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData139)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData140)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData141)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData142)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData143)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData144)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData145)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData146)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData147)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData148)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData149)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData150)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData151)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData152)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData153)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData154)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData155)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData156)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData157)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData158)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData159)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData160)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData161)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData162)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData163)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData164)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData165)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData166)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData167)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData168)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData169)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData170)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData171)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData172)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData173)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData174)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData175)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData176)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData177)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData178)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData179)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData180)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData181)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData182)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData183)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData184)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData185)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData186)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData187)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData188)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData189)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData190)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData191)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData192)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData193)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData194)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData195)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData196)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData197)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData198)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData199)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData200)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData201)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData202)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData203)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData204)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData205)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData206)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData207)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData208)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData209)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData210)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData211)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData212)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData213)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData214)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData215)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData216)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData217)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData218)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData219)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData220)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData221)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData222)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData223)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData224)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData225)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData226)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData227)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData228)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData229)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData230)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData231)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData232)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData233)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData234)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData235)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData236)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData237)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData238)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData239)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData240)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData241)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData242)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData243)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData244)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData245)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData246)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData247)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData248)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData249)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FormData250)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.SwIdentity.Name)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

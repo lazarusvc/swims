@@ -9,7 +9,7 @@ public partial class SwForm
 {
     public int Id { get; set; }
 
-    public int? Uuid { get; set; }
+    public int Uuid { get; set; }
 
     public string Name { get; set; }
 
@@ -526,8 +526,6 @@ public partial class SwForm
     public string FormData249 { get; set; }
 
     public string FormData250 { get; set; }
-
-    public virtual ICollection<SwFormsTableName> SwFormsTableNames { get; set; } = new List<SwFormsTableName>();
 
     public virtual SwIdentity SwIdentity { get; set; }
 }
