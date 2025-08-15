@@ -529,5 +529,5 @@ public partial class SwForm
 
     public virtual ICollection<SwFormsTableName> SwFormsTableNames { get; set; } = new List<SwFormsTableName>();
 
-    public virtual SwIdentity SwIdentity { get; set; }
+    public virtual SwSiteIdentity SwIdentity { get; set; }
 }
