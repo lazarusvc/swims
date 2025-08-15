@@ -1,0 +1,24 @@
+﻿@model IEnumerable<SWIMS.Models.StoredProcess>
+@{
+    ViewData["Title"] = "Stored Procedures";
+}
+<h2>Stored Procedures</h2>
+<p class="text-muted">Define a process once, run it with current parameters. Connections can use a named key or per-process server/DB.</p>
+<table class="table table-striped table-sm">
+    <thead>
+        <tr><th>Name</th><th>Description</th><th>Connection</th><th></th></tr>
+    </thead>
+    <tbody>
+        @foreach (var p in Model)
+        {
+            <tr>
+                <td>@p.Name</td>
+                <td>@p.Description</td>
+                <td>@(string.IsNullOrWhiteSpace(p.ConnectionKey) ? $"{p.DataSource}/{p.Database}" : p.ConnectionKey)</td>
+                <td>
+                    <a class="btn btn-primary btn-sm" asp-action="Run" asp-route-id="@p.Id">Run</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
