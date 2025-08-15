@@ -88,9 +88,9 @@ var services = scope.ServiceProvider;
 
 // Run pending migrations and seed default data
 var db_1 = services.GetRequiredService<SwimsDbContext>();
-// var db_2 = services.GetRequiredService<SwimsDb_moreContext>();
+//var db_2 = services.GetRequiredService<SwimsDb_moreContext>();
 db_1.Database.Migrate();
-// db_2.Database.Migrate();
+//db_2.Database.Migrate();
 await SeedData.EnsureSeedDataAsync(services);
 
 
