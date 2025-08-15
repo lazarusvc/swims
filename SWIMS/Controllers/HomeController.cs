@@ -11,7 +11,7 @@
 
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using SWIMS.Models;
+using SWIMS.Models.ViewModels;
 
 namespace SWIMS.Controllers
 {

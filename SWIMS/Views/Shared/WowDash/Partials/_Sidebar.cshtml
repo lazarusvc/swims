@@ -106,13 +106,20 @@
             <li class="dropdown">
                 <a href="javascript:void(0)">
                     <iconify-icon icon="simple-line-icons:vector" class="menu-icon"></iconify-icon>
-                    <span>Authentication</span>
+                    <span>DB Processes</span>
                 </a>
                 <ul class="sidebar-submenu">
                     <li>
                         <a asp-controller="StoredProcesses" asp-action="Index"><i class="ri-circle-fill circle-icon text-primary-600 w-auto"></i> Stored Procedures</a>
                     </li>
                 </ul>
+            </li>
+
+
+            <li class="sidebar-menu-group-title">Site Management</li>
+
+            <li>
+                <a asp-controller="SiteIdentity" asp-action="Index"><iconify-icon icon="simple-line-icons:vector" class="menu-icon"></iconify-icon> Site Identity</a>
             </li>
 
             

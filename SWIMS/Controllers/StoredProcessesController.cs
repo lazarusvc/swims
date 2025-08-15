@@ -1,13 +1,13 @@
-﻿using System.Data;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using SWIMS.Models;
+using SWIMS.Data;
+using SWIMS.Models.ViewModels;
 using SWIMS.Services;
 
 namespace SWIMS.Controllers
 {
-    [Authorize(Roles = "Admin")] // adjust role name if needed
+    [Authorize(Roles = "Admin")] // or "Admin,Runner" if operators should run
     public class StoredProcessesController : Controller
     {
         private readonly SwimsStoredProcsDbContext _db;
@@ -30,14 +30,15 @@ namespace SWIMS.Controllers
         }
 
         // GET: /StoredProcesses/Run/5
+        [HttpGet]
         public async Task<IActionResult> Run(int id)
         {
             var sp = await _db.StoredProcesses
-                               .Include(x => x.Params)
-                               .FirstOrDefaultAsync(x => x.Id == id);
+                              .Include(x => x.Params)
+                              .FirstOrDefaultAsync(x => x.Id == id);
             if (sp is null) return NotFound();
 
-            var vm = new RunStoredProcessVm
+            var vm = new RunStoredProcessViewModel
             {
                 ProcessId = sp.Id,
                 Name = sp.Name,
@@ -46,9 +47,15 @@ namespace SWIMS.Controllers
                     ? $"Connection: {sp.ConnectionKey}"
                     : $"{sp.DataSource}/{sp.Database}",
                 Params = sp.Params
-                          .OrderBy(p => p.Key)
-                          .Select(p => new RunParamVm { Id = p.Id, Key = p.Key, DataType = p.DataType, Value = p.Value })
-                          .ToList()
+                           .OrderBy(p => p.Key)
+                           .Select(p => new RunParamViewModel
+                           {
+                               Id = p.Id,
+                               Key = p.Key,
+                               DataType = p.DataType,
+                               Value = p.Value
+                           })
+                           .ToList()
             };
             return View(vm);
         }
@@ -56,54 +63,33 @@ namespace SWIMS.Controllers
         // POST: /StoredProcesses/Run/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Run(int id, RunStoredProcessVm model)
+        public async Task<IActionResult> Run(int id, RunStoredProcessViewModel model)
         {
             var sp = await _db.StoredProcesses
-                               .Include(x => x.Params)
-                               .FirstOrDefaultAsync(x => x.Id == id);
+                              .Include(x => x.Params)
+                              .FirstOrDefaultAsync(x => x.Id == id);
             if (sp is null) return NotFound();
 
             // Update param values (no raw SQL)
             var map = sp.Params.ToDictionary(p => p.Id);
             foreach (var p in model.Params)
-                if (map.TryGetValue(p.Id, out var row)) row.Value = p.Value;
+            {
+                if (map.TryGetValue(p.Id, out var row))
+                {
+                    row.Value = p.Value;
+                }
+            }
             await _db.SaveChangesAsync();
 
             var (table, error) = await _runner.ExecuteAsync(sp, sp.Params);
-            var vm = new RunStoredProcessResultVm
+            var resultVm = new RunStoredProcessResultViewModel
             {
                 Name = sp.Name,
                 Description = sp.Description,
                 Error = error,
                 Table = table
             };
-            return View("RunResult", vm);
+            return View("RunResult", resultVm);
         }
-    }
-
-    // ViewModels
-    public class RunStoredProcessVm
-    {
-        public int ProcessId { get; set; }
-        public string Name { get; set; } = string.Empty;
-        public string? Description { get; set; }
-        public string? ConnectionDisplay { get; set; }
-        public List<RunParamVm> Params { get; set; } = new();
-    }
-
-    public class RunParamVm
-    {
-        public int Id { get; set; }
-        public string Key { get; set; } = string.Empty;
-        public string DataType { get; set; } = "NVarChar";
-        public string? Value { get; set; }
-    }
-
-    public class RunStoredProcessResultVm
-    {
-        public string Name { get; set; } = string.Empty;
-        public string? Description { get; set; }
-        public string? Error { get; set; }
-        public DataTable? Table { get; set; }
     }
 }

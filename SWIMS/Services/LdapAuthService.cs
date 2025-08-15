@@ -15,7 +15,7 @@
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using SWIMS.Models;
+using SWIMS.Models.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.DirectoryServices.Protocols;
@@ -84,14 +84,14 @@ namespace SWIMS.Services
 
         /// <summary>
         /// Attempts to authenticate a user against LDAP and, on success,
-        /// returns a minimal <see cref="LdapUser"/> populated from directory attributes.
+        /// returns a minimal <see cref="LdapUserViewModel"/> populated from directory attributes.
         /// </summary>
         /// <param name="username">The username supplied by the user (short name, UPN, or DOMAIN\user).</param>
         /// <param name="password">The plaintext password supplied by the user.</param>
         /// <returns>
-        /// A task producing a <see cref="LdapUser"/> when authentication succeeds; otherwise <c>null</c>.
+        /// A task producing a <see cref="LdapUserViewModel"/> when authentication succeeds; otherwise <c>null</c>.
         /// </returns>
-        public Task<LdapUser?> AuthenticateAsync(string username, string password)
+        public Task<LdapUserViewModel?> AuthenticateAsync(string username, string password)
         {
             try
             {
@@ -169,7 +169,7 @@ namespace SWIMS.Services
                 {
                     _logger.LogError(last, "LDAP bind failed for all candidates. LastMsg={Msg}",
                         last?.ServerErrorMessage);
-                    return Task.FromResult<LdapUser?>(null);
+                    return Task.FromResult<LdapUserViewModel?>(null);
                 }
 
                 // 5) Determine sAMAccountName for the search
@@ -190,7 +190,7 @@ namespace SWIMS.Services
                 if (response.Entries.Count == 0)
                 {
                     _logger.LogWarning("LDAP: no entries found for {Sam}", samAccountName);
-                    return Task.FromResult<LdapUser?>(null);
+                    return Task.FromResult<LdapUserViewModel?>(null);
                 }
 
                 var entry = response.Entries[0];
@@ -223,7 +223,7 @@ namespace SWIMS.Services
                         ? $"{givenName} {sn}".Trim()
                         : (!string.IsNullOrWhiteSpace(cn) ? cn : samFromEntry));
 
-                var user = new LdapUser
+                var user = new LdapUserViewModel
                 {
                     Username = samFromEntry,
                     DistinguishedName = entry.DistinguishedName,
@@ -235,14 +235,14 @@ namespace SWIMS.Services
                 };
 
                 _logger.LogInformation("LDAP user resolved: {User}", user.Username);
-                return Task.FromResult<LdapUser?>(user);
+                return Task.FromResult<LdapUserViewModel?>(user);
             }
             catch (LdapException ex)
             {
                 // Surface the exact directory error to logs for quick triage (e.g., 81, 49/52e, etc.)
                 _logger.LogError(ex, "LDAP bind/search failed. Code={Code}; ServerMsg={Msg}",
                     ex.ErrorCode, ex.ServerErrorMessage);
-                return Task.FromResult<LdapUser?>(null);
+                return Task.FromResult<LdapUserViewModel?>(null);
             }
         }
     }
