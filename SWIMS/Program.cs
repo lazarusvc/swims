@@ -16,6 +16,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using SWIMS.Data;
 using SWIMS.Models;
+using SWIMS.Models.StoredProcs;
 using SWIMS.Services;
 
 var builder = WebApplication.CreateBuilder(args);

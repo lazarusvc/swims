@@ -1,10 +1,10 @@
-﻿using Microsoft.AspNetCore.DataProtection;
-using Microsoft.Data.SqlClient;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
-using SWIMS.Models;
-using System;
 using System.Data;
+using SWIMS.Models;          
+using SWIMS.Models.StoredProcs; 
+using SWIMS.Models.Security;     
+using Microsoft.AspNetCore.DataProtection;
 
 namespace SWIMS.Services
 {
@@ -12,11 +12,16 @@ namespace SWIMS.Services
     {
         private readonly IConfiguration _config;
         private readonly StoredProcOptions _opts;
+        private readonly IDataProtector? _protector;
 
-        public StoredProcedureRunner(IConfiguration config, IOptions<StoredProcOptions> opts)
+        public StoredProcedureRunner(
+            IConfiguration config,
+            IOptions<StoredProcOptions> opts,
+            IDataProtectionProvider dp)               
         {
             _config = config;
             _opts = opts.Value;
+            _protector = dp?.CreateProtector(DataProtectionPurposes.StoredProcedures);
         }
 
         public async Task<(DataTable? Table, string? Error)> ExecuteAsync(
@@ -35,17 +40,15 @@ namespace SWIMS.Services
                     CommandTimeout = Math.Max(1, _opts.DefaultCommandTimeoutSeconds)
                 };
 
-                // bind parameters by name
                 foreach (var p in parameters.OrderBy(p => p.Key))
                 {
-                    var sqlParam = new SqlParameter
+                    cmd.Parameters.Add(new SqlParameter
                     {
-                        ParameterName = p.Key, // must include @
+                        ParameterName = p.Key, // includes @
                         SqlDbType = ToSqlDbType(p.DataType),
                         Direction = ParameterDirection.Input,
                         Value = CoerceValue(p)
-                    };
-                    cmd.Parameters.Add(sqlParam);
+                    });
                 }
 
                 var dt = new DataTable();
@@ -65,7 +68,7 @@ namespace SWIMS.Services
 
         private string BuildConnectionString(StoredProcess proc)
         {
-            // Option A: ConnectionStrings key
+            // Option A: use named ConnectionStrings key
             if (!string.IsNullOrWhiteSpace(proc.ConnectionKey))
             {
                 var cs = _config.GetConnectionString(proc.ConnectionKey!);
@@ -74,7 +77,7 @@ namespace SWIMS.Services
                 return cs;
             }
 
-            // Option B: Manual DataSource/Database (+ optional SQL login)
+            // Option B: manual connection with safe defaults
             var b = new SqlConnectionStringBuilder
             {
                 DataSource = proc.DataSource ?? throw new InvalidOperationException("DataSource required."),
@@ -85,14 +88,14 @@ namespace SWIMS.Services
                 ConnectTimeout = Math.Max(1, _opts.ManualConnection.ConnectTimeout)
             };
 
-            if (!string.IsNullOrWhiteSpace(proc.DbUserEncrypted) && !string.IsNullOrWhiteSpace(proc.DbPasswordEncrypted))
+            // If creds were provided, decrypt (or pass-through if they were plaintext)
+            var hasUser = !string.IsNullOrWhiteSpace(proc.DbUserEncrypted);
+            var hasPass = !string.IsNullOrWhiteSpace(proc.DbPasswordEncrypted);
+
+            if (hasUser && hasPass)
             {
-                // DbUser/DbPassword are already stored encrypted by the admin controller.
-                // Decrypt here if you encrypt at rest; if you stored plaintext, assign directly.
-                var user = DecryptIfNeeded(proc.DbUserEncrypted!);
-                var pass = DecryptIfNeeded(proc.DbPasswordEncrypted!);
-                b.UserID = user;
-                b.Password = pass;
+                b.UserID = DecryptIfNeeded(proc.DbUserEncrypted!);
+                b.Password = DecryptIfNeeded(proc.DbPasswordEncrypted!);
                 b.IntegratedSecurity = false;
             }
             else
@@ -101,6 +104,20 @@ namespace SWIMS.Services
             }
 
             return b.ConnectionString;
+        }
+
+        private string DecryptIfNeeded(string value)
+        {
+            if (string.IsNullOrEmpty(value) || _protector == null) return value;
+            try
+            {
+                return _protector.Unprotect(value);
+            }
+            catch
+            {
+                // Not protected (legacy/plaintext) or wrong key ring → fall back
+                return value;
+            }
         }
 
         private static object CoerceValue(StoredProcessParam p)
@@ -127,11 +144,8 @@ namespace SWIMS.Services
             "bit" => SqlDbType.Bit,
             "datetime" => SqlDbType.DateTime2,
             "uniqueidentifier" => SqlDbType.UniqueIdentifier,
-            "text" => SqlDbType.NVarChar,    // treated as NVARCHAR for input
+            "text" => SqlDbType.NVarChar,
             _ => SqlDbType.NVarChar
         };
-
-        // If you protected DbUser/DbPassword, plug your decryptor here. If they’re plaintext, just return the value.
-        private static string DecryptIfNeeded(string s) => s;
     }
 }

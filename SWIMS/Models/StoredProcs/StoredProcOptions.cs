@@ -1,4 +1,4 @@
-﻿namespace SWIMS.Models
+﻿namespace SWIMS.Models.StoredProcs
 {
     public sealed class StoredProcOptions
     {
