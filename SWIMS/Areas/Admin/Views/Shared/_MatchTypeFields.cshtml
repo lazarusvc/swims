@@ -1,0 +1,60 @@
+﻿@model dynamic
+<div class="mb-3">
+  <label class="form-label">Match Type</label>
+  <select name="MatchType" class="form-select">
+    @foreach (var t in MatchTypes.All)
+    {
+      <option value="@t" @@(Model.MatchType == t ? "selected" : "")>@t</option>
+    }
+  </select>
+</div>
+
+<div class="row g-3">
+  <div class="col-md-4">
+    <label class="form-label">Area</label>
+    <input name="Area" class="form-control" value="@Model.Area" />
+  </div>
+  <div class="col-md-4">
+    <label class="form-label">Controller</label>
+    <input name="Controller" class="form-control" value="@Model.Controller" />
+  </div>
+  <div class="col-md-4">
+    <label class="form-label">Action</label>
+    <input name="Action" class="form-control" value="@Model.Action" />
+  </div>
+</div>
+
+<div class="row g-3 mt-1">
+  <div class="col-md-6">
+    <label class="form-label">Razor Page (e.g. /Privacy)</label>
+    <input name="Page" class="form-control" value="@Model.Page" />
+  </div>
+  <div class="col-md-6">
+    <label class="form-label">Path (e.g. /docs)</label>
+    <input name="Path" class="form-control" value="@Model.Path" />
+  </div>
+</div>
+
+<div class="mb-3 mt-1">
+  <label class="form-label">Regex</label>
+  <input name="Regex" class="form-control" value="@Model.Regex" />
+  <div class="form-text">Case-insensitive; tested against Request.Path.</div>
+</div>
+
+<div class="mb-3">
+  <label class="form-label">Notes</label>
+  <input name="Notes" class="form-control" value="@Model.Notes" />
+</div>
+
+<div class="row g-3">
+  <div class="col-md-4">
+    <div class="form-check form-switch">
+      <input type="checkbox" class="form-check-input" name="IsEnabled" value="true" @(Model.IsEnabled ? "checked" : "") />
+      <label class="form-check-label">Enabled</label>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <label class="form-label">Priority</label>
+    <input type="number" name="Priority" class="form-control" value="@Model.Priority" />
+  </div>
+</div>

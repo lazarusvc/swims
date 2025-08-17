@@ -19,6 +19,7 @@ using SWIMS.Models;
 using SWIMS.Models.StoredProcs;
 using SWIMS.Services;
 using SWIMS.Services.Auth;
+using SWIMS.Services.Diagnostics;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -76,8 +77,10 @@ builder.Services.AddAuthorization(options =>
 });
 
 builder.Services.AddMemoryCache();
-builder.Services.AddScoped<SWIMS.Services.Auth.IPolicyStore, SWIMS.Services.Auth.EfPolicyStore>();
-builder.Services.AddSingleton<IAuthorizationPolicyProvider, SWIMS.Services.Auth.DbAuthorizationPolicyProvider>();
+builder.Services.AddScoped<IPolicyStore, EfPolicyStore>();
+builder.Services.AddSingleton<IAuthorizationPolicyProvider, DbAuthorizationPolicyProvider>();
+
+builder.Services.AddSingleton<IEndpointCatalog, EndpointCatalog>();
 
 
 // Use BCrypt for password hashing

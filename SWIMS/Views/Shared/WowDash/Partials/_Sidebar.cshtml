@@ -81,29 +81,19 @@
                     <a asp-area="Admin" asp-controller="AuthorizationPolicies" asp-action="Index"><iconify-icon icon="simple-line-icons:vector" class="menu-icon"></iconify-icon> Authorization Policies</a>
                 </li>
 
+                <li>
+                    <a asp-area="Admin" asp-controller="PublicEndpoints" asp-action="Index"><i class="ri-global-line me-2"></i> Public Access</a>
+                </li>
+
+                <li>
+                    <a asp-area="Admin" asp-controller="EndpointPolicies" asp-action="Index"><i class="ri-shield-keyhole-line me-2"></i> Endpoint Policies</a>
+                </li>
+
             }
 
             
 
-            <li class="sidebar-menu-group-title">Administration</li>
-
-            <li class="dropdown">
-                <a href="javascript:void(0)">
-                    <iconify-icon icon="simple-line-icons:vector" class="menu-icon"></iconify-icon>
-                    <span>Authentication</span>
-                </a>
-                <ul class="sidebar-submenu">
-                    <li>
-                        <a asp-area="Identity" asp-page="/Account/Login"><i class="ri-circle-fill circle-icon text-primary-600 w-auto"></i> Sign In</a>
-                    </li>
-                    <li>
-                        <a asp-area="Identity" asp-page="/Account/Register"><i class="ri-circle-fill circle-icon text-warning-main w-auto"></i> Sign Up</a>
-                    </li>
-                    <li>
-                        <a asp-area="Identity" asp-page="/Account/ForgotPassword"><i class="ri-circle-fill circle-icon text-info-main w-auto"></i> Forgot Password</a>
-                    </li>
-                </ul>
-            </li>
+            
 
 
             <li class="sidebar-menu-group-title">Processes</li>
@@ -133,7 +123,26 @@
                 <a asp-controller="SiteIdentity" asp-action="Index"><iconify-icon icon="simple-line-icons:vector" class="menu-icon"></iconify-icon> Site Identity</a>
             </li>
 
-            
+
+            <li class="sidebar-menu-group-title">Administration</li>
+
+            <li class="dropdown">
+                <a href="javascript:void(0)">
+                    <iconify-icon icon="simple-line-icons:vector" class="menu-icon"></iconify-icon>
+                    <span>Authentication</span>
+                </a>
+                <ul class="sidebar-submenu">
+                    <li>
+                        <a asp-area="Identity" asp-page="/Account/Login"><i class="ri-circle-fill circle-icon text-primary-600 w-auto"></i> Sign In</a>
+                    </li>
+                    <li>
+                        <a asp-area="Identity" asp-page="/Account/Register"><i class="ri-circle-fill circle-icon text-warning-main w-auto"></i> Sign Up</a>
+                    </li>
+                    <li>
+                        <a asp-area="Identity" asp-page="/Account/ForgotPassword"><i class="ri-circle-fill circle-icon text-info-main w-auto"></i> Forgot Password</a>
+                    </li>
+                </ul>
+            </li>
             
             @if (SignInManager.IsSignedIn(User))
             {

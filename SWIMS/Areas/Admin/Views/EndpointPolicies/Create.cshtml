@@ -1,0 +1,19 @@
+﻿@model EndpointPolicyEditViewModel
+@{
+    ViewData["Title"] = "Add Endpoint Policy";
+}
+<h2>Add Endpoint Policy</h2>
+<form asp-action="Create" method="post">
+    @Html.AntiForgeryToken()
+
+    <div class="mb-3">
+        <label class="form-label">Policy</label>
+        <select asp-for="PolicyName" asp-items="Model.Policies" class="form-select"></select>
+        <span class="text-muted">Policies are managed under Authorization Policies.</span>
+    </div>
+
+    @await Html.PartialAsync("../Shared/_MatchTypeFields", Model)
+
+    <button class="btn btn-primary">Create</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>
