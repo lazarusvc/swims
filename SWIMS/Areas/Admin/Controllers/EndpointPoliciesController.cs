@@ -192,5 +192,136 @@ namespace SWIMS.Areas.Admin.Controllers
 
             return items;
         }
+
+
+        public async Task<IActionResult> BulkCreate()
+        {
+            var vm = new EndpointPolicyEditViewModel
+            {
+                Policies = await PolicyOptionsAsync()
+            };
+            ViewBag.Controllers = _catalog.GetControllers();     // (Area, Controller)
+            ViewBag.Actions = _catalog.GetControllerActions();   // Area, Controller, Action
+            ViewBag.Pages = _catalog.GetRazorPages();            // Area, PageRoute
+            return View(vm);
+        }
+
+        [HttpPost, ValidateAntiForgeryToken]
+        public async Task<IActionResult> BulkCreate(EndpointPolicyEditViewModel vm, string[] controllerActions, string[] pages)
+        {
+            if (string.IsNullOrWhiteSpace(vm.PolicyName))
+            {
+                ModelState.AddModelError(nameof(vm.PolicyName), "Select a policy.");
+            }
+            var policy = await _db.AuthorizationPolicies.FirstOrDefaultAsync(p => p.Name == vm.PolicyName && p.IsEnabled);
+            if (policy is null)
+            {
+                ModelState.AddModelError(nameof(vm.PolicyName), "Policy not found or disabled.");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                vm.Policies = await PolicyOptionsAsync(vm.PolicyName);
+                ViewBag.Controllers = _catalog.GetControllers();
+                ViewBag.Actions = _catalog.GetControllerActions();
+                ViewBag.Pages = _catalog.GetRazorPages();
+                return View(vm);
+            }
+
+            int created = 0;
+
+            foreach (var ca in controllerActions ?? Array.Empty<string>())
+            {
+                // format: area|controller|action (area may be empty)
+                var parts = ca.Split('|');
+                var area = parts[0]; var controller = parts[1]; var action = parts[2];
+
+                bool exists = await _db.EndpointPolicyAssignments.AnyAsync(x =>
+                    x.MatchType == MatchTypes.ControllerAction &&
+                    (x.Area ?? "") == (area ?? "") &&
+                    x.Controller == controller && x.Action == action &&
+                    x.PolicyId == policy.Id);
+
+                if (!exists)
+                {
+                    _db.EndpointPolicyAssignments.Add(new EndpointPolicyAssignment
+                    {
+                        MatchType = MatchTypes.ControllerAction,
+                        Area = string.IsNullOrEmpty(area) ? null : area,
+                        Controller = controller,
+                        Action = action,
+                        PolicyId = policy.Id,
+                        Policy = policy,
+                        PolicyName = policy.Name,
+                        IsEnabled = vm.IsEnabled,
+                        Priority = vm.Priority,
+                        Notes = vm.Notes,
+                        UpdatedAt = DateTimeOffset.UtcNow
+                    });
+                    created++;
+                }
+            }
+
+            foreach (var pr in pages ?? Array.Empty<string>())
+            {
+                // format: area|page
+                var parts = pr.Split('|');
+                var area = parts[0]; var page = parts[1];
+
+                bool exists = await _db.EndpointPolicyAssignments.AnyAsync(x =>
+                    x.MatchType == MatchTypes.RazorPage &&
+                    (x.Area ?? "") == (area ?? "") &&
+                    x.Page == page && x.PolicyId == policy.Id);
+
+                if (!exists)
+                {
+                    _db.EndpointPolicyAssignments.Add(new EndpointPolicyAssignment
+                    {
+                        MatchType = MatchTypes.RazorPage,
+                        Area = string.IsNullOrEmpty(area) ? null : area,
+                        Page = page,
+                        PolicyId = policy.Id,
+                        Policy = policy,
+                        PolicyName = policy.Name,
+                        IsEnabled = vm.IsEnabled,
+                        Priority = vm.Priority,
+                        Notes = vm.Notes,
+                        UpdatedAt = DateTimeOffset.UtcNow
+                    });
+                    created++;
+                }
+            }
+
+            if (created > 0)
+                await _db.SaveChangesAsync();
+
+            await _store.InvalidateAsync();
+            TempData["Ok"] = created > 0
+                ? $"Created {created} assignment(s)."
+                : "No new assignments were created (duplicates skipped).";
+
+            return RedirectToAction(nameof(Index));
+        }
+
+
+        [HttpGet]
+        public async Task<IActionResult> CreatePreset(string matchType, string? area, string? controller, string? action, string? page, string? path)
+        {
+            var vm = new EndpointPolicyEditViewModel
+            {
+                MatchType = string.IsNullOrWhiteSpace(matchType) ? MatchTypes.ControllerAction : matchType,
+                Area = area,
+                Controller = controller,
+                Action = action,
+                Page = page,
+                Path = path,
+                IsEnabled = true,
+                Priority = 100,
+                Policies = await PolicyOptionsAsync()
+            };
+            return View("Create", vm);
+        }
+
+
     }
 }

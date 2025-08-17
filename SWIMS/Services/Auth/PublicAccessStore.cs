@@ -8,7 +8,12 @@ namespace SWIMS.Services.Auth
 {
     public interface IPublicAccessStore
     {
+        // Existing: check via HttpContext
         Task<bool> IsPublicAsync(HttpContext http, CancellationToken ct = default);
+
+        // NEW: offline/preview overload (no HttpContext required)
+        Task<bool> IsPublicAsync(string? area, string? controller, string? action, string? page, string? path, CancellationToken ct = default);
+
         Task InvalidateAsync();
     }
 
@@ -21,7 +26,18 @@ namespace SWIMS.Services.Auth
         public EfPublicAccessStore(SwimsIdentityDbContext db, IMemoryCache cache)
         { _db = db; _cache = cache; }
 
+        // Existing entry point now delegates to the core overload
         public async Task<bool> IsPublicAsync(HttpContext http, CancellationToken ct = default)
+        {
+            var (area, controller, action, page, path) = GetRouteBits(http);
+            return await IsPublicCoreAsync(area, controller, action, page, path, ct);
+        }
+
+        // NEW: offline/preview overload
+        public Task<bool> IsPublicAsync(string? area, string? controller, string? action, string? page, string? path, CancellationToken ct = default)
+            => IsPublicCoreAsync(area, controller, action, page, path, ct);
+
+        private async Task<bool> IsPublicCoreAsync(string? area, string? controller, string? action, string? page, string? path, CancellationToken ct)
         {
             var items = await _cache.GetOrCreateAsync(CacheKey, async e =>
             {
@@ -29,8 +45,6 @@ namespace SWIMS.Services.Auth
                 return await _db.PublicEndpoints.AsNoTracking()
                     .Where(x => x.IsEnabled).OrderBy(x => x.Priority).ToListAsync(ct);
             });
-
-            var (area, controller, action, page, path) = GetRouteBits(http);
 
             foreach (var x in items!)
             {
