@@ -1,0 +1,73 @@
+﻿@model List<PolicyListItemViewModel>
+@{
+    ViewData["Title"] = "Authorization Policies";
+}
+
+<h2 class="mb-3">Authorization Policies</h2>
+
+@if (TempData["Ok"] is string ok)
+{
+    <div class="alert alert-success">@ok</div>
+}
+
+<p>
+    <a asp-action="Create" class="btn btn-primary">Create Policy</a>
+</p>
+
+<table class="table table-sm table-striped align-middle">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Roles</th>
+            <th>Enabled</th>
+            <th>Updated</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var p in Model)
+        {
+            <tr>
+                <td>@p.Name</td>
+                <td>
+                    @if (p.RoleNames.Count == 0)
+                    {
+                        <span class="text-muted">None</span>
+                    }
+                    else
+                    {
+
+                        @string.Join(", ", p.RoleNames)
+                    }
+                </td>
+                <td>
+                    @if (p.IsEnabled)
+                    {
+                        <span class="badge bg-success">Enabled</span>
+                    }
+                    else
+                    {
+
+                        <span class="badge bg-secondary">Disabled</span>
+                    }
+                </td>
+                <td>@p.UpdatedAt.LocalDateTime</td>
+                <td class="text-end">
+                    <a asp-action="Edit" asp-route-id="@p.Id" class="btn btn-sm btn-outline-primary">Edit</a>
+
+                    <form asp-action="Toggle" asp-route-id="@p.Id" method="post" class="d-inline">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-sm btn-outline-warning">
+                            @(p.IsEnabled ? "Disable" : "Enable")
+                        </button>
+                    </form>
+
+                    <form asp-action="Delete" asp-route-id="@p.Id" method="post" class="d-inline" onsubmit="return confirm('Delete this policy?');">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
