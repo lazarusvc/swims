@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SWIMS.Data;
 using SWIMS.Models;
+using SWIMS.Models.Security;
 using SWIMS.Models.ViewModels;
 
 namespace SWIMS.Controllers
@@ -17,7 +18,7 @@ namespace SWIMS.Controllers
         public StoredProcessesAdminController(SwimsStoredProcsDbContext db, IDataProtectionProvider dp)
         {
             _db = db;
-            _protector = dp.CreateProtector("SWIMS.StoredProcedures");
+            _protector = dp.CreateProtector(DataProtectionPurposes.StoredProcedures);
         }
 
         // GET: /StoredProcessesAdmin
