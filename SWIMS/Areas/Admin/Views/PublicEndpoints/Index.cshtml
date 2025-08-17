@@ -1,4 +1,6 @@
 ﻿@model List<PublicEndpointListItemViewModel>
+@using System.Text.Json
+@using System.Text.Encodings.Web
 @{
     ViewData["Title"] = "Public Endpoints";
 }
@@ -12,7 +14,6 @@
         </div>
     </div>
 </div>
-
 
 @{
     var areas = (IReadOnlyList<string?>)ViewBag.CatalogAreas;
@@ -37,7 +38,7 @@
             <select id="qa-area" class="form-select">
                 @foreach (var a in areas)
                 {
-                    <option value="@a">@ToAreaLabel(a)</option>
+                    <option value="@(a ?? "")">@ToAreaLabel(a)</option>
                 }
             </select>
         </div>
@@ -67,16 +68,25 @@
 @section Scripts {
     <script>
         (function(){
-          const actions = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(actions));
-          const pages   = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(pages));
-          const areas   = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(areas));
+          // Robust JSON: camelCase + relaxed encoder
+          const actions = @Html.Raw(JsonSerializer.Serialize(
+                            (IReadOnlyList<SWIMS.Services.Diagnostics.ControllerActionInfo>)ViewBag.CatalogActions,
+                            new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping }));
 
-          const typeSel = document.getElementById("qa-type");
-          const areaSel = document.getElementById("qa-area");
-          const ctrlSel = document.getElementById("qa-controller");
-          const actnSel = document.getElementById("qa-action");
-          const pageSel = document.getElementById("qa-page");
-          const goBtn   = document.getElementById("qa-go");
+      const pages = @Html.Raw(JsonSerializer.Serialize(
+                        (IReadOnlyList<SWIMS.Services.Diagnostics.RazorPageInfo>)ViewBag.CatalogPages,
+                        new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping }));
+
+      const areas = @Html.Raw(JsonSerializer.Serialize(
+                        (IReadOnlyList<string?>)ViewBag.CatalogAreas,
+                        new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping }));
+
+      const typeSel = document.getElementById("qa-type");
+      const areaSel = document.getElementById("qa-area");
+      const ctrlSel = document.getElementById("qa-controller");
+      const actnSel = document.getElementById("qa-action");
+      const pageSel = document.getElementById("qa-page");
+      const goBtn   = document.getElementById("qa-go");
 
           function setVisible(el, show){ el.classList.toggle("d-none", !show); }
 
@@ -118,32 +128,27 @@
           // initial
           refreshByType();
 
+          // Build clean base URLs from MVC (no string replace hack)
+          const urlCreatePresetCA = '@Url.Action("CreatePresetControllerAction", "PublicEndpoints", new { area = "Admin" })';
+          const urlCreatePresetPg = '@Url.Action("CreatePresetPage", "PublicEndpoints", new { area = "Admin" })';
+
           // navigate to preset Create with query params
           goBtn.addEventListener("click", () => {
             const area = areaSel.value || "";
             if (typeSel.value === "ControllerAction") {
               const ctrl = ctrlSel.value || "";
               const act  = actnSel.value || "";
-              const url = `@Url.Action("CreatePresetControllerAction", "PublicEndpoints", new { area = "Admin" })`
-                .replace("/Admin/PublicEndpoints/CreatePresetControllerAction","") // make base clean
-                + "/Admin/PublicEndpoints/CreatePresetControllerAction"
-                + `?area=${encodeURIComponent(area)}&controller=${encodeURIComponent(ctrl)}&action=${encodeURIComponent(act)}`;
+              const url = `${urlCreatePresetCA}?area=${encodeURIComponent(area)}&controller=${encodeURIComponent(ctrl)}&action=${encodeURIComponent(act)}`;
               window.location.href = url;
             } else {
               const page = pageSel.value || "";
-              const url = `@Url.Action("CreatePresetPage", "PublicEndpoints", new { area = "Admin" })`
-                .replace("/Admin/PublicEndpoints/CreatePresetPage","")
-                + "/Admin/PublicEndpoints/CreatePresetPage"
-                + `?area=${encodeURIComponent(area)}&page=${encodeURIComponent(page)}`;
+              const url = `${urlCreatePresetPg}?area=${encodeURIComponent(area)}&page=${encodeURIComponent(page)}`;
               window.location.href = url;
             }
           });
         })();
     </script>
 }
-
-
-
 
 @if (TempData["Ok"] is string ok)
 {
