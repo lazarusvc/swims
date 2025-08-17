@@ -130,6 +130,95 @@ namespace SWIMS.Migrations.Identity
                     b.ToTable("user_tokens", "auth");
                 });
 
+            modelBuilder.Entity("SWIMS.Models.Security.AuthorizationPolicyClaim", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AuthorizationPolicyEntityId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("Value")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AuthorizationPolicyEntityId");
+
+                    b.ToTable("policy_claims", "auth");
+                });
+
+            modelBuilder.Entity("SWIMS.Models.Security.AuthorizationPolicyEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(512)
+                        .HasColumnType("nvarchar(512)");
+
+                    b.Property<bool>("IsEnabled")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("policies", "auth");
+                });
+
+            modelBuilder.Entity("SWIMS.Models.Security.AuthorizationPolicyRole", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AuthorizationPolicyEntityId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RoleId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RoleName")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RoleId");
+
+                    b.HasIndex("AuthorizationPolicyEntityId", "RoleId")
+                        .IsUnique();
+
+                    b.ToTable("policy_roles", "auth");
+                });
+
             modelBuilder.Entity("SWIMS.Models.SwRole", b =>
                 {
                     b.Property<int>("Id")
@@ -284,6 +373,43 @@ namespace SWIMS.Migrations.Identity
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("SWIMS.Models.Security.AuthorizationPolicyClaim", b =>
+                {
+                    b.HasOne("SWIMS.Models.Security.AuthorizationPolicyEntity", "Policy")
+                        .WithMany("Claims")
+                        .HasForeignKey("AuthorizationPolicyEntityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Policy");
+                });
+
+            modelBuilder.Entity("SWIMS.Models.Security.AuthorizationPolicyRole", b =>
+                {
+                    b.HasOne("SWIMS.Models.Security.AuthorizationPolicyEntity", "Policy")
+                        .WithMany("Roles")
+                        .HasForeignKey("AuthorizationPolicyEntityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SWIMS.Models.SwRole", "Role")
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Policy");
+
+                    b.Navigation("Role");
+                });
+
+            modelBuilder.Entity("SWIMS.Models.Security.AuthorizationPolicyEntity", b =>
+                {
+                    b.Navigation("Claims");
+
+                    b.Navigation("Roles");
                 });
 #pragma warning restore 612, 618
         }
