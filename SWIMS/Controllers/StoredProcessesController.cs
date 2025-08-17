@@ -84,6 +84,7 @@ namespace SWIMS.Controllers
             var (table, error) = await _runner.ExecuteAsync(sp, sp.Params);
             var resultVm = new RunStoredProcessResultViewModel
             {
+                ProcessId = id,
                 Name = sp.Name,
                 Description = sp.Description,
                 Error = error,
@@ -91,5 +92,67 @@ namespace SWIMS.Controllers
             };
             return View("RunResult", resultVm);
         }
+
+        [HttpGet]
+        public async Task<IActionResult> Export(int id, string format = "csv")
+        {
+            // re-run with the latest saved params
+            var sp = await _db.StoredProcesses
+                              .Include(x => x.Params)
+                              .FirstOrDefaultAsync(x => x.Id == id);
+            if (sp is null) return NotFound();
+
+            var (table, error) = await _runner.ExecuteAsync(sp, sp.Params);
+            if (!string.IsNullOrWhiteSpace(error) || table is null)
+            {
+                TempData["Error"] = error ?? "No data returned.";
+                return RedirectToAction(nameof(Run), new { id });
+            }
+
+            if (!string.Equals(format, "csv", StringComparison.OrdinalIgnoreCase))
+                return BadRequest("Only CSV is supported right now.");
+
+            var csv = DataTableToCsv(table);
+            var fileName = $"{sp.Name.Replace(':', '_').Replace('/', '_')}_{DateTime.UtcNow:yyyyMMdd_HHmmss}.csv";
+            return File(System.Text.Encoding.UTF8.GetBytes(csv), "text/csv", fileName);
+        }
+
+        private static string DataTableToCsv(System.Data.DataTable dt)
+        {
+            var sb = new System.Text.StringBuilder();
+
+            // headers
+            for (int i = 0; i < dt.Columns.Count; i++)
+            {
+                if (i > 0) sb.Append(',');
+                sb.Append(EscapeCsv(dt.Columns[i].ColumnName));
+            }
+            sb.AppendLine();
+
+            // rows
+            foreach (System.Data.DataRow row in dt.Rows)
+            {
+                for (int i = 0; i < dt.Columns.Count; i++)
+                {
+                    if (i > 0) sb.Append(',');
+                    var val = row[i]?.ToString() ?? string.Empty;
+                    sb.Append(EscapeCsv(val));
+                }
+                sb.AppendLine();
+            }
+
+            return sb.ToString();
+
+            static string EscapeCsv(string s)
+            {
+                // wrap in quotes if it contains comma, quote, or newline; double the quotes inside
+                var needsQuotes = s.Contains(',') || s.Contains('"') || s.Contains('\n') || s.Contains('\r');
+                if (needsQuotes)
+                    return $"\"{s.Replace("\"", "\"\"")}\"";
+                return s;
+            }
+        }
+
+
     }
 }
