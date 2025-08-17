@@ -1,47 +1,61 @@
-﻿using System;
-using System.Data;
+﻿using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Data.SqlClient;
-using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using SWIMS.Models;
+using System;
+using System.Data;
 
 namespace SWIMS.Services
 {
-    public sealed class StoredProcedureRunner
+    public class StoredProcedureRunner
     {
         private readonly IConfiguration _config;
-        private readonly IDataProtector? _protector;
+        private readonly StoredProcOptions _opts;
 
-        public StoredProcedureRunner(IConfiguration config, IDataProtectionProvider? dp = null)
+        public StoredProcedureRunner(IConfiguration config, IOptions<StoredProcOptions> opts)
         {
             _config = config;
-            _protector = dp?.CreateProtector("SWIMS.StoredProcedures");
+            _opts = opts.Value;
         }
 
         public async Task<(DataTable? Table, string? Error)> ExecuteAsync(
-            StoredProcess sp,
-            IEnumerable<StoredProcessParam> parameters,
+            StoredProcess proc, IEnumerable<StoredProcessParam> parameters,
             CancellationToken ct = default)
         {
             try
             {
-                var connectionString = BuildConnectionString(sp);
-                using var conn = new SqlConnection(connectionString);
-                using var cmd = new SqlCommand(sp.Name, conn) { CommandType = CommandType.StoredProcedure };
+                var connString = BuildConnectionString(proc);
+                using var conn = new SqlConnection(connString);
+                await conn.OpenAsync(ct);
 
-                foreach (var p in parameters)
+                using var cmd = new SqlCommand(proc.Name, conn)
                 {
-                    var (sqlType, val) = Coerce(p.DataType, p.Value);
-                    cmd.Parameters.Add(new SqlParameter(p.Key, sqlType) { Value = val ?? DBNull.Value });
+                    CommandType = CommandType.StoredProcedure,
+                    CommandTimeout = Math.Max(1, _opts.DefaultCommandTimeoutSeconds)
+                };
+
+                // bind parameters by name
+                foreach (var p in parameters.OrderBy(p => p.Key))
+                {
+                    var sqlParam = new SqlParameter
+                    {
+                        ParameterName = p.Key, // must include @
+                        SqlDbType = ToSqlDbType(p.DataType),
+                        Direction = ParameterDirection.Input,
+                        Value = CoerceValue(p)
+                    };
+                    cmd.Parameters.Add(sqlParam);
                 }
 
-                await conn.OpenAsync(ct).ConfigureAwait(false);
-                await cmd.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
-
-                using var adapter = new SqlDataAdapter(cmd);
-                var table = new DataTable();
-                adapter.Fill(table);
-                return (table.Rows.Count > 0 ? table : null, null);
+                var dt = new DataTable();
+                using var rdr = await cmd.ExecuteReaderAsync(ct);
+                dt.Load(rdr);
+                return (dt, null);
+            }
+            catch (OperationCanceledException)
+            {
+                return (null, "Execution cancelled or timed out.");
             }
             catch (Exception ex)
             {
@@ -49,61 +63,75 @@ namespace SWIMS.Services
             }
         }
 
-        private string BuildConnectionString(StoredProcess sp)
+        private string BuildConnectionString(StoredProcess proc)
         {
-            // Preferred: resolve by ConnectionStrings key
-            if (!string.IsNullOrWhiteSpace(sp.ConnectionKey))
+            // Option A: ConnectionStrings key
+            if (!string.IsNullOrWhiteSpace(proc.ConnectionKey))
             {
-                var cs = _config.GetConnectionString(sp.ConnectionKey);
+                var cs = _config.GetConnectionString(proc.ConnectionKey!);
                 if (string.IsNullOrWhiteSpace(cs))
-                    throw new InvalidOperationException($"Missing ConnectionStrings:{sp.ConnectionKey}");
-                return cs!;
+                    throw new InvalidOperationException($"ConnectionString '{proc.ConnectionKey}' not found.");
+                return cs;
             }
 
-            // Fallback: build from parts (keeps module independent from the app's main connection)
-            var builder = new SqlConnectionStringBuilder
+            // Option B: Manual DataSource/Database (+ optional SQL login)
+            var b = new SqlConnectionStringBuilder
             {
-                DataSource = sp.DataSource ?? throw new InvalidOperationException("DataSource required"),
-                InitialCatalog = sp.Database ?? throw new InvalidOperationException("Database required"),
-                MultipleActiveResultSets = true,
-                TrustServerCertificate = true
+                DataSource = proc.DataSource ?? throw new InvalidOperationException("DataSource required."),
+                InitialCatalog = proc.Database ?? throw new InvalidOperationException("Database required."),
+                MultipleActiveResultSets = _opts.ManualConnection.MultipleActiveResultSets,
+                Encrypt = _opts.ManualConnection.Encrypt,
+                TrustServerCertificate = _opts.ManualConnection.TrustServerCertificate,
+                ConnectTimeout = Math.Max(1, _opts.ManualConnection.ConnectTimeout)
             };
 
-            var hasUser = !string.IsNullOrWhiteSpace(sp.DbUserEncrypted) || !string.IsNullOrWhiteSpace(sp.DbPasswordEncrypted);
-            if (!hasUser)
+            if (!string.IsNullOrWhiteSpace(proc.DbUserEncrypted) && !string.IsNullOrWhiteSpace(proc.DbPasswordEncrypted))
             {
-                builder.IntegratedSecurity = true; // recommended if your app server has rights
+                // DbUser/DbPassword are already stored encrypted by the admin controller.
+                // Decrypt here if you encrypt at rest; if you stored plaintext, assign directly.
+                var user = DecryptIfNeeded(proc.DbUserEncrypted!);
+                var pass = DecryptIfNeeded(proc.DbPasswordEncrypted!);
+                b.UserID = user;
+                b.Password = pass;
+                b.IntegratedSecurity = false;
             }
             else
             {
-                builder.UserID = Decrypt(sp.DbUserEncrypted);
-                builder.Password = Decrypt(sp.DbPasswordEncrypted);
-                builder.IntegratedSecurity = false;
+                b.IntegratedSecurity = true; // Windows auth
             }
 
-            return builder.ConnectionString;
+            return b.ConnectionString;
         }
 
-        private string? Decrypt(string? cipher)
+        private static object CoerceValue(StoredProcessParam p)
         {
-            if (string.IsNullOrEmpty(cipher) || _protector is null) return cipher;
-            try { return _protector.Unprotect(cipher); } catch { return cipher; }
-        }
+            if (p.Value is null) return DBNull.Value;
 
-        private static (SqlDbType, object?) Coerce(string type, string? raw)
-        {
-            switch (type)
+            return p.DataType?.ToLowerInvariant() switch
             {
-                case "Int": return (SqlDbType.Int, int.TryParse(raw, out var i) ? i : (object?)DBNull.Value);
-                case "Float": return (SqlDbType.Float, double.TryParse(raw, out var f) ? f : (object?)DBNull.Value);
-                case "Decimal": return (SqlDbType.Decimal, decimal.TryParse(raw, out var d) ? d : (object?)DBNull.Value);
-                case "Bit": return (SqlDbType.Bit, bool.TryParse(raw, out var b) ? b : (object?)DBNull.Value);
-                case "DateTime": return (SqlDbType.DateTime2, DateTime.TryParse(raw, out var dt) ? dt : (object?)DBNull.Value);
-                case "UniqueIdentifier": return (SqlDbType.UniqueIdentifier, Guid.TryParse(raw, out var g) ? g : (object?)DBNull.Value);
-                case "Text": return (SqlDbType.NVarChar, raw);
-                case "NVarChar":
-                default: return (SqlDbType.NVarChar, raw);
-            }
+                "int" => int.TryParse(p.Value, out var i) ? i : DBNull.Value,
+                "float" => double.TryParse(p.Value, out var d) ? d : DBNull.Value,
+                "decimal" => decimal.TryParse(p.Value, out var m) ? m : DBNull.Value,
+                "bit" => bool.TryParse(p.Value, out var b) ? b : (p.Value == "1" ? true : p.Value == "0" ? false : DBNull.Value),
+                "datetime" => DateTime.TryParse(p.Value, out var dt) ? dt : DBNull.Value,
+                "uniqueidentifier" => Guid.TryParse(p.Value, out var g) ? g : DBNull.Value,
+                "text" or "nvarchar" or _ => p.Value
+            };
         }
+
+        private static SqlDbType ToSqlDbType(string? dataType) => (dataType ?? "NVarChar").ToLowerInvariant() switch
+        {
+            "int" => SqlDbType.Int,
+            "float" => SqlDbType.Float,
+            "decimal" => SqlDbType.Decimal,
+            "bit" => SqlDbType.Bit,
+            "datetime" => SqlDbType.DateTime2,
+            "uniqueidentifier" => SqlDbType.UniqueIdentifier,
+            "text" => SqlDbType.NVarChar,    // treated as NVARCHAR for input
+            _ => SqlDbType.NVarChar
+        };
+
+        // If you protected DbUser/DbPassword, plug your decryptor here. If they’re plaintext, just return the value.
+        private static string DecryptIfNeeded(string s) => s;
     }
 }
