@@ -41,10 +41,22 @@ namespace SWIMS.Areas.Admin.Controllers
                     UpdatedAt = x.UpdatedAt
                 }).ToListAsync();
 
-            ViewBag.Controllers = _catalog.GetControllers();
-            ViewBag.Pages = _catalog.GetRazorPages();
+            // Catalog for cascading picker
+            var actions = _catalog.GetControllerActions();   // Area, Controller, Action
+            var pages = _catalog.GetRazorPages();          // Area, PageRoute
+
+            var areaSet = new HashSet<string?>(StringComparer.OrdinalIgnoreCase);
+            foreach (var a in actions) areaSet.Add(a.Area);
+            foreach (var p in pages) areaSet.Add(p.Area);
+            var areas = areaSet.OrderBy(a => a ?? "(root)").ToList();
+
+            ViewBag.CatalogAreas = areas;
+            ViewBag.CatalogActions = actions;
+            ViewBag.CatalogPages = pages;
+
             return View(rows);
         }
+
 
         public IActionResult Create() => View(new PublicEndpointEditViewModel());
 
@@ -140,5 +152,37 @@ namespace SWIMS.Areas.Admin.Controllers
             TempData["Ok"] = "Public endpoint deleted.";
             return RedirectToAction(nameof(Index));
         }
+
+        // Prefill Create with a ControllerAction
+        [HttpGet]
+        public IActionResult CreatePresetControllerAction(string? area, string controller, string action)
+        {
+            var vm = new PublicEndpointEditViewModel
+            {
+                MatchType = MatchTypes.ControllerAction,
+                Area = area,
+                Controller = controller,
+                Action = action,
+                IsEnabled = true,
+                Priority = 100
+            };
+            return View("Create", vm);
+        }
+
+        // Prefill Create with a Razor Page
+        [HttpGet]
+        public IActionResult CreatePresetPage(string? area, string page)
+        {
+            var vm = new PublicEndpointEditViewModel
+            {
+                MatchType = MatchTypes.RazorPage,
+                Area = area,
+                Page = page,
+                IsEnabled = true,
+                Priority = 100
+            };
+            return View("Create", vm);
+        }
+
     }
 }
