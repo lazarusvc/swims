@@ -67,6 +67,13 @@ builder.Services
     .AddEntityFrameworkStores<SwimsIdentityDbContext>()
     .AddDefaultTokenProviders();
 
+
+builder.Services.AddAuthorization();              // no fallback; we’re skipping Phase 0
+builder.Services.AddMemoryCache();
+builder.Services.AddScoped<SWIMS.Services.Auth.IPolicyStore, SWIMS.Services.Auth.EfPolicyStore>();
+builder.Services.AddSingleton<IAuthorizationPolicyProvider, SWIMS.Services.Auth.DbAuthorizationPolicyProvider>();
+
+
 // Use BCrypt for password hashing
 builder.Services.AddScoped<IPasswordHasher<SwUser>, BcryptPasswordHasher>();
 
