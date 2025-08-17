@@ -9,9 +9,18 @@ namespace SWIMS.Data
 		public virtual DbSet<AuthorizationPolicyRole> AuthorizationPolicyRoles { get; set; } = default!;
 		public virtual DbSet<AuthorizationPolicyClaim> AuthorizationPolicyClaims { get; set; } = default!;
 
-		partial void OnModelCreatingPartial(ModelBuilder modelBuilder)
-		{
-			modelBuilder.Entity<AuthorizationPolicyEntity>(b =>
+
+        // >>> SINGLE implementation of OnModelCreatingPartial
+        partial void OnModelCreatingPartial(ModelBuilder modelBuilder)
+        {
+            MapAuthPolicies(modelBuilder);     // defined in THIS file
+            MapAccessControl(modelBuilder);    // defined in AccessControl partial (other file)
+        }
+
+        // Local mapper for the policy tables
+        private void MapAuthPolicies(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<AuthorizationPolicyEntity>(b =>
 			{
 				b.ToTable("policies", "auth");
 				b.HasKey(x => x.Id);

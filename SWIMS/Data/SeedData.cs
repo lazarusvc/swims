@@ -140,6 +140,70 @@ namespace SWIMS.Data
                 isSystem: false,
                 description: "Access for program management features"
             );
+
+
+            // ---- PUBLIC ENDPOINTS ----
+            async Task UpsertPublicEndpointAsync(
+                string matchType,
+                string? area = null,
+                string? controller = null,
+                string? action = null,
+                string? page = null,
+                string? path = null,
+                string? regex = null,
+                int priority = 100,
+                string? notes = null)
+            {
+                var row = await db.PublicEndpoints
+                    .FirstOrDefaultAsync(x =>
+                        x.MatchType == matchType
+                        && (x.Area ?? "") == (area ?? "")
+                        && (x.Controller ?? "") == (controller ?? "")
+                        && (x.Action ?? "") == (action ?? "")
+                        && (x.Page ?? "") == (page ?? "")
+                        && (x.Path ?? "") == (path ?? "")
+                        && (x.Regex ?? "") == (regex ?? ""));
+
+                if (row == null)
+                {
+                    row = new PublicEndpoint
+                    {
+                        MatchType = matchType,
+                        Area = area,
+                        Controller = controller,
+                        Action = action,
+                        Page = page,
+                        Path = path,
+                        Regex = regex,
+                        Priority = priority,
+                        IsEnabled = true,
+                        Notes = notes,
+                        UpdatedAt = DateTimeOffset.UtcNow
+                    };
+                    db.PublicEndpoints.Add(row);
+                }
+                else
+                {
+                    row.Priority = priority;
+                    row.IsEnabled = true;
+                    row.Notes = notes ?? row.Notes;
+                    row.UpdatedAt = DateTimeOffset.UtcNow;
+                }
+
+                await db.SaveChangesAsync();
+            }
+
+            // Examples:
+            await UpsertPublicEndpointAsync(
+                matchType: MatchTypes.ControllerAction,
+                area: null, controller: "Home", action: "Index",
+                priority: 10, notes: "Home page public by default");
+
+            await UpsertPublicEndpointAsync(
+                matchType: MatchTypes.RazorPage,
+                page: "/Privacy",
+                priority: 10, notes: "Privacy page public");
+
         }
     }
 }
