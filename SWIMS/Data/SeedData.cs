@@ -204,6 +204,18 @@ namespace SWIMS.Data
                 page: "/Privacy",
                 priority: 10, notes: "Privacy page public");
 
+            // Identity UI public pages (Razor Pages under Area = "Identity")
+            await UpsertPublicEndpointAsync(MatchTypes.RazorPage, area: "Identity", page: "/Account/Login", priority: 5, notes: "Identity Login");
+            await UpsertPublicEndpointAsync(MatchTypes.RazorPage, area: "Identity", page: "/Account/Register", priority: 5, notes: "Identity Register");
+            await UpsertPublicEndpointAsync(MatchTypes.RazorPage, area: "Identity", page: "/Account/ForgotPassword", priority: 5, notes: "Forgot Password");
+            await UpsertPublicEndpointAsync(MatchTypes.RazorPage, area: "Identity", page: "/Account/ResetPassword", priority: 5, notes: "Reset Password");
+            await UpsertPublicEndpointAsync(MatchTypes.RazorPage, area: "Identity", page: "/Account/ConfirmEmail", priority: 5, notes: "Confirm Email");
+            await UpsertPublicEndpointAsync(MatchTypes.RazorPage, area: "Identity", page: "/Account/ExternalLogin", priority: 5, notes: "External Login");
+            await UpsertPublicEndpointAsync(MatchTypes.RazorPage, area: "Identity", page: "/Account/ExternalLoginCallback", priority: 5, notes: "External Login Callback");
+            await UpsertPublicEndpointAsync(MatchTypes.RazorPage, area: "Identity", page: "/Account/Lockout", priority: 5, notes: "Lockout");
+            await UpsertPublicEndpointAsync(MatchTypes.RazorPage, area: "Identity", page: "/Account/AccessDenied", priority: 5, notes: "Access Denied (optional)");
+
+
         }
     }
 }
