@@ -41,6 +41,8 @@ builder.Services.AddDbContext<SwimsStoredProcsDbContext>(options =>
         sql => sql.MigrationsHistoryTable("__EFMigrationsHistory", "sp")
     ));
 
+builder.Services.Configure<StoredProcOptions>(
+    builder.Configuration.GetSection("StoredProcs"));
 
 // Configure Razor Pages
 builder.Services.AddRazorPages();
