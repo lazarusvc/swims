@@ -8,6 +8,7 @@ namespace SWIMS.Models.Security
         [MaxLength(128)] public string Name { get; set; } = default!;
         [MaxLength(512)] public string? Description { get; set; }
         public bool IsEnabled { get; set; } = true;
+        public bool IsSystem { get; set; } = false;
         public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
 
         public ICollection<AuthorizationPolicyRole> Roles { get; set; } = new List<AuthorizationPolicyRole>();

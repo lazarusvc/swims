@@ -1,66 +1,51 @@
 ﻿// -------------------------------------------------------------------
 // File:    SeedData.cs
-// Author:  N/A
-// Created: N/A
-// Purpose: Seeds the database with default roles and an initial admin user.
-// Dependencies:
-//   - SwRole, SwUser (Identity entities)
-//   - RoleManager<SwRole>, UserManager<SwUser> (Identity services)
-//   - IConfiguration (for retrieving initial credentials)
+// Purpose: Seeds default roles, an initial admin user, and DB-backed
+//          authorization policies (with IsSystem support).
 // -------------------------------------------------------------------
 
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SWIMS.Models;
 using SWIMS.Models.Security;
 using System;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace SWIMS.Data
 {
     /// <summary>
     /// Provides methods to seed initial application data,
-    /// including default roles and the admin user.
+    /// including default roles, the admin user, and auth policies.
     /// </summary>
     public static class SeedData
     {
         /// <summary>
-        /// Ensures that default roles (e.g., <c>Admin</c>) and the initial admin account exist.
-        /// Creates them if they do not.
+        /// Ensures roles, initial admin user, and DB-backed policies exist.
         /// </summary>
-        /// <param name="services">
-        /// The <see cref="IServiceProvider"/> used to resolve
-        /// <see cref="RoleManager{SwRole}"/>, <see cref="UserManager{SwUser}"/>,
-        /// and <see cref="IConfiguration"/>.
-        /// </param>
-        /// <returns>
-        /// A <see cref="Task"/> representing the asynchronous seeding operation.
-        /// </returns>
-        /// <exception cref="Exception">
-        /// Thrown if creating the initial admin user fails, with detailed identity errors.
-        /// </exception>
         public static async Task EnsureSeedDataAsync(IServiceProvider services)
         {
             var roleMgr = services.GetRequiredService<RoleManager<SwRole>>();
             var userMgr = services.GetRequiredService<UserManager<SwUser>>();
-
             var config = services.GetRequiredService<IConfiguration>();
+            var db = services.GetRequiredService<SwimsIdentityDbContext>();
+
             var adminEmail = config["AdminUser:Email"]
                                 ?? throw new InvalidOperationException("Missing AdminUser:Email in configuration");
             var adminPassword = config["AdminUser:Password"]
                                 ?? throw new InvalidOperationException("Missing AdminUser:Password in configuration");
 
-            var db = services.GetRequiredService<SwimsIdentityDbContext>();
-
-
-            // 1) Ensure roles exist
-            foreach (var roleName in new[] { "Admin", "Basic" })
+            // 1) Ensure required roles exist
+            foreach (var roleName in new[] { "Admin", "Basic", "ProgramManager" })
             {
                 if (!await roleMgr.RoleExistsAsync(roleName))
                 {
-                    await roleMgr.CreateAsync(new SwRole { Name = roleName });
+                    var createRes = await roleMgr.CreateAsync(new SwRole { Name = roleName });
+                    if (!createRes.Succeeded)
+                        throw new Exception($"Failed creating role '{roleName}': " +
+                            string.Join(", ", createRes.Errors.Select(e => $"{e.Code}:{e.Description}")));
                 }
             }
 
@@ -78,15 +63,11 @@ namespace SWIMS.Data
                 };
 
                 var result = await userMgr.CreateAsync(admin, adminPassword);
-                if (result.Succeeded)
-                {
-                    await userMgr.AddToRoleAsync(admin, "Admin");
-                }
-                else
-                {
+                if (!result.Succeeded)
                     throw new Exception("Failed to create initial admin user: " +
-                        string.Join(", ", result.Errors));
-                }
+                        string.Join(", ", result.Errors.Select(e => $"{e.Code}:{e.Description}")));
+
+                await userMgr.AddToRoleAsync(admin, "Admin");
             }
             else
             {
@@ -94,9 +75,8 @@ namespace SWIMS.Data
                     await userMgr.AddToRoleAsync(admin, "Admin");
             }
 
-
-            // Helper to upsert a policy with role links
-            async Task UpsertPolicyAsync(string policyName, params string[] roleNames)
+            // 3) Policies: upsert helper (supports IsSystem + Description)
+            async Task UpsertPolicyAsync(string policyName, string[] roleNames, bool isSystem = false, string? description = null)
             {
                 var policy = await db.AuthorizationPolicies
                     .Include(p => p.Roles)
@@ -107,34 +87,59 @@ namespace SWIMS.Data
                     policy = new AuthorizationPolicyEntity
                     {
                         Name = policyName,
-                        IsEnabled = true,
+                        Description = description,
+                        IsEnabled = true,              // new policies start enabled
+                        IsSystem = isSystem,
                         UpdatedAt = DateTimeOffset.UtcNow
                     };
                     db.AuthorizationPolicies.Add(policy);
                 }
+                else
+                {
+                    // Keep authoritative flags/descriptions from seed for system policies
+                    policy.Description = description ?? policy.Description;
+                    policy.IsSystem = isSystem || policy.IsSystem;
 
-                // Clear and re-add to keep RoleName in sync (simple and safe)
-                policy.Roles.Clear();
+                    // >>> Force-enable AdminOnly if it already exists (requested change)
+                    if (string.Equals(policyName, "AdminOnly", StringComparison.OrdinalIgnoreCase))
+                        policy.IsEnabled = true;
+
+                    policy.UpdatedAt = DateTimeOffset.UtcNow;
+
+                    // Rebuild role links to keep RoleName in sync
+                    policy.Roles.Clear();
+                }
+
                 foreach (var rn in roleNames.Distinct(StringComparer.OrdinalIgnoreCase))
                 {
                     var role = await roleMgr.FindByNameAsync(rn);
-                    if (role is null) continue; // role might not exist yet; skip silently or throw if you prefer
+                    if (role is null) continue; // role should exist from step 1
 
                     policy.Roles.Add(new AuthorizationPolicyRole
                     {
                         RoleId = role.Id,
                         Role = role,
-                        RoleName = role.Name! // denormalized
+                        RoleName = role.Name! // denormalized for fast RequireRole()
                     });
                 }
-                policy.UpdatedAt = DateTimeOffset.UtcNow;
+
                 await db.SaveChangesAsync();
             }
 
-            // Seed a couple of named policies
-            await UpsertPolicyAsync("AdminOnly", "Admin");
-            await UpsertPolicyAsync("ProgramManager", "Admin", "ProgramManager");
+            // 4) Seed named policies
+            await UpsertPolicyAsync(
+                policyName: "AdminOnly",
+                roleNames: new[] { "Admin" },
+                isSystem: true,
+                description: "Core admin access; protects administrative features"
+            );
 
+            await UpsertPolicyAsync(
+                policyName: "ProgramManager",
+                roleNames: new[] { "Admin", "ProgramManager" },
+                isSystem: false,
+                description: "Access for program management features"
+            );
         }
     }
 }

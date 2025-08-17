@@ -68,7 +68,12 @@ builder.Services
     .AddDefaultTokenProviders();
 
 
-builder.Services.AddAuthorization();              // no fallback; we’re skipping Phase 0
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("AdminOnly", p => p.RequireRole("Admin"));
+    options.AddPolicy("ProgramManager", p => p.RequireRole("Admin", "ProgramManager"));
+});
+
 builder.Services.AddMemoryCache();
 builder.Services.AddScoped<SWIMS.Services.Auth.IPolicyStore, SWIMS.Services.Auth.EfPolicyStore>();
 builder.Services.AddSingleton<IAuthorizationPolicyProvider, SWIMS.Services.Auth.DbAuthorizationPolicyProvider>();

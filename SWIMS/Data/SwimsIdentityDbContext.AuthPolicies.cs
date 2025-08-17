@@ -19,7 +19,8 @@ namespace SWIMS.Data
 				b.Property(x => x.Name).IsRequired().HasMaxLength(128);
 				b.Property(x => x.Description).HasMaxLength(512);
 				b.Property(x => x.IsEnabled).HasDefaultValue(true);
-				b.Property(x => x.UpdatedAt);
+                b.Property(x => x.IsSystem).HasDefaultValue(false);
+                b.Property(x => x.UpdatedAt);
 			});
 
 			modelBuilder.Entity<AuthorizationPolicyRole>(b =>
