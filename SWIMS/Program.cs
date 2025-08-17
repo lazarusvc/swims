@@ -1,4 +1,4 @@
-// -------------------------------------------------------------------
+﻿// -------------------------------------------------------------------
 // File:    Program.cs
 // Author:  N/A
 // Created: N/A
@@ -18,6 +18,7 @@ using SWIMS.Data;
 using SWIMS.Models;
 using SWIMS.Models.StoredProcs;
 using SWIMS.Services;
+using SWIMS.Services.Auth;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -102,14 +103,40 @@ builder.Services.ConfigureApplicationCookie(options =>
 // ------------------------------------------------------
 builder.Services.AddControllersWithViews();
 
+builder.Services.AddScoped<IPublicAccessStore, EfPublicAccessStore>();
+builder.Services.AddScoped<IEndpointPolicyAssignmentStore, EfEndpointPolicyAssignmentStore>();
+builder.Services.AddScoped<IAuthorizationHandler, PublicOrAuthenticatedHandler>();
+
+// enable fallback (allow public if in DB, else require auth)
+var enablePublicFallback = builder.Configuration.GetValue<bool?>("Auth:EnablePublicOrAuthenticatedFallback") ?? true;
+builder.Services.AddAuthorization(options =>
+{
+    if (enablePublicFallback)
+    {
+        options.FallbackPolicy = new AuthorizationPolicyBuilder()
+            .AddRequirements(new PublicOrAuthenticatedRequirement())
+            .Build();
+    }
+
+    // keep parachute static policies
+    options.AddPolicy("AdminOnly", p => p.RequireRole("Admin"));
+    options.AddPolicy("ProgramManager", p => p.RequireRole("Admin", "ProgramManager"));
+});
+
+// Add global filter to enforce DB endpoint→policy assignments
+builder.Services.AddControllersWithViews(o =>
+{
+    o.Filters.Add<SWIMS.Services.Auth.DbEndpointPolicyFilter>();
+});
+
 // Global authorization policy: require authenticated users for all MVC controllers
-    //builder.Services.AddControllersWithViews(options =>
-    //{
-    //    var policy = new AuthorizationPolicyBuilder()
-    //                     .RequireAuthenticatedUser()
-    //                     .Build();
-    //    options.Filters.Add(new AuthorizeFilter(policy));
-    //});
+//builder.Services.AddControllersWithViews(options =>
+//{
+//    var policy = new AuthorizationPolicyBuilder()
+//                     .RequireAuthenticatedUser()
+//                     .Build();
+//    options.Filters.Add(new AuthorizeFilter(policy));
+//});
 
 
 var app = builder.Build();
