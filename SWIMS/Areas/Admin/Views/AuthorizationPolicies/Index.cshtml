@@ -28,7 +28,14 @@
         @foreach (var p in Model)
         {
             <tr>
-                <td>@p.Name</td>
+                <td>
+                    @p.Name
+                    @if (p.IsSystem)
+                    {
+                        <span class="badge bg-info ms-2">System</span>
+                    }
+                </td>
+
                 <td>
                     @if (p.RoleNames.Count == 0)
                     {
@@ -52,21 +59,29 @@
                     }
                 </td>
                 <td>@p.UpdatedAt.LocalDateTime</td>
+                @{
+                    bool isSystem = string.Equals(p.Name, "AdminOnly", StringComparison.OrdinalIgnoreCase);
+                }
                 <td class="text-end">
                     <a asp-action="Edit" asp-route-id="@p.Id" class="btn btn-sm btn-outline-primary">Edit</a>
 
-                    <form asp-action="Toggle" asp-route-id="@p.Id" method="post" class="d-inline">
-                        @Html.AntiForgeryToken()
-                        <button type="submit" class="btn btn-sm btn-outline-warning">
-                            @(p.IsEnabled ? "Disable" : "Enable")
-                        </button>
-                    </form>
+                    @if (!p.IsSystem)
+                    {
+                        <form asp-action="Toggle" asp-route-id="@p.Id" method="post" class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-sm btn-outline-warning">
+                                @(p.IsEnabled ? "Disable" : "Enable")
+                            </button>
+                        </form>
 
-                    <form asp-action="Delete" asp-route-id="@p.Id" method="post" class="d-inline" onsubmit="return confirm('Delete this policy?');">
-                        @Html.AntiForgeryToken()
-                        <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
-                    </form>
+                        <form asp-action="Delete" asp-route-id="@p.Id" method="post" class="d-inline" onsubmit="return confirm('Delete this policy?');">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                        </form>
+                    }
                 </td>
+
+
             </tr>
         }
     </tbody>

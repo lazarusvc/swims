@@ -10,7 +10,7 @@ using SWIMS.Services.Auth;
 namespace SWIMS.Areas.Admin.Controllers
 {
     [Area("Admin")]
-    [Authorize(Policy = "AdminOnly")]
+    [Authorize(Roles = "Admin")]
     public class AuthorizationPoliciesController : Controller
     {
         private readonly SwimsIdentityDbContext _db;
@@ -35,6 +35,7 @@ namespace SWIMS.Areas.Admin.Controllers
                     Name = p.Name,
                     Description = p.Description,
                     IsEnabled = p.IsEnabled,
+                    IsSystem = p.IsSystem,
                     RoleNames = p.Roles.Select(r => r.RoleName).OrderBy(n => n).ToList(),
                     UpdatedAt = p.UpdatedAt
                 })
@@ -141,12 +142,21 @@ namespace SWIMS.Areas.Admin.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        private static bool IsSystemPolicy(string name)
+            => string.Equals(name, "AdminOnly", StringComparison.OrdinalIgnoreCase);
+
         // POST: /Admin/AuthorizationPolicies/Toggle
         [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> Toggle(int id)
         {
             var policy = await _db.AuthorizationPolicies.FirstOrDefaultAsync(p => p.Id == id);
             if (policy is null) return NotFound();
+
+            if (policy.IsSystem)
+            {
+                TempData["Ok"] = "This is a system policy and cannot be disabled.";
+                return RedirectToAction(nameof(Index));
+            }
 
             policy.IsEnabled = !policy.IsEnabled;
             policy.UpdatedAt = DateTimeOffset.UtcNow;
@@ -157,12 +167,20 @@ namespace SWIMS.Areas.Admin.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+
+
         // POST: /Admin/AuthorizationPolicies/Delete/5
         [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
             var policy = await _db.AuthorizationPolicies.FirstOrDefaultAsync(p => p.Id == id);
             if (policy is null) return NotFound();
+
+            if (policy.IsSystem)
+            {
+                TempData["Ok"] = "This is a system policy and cannot be deleted.";
+                return RedirectToAction(nameof(Index));
+            }
 
             _db.AuthorizationPolicies.Remove(policy);
             await _db.SaveChangesAsync();
@@ -171,6 +189,7 @@ namespace SWIMS.Areas.Admin.Controllers
             TempData["Ok"] = $"Policy '{policy.Name}' deleted.";
             return RedirectToAction(nameof(Index));
         }
+
 
         // Helpers
         private async Task<List<SelectListItem>> BuildRoleSelectListAsync(IEnumerable<int>? selectedIds = null)
