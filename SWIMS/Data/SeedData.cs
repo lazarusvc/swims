@@ -199,10 +199,8 @@ namespace SWIMS.Data
                 area: null, controller: "Home", action: "Index",
                 priority: 10, notes: "Home page public by default");
 
-            await UpsertPublicEndpointAsync(
-                matchType: MatchTypes.RazorPage,
-                page: "/Privacy",
-                priority: 10, notes: "Privacy page public");
+            await UpsertPublicEndpointAsync(MatchTypes.ControllerAction, area: null, controller: "Home", action: "Privacy", priority: 10, notes: "Privacy page public");
+
 
             // Identity UI public pages (Razor Pages under Area = "Identity")
             await UpsertPublicEndpointAsync(MatchTypes.RazorPage, area: "Identity", page: "/Account/Login", priority: 5, notes: "Identity Login");
