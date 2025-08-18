@@ -13,52 +13,68 @@ public partial class SwimsDb_moreContext : DbContext
     {
     }
 
-    public virtual DbSet<SwForm> SwForms { get; set; }
+    public virtual DbSet<SW_form> SW_forms { get; set; }
 
-    public virtual DbSet<SwIdentity> SwIdentities { get; set; }
+    public virtual DbSet<SW_formTableData_Type> SW_formTableData_Types { get; set; }
+
+    public virtual DbSet<SW_formTableDatum> SW_formTableData { get; set; }
+
+    public virtual DbSet<SW_formTableName> SW_formTableNames { get; set; }
+
+    public virtual DbSet<SW_identity> SW_identities { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<SwForm>(entity =>
+        modelBuilder.Entity<SW_form>(entity =>
         {
-            entity.ToTable("SW_forms");
+            entity.HasIndex(e => e.SW_identityId, "IX_FK_SW_identitySW_forms");
 
-            entity.HasIndex(e => e.SwIdentityId, "IX_FK_SW_identitySW_forms");
+            entity.Property(e => e.dateModified).HasColumnType("datetime");
+            entity.Property(e => e.name).IsRequired();
 
-            entity.Property(e => e.DateModified)
-                .HasColumnType("datetime")
-                .HasColumnName("dateModified");
-            entity.Property(e => e.Desc).HasColumnName("desc");
-            entity.Property(e => e.Form).HasColumnName("form");
-            entity.Property(e => e.IsApproval01).HasColumnName("isApproval_01");
-            entity.Property(e => e.IsApproval02).HasColumnName("isApproval_02");
-            entity.Property(e => e.IsApproval03).HasColumnName("isApproval_03");
-            entity.Property(e => e.Name)
-                .IsRequired()
-                .HasColumnName("name");
-            entity.Property(e => e.SwIdentityId).HasColumnName("SW_identityId");
-            entity.Property(e => e.Uuid).HasColumnName("uuid");
-
-            entity.HasOne(d => d.SwIdentity).WithMany(p => p.SwForms)
-                .HasForeignKey(d => d.SwIdentityId)
+            entity.HasOne(d => d.SW_identity).WithMany(p => p.SW_forms)
+                .HasForeignKey(d => d.SW_identityId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_SW_identitySW_forms");
         });
 
-        modelBuilder.Entity<SwIdentity>(entity =>
+        modelBuilder.Entity<SW_formTableData_Type>(entity =>
+        {
+            entity.HasIndex(e => e.SW_formsId, "IX_FK_SW_formsSW_formTableData_Types");
+
+            entity.HasOne(d => d.SW_forms).WithMany(p => p.SW_formTableData_Types)
+                .HasForeignKey(d => d.SW_formsId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_SW_formsSW_formTableData_Types");
+        });
+
+        modelBuilder.Entity<SW_formTableDatum>(entity =>
+        {
+            entity.HasIndex(e => e.SW_formsId, "IX_FK_SW_formsSW_formTableData");
+
+            entity.HasOne(d => d.SW_forms).WithMany(p => p.SW_formTableData)
+                .HasForeignKey(d => d.SW_formsId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_SW_formsSW_formTableData");
+        });
+
+        modelBuilder.Entity<SW_formTableName>(entity =>
+        {
+            entity.ToTable("SW_formTableName");
+
+            entity.HasIndex(e => e.SW_formsId, "IX_FK_SW_formsSW_formTableName");
+
+            entity.HasOne(d => d.SW_forms).WithMany(p => p.SW_formTableNames)
+                .HasForeignKey(d => d.SW_formsId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_SW_formsSW_formTableName");
+        });
+
+        modelBuilder.Entity<SW_identity>(entity =>
         {
             entity.ToTable("SW_identity");
 
-            entity.Property(e => e.Desc).HasColumnName("desc");
-            entity.Property(e => e.Header).HasColumnName("header");
-            entity.Property(e => e.Logo).HasColumnName("logo");
-            entity.Property(e => e.Media01).HasColumnName("media_01");
-            entity.Property(e => e.Media02).HasColumnName("media_02");
-            entity.Property(e => e.Media03).HasColumnName("media_03");
-            entity.Property(e => e.Name)
-                .IsRequired()
-                .HasColumnName("name");
-            entity.Property(e => e.Signature).HasColumnName("signature");
+            entity.Property(e => e.name).IsRequired();
         });
 
         OnModelCreatingPartial(modelBuilder);

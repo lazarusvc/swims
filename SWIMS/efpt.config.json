@@ -20,7 +20,15 @@
          "ObjectType": 0
       },
       {
-         "Name": "[dbo].[SW_forms_tableNames]",
+         "Name": "[dbo].[SW_formTableData]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[SW_formTableData_Types]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[SW_formTableName]",
          "ObjectType": 0
       },
       {
@@ -32,7 +40,7 @@
    "UncountableWords": null,
    "UseAsyncStoredProcedureCalls": true,
    "UseBoolPropertiesWithoutDefaultSql": false,
-   "UseDatabaseNames": false,
+   "UseDatabaseNames": true,
    "UseDatabaseNamesForRoutines": true,
    "UseDateOnlyTimeOnly": false,
    "UseDbContextSplitting": false,

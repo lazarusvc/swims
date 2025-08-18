@@ -1,0 +1,32 @@
+﻿@model SWIMS.Models.SW_form
+<a asp-action="Index"><< | back</a>
+@{
+    ViewData["Title"] = "Complete";
+}
+
+
+<div class="row">
+    <div class="col-md-12">
+        <div id="fb-rendered-form"></div>
+    </div>
+    <a asp-action="Delete" asp-route-id="@ViewBag.id" class="btn btn-danger">Delete</a>
+</div>
+
+
+
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/lib/formbuilder/form-render.min.js"></script>
+<script type="text/javascript">
+    jQuery(function($) {
+      var container = document.getElementById('fb-rendered-form');
+      var formData = '@Html.Raw(ViewBag.frm)';
+
+      var formRenderOpts = {
+        container,
+        formData,
+        dataType: 'json'
+      };
+
+      $(container).formRender(formRenderOpts);
+    });
+</script>

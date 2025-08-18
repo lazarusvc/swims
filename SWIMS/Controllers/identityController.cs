@@ -9,23 +9,22 @@ using SWIMS.Models;
 
 namespace SWIMS.Controllers
 {
-    public class identitiesController : Controller
+    public class identityController : Controller
     {
         private readonly SwimsDb_moreContext _context;
 
-        public identitiesController(SwimsDb_moreContext context)
+        public identityController(SwimsDb_moreContext context)
         {
             _context = context;
         }
 
-        // GET: identities
-
+        // GET: identity
         public async Task<IActionResult> Index()
         {
-            return View(await _context.SwIdentities.ToListAsync());
+            return View(await _context.SW_identities.ToListAsync());
         }
 
-        // GET: identities/Details/5
+        // GET: identity/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -33,39 +32,39 @@ namespace SWIMS.Controllers
                 return NotFound();
             }
 
-            var swIdentity = await _context.SwIdentities
+            var sW_identity = await _context.SW_identities
                 .FirstOrDefaultAsync(m => m.Id == id);
-            if (swIdentity == null)
+            if (sW_identity == null)
             {
                 return NotFound();
             }
 
-            return View(swIdentity);
+            return View(sW_identity);
         }
 
-        // GET: identities/Create
+        // GET: identity/Create
         public IActionResult Create()
         {
             return View();
         }
 
-        // POST: identities/Create
+        // POST: identity/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Desc,Logo,Media01,Media02,Media03,Header,Signature")] SwIdentity swIdentity)
+        public async Task<IActionResult> Create([Bind("Id,name,desc,logo,media_01,media_02,media_03,header,signature")] SW_identity sW_identity)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(swIdentity);
+                _context.Add(sW_identity);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            return View(swIdentity);
+            return View(sW_identity);
         }
 
-        // GET: identities/Edit/5
+        // GET: identity/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -73,22 +72,22 @@ namespace SWIMS.Controllers
                 return NotFound();
             }
 
-            var swIdentity = await _context.SwIdentities.FindAsync(id);
-            if (swIdentity == null)
+            var sW_identity = await _context.SW_identities.FindAsync(id);
+            if (sW_identity == null)
             {
                 return NotFound();
             }
-            return View(swIdentity);
+            return View(sW_identity);
         }
 
-        // POST: identities/Edit/5
+        // POST: identity/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Desc,Logo,Media01,Media02,Media03,Header,Signature")] SwIdentity swIdentity)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,name,desc,logo,media_01,media_02,media_03,header,signature")] SW_identity sW_identity)
         {
-            if (id != swIdentity.Id)
+            if (id != sW_identity.Id)
             {
                 return NotFound();
             }
@@ -97,12 +96,12 @@ namespace SWIMS.Controllers
             {
                 try
                 {
-                    _context.Update(swIdentity);
+                    _context.Update(sW_identity);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!SwIdentityExists(swIdentity.Id))
+                    if (!SW_identityExists(sW_identity.Id))
                     {
                         return NotFound();
                     }
@@ -113,10 +112,10 @@ namespace SWIMS.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(swIdentity);
+            return View(sW_identity);
         }
 
-        // GET: identities/Delete/5
+        // GET: identity/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -124,34 +123,34 @@ namespace SWIMS.Controllers
                 return NotFound();
             }
 
-            var swIdentity = await _context.SwIdentities
+            var sW_identity = await _context.SW_identities
                 .FirstOrDefaultAsync(m => m.Id == id);
-            if (swIdentity == null)
+            if (sW_identity == null)
             {
                 return NotFound();
             }
 
-            return View(swIdentity);
+            return View(sW_identity);
         }
 
-        // POST: identities/Delete/5
+        // POST: identity/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var swIdentity = await _context.SwIdentities.FindAsync(id);
-            if (swIdentity != null)
+            var sW_identity = await _context.SW_identities.FindAsync(id);
+            if (sW_identity != null)
             {
-                _context.SwIdentities.Remove(swIdentity);
+                _context.SW_identities.Remove(sW_identity);
             }
 
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
-        private bool SwIdentityExists(int id)
+        private bool SW_identityExists(int id)
         {
-            return _context.SwIdentities.Any(e => e.Id == id);
+            return _context.SW_identities.Any(e => e.Id == id);
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿@model IEnumerable<SWIMS.Models.SwIdentity>
+﻿@model IEnumerable<SWIMS.Models.SW_identity>
 
 @{
     ViewData["Title"] = "Index";
@@ -13,28 +13,28 @@
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.Name)
+                @Html.DisplayNameFor(model => model.name)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Desc)
+                @Html.DisplayNameFor(model => model.desc)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Logo)
+                @Html.DisplayNameFor(model => model.logo)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Media01)
+                @Html.DisplayNameFor(model => model.media_01)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Media02)
+                @Html.DisplayNameFor(model => model.media_02)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Media03)
+                @Html.DisplayNameFor(model => model.media_03)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Header)
+                @Html.DisplayNameFor(model => model.header)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Signature)
+                @Html.DisplayNameFor(model => model.signature)
             </th>
             <th></th>
         </tr>
@@ -43,28 +43,28 @@
 @foreach (var item in Model) {
         <tr>
             <td>
-                @Html.DisplayFor(modelItem => item.Name)
+                @Html.DisplayFor(modelItem => item.name)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Desc)
+                @Html.DisplayFor(modelItem => item.desc)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Logo)
+                @Html.DisplayFor(modelItem => item.logo)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Media01)
+                @Html.DisplayFor(modelItem => item.media_01)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Media02)
+                @Html.DisplayFor(modelItem => item.media_02)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Media03)
+                @Html.DisplayFor(modelItem => item.media_03)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Header)
+                @Html.DisplayFor(modelItem => item.header)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Signature)
+                @Html.DisplayFor(modelItem => item.signature)
             </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |

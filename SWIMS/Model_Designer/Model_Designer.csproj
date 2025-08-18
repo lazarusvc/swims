@@ -75,6 +75,12 @@
     <Compile Include="SW_forms.cs">
       <DependentUpon>Model.tt</DependentUpon>
     </Compile>
+    <Compile Include="SW_formTableData.cs">
+      <DependentUpon>Model.tt</DependentUpon>
+    </Compile>
+    <Compile Include="SW_formTableData_Types.cs">
+      <DependentUpon>Model.tt</DependentUpon>
+    </Compile>
     <Compile Include="SW_formTableName.cs">
       <DependentUpon>Model.tt</DependentUpon>
     </Compile>
