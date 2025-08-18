@@ -153,25 +153,31 @@ namespace SWIMS.Areas.Admin.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // Prefill Create with a ControllerAction
+        
+
+        // Prefill Create with a Razor Page
         [HttpGet]
-        public IActionResult CreatePresetControllerAction(string? area, string controller, string action)
+        public IActionResult CreatePresetControllerAction(
+            [FromQuery(Name = "area")] string? area,
+            [FromQuery(Name = "controller")] string controllerName,
+            [FromQuery(Name = "action")] string actionName)
         {
             var vm = new PublicEndpointEditViewModel
             {
                 MatchType = MatchTypes.ControllerAction,
                 Area = area,
-                Controller = controller,
-                Action = action,
+                Controller = controllerName,
+                Action = actionName,
                 IsEnabled = true,
                 Priority = 100
             };
             return View("Create", vm);
         }
 
-        // Prefill Create with a Razor Page
         [HttpGet]
-        public IActionResult CreatePresetPage(string? area, string page)
+        public IActionResult CreatePresetPage(
+            [FromQuery(Name = "area")] string? area,
+            [FromQuery(Name = "page")] string page)
         {
             var vm = new PublicEndpointEditViewModel
             {
@@ -183,6 +189,7 @@ namespace SWIMS.Areas.Admin.Controllers
             };
             return View("Create", vm);
         }
+
 
     }
 }

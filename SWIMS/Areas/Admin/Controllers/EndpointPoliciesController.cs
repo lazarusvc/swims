@@ -305,14 +305,20 @@ namespace SWIMS.Areas.Admin.Controllers
 
 
         [HttpGet]
-        public async Task<IActionResult> CreatePreset(string matchType, string? area, string? controller, string? action, string? page, string? path)
+        public async Task<IActionResult> CreatePreset(
+            [FromQuery] string matchType,
+            [FromQuery(Name = "area")] string? area,
+            [FromQuery(Name = "controller")] string? controllerName,
+            [FromQuery(Name = "action")] string? actionName,
+            [FromQuery(Name = "page")] string? page,
+            [FromQuery(Name = "path")] string? path)
         {
             var vm = new EndpointPolicyEditViewModel
             {
                 MatchType = string.IsNullOrWhiteSpace(matchType) ? MatchTypes.ControllerAction : matchType,
                 Area = area,
-                Controller = controller,
-                Action = action,
+                Controller = controllerName,
+                Action = actionName,
                 Page = page,
                 Path = path,
                 IsEnabled = true,
@@ -321,6 +327,7 @@ namespace SWIMS.Areas.Admin.Controllers
             };
             return View("Create", vm);
         }
+
 
 
     }
