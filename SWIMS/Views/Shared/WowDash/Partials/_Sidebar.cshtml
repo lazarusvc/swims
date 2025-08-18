@@ -85,6 +85,21 @@
             <li class="dropdown">
                 <a href="javascript:void(0)">
                     <iconify-icon icon="simple-line-icons:vector" class="menu-icon"></iconify-icon>
+                    <span>Settings</span>
+                </a>
+                <ul class="sidebar-submenu">
+                    <li>
+                        <a asp-area="" asp-controller="identity" asp-action="Index"><i class="ri-circle-fill circle-icon text-primary-600 w-auto"></i> Site Identity</a>
+                    </li>
+                    <li>
+                        <a asp-area="" asp-controller="form" asp-action="Index"><i class="ri-circle-fill circle-icon text-primary-600 w-auto"></i> Form Management</a>
+                    </li>
+                </ul>
+            </li>
+
+            <li class="dropdown">
+                <a href="javascript:void(0)">
+                    <iconify-icon icon="simple-line-icons:vector" class="menu-icon"></iconify-icon>
                     <span>Authentication</span>
                 </a>
                 <ul class="sidebar-submenu">

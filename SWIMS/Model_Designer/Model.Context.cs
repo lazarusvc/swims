@@ -30,5 +30,7 @@ namespace Model_Designer
         public virtual DbSet<SW_identity> SW_identity { get; set; }
         public virtual DbSet<SW_roles> SW_roles { get; set; }
         public virtual DbSet<SW_users> SW_users { get; set; }
+        public virtual DbSet<SW_formTableData> SW_formTableData { get; set; }
+        public virtual DbSet<SW_formTableData_Types> SW_formTableData_Types { get; set; }
     }
 }

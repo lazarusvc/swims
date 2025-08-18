@@ -12,10 +12,10 @@ namespace Model_Designer
     using System;
     using System.Collections.Generic;
     
-    public partial class SW_formTableName
+    public partial class SW_formTableData_Types
     {
         public int Id { get; set; }
-        public string name { get; set; }
+        public string type { get; set; }
         public string field { get; set; }
         public int SW_formsId { get; set; }
     

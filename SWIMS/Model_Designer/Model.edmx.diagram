@@ -4,15 +4,19 @@
   <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
     <!-- Diagram content (shape and connector positions) -->
     <edmx:Diagrams>
-      <Diagram DiagramId="f14f822ad5d94bd59830f38001665507" Name="Diagram1" ZoomLevel="113" >
-        <EntityTypeShape EntityType="Model.SW_forms" Width="2.75" PointX="3.375" PointY="0.75" FillColor="Yellow" />
-        <EntityTypeShape EntityType="Model.SW_formTableName" Width="2.25" PointX="7.25" PointY="0.75" FillColor="Yellow" />
-        <EntityTypeShape EntityType="Model.SW_identity" Width="1.75" PointX="0.625" PointY="5.125" FillColor="192, 0, 192" />
-        <EntityTypeShape EntityType="Model.SW_roles" Width="1.75" PointX="0.625" PointY="3.25" />
-        <EntityTypeShape EntityType="Model.SW_users" Width="1.75" PointX="0.625" PointY="0.75" />
+      <Diagram DiagramId="f14f822ad5d94bd59830f38001665507" Name="Diagram1" ZoomLevel="128" >
+        <EntityTypeShape EntityType="Model.SW_forms" Width="2.75" PointX="3.625" PointY="0.875" FillColor="Yellow" />
+        <EntityTypeShape EntityType="Model.SW_formTableName" Width="3.125" PointX="7.25" PointY="0.875" FillColor="Yellow" />
+        <EntityTypeShape EntityType="Model.SW_identity" Width="2.25" PointX="0.75" PointY="0.875" FillColor="192, 0, 192" />
+        <EntityTypeShape EntityType="Model.SW_roles" Width="1.75" PointX="3" PointY="5.375" />
+        <EntityTypeShape EntityType="Model.SW_users" Width="1.75" PointX="0.75" PointY="5.375" />
         <AssociationConnector Association="Model.FK_SW_formsSW_formTableName" />
         <AssociationConnector Association="Model.FK_SW_identitySW_forms" />
         <AssociationConnector Association="Model.FK_SW_rolesSW_users" />
+        <EntityTypeShape EntityType="Model.SW_formTableData" Width="3.125" PointX="7.25" PointY="4.875" FillColor="Yellow" />
+        <AssociationConnector Association="Model.SW_formsSW_formTableData" />
+        <EntityTypeShape EntityType="Model.SW_formTableData_Types" Width="3.125" PointX="7.25" PointY="2.875" FillColor="Yellow" />
+        <AssociationConnector Association="Model.SW_formsSW_formTableData_Types" />
       </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>

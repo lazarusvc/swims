@@ -1,0 +1,68 @@
+﻿@model SWIMS.Models.SW_identity
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<h1>Create</h1>
+
+<h4>SW_identity</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="name" class="control-label"></label>
+                <input asp-for="name" class="form-control" />
+                <span asp-validation-for="name" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="desc" class="control-label"></label>
+                <input asp-for="desc" class="form-control" />
+                <span asp-validation-for="desc" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="logo" class="control-label"></label>
+                <input asp-for="logo" class="form-control" />
+                <span asp-validation-for="logo" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="media_01" class="control-label"></label>
+                <input asp-for="media_01" class="form-control" />
+                <span asp-validation-for="media_01" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="media_02" class="control-label"></label>
+                <input asp-for="media_02" class="form-control" />
+                <span asp-validation-for="media_02" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="media_03" class="control-label"></label>
+                <input asp-for="media_03" class="form-control" />
+                <span asp-validation-for="media_03" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="header" class="control-label"></label>
+                <input asp-for="header" class="form-control" />
+                <span asp-validation-for="header" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="signature" class="control-label"></label>
+                <input asp-for="signature" class="form-control" />
+                <span asp-validation-for="signature" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

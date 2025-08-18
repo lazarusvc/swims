@@ -5,27 +5,9 @@ using System.Collections.Generic;
 
 namespace SWIMS.Models;
 
-public partial class SwForm
+public partial class SW_formTableDatum
 {
     public int Id { get; set; }
-
-    public int Uuid { get; set; }
-
-    public string Name { get; set; }
-
-    public string Desc { get; set; }
-
-    public string Form { get; set; }
-
-    public byte? IsApproval01 { get; set; }
-
-    public byte? IsApproval02 { get; set; }
-
-    public byte? IsApproval03 { get; set; }
-
-    public DateTime DateModified { get; set; }
-
-    public int SwIdentityId { get; set; }
 
     public string FormData01 { get; set; }
 
@@ -527,5 +509,7 @@ public partial class SwForm
 
     public string FormData250 { get; set; }
 
-    public virtual SwIdentity SwIdentity { get; set; }
+    public int SW_formsId { get; set; }
+
+    public virtual SW_form SW_forms { get; set; }
 }
