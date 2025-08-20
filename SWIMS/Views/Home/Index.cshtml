@@ -24,14 +24,17 @@
     <div class="col-xl-12">
         <div class="card h-100 p-0">
             <div class="card-header border-bottom bg-base py-16 px-24">
-                <h6 class="text-lg fw-semibold mb-0">Actions::</h6>
+                <h6 class="text-lg fw-semibold mb-0">Programs::</h6>
             </div>
             <div class="card-body p-24">
-                <div class="d-flex flex-wrap align-items-center gap-3">                    
-                    <div asp-items="@ViewBag.frmBtn"></div>
-                    <button type="button" class="btn rounded-pill btn-outline-primary-600 radius-8 px-20 py-11 d-flex align-items-center gap-2">
-                        <iconify-icon icon="mingcute:square-arrow-right-line" class="text-xl"></iconify-icon> [Form Name]
-                    </button>
+                <div class="d-flex flex-wrap align-items-center gap-3">                  
+                    @foreach (var inx in ViewBag.frmBtn)
+                    {
+                        <a asp-action="Program" asp-controller="form" asp-route-uuid="@inx.Text" type="button" class="btn rounded-pill btn-outline-primary-600 radius-8 px-20 py-11 d-flex align-items-center gap-2">
+                            <iconify-icon icon="mingcute:square-arrow-right-line" class="text-xl"></iconify-icon> FORM:- <strong>@inx.Value</strong> - @inx.Text.Substring(0, 5) ...
+                        </a>
+                    }
+
                 </div>
             </div>
         </div>
