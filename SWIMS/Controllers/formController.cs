@@ -1,12 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection.Metadata.Ecma335;
-using System.Threading.Tasks;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using SWIMS.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection.Metadata.Ecma335;
+using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace SWIMS.Controllers
 {
@@ -23,6 +25,13 @@ namespace SWIMS.Controllers
         {
             // Generates a new GUID and converts it to a string representation
             return Guid.NewGuid().ToString();
+        }
+
+        public IActionResult Program(string? uuid)
+        {
+            ViewBag.form = _context.SW_forms.Where(m => m.uuid.Equals(uuid)).Select(m => m.form).FirstOrDefault();
+            ViewBag.formName = _context.SW_forms.Where(m => m.uuid.Equals(uuid)).Select(m => m.name).FirstOrDefault();
+            return View();
         }
 
         // GET: form
@@ -81,6 +90,47 @@ namespace SWIMS.Controllers
         {
             ViewBag.id = id;
             ViewBag.frm = _context.SW_forms.Where(x => x.Id == id).Select(x => x.form).FirstOrDefault();
+            return View();
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Complete(IFormCollection frm)
+        {
+            int fID = Convert.ToInt32(frm["formId"]);
+
+            // fetch form JSON from DB
+            var swForm = await _context.SW_forms.FindAsync(fID);
+            if (swForm == null) return NotFound("Form not found");
+
+            // deserialize into a collection
+            var formDefinition = JsonSerializer.Deserialize<List<form_FieldAttributes>>(swForm.form);
+
+            if (formDefinition == null || !formDefinition.Any())
+                return BadRequest("Form definition empty or invalid JSON");
+
+            // SW_formTableName
+            // map json data {label, name} to DB context name
+            var fieldEntities__names = formDefinition.Select(def => new SW_formTableName
+            {
+                name = def.label,
+                field = def.name,
+                SW_formsId = fID
+            }).ToList();
+
+            // SW_formTableData_Type
+            // map json data {type, name} to DB context name
+            var fieldEntities__types = formDefinition.Select(def => new SW_formTableData_Type
+            {
+                type = def.type,
+                field = def.name,
+                SW_formsId = fID
+            }).ToList();
+
+            // save to DB table(s)
+            await _context.SW_formTableNames.AddRangeAsync(fieldEntities__names);
+            await _context.SW_formTableData_Types.AddRangeAsync(fieldEntities__types);
+            await _context.SaveChangesAsync();
+
             return View();
         }
 

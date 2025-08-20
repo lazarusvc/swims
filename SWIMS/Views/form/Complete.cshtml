@@ -1,5 +1,4 @@
-﻿@model SWIMS.Models.SW_form
-<a asp-action="Index"><< | back</a>
+﻿<a asp-action="Index"><< | back</a>
 @{
     ViewData["Title"] = "Complete";
 }
@@ -9,7 +8,15 @@
     <div class="col-md-12">
         <div id="fb-rendered-form"></div>
     </div>
-    <a asp-action="Delete" asp-route-id="@ViewBag.id" class="btn btn-danger">Delete</a>
+    <div class="col-md-6">
+        <form asp-action="Complete">
+            <input type="hidden" name="formId" value="@ViewBag.id" />
+            <button type="submit" class="btn btn-success">Publish</button>
+        </form>
+    </div>
+    <div class="col-md-6">
+        <a asp-action="Delete" asp-route-id="@ViewBag.id" class="btn btn-danger">Delete</a>
+    </div>    
 </div>
 
 
