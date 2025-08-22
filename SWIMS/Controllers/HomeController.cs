@@ -33,22 +33,6 @@ namespace SWIMS.Controllers
             _context = context;
         }
 
-        /// <summary>
-        /// Creates a new <see cref="HomeController"/> with the specified logger.
-        /// </summary>
-        /// <param name="logger">
-        /// The <see cref="ILogger{HomeController}"/> used for logging.
-        /// </param>
-        //public HomeController(ILogger<HomeController> logger)
-        //{
-        //    _logger = logger;
-        //}
-
-        /// <summary>
-        /// Displays the application home page.
-        /// </summary>
-        /// <returns>A <see cref="ViewResult"/> for the Index view.</returns>
-
         public IActionResult Index()
         {
             SwimsDb_moreContext context = _context;

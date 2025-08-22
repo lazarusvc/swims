@@ -1,74 +1,103 @@
 ﻿@model SWIMS.Models.SW_form
 
 @{
-    ViewData["Title"] = "Edit";
+    ViewData["Title"] = "Form Development | EDIT";
 }
 
-<h1>Edit</h1>
-
-<h4>SW_form</h4>
 <hr />
-<div class="row">
+<br />
+<div class="row gy-4">
+    <div class="col-md-8">
+        <div id="fb-editor"></div>
+        <button type="button" class="btn btn-warning-100 text-warning-600 radius-8 px-14 py-6 text-sm" id="getJSON" style="float: right;">
+            Save
+        </button>
+    </div>
     <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Complete & Save</h5>
+            </div>
+            <div class="card-body">
         <form asp-action="Edit">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="Id" />
-            <div class="form-group">
-                <label asp-for="uuid" class="control-label"></label>
-                <input asp-for="uuid" class="form-control" />
-                <span asp-validation-for="uuid" class="text-danger"></span>
+
+
+                    <div class="row mb-24 gy-3 align-items-center">
+                        <label asp-for="name" class="form-label mb-0 col-sm-4">NAME:</label>
+                        <div class="col-sm-10">
+                            <input asp-for="name" class="form-control" placeholder="Enter form Name..." />
+                            <span asp-validation-for="name" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row mb-24 gy-3 align-items-center">
+                        <label asp-for="desc" class="form-label mb-0 col-sm-4">DESC:</label>
+                        <div class="col-sm-10">
+                            <textarea asp-for="desc" class="form-control" rows="4" cols="50" placeholder="Enter form description..."></textarea>
+                            <span asp-validation-for="desc" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row mb-24 gy-3 align-items-center">
+                        <label asp-for="uuid" class="form-label mb-0 col-sm-4">UUID:</label>
+                        <div class="col-sm-10">
+                            <input asp-for="uuid" class="form-control" readonly placeholder="******"  />
+                            <span asp-validation-for="uuid" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row mb-24 gy-3 align-items-center">
+                        <label asp-for="form" class="form-label mb-0 col-sm-4">DATA:</label>
+                        <div class="col-sm-10">
+                            <input asp-for="form" class="form-control" readonly placeholder="******" />
+                            <span asp-validation-for="form" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row mb-24 gy-3 align-items-center">
+                        <label asp-for="SW_identityId" class="form-label mb-0 col-sm-4">LOCATION:</label>
+                        <div class="col-sm-10">
+                            <select asp-for="SW_identityId" class="form-control" asp-items="ViewBag.SW_identityId" readonly></select>
+                        </div>
+                    </div>
+
+                    <p>modified:</p>
+                    <input asp-for="dateModified" type="hidden" type="datetime" value="@ViewBag.datetime" />
+                    <span asp-validation-for="dateModified" class="text-danger"></span>
+                    <input type="submit" value="Edit" id="saveData" class="btn btn-primary" width="100" />
+                </form>
             </div>
-            <div class="form-group">
-                <label asp-for="name" class="control-label"></label>
-                <input asp-for="name" class="form-control" />
-                <span asp-validation-for="name" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="desc" class="control-label"></label>
-                <input asp-for="desc" class="form-control" />
-                <span asp-validation-for="desc" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="form" class="control-label"></label>
-                <input asp-for="form" class="form-control" />
-                <span asp-validation-for="form" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="isApproval_01" class="control-label"></label>
-                <input asp-for="isApproval_01" class="form-control" />
-                <span asp-validation-for="isApproval_01" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="isApproval_02" class="control-label"></label>
-                <input asp-for="isApproval_02" class="form-control" />
-                <span asp-validation-for="isApproval_02" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="isApproval_03" class="control-label"></label>
-                <input asp-for="isApproval_03" class="form-control" />
-                <span asp-validation-for="isApproval_03" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="dateModified" class="control-label"></label>
-                <input asp-for="dateModified" class="form-control" />
-                <span asp-validation-for="dateModified" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="SW_identityId" class="control-label"></label>
-                <select asp-for="SW_identityId" class="form-control" asp-items="ViewBag.SW_identityId"></select>
-                <span asp-validation-for="SW_identityId" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
-            </div>
-        </form>
+        </div>
     </div>
 </div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
-
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }
+
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/lib/formbuilder/form-builder.min.js"></script>
+<script type="text/javascript">
+    // --------------------------------------- Form Builder - Global Variables
+    var fbEditor = document.getElementById("fb-editor");
+    var frm = document.getElementById("form");
+
+    jQuery(function ($) {
+        // --------------------------------------- Form Builder - options
+        var options = {
+            dataType: 'json',
+            disabledActionButtons: ['data', 'save'],
+            formData: '@Html.Raw(@ViewBag.frm)'
+        };
+        var formBuilder = $(fbEditor).formBuilder(options);
+
+        document.getElementById('getJSON').addEventListener('click', function() {
+            console.log(formBuilder.actions.getData('json'));
+                frm.value = formBuilder.actions.getData('json');
+        });
+    });
+</script>
