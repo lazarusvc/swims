@@ -31,7 +31,7 @@
                     @foreach (var inx in ViewBag.frmBtn)
                     {
                         <a asp-action="Program" asp-controller="form" asp-route-uuid="@inx.Text" type="button" class="btn rounded-pill btn-outline-primary-600 radius-8 px-20 py-11 d-flex align-items-center gap-2">
-                            <iconify-icon icon="mingcute:square-arrow-right-line" class="text-xl"></iconify-icon> FORM:- <strong>@inx.Value</strong> - @inx.Text.Substring(0, 5) ...
+                            <iconify-icon icon="mingcute:square-arrow-right-line" class="text-xl"></iconify-icon> FORM:- <strong>@inx.Value</strong> - ID:- @inx.Text.Substring(0, 5) ...
                         </a>
                     }
 

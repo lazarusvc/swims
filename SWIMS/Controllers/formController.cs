@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.SqlServer.Server;
 using SWIMS.Models;
 using System;
 using System.Collections.Generic;
@@ -27,11 +28,78 @@ namespace SWIMS.Controllers
             return Guid.NewGuid().ToString();
         }
 
-        public IActionResult Program(string? uuid)
+        [HttpGet]
+        public async Task<IActionResult> Program(string? uuid)
         {
-            ViewBag.form = _context.SW_forms.Where(m => m.uuid.Equals(uuid)).Select(m => m.form).FirstOrDefault();
-            ViewBag.formName = _context.SW_forms.Where(m => m.uuid.Equals(uuid)).Select(m => m.name).FirstOrDefault();
-            return View();
+            // 0. Varibales from DB forms table
+            var f_Linq = _context.SW_forms.Where(m => m.uuid.Equals(uuid));
+            int formId = Convert.ToInt32(f_Linq.Select(m => m.Id).FirstOrDefault());
+            ViewBag.formId = formId;
+            ViewBag.form = f_Linq.Select(m => m.form).FirstOrDefault();
+            ViewBag.formName = f_Linq.Select(m => m.name).FirstOrDefault();
+            
+
+            // 1. Fetch form with JSON
+            var swForm = await _context.SW_forms.FindAsync(formId);
+            if (swForm == null) return NotFound("Form not found");
+
+            // 2. Deserialize JSON definition
+            var formDefinition = JsonSerializer.Deserialize<List<form_FieldAttributes>>(swForm.form);
+            if (formDefinition == null || !formDefinition.Any())
+                return BadRequest("Invalid or empty form definition");
+
+            // 3. Fetch mappings from SW_formTableName
+            var tableNameMappings = _context.SW_formTableNames
+                .Where(t => t.SW_formsId == formId)
+                .ToList();
+
+            // 4. Join JSON fields with SW_formTableName mappings
+            var columnMappings = formDefinition
+                .Join(tableNameMappings,
+                      def => def.name,     // JSON name
+                      map => map.field,     // DB mapping name
+                      (def, map) => new ColumnMap
+                      {
+                          ColumnName = map.field, // e.g. FormData01
+                          Label = def.label       // e.g. "Text Field"
+                      })
+                .ToList();
+
+            if (!columnMappings.Any())
+                return BadRequest("No matching columns found for this form");
+
+            // 5. Fetch actual data rows from SW_formTableDatum
+            var dataRows = await _context.SW_formTableData
+                .Where(d => d.SW_formsId == formId)
+                .ToListAsync();
+
+            // 6. Convert data into dictionary per row
+            var rowList = new List<Dictionary<string, string>>();
+            foreach (var row in dataRows)
+            {
+                var dict = new Dictionary<string, string>();
+                foreach (var col in columnMappings)
+                {
+                    // use reflection to get the property value dynamically
+                    var prop = typeof(SW_formTableDatum).GetProperty(col.ColumnName);
+                    if (prop != null)
+                    {
+                        var val = prop.GetValue(row)?.ToString() ?? string.Empty;
+                        dict[col.ColumnName] = val;
+                    }
+                }
+                rowList.Add(dict);
+            }
+
+            // 7. Build ViewModel
+            var model = new FormTableViewModel
+            {
+                FormName = swForm.name,
+                Columns = columnMappings,
+                Rows = rowList
+            };
+
+            return View(model);
         }
 
         // GET: form
@@ -147,6 +215,8 @@ namespace SWIMS.Controllers
             {
                 return NotFound();
             }
+            ViewBag.datetime = System.DateTime.UtcNow;
+            ViewBag.frm = _context.SW_forms.Where(x => x.Id == id).Select(x => x.form).FirstOrDefault();
             ViewData["SW_identityId"] = new SelectList(_context.SW_identities, "Id", "name", sW_form.SW_identityId);
             return View(sW_form);
         }
