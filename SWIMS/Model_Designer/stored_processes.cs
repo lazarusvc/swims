@@ -12,20 +12,24 @@ namespace Model_Designer
     using System;
     using System.Collections.Generic;
     
-    public partial class SW_roles
+    public partial class stored_processes
     {
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
-        public SW_roles()
+        public stored_processes()
         {
-            this.SW_users = new HashSet<SW_users>();
+            this.stored_process_params = new HashSet<stored_process_params>();
         }
     
         public int Id { get; set; }
-        public string name { get; set; }
-        public string NormalizedName { get; set; }
-        public string ConcurrencyStamp { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public string ConnectionKey { get; set; }
+        public string DataSource { get; set; }
+        public string Database { get; set; }
+        public string DbUserEncrypted { get; set; }
+        public string DbPasswordEncrypted { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<SW_users> SW_users { get; set; }
+        public virtual ICollection<stored_process_params> stored_process_params { get; set; }
     }
 }

@@ -4,428 +4,818 @@
   <edmx:Runtime>
     <!-- SSDL content -->
     <edmx:StorageModels>
-    <Schema Namespace="Model.Store" Alias="Self" Provider="System.Data.SqlClient" ProviderManifestToken="2012" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
-  <EntityContainer Name="ModelStoreContainer">
-    <EntitySet Name="SW_forms" EntityType="Model.Store.SW_forms" store:Type="Tables" Schema="dbo" />
-    <EntitySet Name="SW_formTableName" EntityType="Model.Store.SW_formTableName" store:Type="Tables" Schema="dbo" />
-    <EntitySet Name="SW_identity" EntityType="Model.Store.SW_identity" store:Type="Tables" Schema="dbo" />
-    <EntitySet Name="SW_roles" EntityType="Model.Store.SW_roles" store:Type="Tables" Schema="dbo" />
-    <EntitySet Name="SW_users" EntityType="Model.Store.SW_users" store:Type="Tables" Schema="dbo" />
-    <EntitySet Name="SW_formTableData" EntityType="Model.Store.SW_formTableData" store:Type="Tables" Schema="dbo" />
-    <EntitySet Name="SW_formTableData_Types" EntityType="Model.Store.SW_formTableData_Types" store:Type="Tables" Schema="dbo" />
-    <AssociationSet Name="FK_SW_formsSW_formTableName" Association="Model.Store.FK_SW_formsSW_formTableName">
-      <End Role="SW_forms" EntitySet="SW_forms" />
-      <End Role="SW_formTableName" EntitySet="SW_formTableName" />
-    </AssociationSet>
-    <AssociationSet Name="FK_SW_identitySW_forms" Association="Model.Store.FK_SW_identitySW_forms">
-      <End Role="SW_identity" EntitySet="SW_identity" />
-      <End Role="SW_forms" EntitySet="SW_forms" />
-    </AssociationSet>
-    <AssociationSet Name="FK_SW_rolesSW_users" Association="Model.Store.FK_SW_rolesSW_users">
-      <End Role="SW_roles" EntitySet="SW_roles" />
-      <End Role="SW_users" EntitySet="SW_users" />
-    </AssociationSet>
-    <AssociationSet Name="SW_formsSW_formTableData" Association="Model.Store.SW_formsSW_formTableData">
-      <End Role="SW_forms" EntitySet="SW_forms" />
-      <End Role="SW_formTableData" EntitySet="SW_formTableData" />
-    </AssociationSet>
-    <AssociationSet Name="SW_formsSW_formTableData_Types" Association="Model.Store.SW_formsSW_formTableData_Types">
-      <End Role="SW_forms" EntitySet="SW_forms" />
-      <End Role="SW_formTableData_Types" EntitySet="SW_formTableData_Types" />
-    </AssociationSet>
-  </EntityContainer>
-  <EntityType Name="SW_forms">
-    <Key>
-      <PropertyRef Name="Id" />
-    </Key>
-    <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
-    <Property Name="uuid" Type="int" Nullable="false" />
-    <Property Name="name" Type="nvarchar(max)" Nullable="false" />
-    <Property Name="desc" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="form" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="isApproval_01" Type="tinyint" Nullable="true" />
-    <Property Name="isApproval_02" Type="tinyint" Nullable="true" />
-    <Property Name="isApproval_03" Type="tinyint" Nullable="true" />
-    <Property Name="dateModified" Type="datetime" Nullable="false" />
-    <Property Name="SW_identityId" Type="int" Nullable="false" />
-  </EntityType>
-  <EntityType Name="SW_formTableName">
-    <Key>
-      <PropertyRef Name="Id" />
-    </Key>
-    <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
-    <Property Name="name" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="field" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="SW_formsId" Type="int" Nullable="false" />
-  </EntityType>
-  <EntityType Name="SW_identity">
-    <Key>
-      <PropertyRef Name="Id" />
-    </Key>
-    <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
-    <Property Name="name" Type="nvarchar(max)" Nullable="false" />
-    <Property Name="desc" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="logo" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="media_01" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="media_02" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="media_03" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="header" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="signature" Type="nvarchar(max)" Nullable="true" />
-  </EntityType>
-  <EntityType Name="SW_roles">
-    <Key>
-      <PropertyRef Name="Id" />
-    </Key>
-    <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
-    <Property Name="name" Type="nvarchar(max)" Nullable="false" />
-  </EntityType>
-  <EntityType Name="SW_users">
-    <Key>
-      <PropertyRef Name="Id" />
-    </Key>
-    <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
-    <Property Name="fullName" Type="nvarchar(max)" Nullable="false" />
-    <Property Name="userName" Type="nvarchar(max)" Nullable="false" />
-    <Property Name="email" Type="nvarchar(max)" Nullable="false" />
-    <Property Name="password" Type="nvarchar(max)" Nullable="false" />
-    <Property Name="SW_rolesId" Type="int" Nullable="false" />
-  </EntityType>
-  <EntityType Name="SW_formTableData">
-    <Key>
-      <PropertyRef Name="Id" />
-    </Key>
-    <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
-    <Property Name="FormData01" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData02" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData03" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData04" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData05" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData06" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData07" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData08" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData09" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData10" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData11" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData12" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData13" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData14" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData15" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData16" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData17" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData18" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData19" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData20" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData21" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData22" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData23" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData24" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData25" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData26" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData27" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData28" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData29" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData30" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData31" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData32" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData33" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData34" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData35" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData36" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData37" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData38" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData39" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData40" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData41" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData42" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData43" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData44" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData45" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData46" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData47" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData48" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData49" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData50" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData51" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData52" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData53" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData54" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData55" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData56" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData57" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData58" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData59" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData60" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData61" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData62" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData63" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData64" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData65" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData66" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData67" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData68" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData69" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData70" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData71" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData72" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData73" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData74" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData75" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData76" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData77" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData78" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData79" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData80" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData81" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData82" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData83" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData84" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData85" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData86" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData87" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData88" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData89" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData90" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData91" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData92" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData93" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData94" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData95" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData96" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData97" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData98" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData99" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData100" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData101" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData102" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData103" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData104" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData105" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData106" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData107" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData108" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData109" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData110" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData111" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData112" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData113" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData114" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData115" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData116" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData117" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData118" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData119" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData120" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData121" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData122" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData123" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData124" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData125" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData126" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData127" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData128" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData129" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData130" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData131" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData132" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData133" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData134" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData135" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData136" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData137" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData138" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData139" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData140" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData141" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData142" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData143" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData144" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData145" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData146" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData147" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData148" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData149" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData150" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData151" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData152" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData153" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData154" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData155" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData156" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData157" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData158" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData159" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData160" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData161" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData162" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData163" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData164" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData165" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData166" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData167" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData168" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData169" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData170" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData171" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData172" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData173" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData174" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData175" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData176" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData177" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData178" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData179" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData180" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData181" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData182" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData183" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData184" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData185" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData186" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData187" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData188" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData189" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData190" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData191" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData192" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData193" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData194" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData195" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData196" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData197" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData198" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData199" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData200" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData201" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData202" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData203" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData204" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData205" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData206" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData207" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData208" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData209" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData210" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData211" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData212" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData213" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData214" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData215" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData216" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData217" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData218" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData219" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData220" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData221" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData222" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData223" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData224" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData225" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData226" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData227" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData228" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData229" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData230" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData231" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData232" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData233" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData234" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData235" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData236" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData237" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData238" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData239" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData240" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData241" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData242" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData243" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData244" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData245" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData246" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData247" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData248" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData249" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="FormData250" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="SW_formsId" Type="int" Nullable="false" />
-  </EntityType>
-  <EntityType Name="SW_formTableData_Types">
-    <Key>
-      <PropertyRef Name="Id" />
-    </Key>
-    <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
-    <Property Name="type" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="field" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="SW_formsId" Type="int" Nullable="false" />
-  </EntityType>
-  <Association Name="FK_SW_formsSW_formTableName">
-    <End Role="SW_forms" Type="Model.Store.SW_forms" Multiplicity="1" />
-    <End Role="SW_formTableName" Type="Model.Store.SW_formTableName" Multiplicity="*" />
-    <ReferentialConstraint>
-      <Principal Role="SW_forms">
-        <PropertyRef Name="Id" />
-      </Principal>
-      <Dependent Role="SW_formTableName">
-        <PropertyRef Name="SW_formsId" />
-      </Dependent>
-    </ReferentialConstraint>
-  </Association>
-  <Association Name="FK_SW_identitySW_forms">
-    <End Role="SW_identity" Type="Model.Store.SW_identity" Multiplicity="1" />
-    <End Role="SW_forms" Type="Model.Store.SW_forms" Multiplicity="*" />
-    <ReferentialConstraint>
-      <Principal Role="SW_identity">
-        <PropertyRef Name="Id" />
-      </Principal>
-      <Dependent Role="SW_forms">
-        <PropertyRef Name="SW_identityId" />
-      </Dependent>
-    </ReferentialConstraint>
-  </Association>
-  <Association Name="FK_SW_rolesSW_users">
-    <End Role="SW_roles" Type="Model.Store.SW_roles" Multiplicity="1" />
-    <End Role="SW_users" Type="Model.Store.SW_users" Multiplicity="*" />
-    <ReferentialConstraint>
-      <Principal Role="SW_roles">
-        <PropertyRef Name="Id" />
-      </Principal>
-      <Dependent Role="SW_users">
-        <PropertyRef Name="SW_rolesId" />
-      </Dependent>
-    </ReferentialConstraint>
-  </Association>
-  <Association Name="SW_formsSW_formTableData">
-    <End Role="SW_forms" Type="Model.Store.SW_forms" Multiplicity="1" />
-    <End Role="SW_formTableData" Type="Model.Store.SW_formTableData" Multiplicity="*" />
-    <ReferentialConstraint>
-      <Principal Role="SW_forms">
-        <PropertyRef Name="Id" />
-      </Principal>
-      <Dependent Role="SW_formTableData">
-        <PropertyRef Name="SW_formsId" />
-      </Dependent>
-    </ReferentialConstraint>
-  </Association>
-  <Association Name="SW_formsSW_formTableData_Types">
-    <End Role="SW_forms" Type="Model.Store.SW_forms" Multiplicity="1" />
-    <End Role="SW_formTableData_Types" Type="Model.Store.SW_formTableData_Types" Multiplicity="*" />
-    <ReferentialConstraint>
-      <Principal Role="SW_forms">
-        <PropertyRef Name="Id" />
-      </Principal>
-      <Dependent Role="SW_formTableData_Types">
-        <PropertyRef Name="SW_formsId" />
-      </Dependent>
-    </ReferentialConstraint>
-  </Association>
-</Schema></edmx:StorageModels>
+    <Schema Namespace="Model.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+        <EntityType Name="__EFMigrationsHistory_Identity">
+          <Key>
+            <PropertyRef Name="MigrationId" />
+          </Key>
+          <Property Name="MigrationId" Type="nvarchar" MaxLength="150" Nullable="false" />
+          <Property Name="ProductVersion" Type="nvarchar" MaxLength="32" Nullable="false" />
+        </EntityType>
+        <EntityType Name="endpoint_policy_assignments">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="MatchType" Type="nvarchar" MaxLength="32" Nullable="false" />
+          <Property Name="Area" Type="nvarchar" MaxLength="64" />
+          <Property Name="Controller" Type="nvarchar" MaxLength="128" />
+          <Property Name="Action" Type="nvarchar" MaxLength="128" />
+          <Property Name="Page" Type="nvarchar" MaxLength="256" />
+          <Property Name="Path" Type="nvarchar" MaxLength="512" />
+          <Property Name="Regex" Type="nvarchar" MaxLength="512" />
+          <Property Name="Notes" Type="nvarchar" MaxLength="512" />
+          <Property Name="PolicyId" Type="int" Nullable="false" />
+          <Property Name="PolicyName" Type="nvarchar" MaxLength="128" Nullable="false" />
+          <Property Name="IsEnabled" Type="bit" Nullable="false" />
+          <Property Name="Priority" Type="int" Nullable="false" />
+          <Property Name="UpdatedAt" Type="datetimeoffset" Precision="7" Nullable="false" />
+        </EntityType>
+        <EntityType Name="policies">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="Name" Type="nvarchar" MaxLength="128" Nullable="false" />
+          <Property Name="Description" Type="nvarchar" MaxLength="512" />
+          <Property Name="IsEnabled" Type="bit" Nullable="false" />
+          <Property Name="UpdatedAt" Type="datetimeoffset" Precision="7" Nullable="false" />
+          <Property Name="IsSystem" Type="bit" Nullable="false" />
+        </EntityType>
+        <EntityType Name="policy_claims">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="AuthorizationPolicyEntityId" Type="int" Nullable="false" />
+          <Property Name="Type" Type="nvarchar" MaxLength="256" Nullable="false" />
+          <Property Name="Value" Type="nvarchar" MaxLength="256" />
+        </EntityType>
+        <EntityType Name="policy_roles">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="AuthorizationPolicyEntityId" Type="int" Nullable="false" />
+          <Property Name="RoleId" Type="int" Nullable="false" />
+          <Property Name="RoleName" Type="nvarchar" MaxLength="256" Nullable="false" />
+        </EntityType>
+        <EntityType Name="public_endpoints">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="MatchType" Type="nvarchar" MaxLength="32" Nullable="false" />
+          <Property Name="Area" Type="nvarchar" MaxLength="64" />
+          <Property Name="Controller" Type="nvarchar" MaxLength="128" />
+          <Property Name="Action" Type="nvarchar" MaxLength="128" />
+          <Property Name="Page" Type="nvarchar" MaxLength="256" />
+          <Property Name="Path" Type="nvarchar" MaxLength="512" />
+          <Property Name="Regex" Type="nvarchar" MaxLength="512" />
+          <Property Name="Notes" Type="nvarchar" MaxLength="512" />
+          <Property Name="IsEnabled" Type="bit" Nullable="false" />
+          <Property Name="Priority" Type="int" Nullable="false" />
+          <Property Name="UpdatedAt" Type="datetimeoffset" Precision="7" Nullable="false" />
+        </EntityType>
+        <EntityType Name="role_claims">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="RoleId" Type="int" Nullable="false" />
+          <Property Name="ClaimType" Type="nvarchar(max)" />
+          <Property Name="ClaimValue" Type="nvarchar(max)" />
+        </EntityType>
+        <EntityType Name="roles">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="name" Type="nvarchar" MaxLength="256" />
+          <Property Name="NormalizedName" Type="nvarchar" MaxLength="256" />
+          <Property Name="ConcurrencyStamp" Type="nvarchar(max)" />
+        </EntityType>
+        <EntityType Name="user_claims">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="UserId" Type="int" Nullable="false" />
+          <Property Name="ClaimType" Type="nvarchar(max)" />
+          <Property Name="ClaimValue" Type="nvarchar(max)" />
+        </EntityType>
+        <EntityType Name="user_logins">
+          <Key>
+            <PropertyRef Name="LoginProvider" />
+            <PropertyRef Name="ProviderKey" />
+          </Key>
+          <Property Name="LoginProvider" Type="nvarchar" MaxLength="128" Nullable="false" />
+          <Property Name="ProviderKey" Type="nvarchar" MaxLength="128" Nullable="false" />
+          <Property Name="ProviderDisplayName" Type="nvarchar(max)" />
+          <Property Name="UserId" Type="int" Nullable="false" />
+        </EntityType>
+        <EntityType Name="user_roles">
+          <Key>
+            <PropertyRef Name="UserId" />
+            <PropertyRef Name="RoleId" />
+          </Key>
+          <Property Name="UserId" Type="int" Nullable="false" />
+          <Property Name="RoleId" Type="int" Nullable="false" />
+        </EntityType>
+        <EntityType Name="user_tokens">
+          <Key>
+            <PropertyRef Name="UserId" />
+            <PropertyRef Name="LoginProvider" />
+            <PropertyRef Name="Name" />
+          </Key>
+          <Property Name="UserId" Type="int" Nullable="false" />
+          <Property Name="LoginProvider" Type="nvarchar" MaxLength="128" Nullable="false" />
+          <Property Name="Name" Type="nvarchar" MaxLength="128" Nullable="false" />
+          <Property Name="Value" Type="nvarchar(max)" />
+        </EntityType>
+        <EntityType Name="users">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="FirstName" Type="nvarchar(max)" />
+          <Property Name="LastName" Type="nvarchar(max)" />
+          <Property Name="UserName" Type="nvarchar" MaxLength="256" />
+          <Property Name="NormalizedUserName" Type="nvarchar" MaxLength="256" />
+          <Property Name="Email" Type="nvarchar" MaxLength="256" />
+          <Property Name="NormalizedEmail" Type="nvarchar" MaxLength="256" />
+          <Property Name="EmailConfirmed" Type="bit" Nullable="false" />
+          <Property Name="PasswordHash" Type="nvarchar(max)" />
+          <Property Name="SecurityStamp" Type="nvarchar(max)" />
+          <Property Name="ConcurrencyStamp" Type="nvarchar(max)" />
+          <Property Name="PhoneNumber" Type="nvarchar(max)" />
+          <Property Name="PhoneNumberConfirmed" Type="bit" Nullable="false" />
+          <Property Name="TwoFactorEnabled" Type="bit" Nullable="false" />
+          <Property Name="LockoutEnd" Type="datetimeoffset" Precision="7" />
+          <Property Name="LockoutEnabled" Type="bit" Nullable="false" />
+          <Property Name="AccessFailedCount" Type="int" Nullable="false" />
+        </EntityType>
+        <EntityType Name="SW_formProcesses">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="url" Type="nvarchar(max)" Nullable="false" />
+          <Property Name="SW_formsId" Type="int" Nullable="false" />
+        </EntityType>
+        <EntityType Name="SW_formReport">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="url" Type="nvarchar(max)" Nullable="false" />
+          <Property Name="SW_formsId" Type="int" Nullable="false" />
+        </EntityType>
+        <EntityType Name="SW_forms">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="uuid" Type="nvarchar(max)" />
+          <Property Name="name" Type="nvarchar(max)" Nullable="false" />
+          <Property Name="desc" Type="nvarchar(max)" />
+          <Property Name="form" Type="nvarchar(max)" />
+          <Property Name="dateModified" Type="datetime" Nullable="false" />
+          <Property Name="SW_identityId" Type="int" Nullable="false" />
+        </EntityType>
+        <EntityType Name="SW_formTableData">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="FormData01" Type="nvarchar(max)" />
+          <Property Name="FormData02" Type="nvarchar(max)" />
+          <Property Name="FormData03" Type="nvarchar(max)" />
+          <Property Name="FormData04" Type="nvarchar(max)" />
+          <Property Name="FormData05" Type="nvarchar(max)" />
+          <Property Name="FormData06" Type="nvarchar(max)" />
+          <Property Name="FormData07" Type="nvarchar(max)" />
+          <Property Name="FormData08" Type="nvarchar(max)" />
+          <Property Name="FormData09" Type="nvarchar(max)" />
+          <Property Name="FormData10" Type="nvarchar(max)" />
+          <Property Name="FormData11" Type="nvarchar(max)" />
+          <Property Name="FormData12" Type="nvarchar(max)" />
+          <Property Name="FormData13" Type="nvarchar(max)" />
+          <Property Name="FormData14" Type="nvarchar(max)" />
+          <Property Name="FormData15" Type="nvarchar(max)" />
+          <Property Name="FormData16" Type="nvarchar(max)" />
+          <Property Name="FormData17" Type="nvarchar(max)" />
+          <Property Name="FormData18" Type="nvarchar(max)" />
+          <Property Name="FormData19" Type="nvarchar(max)" />
+          <Property Name="FormData20" Type="nvarchar(max)" />
+          <Property Name="FormData21" Type="nvarchar(max)" />
+          <Property Name="FormData22" Type="nvarchar(max)" />
+          <Property Name="FormData23" Type="nvarchar(max)" />
+          <Property Name="FormData24" Type="nvarchar(max)" />
+          <Property Name="FormData25" Type="nvarchar(max)" />
+          <Property Name="FormData26" Type="nvarchar(max)" />
+          <Property Name="FormData27" Type="nvarchar(max)" />
+          <Property Name="FormData28" Type="nvarchar(max)" />
+          <Property Name="FormData29" Type="nvarchar(max)" />
+          <Property Name="FormData30" Type="nvarchar(max)" />
+          <Property Name="FormData31" Type="nvarchar(max)" />
+          <Property Name="FormData32" Type="nvarchar(max)" />
+          <Property Name="FormData33" Type="nvarchar(max)" />
+          <Property Name="FormData34" Type="nvarchar(max)" />
+          <Property Name="FormData35" Type="nvarchar(max)" />
+          <Property Name="FormData36" Type="nvarchar(max)" />
+          <Property Name="FormData37" Type="nvarchar(max)" />
+          <Property Name="FormData38" Type="nvarchar(max)" />
+          <Property Name="FormData39" Type="nvarchar(max)" />
+          <Property Name="FormData40" Type="nvarchar(max)" />
+          <Property Name="FormData41" Type="nvarchar(max)" />
+          <Property Name="FormData42" Type="nvarchar(max)" />
+          <Property Name="FormData43" Type="nvarchar(max)" />
+          <Property Name="FormData44" Type="nvarchar(max)" />
+          <Property Name="FormData45" Type="nvarchar(max)" />
+          <Property Name="FormData46" Type="nvarchar(max)" />
+          <Property Name="FormData47" Type="nvarchar(max)" />
+          <Property Name="FormData48" Type="nvarchar(max)" />
+          <Property Name="FormData49" Type="nvarchar(max)" />
+          <Property Name="FormData50" Type="nvarchar(max)" />
+          <Property Name="FormData51" Type="nvarchar(max)" />
+          <Property Name="FormData52" Type="nvarchar(max)" />
+          <Property Name="FormData53" Type="nvarchar(max)" />
+          <Property Name="FormData54" Type="nvarchar(max)" />
+          <Property Name="FormData55" Type="nvarchar(max)" />
+          <Property Name="FormData56" Type="nvarchar(max)" />
+          <Property Name="FormData57" Type="nvarchar(max)" />
+          <Property Name="FormData58" Type="nvarchar(max)" />
+          <Property Name="FormData59" Type="nvarchar(max)" />
+          <Property Name="FormData60" Type="nvarchar(max)" />
+          <Property Name="FormData61" Type="nvarchar(max)" />
+          <Property Name="FormData62" Type="nvarchar(max)" />
+          <Property Name="FormData63" Type="nvarchar(max)" />
+          <Property Name="FormData64" Type="nvarchar(max)" />
+          <Property Name="FormData65" Type="nvarchar(max)" />
+          <Property Name="FormData66" Type="nvarchar(max)" />
+          <Property Name="FormData67" Type="nvarchar(max)" />
+          <Property Name="FormData68" Type="nvarchar(max)" />
+          <Property Name="FormData69" Type="nvarchar(max)" />
+          <Property Name="FormData70" Type="nvarchar(max)" />
+          <Property Name="FormData71" Type="nvarchar(max)" />
+          <Property Name="FormData72" Type="nvarchar(max)" />
+          <Property Name="FormData73" Type="nvarchar(max)" />
+          <Property Name="FormData74" Type="nvarchar(max)" />
+          <Property Name="FormData75" Type="nvarchar(max)" />
+          <Property Name="FormData76" Type="nvarchar(max)" />
+          <Property Name="FormData77" Type="nvarchar(max)" />
+          <Property Name="FormData78" Type="nvarchar(max)" />
+          <Property Name="FormData79" Type="nvarchar(max)" />
+          <Property Name="FormData80" Type="nvarchar(max)" />
+          <Property Name="FormData81" Type="nvarchar(max)" />
+          <Property Name="FormData82" Type="nvarchar(max)" />
+          <Property Name="FormData83" Type="nvarchar(max)" />
+          <Property Name="FormData84" Type="nvarchar(max)" />
+          <Property Name="FormData85" Type="nvarchar(max)" />
+          <Property Name="FormData86" Type="nvarchar(max)" />
+          <Property Name="FormData87" Type="nvarchar(max)" />
+          <Property Name="FormData88" Type="nvarchar(max)" />
+          <Property Name="FormData89" Type="nvarchar(max)" />
+          <Property Name="FormData90" Type="nvarchar(max)" />
+          <Property Name="FormData91" Type="nvarchar(max)" />
+          <Property Name="FormData92" Type="nvarchar(max)" />
+          <Property Name="FormData93" Type="nvarchar(max)" />
+          <Property Name="FormData94" Type="nvarchar(max)" />
+          <Property Name="FormData95" Type="nvarchar(max)" />
+          <Property Name="FormData96" Type="nvarchar(max)" />
+          <Property Name="FormData97" Type="nvarchar(max)" />
+          <Property Name="FormData98" Type="nvarchar(max)" />
+          <Property Name="FormData99" Type="nvarchar(max)" />
+          <Property Name="FormData100" Type="nvarchar(max)" />
+          <Property Name="FormData101" Type="nvarchar(max)" />
+          <Property Name="FormData102" Type="nvarchar(max)" />
+          <Property Name="FormData103" Type="nvarchar(max)" />
+          <Property Name="FormData104" Type="nvarchar(max)" />
+          <Property Name="FormData105" Type="nvarchar(max)" />
+          <Property Name="FormData106" Type="nvarchar(max)" />
+          <Property Name="FormData107" Type="nvarchar(max)" />
+          <Property Name="FormData108" Type="nvarchar(max)" />
+          <Property Name="FormData109" Type="nvarchar(max)" />
+          <Property Name="FormData110" Type="nvarchar(max)" />
+          <Property Name="FormData111" Type="nvarchar(max)" />
+          <Property Name="FormData112" Type="nvarchar(max)" />
+          <Property Name="FormData113" Type="nvarchar(max)" />
+          <Property Name="FormData114" Type="nvarchar(max)" />
+          <Property Name="FormData115" Type="nvarchar(max)" />
+          <Property Name="FormData116" Type="nvarchar(max)" />
+          <Property Name="FormData117" Type="nvarchar(max)" />
+          <Property Name="FormData118" Type="nvarchar(max)" />
+          <Property Name="FormData119" Type="nvarchar(max)" />
+          <Property Name="FormData120" Type="nvarchar(max)" />
+          <Property Name="FormData121" Type="nvarchar(max)" />
+          <Property Name="FormData122" Type="nvarchar(max)" />
+          <Property Name="FormData123" Type="nvarchar(max)" />
+          <Property Name="FormData124" Type="nvarchar(max)" />
+          <Property Name="FormData125" Type="nvarchar(max)" />
+          <Property Name="FormData126" Type="nvarchar(max)" />
+          <Property Name="FormData127" Type="nvarchar(max)" />
+          <Property Name="FormData128" Type="nvarchar(max)" />
+          <Property Name="FormData129" Type="nvarchar(max)" />
+          <Property Name="FormData130" Type="nvarchar(max)" />
+          <Property Name="FormData131" Type="nvarchar(max)" />
+          <Property Name="FormData132" Type="nvarchar(max)" />
+          <Property Name="FormData133" Type="nvarchar(max)" />
+          <Property Name="FormData134" Type="nvarchar(max)" />
+          <Property Name="FormData135" Type="nvarchar(max)" />
+          <Property Name="FormData136" Type="nvarchar(max)" />
+          <Property Name="FormData137" Type="nvarchar(max)" />
+          <Property Name="FormData138" Type="nvarchar(max)" />
+          <Property Name="FormData139" Type="nvarchar(max)" />
+          <Property Name="FormData140" Type="nvarchar(max)" />
+          <Property Name="FormData141" Type="nvarchar(max)" />
+          <Property Name="FormData142" Type="nvarchar(max)" />
+          <Property Name="FormData143" Type="nvarchar(max)" />
+          <Property Name="FormData144" Type="nvarchar(max)" />
+          <Property Name="FormData145" Type="nvarchar(max)" />
+          <Property Name="FormData146" Type="nvarchar(max)" />
+          <Property Name="FormData147" Type="nvarchar(max)" />
+          <Property Name="FormData148" Type="nvarchar(max)" />
+          <Property Name="FormData149" Type="nvarchar(max)" />
+          <Property Name="FormData150" Type="nvarchar(max)" />
+          <Property Name="FormData151" Type="nvarchar(max)" />
+          <Property Name="FormData152" Type="nvarchar(max)" />
+          <Property Name="FormData153" Type="nvarchar(max)" />
+          <Property Name="FormData154" Type="nvarchar(max)" />
+          <Property Name="FormData155" Type="nvarchar(max)" />
+          <Property Name="FormData156" Type="nvarchar(max)" />
+          <Property Name="FormData157" Type="nvarchar(max)" />
+          <Property Name="FormData158" Type="nvarchar(max)" />
+          <Property Name="FormData159" Type="nvarchar(max)" />
+          <Property Name="FormData160" Type="nvarchar(max)" />
+          <Property Name="FormData161" Type="nvarchar(max)" />
+          <Property Name="FormData162" Type="nvarchar(max)" />
+          <Property Name="FormData163" Type="nvarchar(max)" />
+          <Property Name="FormData164" Type="nvarchar(max)" />
+          <Property Name="FormData165" Type="nvarchar(max)" />
+          <Property Name="FormData166" Type="nvarchar(max)" />
+          <Property Name="FormData167" Type="nvarchar(max)" />
+          <Property Name="FormData168" Type="nvarchar(max)" />
+          <Property Name="FormData169" Type="nvarchar(max)" />
+          <Property Name="FormData170" Type="nvarchar(max)" />
+          <Property Name="FormData171" Type="nvarchar(max)" />
+          <Property Name="FormData172" Type="nvarchar(max)" />
+          <Property Name="FormData173" Type="nvarchar(max)" />
+          <Property Name="FormData174" Type="nvarchar(max)" />
+          <Property Name="FormData175" Type="nvarchar(max)" />
+          <Property Name="FormData176" Type="nvarchar(max)" />
+          <Property Name="FormData177" Type="nvarchar(max)" />
+          <Property Name="FormData178" Type="nvarchar(max)" />
+          <Property Name="FormData179" Type="nvarchar(max)" />
+          <Property Name="FormData180" Type="nvarchar(max)" />
+          <Property Name="FormData181" Type="nvarchar(max)" />
+          <Property Name="FormData182" Type="nvarchar(max)" />
+          <Property Name="FormData183" Type="nvarchar(max)" />
+          <Property Name="FormData184" Type="nvarchar(max)" />
+          <Property Name="FormData185" Type="nvarchar(max)" />
+          <Property Name="FormData186" Type="nvarchar(max)" />
+          <Property Name="FormData187" Type="nvarchar(max)" />
+          <Property Name="FormData188" Type="nvarchar(max)" />
+          <Property Name="FormData189" Type="nvarchar(max)" />
+          <Property Name="FormData190" Type="nvarchar(max)" />
+          <Property Name="FormData191" Type="nvarchar(max)" />
+          <Property Name="FormData192" Type="nvarchar(max)" />
+          <Property Name="FormData193" Type="nvarchar(max)" />
+          <Property Name="FormData194" Type="nvarchar(max)" />
+          <Property Name="FormData195" Type="nvarchar(max)" />
+          <Property Name="FormData196" Type="nvarchar(max)" />
+          <Property Name="FormData197" Type="nvarchar(max)" />
+          <Property Name="FormData198" Type="nvarchar(max)" />
+          <Property Name="FormData199" Type="nvarchar(max)" />
+          <Property Name="FormData200" Type="nvarchar(max)" />
+          <Property Name="FormData201" Type="nvarchar(max)" />
+          <Property Name="FormData202" Type="nvarchar(max)" />
+          <Property Name="FormData203" Type="nvarchar(max)" />
+          <Property Name="FormData204" Type="nvarchar(max)" />
+          <Property Name="FormData205" Type="nvarchar(max)" />
+          <Property Name="FormData206" Type="nvarchar(max)" />
+          <Property Name="FormData207" Type="nvarchar(max)" />
+          <Property Name="FormData208" Type="nvarchar(max)" />
+          <Property Name="FormData209" Type="nvarchar(max)" />
+          <Property Name="FormData210" Type="nvarchar(max)" />
+          <Property Name="FormData211" Type="nvarchar(max)" />
+          <Property Name="FormData212" Type="nvarchar(max)" />
+          <Property Name="FormData213" Type="nvarchar(max)" />
+          <Property Name="FormData214" Type="nvarchar(max)" />
+          <Property Name="FormData215" Type="nvarchar(max)" />
+          <Property Name="FormData216" Type="nvarchar(max)" />
+          <Property Name="FormData217" Type="nvarchar(max)" />
+          <Property Name="FormData218" Type="nvarchar(max)" />
+          <Property Name="FormData219" Type="nvarchar(max)" />
+          <Property Name="FormData220" Type="nvarchar(max)" />
+          <Property Name="FormData221" Type="nvarchar(max)" />
+          <Property Name="FormData222" Type="nvarchar(max)" />
+          <Property Name="FormData223" Type="nvarchar(max)" />
+          <Property Name="FormData224" Type="nvarchar(max)" />
+          <Property Name="FormData225" Type="nvarchar(max)" />
+          <Property Name="FormData226" Type="nvarchar(max)" />
+          <Property Name="FormData227" Type="nvarchar(max)" />
+          <Property Name="FormData228" Type="nvarchar(max)" />
+          <Property Name="FormData229" Type="nvarchar(max)" />
+          <Property Name="FormData230" Type="nvarchar(max)" />
+          <Property Name="FormData231" Type="nvarchar(max)" />
+          <Property Name="FormData232" Type="nvarchar(max)" />
+          <Property Name="FormData233" Type="nvarchar(max)" />
+          <Property Name="FormData234" Type="nvarchar(max)" />
+          <Property Name="FormData235" Type="nvarchar(max)" />
+          <Property Name="FormData236" Type="nvarchar(max)" />
+          <Property Name="FormData237" Type="nvarchar(max)" />
+          <Property Name="FormData238" Type="nvarchar(max)" />
+          <Property Name="FormData239" Type="nvarchar(max)" />
+          <Property Name="FormData240" Type="nvarchar(max)" />
+          <Property Name="FormData241" Type="nvarchar(max)" />
+          <Property Name="FormData242" Type="nvarchar(max)" />
+          <Property Name="FormData243" Type="nvarchar(max)" />
+          <Property Name="FormData244" Type="nvarchar(max)" />
+          <Property Name="FormData245" Type="nvarchar(max)" />
+          <Property Name="FormData246" Type="nvarchar(max)" />
+          <Property Name="FormData247" Type="nvarchar(max)" />
+          <Property Name="FormData248" Type="nvarchar(max)" />
+          <Property Name="FormData249" Type="nvarchar(max)" />
+          <Property Name="FormData250" Type="nvarchar(max)" />
+          <Property Name="SW_formsId" Type="int" Nullable="false" />
+          <Property Name="isApproval_01" Type="tinyint" />
+          <Property Name="isApproval_02" Type="tinyint" />
+          <Property Name="isApproval_03" Type="tinyint" />
+        </EntityType>
+        <EntityType Name="SW_formTableData_Types">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="type" Type="nvarchar(max)" />
+          <Property Name="field" Type="nvarchar(max)" />
+          <Property Name="SW_formsId" Type="int" Nullable="false" />
+        </EntityType>
+        <EntityType Name="SW_formTableName">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="name" Type="nvarchar(max)" />
+          <Property Name="field" Type="nvarchar(max)" />
+          <Property Name="SW_formsId" Type="int" Nullable="false" />
+        </EntityType>
+        <EntityType Name="SW_identity">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="name" Type="nvarchar(max)" Nullable="false" />
+          <Property Name="desc" Type="nvarchar(max)" />
+          <Property Name="logo" Type="nvarchar(max)" />
+          <Property Name="media_01" Type="nvarchar(max)" />
+          <Property Name="media_02" Type="nvarchar(max)" />
+          <Property Name="media_03" Type="nvarchar(max)" />
+          <Property Name="header" Type="nvarchar(max)" />
+          <Property Name="signature" Type="nvarchar(max)" />
+        </EntityType>
+        <EntityType Name="SW_roles">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="name" Type="nvarchar" MaxLength="256" />
+          <Property Name="NormalizedName" Type="nvarchar" MaxLength="256" />
+          <Property Name="ConcurrencyStamp" Type="nvarchar(max)" />
+        </EntityType>
+        <EntityType Name="SW_users">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="FirstName" Type="nvarchar(max)" />
+          <Property Name="LastName" Type="nvarchar(max)" />
+          <Property Name="UserName" Type="nvarchar" MaxLength="256" />
+          <Property Name="NormalizedUserName" Type="nvarchar" MaxLength="256" />
+          <Property Name="Email" Type="nvarchar" MaxLength="256" />
+          <Property Name="NormalizedEmail" Type="nvarchar" MaxLength="256" />
+          <Property Name="EmailConfirmed" Type="bit" Nullable="false" />
+          <Property Name="PasswordHash" Type="nvarchar(max)" />
+          <Property Name="SecurityStamp" Type="nvarchar(max)" />
+          <Property Name="ConcurrencyStamp" Type="nvarchar(max)" />
+          <Property Name="PhoneNumber" Type="nvarchar(max)" />
+          <Property Name="PhoneNumberConfirmed" Type="bit" Nullable="false" />
+          <Property Name="TwoFactorEnabled" Type="bit" Nullable="false" />
+          <Property Name="LockoutEnd" Type="datetimeoffset" Precision="7" />
+          <Property Name="LockoutEnabled" Type="bit" Nullable="false" />
+          <Property Name="AccessFailedCount" Type="int" Nullable="false" />
+        </EntityType>
+        <Association Name="FK_endpoint_policy_assignments_policies_PolicyId">
+          <End Role="policies" Type="Self.policies" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="endpoint_policy_assignments" Type="Self.endpoint_policy_assignments" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="policies">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="endpoint_policy_assignments">
+              <PropertyRef Name="PolicyId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_policy_claims_policies_AuthorizationPolicyEntityId">
+          <End Role="policies" Type="Self.policies" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="policy_claims" Type="Self.policy_claims" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="policies">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="policy_claims">
+              <PropertyRef Name="AuthorizationPolicyEntityId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_policy_roles_policies_AuthorizationPolicyEntityId">
+          <End Role="policies" Type="Self.policies" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="policy_roles" Type="Self.policy_roles" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="policies">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="policy_roles">
+              <PropertyRef Name="AuthorizationPolicyEntityId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_policy_roles_roles_RoleId">
+          <End Role="roles" Type="Self.roles" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="policy_roles" Type="Self.policy_roles" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="roles">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="policy_roles">
+              <PropertyRef Name="RoleId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_role_claims_roles_RoleId">
+          <End Role="roles" Type="Self.roles" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="role_claims" Type="Self.role_claims" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="roles">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="role_claims">
+              <PropertyRef Name="RoleId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_SW_formsSW_formReport">
+          <End Role="SW_forms" Type="Self.SW_forms" Multiplicity="1" />
+          <End Role="SW_formReport" Type="Self.SW_formReport" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="SW_forms">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="SW_formReport">
+              <PropertyRef Name="SW_formsId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_SW_formsSW_formTableData">
+          <End Role="SW_forms" Type="Self.SW_forms" Multiplicity="1" />
+          <End Role="SW_formTableData" Type="Self.SW_formTableData" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="SW_forms">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="SW_formTableData">
+              <PropertyRef Name="SW_formsId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_SW_formsSW_formTableData_Types">
+          <End Role="SW_forms" Type="Self.SW_forms" Multiplicity="1" />
+          <End Role="SW_formTableData_Types" Type="Self.SW_formTableData_Types" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="SW_forms">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="SW_formTableData_Types">
+              <PropertyRef Name="SW_formsId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_SW_formsSW_formTableName">
+          <End Role="SW_forms" Type="Self.SW_forms" Multiplicity="1" />
+          <End Role="SW_formTableName" Type="Self.SW_formTableName" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="SW_forms">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="SW_formTableName">
+              <PropertyRef Name="SW_formsId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_SW_identitySW_forms">
+          <End Role="SW_identity" Type="Self.SW_identity" Multiplicity="1" />
+          <End Role="SW_forms" Type="Self.SW_forms" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="SW_identity">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="SW_forms">
+              <PropertyRef Name="SW_identityId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_user_claims_users_UserId">
+          <End Role="users" Type="Self.users" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="user_claims" Type="Self.user_claims" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="users">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="user_claims">
+              <PropertyRef Name="UserId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_user_logins_users_UserId">
+          <End Role="users" Type="Self.users" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="user_logins" Type="Self.user_logins" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="users">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="user_logins">
+              <PropertyRef Name="UserId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_user_roles_roles_RoleId">
+          <End Role="roles" Type="Self.roles" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="user_roles" Type="Self.user_roles" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="roles">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="user_roles">
+              <PropertyRef Name="RoleId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_user_roles_users_UserId">
+          <End Role="users" Type="Self.users" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="user_roles" Type="Self.user_roles" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="users">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="user_roles">
+              <PropertyRef Name="UserId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_user_tokens_users_UserId">
+          <End Role="users" Type="Self.users" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="user_tokens" Type="Self.user_tokens" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="users">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="user_tokens">
+              <PropertyRef Name="UserId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityContainer Name="ModelStoreContainer">
+          <EntitySet Name="__EFMigrationsHistory_Identity" EntityType="Self.__EFMigrationsHistory_Identity" Schema="auth" store:Type="Tables" />
+          <EntitySet Name="endpoint_policy_assignments" EntityType="Self.endpoint_policy_assignments" Schema="auth" store:Type="Tables" />
+          <EntitySet Name="policies" EntityType="Self.policies" Schema="auth" store:Type="Tables" />
+          <EntitySet Name="policy_claims" EntityType="Self.policy_claims" Schema="auth" store:Type="Tables" />
+          <EntitySet Name="policy_roles" EntityType="Self.policy_roles" Schema="auth" store:Type="Tables" />
+          <EntitySet Name="public_endpoints" EntityType="Self.public_endpoints" Schema="auth" store:Type="Tables" />
+          <EntitySet Name="role_claims" EntityType="Self.role_claims" Schema="auth" store:Type="Tables" />
+          <EntitySet Name="roles" EntityType="Self.roles" Schema="auth" store:Type="Tables" />
+          <EntitySet Name="user_claims" EntityType="Self.user_claims" Schema="auth" store:Type="Tables" />
+          <EntitySet Name="user_logins" EntityType="Self.user_logins" Schema="auth" store:Type="Tables" />
+          <EntitySet Name="user_roles" EntityType="Self.user_roles" Schema="auth" store:Type="Tables" />
+          <EntitySet Name="user_tokens" EntityType="Self.user_tokens" Schema="auth" store:Type="Tables" />
+          <EntitySet Name="users" EntityType="Self.users" Schema="auth" store:Type="Tables" />
+          <EntitySet Name="SW_formProcesses" EntityType="Self.SW_formProcesses" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="SW_formReport" EntityType="Self.SW_formReport" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="SW_forms" EntityType="Self.SW_forms" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="SW_formTableData" EntityType="Self.SW_formTableData" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="SW_formTableData_Types" EntityType="Self.SW_formTableData_Types" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="SW_formTableName" EntityType="Self.SW_formTableName" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="SW_identity" EntityType="Self.SW_identity" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="SW_roles" EntityType="Self.SW_roles" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="SW_users" EntityType="Self.SW_users" Schema="dbo" store:Type="Tables" />
+          <AssociationSet Name="FK_endpoint_policy_assignments_policies_PolicyId" Association="Self.FK_endpoint_policy_assignments_policies_PolicyId">
+            <End Role="policies" EntitySet="policies" />
+            <End Role="endpoint_policy_assignments" EntitySet="endpoint_policy_assignments" />
+          </AssociationSet>
+          <AssociationSet Name="FK_policy_claims_policies_AuthorizationPolicyEntityId" Association="Self.FK_policy_claims_policies_AuthorizationPolicyEntityId">
+            <End Role="policies" EntitySet="policies" />
+            <End Role="policy_claims" EntitySet="policy_claims" />
+          </AssociationSet>
+          <AssociationSet Name="FK_policy_roles_policies_AuthorizationPolicyEntityId" Association="Self.FK_policy_roles_policies_AuthorizationPolicyEntityId">
+            <End Role="policies" EntitySet="policies" />
+            <End Role="policy_roles" EntitySet="policy_roles" />
+          </AssociationSet>
+          <AssociationSet Name="FK_policy_roles_roles_RoleId" Association="Self.FK_policy_roles_roles_RoleId">
+            <End Role="roles" EntitySet="roles" />
+            <End Role="policy_roles" EntitySet="policy_roles" />
+          </AssociationSet>
+          <AssociationSet Name="FK_role_claims_roles_RoleId" Association="Self.FK_role_claims_roles_RoleId">
+            <End Role="roles" EntitySet="roles" />
+            <End Role="role_claims" EntitySet="role_claims" />
+          </AssociationSet>
+          <AssociationSet Name="FK_SW_formsSW_formReport" Association="Self.FK_SW_formsSW_formReport">
+            <End Role="SW_forms" EntitySet="SW_forms" />
+            <End Role="SW_formReport" EntitySet="SW_formReport" />
+          </AssociationSet>
+          <AssociationSet Name="FK_SW_formsSW_formTableData" Association="Self.FK_SW_formsSW_formTableData">
+            <End Role="SW_forms" EntitySet="SW_forms" />
+            <End Role="SW_formTableData" EntitySet="SW_formTableData" />
+          </AssociationSet>
+          <AssociationSet Name="FK_SW_formsSW_formTableData_Types" Association="Self.FK_SW_formsSW_formTableData_Types">
+            <End Role="SW_forms" EntitySet="SW_forms" />
+            <End Role="SW_formTableData_Types" EntitySet="SW_formTableData_Types" />
+          </AssociationSet>
+          <AssociationSet Name="FK_SW_formsSW_formTableName" Association="Self.FK_SW_formsSW_formTableName">
+            <End Role="SW_forms" EntitySet="SW_forms" />
+            <End Role="SW_formTableName" EntitySet="SW_formTableName" />
+          </AssociationSet>
+          <AssociationSet Name="FK_SW_identitySW_forms" Association="Self.FK_SW_identitySW_forms">
+            <End Role="SW_identity" EntitySet="SW_identity" />
+            <End Role="SW_forms" EntitySet="SW_forms" />
+          </AssociationSet>
+          <AssociationSet Name="FK_user_claims_users_UserId" Association="Self.FK_user_claims_users_UserId">
+            <End Role="users" EntitySet="users" />
+            <End Role="user_claims" EntitySet="user_claims" />
+          </AssociationSet>
+          <AssociationSet Name="FK_user_logins_users_UserId" Association="Self.FK_user_logins_users_UserId">
+            <End Role="users" EntitySet="users" />
+            <End Role="user_logins" EntitySet="user_logins" />
+          </AssociationSet>
+          <AssociationSet Name="FK_user_roles_roles_RoleId" Association="Self.FK_user_roles_roles_RoleId">
+            <End Role="roles" EntitySet="roles" />
+            <End Role="user_roles" EntitySet="user_roles" />
+          </AssociationSet>
+          <AssociationSet Name="FK_user_roles_users_UserId" Association="Self.FK_user_roles_users_UserId">
+            <End Role="users" EntitySet="users" />
+            <End Role="user_roles" EntitySet="user_roles" />
+          </AssociationSet>
+          <AssociationSet Name="FK_user_tokens_users_UserId" Association="Self.FK_user_tokens_users_UserId">
+            <End Role="users" EntitySet="users" />
+            <End Role="user_tokens" EntitySet="user_tokens" />
+          </AssociationSet>
+        </EntityContainer>
+      </Schema></edmx:StorageModels>
     <!-- CSDL content -->
     <edmx:ConceptualModels>
       <Schema xmlns="http://schemas.microsoft.com/ado/2009/11/edm" xmlns:cg="http://schemas.microsoft.com/ado/2006/04/codegeneration" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" Namespace="Model" Alias="Self" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" annotation:UseStrongSpatialTypes="false">
         <EntityContainer Name="ModelContainer" annotation:LazyLoadingEnabled="true">
-          <EntitySet Name="SW_forms" EntityType="Model.SW_forms" />
           <EntitySet Name="SW_formTableName" EntityType="Model.SW_formTableName" />
           <EntitySet Name="SW_identity" EntityType="Model.SW_identity" />
           <EntitySet Name="SW_roles" EntityType="Model.SW_roles" />
           <EntitySet Name="SW_users" EntityType="Model.SW_users" />
+          <AssociationSet Name="FK_SW_rolesSW_users" Association="Model.FK_SW_rolesSW_users">
+            <End Role="SW_roles" EntitySet="SW_roles" />
+            <End Role="SW_users" EntitySet="SW_users" />
+          </AssociationSet>
+          <EntitySet Name="SW_formTableData_Types" EntityType="Model.SW_formTableData_Types" />
+          <EntitySet Name="SW_forms" EntityType="Model.SW_forms" />
+          <EntitySet Name="SW_formTableData" EntityType="Model.SW_formTableData" />
+          <EntitySet Name="stored_process_params" EntityType="Model.stored_process_params" />
+          <EntitySet Name="stored_processes" EntityType="Model.stored_processes" />
+          <AssociationSet Name="FK_SW_formsSW_formTableData" Association="Model.FK_SW_formsSW_formTableData">
+            <End Role="SW_forms" EntitySet="SW_forms" />
+            <End Role="SW_formTableData" EntitySet="SW_formTableData" />
+          </AssociationSet>
+          <AssociationSet Name="FK_SW_formsSW_formTableData_Types" Association="Model.FK_SW_formsSW_formTableData_Types">
+            <End Role="SW_forms" EntitySet="SW_forms" />
+            <End Role="SW_formTableData_Types" EntitySet="SW_formTableData_Types" />
+          </AssociationSet>
           <AssociationSet Name="FK_SW_formsSW_formTableName" Association="Model.FK_SW_formsSW_formTableName">
             <End Role="SW_forms" EntitySet="SW_forms" />
             <End Role="SW_formTableName" EntitySet="SW_formTableName" />
@@ -434,47 +824,76 @@
             <End Role="SW_identity" EntitySet="SW_identity" />
             <End Role="SW_forms" EntitySet="SW_forms" />
           </AssociationSet>
-          <AssociationSet Name="FK_SW_rolesSW_users" Association="Model.FK_SW_rolesSW_users">
-            <End Role="SW_roles" EntitySet="SW_roles" />
-            <End Role="SW_users" EntitySet="SW_users" />
+          <AssociationSet Name="FK_stored_process_params_stored_processes_StoredProcessId" Association="Model.FK_stored_process_params_stored_processes_StoredProcessId">
+            <End Role="stored_processes" EntitySet="stored_processes" />
+            <End Role="stored_process_params" EntitySet="stored_process_params" />
           </AssociationSet>
-          <EntitySet Name="SW_formTableData" EntityType="Model.SW_formTableData" />
-          <AssociationSet Name="SW_formsSW_formTableData" Association="Model.SW_formsSW_formTableData">
+          <EntitySet Name="SW_formProcesses" EntityType="Model.SW_formProcesses" />
+          <AssociationSet Name="SW_formsSW_formProcesses" Association="Model.SW_formsSW_formProcesses">
             <End Role="SW_forms" EntitySet="SW_forms" />
-            <End Role="SW_formTableData" EntitySet="SW_formTableData" />
+            <End Role="SW_formProcesses" EntitySet="SW_formProcesses" />
           </AssociationSet>
-          <EntitySet Name="SW_formTableData_Types" EntityType="Model.SW_formTableData_Types" />
-          <AssociationSet Name="SW_formsSW_formTableData_Types" Association="Model.SW_formsSW_formTableData_Types">
+          <EntitySet Name="SW_formReport" EntityType="Model.SW_formReport" />
+          <AssociationSet Name="SW_formsSW_formReport" Association="Model.SW_formsSW_formReport">
             <End Role="SW_forms" EntitySet="SW_forms" />
-            <End Role="SW_formTableData_Types" EntitySet="SW_formTableData_Types" />
+            <End Role="SW_formReport" EntitySet="SW_formReport" />
+          </AssociationSet>
+          <EntitySet Name="C__EFMigrationsHistory_Identity" EntityType="Model.C__EFMigrationsHistory_Identity" />
+          <EntitySet Name="endpoint_policy_assignments" EntityType="Model.endpoint_policy_assignments" />
+          <EntitySet Name="policies" EntityType="Model.policy" />
+          <EntitySet Name="policy_claims" EntityType="Model.policy_claims" />
+          <EntitySet Name="policy_roles" EntityType="Model.policy_roles" />
+          <EntitySet Name="public_endpoints" EntityType="Model.public_endpoints" />
+          <EntitySet Name="role_claims" EntityType="Model.role_claims" />
+          <EntitySet Name="roles" EntityType="Model.role" />
+          <EntitySet Name="user_claims" EntityType="Model.user_claims" />
+          <EntitySet Name="user_logins" EntityType="Model.user_logins" />
+          <EntitySet Name="user_tokens" EntityType="Model.user_tokens" />
+          <EntitySet Name="users" EntityType="Model.user" />
+          <AssociationSet Name="FK_endpoint_policy_assignments_policies_PolicyId" Association="Model.FK_endpoint_policy_assignments_policies_PolicyId">
+            <End Role="policy" EntitySet="policies" />
+            <End Role="endpoint_policy_assignments" EntitySet="endpoint_policy_assignments" />
+          </AssociationSet>
+          <AssociationSet Name="FK_policy_claims_policies_AuthorizationPolicyEntityId" Association="Model.FK_policy_claims_policies_AuthorizationPolicyEntityId">
+            <End Role="policy" EntitySet="policies" />
+            <End Role="policy_claims" EntitySet="policy_claims" />
+          </AssociationSet>
+          <AssociationSet Name="FK_policy_roles_policies_AuthorizationPolicyEntityId" Association="Model.FK_policy_roles_policies_AuthorizationPolicyEntityId">
+            <End Role="policy" EntitySet="policies" />
+            <End Role="policy_roles" EntitySet="policy_roles" />
+          </AssociationSet>
+          <AssociationSet Name="FK_policy_roles_roles_RoleId" Association="Model.FK_policy_roles_roles_RoleId">
+            <End Role="role" EntitySet="roles" />
+            <End Role="policy_roles" EntitySet="policy_roles" />
+          </AssociationSet>
+          <AssociationSet Name="FK_role_claims_roles_RoleId" Association="Model.FK_role_claims_roles_RoleId">
+            <End Role="role" EntitySet="roles" />
+            <End Role="role_claims" EntitySet="role_claims" />
+          </AssociationSet>
+          <AssociationSet Name="FK_user_claims_users_UserId" Association="Model.FK_user_claims_users_UserId">
+            <End Role="user" EntitySet="users" />
+            <End Role="user_claims" EntitySet="user_claims" />
+          </AssociationSet>
+          <AssociationSet Name="FK_user_logins_users_UserId" Association="Model.FK_user_logins_users_UserId">
+            <End Role="user" EntitySet="users" />
+            <End Role="user_logins" EntitySet="user_logins" />
+          </AssociationSet>
+          <AssociationSet Name="FK_user_tokens_users_UserId" Association="Model.FK_user_tokens_users_UserId">
+            <End Role="user" EntitySet="users" />
+            <End Role="user_tokens" EntitySet="user_tokens" />
+          </AssociationSet>
+          <AssociationSet Name="user_roles" Association="Model.user_roles">
+            <End Role="role" EntitySet="roles" />
+            <End Role="user" EntitySet="users" />
           </AssociationSet>
         </EntityContainer>
-        <EntityType Name="SW_forms">
-          <Key>
-            <PropertyRef Name="Id" />
-          </Key>
-          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="uuid" Type="Int32" />
-          <Property Name="name" Type="String" Nullable="false" MaxLength="Max" FixedLength="false" Unicode="true" />
-          <Property Name="desc" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
-          <Property Name="form" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
-          <Property Name="isApproval_01" Type="Byte" />
-          <Property Name="isApproval_02" Type="Byte" />
-          <Property Name="isApproval_03" Type="Byte" />
-          <Property Name="dateModified" Type="DateTime" Nullable="false" Precision="3" />
-          <Property Name="SW_identityId" Type="Int32" Nullable="false" />
-          <NavigationProperty Name="SW_formTableName" Relationship="Model.FK_SW_formsSW_formTableName" FromRole="SW_forms" ToRole="SW_formTableName" />
-          <NavigationProperty Name="SW_identity" Relationship="Model.FK_SW_identitySW_forms" FromRole="SW_forms" ToRole="SW_identity" />
-          <NavigationProperty Name="SW_formTableData" Relationship="Model.SW_formsSW_formTableData" FromRole="SW_forms" ToRole="SW_formTableData" />
-          <NavigationProperty Name="SW_formTableData_Types" Relationship="Model.SW_formsSW_formTableData_Types" FromRole="SW_forms" ToRole="SW_formTableData_Types" />
-        </EntityType>
         <EntityType Name="SW_formTableName">
           <Key>
             <PropertyRef Name="Id" />
           </Key>
           <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <Property Name="name" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
-          <Property Name="field" Type="String" />
+          <Property Name="field" Type="String" MaxLength="Max" Unicode="true" FixedLength="false" />
           <Property Name="SW_formsId" Type="Int32" Nullable="false" />
           <NavigationProperty Name="SW_forms" Relationship="Model.FK_SW_formsSW_formTableName" FromRole="SW_formTableName" ToRole="SW_forms" />
         </EntityType>
@@ -498,8 +917,10 @@
             <PropertyRef Name="Id" />
           </Key>
           <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="name" Type="String" Nullable="false" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="name" Type="String" MaxLength="256" FixedLength="false" Unicode="true" />
           <NavigationProperty Name="SW_users" Relationship="Model.FK_SW_rolesSW_users" FromRole="SW_roles" ToRole="SW_users" />
+          <Property Name="NormalizedName" Type="String" MaxLength="256" FixedLength="false" Unicode="true" />
+          <Property Name="ConcurrencyStamp" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
         </EntityType>
         <EntityType Name="SW_users">
           <Key>
@@ -512,31 +933,23 @@
           <Property Name="password" Type="String" Nullable="false" MaxLength="Max" FixedLength="false" Unicode="true" />
           <Property Name="SW_rolesId" Type="Int32" Nullable="false" />
           <NavigationProperty Name="SW_roles" Relationship="Model.FK_SW_rolesSW_users" FromRole="SW_users" ToRole="SW_roles" />
+          <Property Name="FirstName" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="LastName" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="UserName" Type="String" MaxLength="256" FixedLength="false" Unicode="true" />
+          <Property Name="NormalizedUserName" Type="String" MaxLength="256" FixedLength="false" Unicode="true" />
+          <Property Name="Email" Type="String" MaxLength="256" FixedLength="false" Unicode="true" />
+          <Property Name="NormalizedEmail" Type="String" MaxLength="256" FixedLength="false" Unicode="true" />
+          <Property Name="EmailConfirmed" Type="Boolean" Nullable="false" />
+          <Property Name="PasswordHash" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="SecurityStamp" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="ConcurrencyStamp" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="PhoneNumber" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="PhoneNumberConfirmed" Type="Boolean" Nullable="false" />
+          <Property Name="TwoFactorEnabled" Type="Boolean" Nullable="false" />
+          <Property Name="LockoutEnd" Type="DateTimeOffset" Precision="7" />
+          <Property Name="LockoutEnabled" Type="Boolean" Nullable="false" />
+          <Property Name="AccessFailedCount" Type="Int32" Nullable="false" />
         </EntityType>
-        <Association Name="FK_SW_formsSW_formTableName">
-          <End Type="Model.SW_forms" Role="SW_forms" Multiplicity="1" />
-          <End Type="Model.SW_formTableName" Role="SW_formTableName" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="SW_forms">
-              <PropertyRef Name="Id" />
-            </Principal>
-            <Dependent Role="SW_formTableName">
-              <PropertyRef Name="SW_formsId" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
-        <Association Name="FK_SW_identitySW_forms">
-          <End Type="Model.SW_identity" Role="SW_identity" Multiplicity="1" />
-          <End Type="Model.SW_forms" Role="SW_forms" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="SW_identity">
-              <PropertyRef Name="Id" />
-            </Principal>
-            <Dependent Role="SW_forms">
-              <PropertyRef Name="SW_identityId" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
         <Association Name="FK_SW_rolesSW_users">
           <End Type="Model.SW_roles" Role="SW_roles" Multiplicity="1" />
           <End Type="Model.SW_users" Role="SW_users" Multiplicity="*" />
@@ -549,6 +962,34 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
+        <EntityType Name="SW_formTableData_Types">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="type" Type="String" MaxLength="Max" Unicode="true" FixedLength="false" />
+          <Property Name="field" Type="String" MaxLength="Max" Unicode="true" FixedLength="false" />
+          <Property Name="SW_formsId" Type="Int32" Nullable="false" />
+          <NavigationProperty Name="SW_forms" Relationship="Model.FK_SW_formsSW_formTableData_Types" FromRole="SW_formTableData_Types" ToRole="SW_forms" />
+        </EntityType>
+        <EntityType Name="SW_forms">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="uuid" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="name" Type="String" Nullable="false" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="desc" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="form" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="dateModified" Type="DateTime" Nullable="false" Precision="3" />
+          <Property Name="SW_identityId" Type="Int32" Nullable="false" />
+          <NavigationProperty Name="SW_formTableData" Relationship="Model.FK_SW_formsSW_formTableData" FromRole="SW_forms" ToRole="SW_formTableData" />
+          <NavigationProperty Name="SW_formTableData_Types" Relationship="Model.FK_SW_formsSW_formTableData_Types" FromRole="SW_forms" ToRole="SW_formTableData_Types" />
+          <NavigationProperty Name="SW_formTableName" Relationship="Model.FK_SW_formsSW_formTableName" FromRole="SW_forms" ToRole="SW_formTableName" />
+          <NavigationProperty Name="SW_identity" Relationship="Model.FK_SW_identitySW_forms" FromRole="SW_forms" ToRole="SW_identity" />
+          <NavigationProperty Name="SW_formProcesses" Relationship="Model.SW_formsSW_formProcesses" FromRole="SW_forms" ToRole="SW_formProcesses" />
+          <NavigationProperty Name="SW_formReport" Relationship="Model.SW_formsSW_formReport" FromRole="SW_forms" ToRole="SW_formReport" />
+        </EntityType>
         <EntityType Name="SW_formTableData">
           <Key>
             <PropertyRef Name="Id" />
@@ -804,10 +1245,38 @@
           <Property Name="FormData248" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
           <Property Name="FormData249" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
           <Property Name="FormData250" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
-          <NavigationProperty Name="SW_forms" Relationship="Model.SW_formsSW_formTableData" FromRole="SW_formTableData" ToRole="SW_forms" />
           <Property Name="SW_formsId" Type="Int32" Nullable="false" />
+          <Property Name="isApproval_01" Type="Byte" />
+          <Property Name="isApproval_02" Type="Byte" />
+          <Property Name="isApproval_03" Type="Byte" />
+          <NavigationProperty Name="SW_forms" Relationship="Model.FK_SW_formsSW_formTableData" FromRole="SW_formTableData" ToRole="SW_forms" />
         </EntityType>
-        <Association Name="SW_formsSW_formTableData">
+        <EntityType Name="stored_process_params">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="StoredProcessId" Type="Int32" Nullable="false" />
+          <Property Name="Key" Type="String" Nullable="false" MaxLength="128" FixedLength="false" Unicode="true" />
+          <Property Name="Value" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="DataType" Type="String" Nullable="false" MaxLength="64" FixedLength="false" Unicode="true" />
+          <NavigationProperty Name="stored_processes" Relationship="Model.FK_stored_process_params_stored_processes_StoredProcessId" FromRole="stored_process_params" ToRole="stored_processes" />
+        </EntityType>
+        <EntityType Name="stored_processes">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="Name" Type="String" Nullable="false" MaxLength="256" FixedLength="false" Unicode="true" />
+          <Property Name="Description" Type="String" Nullable="false" MaxLength="1024" FixedLength="false" Unicode="true" />
+          <Property Name="ConnectionKey" Type="String" MaxLength="128" FixedLength="false" Unicode="true" />
+          <Property Name="DataSource" Type="String" MaxLength="256" FixedLength="false" Unicode="true" />
+          <Property Name="Database" Type="String" MaxLength="256" FixedLength="false" Unicode="true" />
+          <Property Name="DbUserEncrypted" Type="String" MaxLength="512" FixedLength="false" Unicode="true" />
+          <Property Name="DbPasswordEncrypted" Type="String" MaxLength="1024" FixedLength="false" Unicode="true" />
+          <NavigationProperty Name="stored_process_params" Relationship="Model.FK_stored_process_params_stored_processes_StoredProcessId" FromRole="stored_processes" ToRole="stored_process_params" />
+        </EntityType>
+        <Association Name="FK_SW_formsSW_formTableData">
           <End Type="Model.SW_forms" Role="SW_forms" Multiplicity="1" />
           <End Type="Model.SW_formTableData" Role="SW_formTableData" Multiplicity="*" />
           <ReferentialConstraint>
@@ -819,17 +1288,7 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
-        <EntityType Name="SW_formTableData_Types">
-          <Key>
-            <PropertyRef Name="Id" />
-          </Key>
-          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="type" Type="String" />
-          <Property Name="field" Type="String" />
-          <NavigationProperty Name="SW_forms" Relationship="Model.SW_formsSW_formTableData_Types" FromRole="SW_formTableData_Types" ToRole="SW_forms" />
-          <Property Name="SW_formsId" Type="Int32" Nullable="false" />
-        </EntityType>
-        <Association Name="SW_formsSW_formTableData_Types">
+        <Association Name="FK_SW_formsSW_formTableData_Types">
           <End Type="Model.SW_forms" Role="SW_forms" Multiplicity="1" />
           <End Type="Model.SW_formTableData_Types" Role="SW_formTableData_Types" Multiplicity="*" />
           <ReferentialConstraint>
@@ -841,28 +1300,368 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
+        <Association Name="FK_SW_formsSW_formTableName">
+          <End Type="Model.SW_forms" Role="SW_forms" Multiplicity="1" />
+          <End Type="Model.SW_formTableName" Role="SW_formTableName" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="SW_forms">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="SW_formTableName">
+              <PropertyRef Name="SW_formsId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_SW_identitySW_forms">
+          <End Type="Model.SW_identity" Role="SW_identity" Multiplicity="1" />
+          <End Type="Model.SW_forms" Role="SW_forms" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="SW_identity">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="SW_forms">
+              <PropertyRef Name="SW_identityId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_stored_process_params_stored_processes_StoredProcessId">
+          <End Type="Model.stored_processes" Role="stored_processes" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Type="Model.stored_process_params" Role="stored_process_params" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="stored_processes">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="stored_process_params">
+              <PropertyRef Name="StoredProcessId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityType Name="SW_formProcesses">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="url" Type="String" Nullable="false" MaxLength="Max" Unicode="true" FixedLength="false" />
+          <NavigationProperty Name="SW_forms" Relationship="Model.SW_formsSW_formProcesses" FromRole="SW_formProcesses" ToRole="SW_forms" />
+          <Property Name="SW_formsId" Type="Int32" Nullable="false" />
+        </EntityType>
+        <Association Name="SW_formsSW_formProcesses">
+          <End Type="Model.SW_forms" Role="SW_forms" Multiplicity="1" />
+          <End Type="Model.SW_formProcesses" Role="SW_formProcesses" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="SW_forms">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="SW_formProcesses">
+              <PropertyRef Name="SW_formsId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityType Name="SW_formReport">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="url" Type="String" Nullable="false" MaxLength="Max" Unicode="true" FixedLength="false" />
+          <NavigationProperty Name="SW_forms" Relationship="Model.SW_formsSW_formReport" FromRole="SW_formReport" ToRole="SW_forms" />
+          <Property Name="SW_formsId" Type="Int32" Nullable="false" />
+        </EntityType>
+        <Association Name="SW_formsSW_formReport">
+          <End Type="Model.SW_forms" Role="SW_forms" Multiplicity="1" />
+          <End Type="Model.SW_formReport" Role="SW_formReport" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="SW_forms">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="SW_formReport">
+              <PropertyRef Name="SW_formsId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityType Name="C__EFMigrationsHistory_Identity">
+          <Key>
+            <PropertyRef Name="MigrationId" />
+          </Key>
+          <Property Name="MigrationId" Type="String" Nullable="false" MaxLength="150" FixedLength="false" Unicode="true" />
+          <Property Name="ProductVersion" Type="String" Nullable="false" MaxLength="32" FixedLength="false" Unicode="true" />
+        </EntityType>
+        <EntityType Name="endpoint_policy_assignments">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="MatchType" Type="String" Nullable="false" MaxLength="32" FixedLength="false" Unicode="true" />
+          <Property Name="Area" Type="String" MaxLength="64" FixedLength="false" Unicode="true" />
+          <Property Name="Controller" Type="String" MaxLength="128" FixedLength="false" Unicode="true" />
+          <Property Name="Action" Type="String" MaxLength="128" FixedLength="false" Unicode="true" />
+          <Property Name="Page" Type="String" MaxLength="256" FixedLength="false" Unicode="true" />
+          <Property Name="Path" Type="String" MaxLength="512" FixedLength="false" Unicode="true" />
+          <Property Name="Regex" Type="String" MaxLength="512" FixedLength="false" Unicode="true" />
+          <Property Name="Notes" Type="String" MaxLength="512" FixedLength="false" Unicode="true" />
+          <Property Name="PolicyId" Type="Int32" Nullable="false" />
+          <Property Name="PolicyName" Type="String" Nullable="false" MaxLength="128" FixedLength="false" Unicode="true" />
+          <Property Name="IsEnabled" Type="Boolean" Nullable="false" />
+          <Property Name="Priority" Type="Int32" Nullable="false" />
+          <Property Name="UpdatedAt" Type="DateTimeOffset" Nullable="false" Precision="7" />
+          <NavigationProperty Name="policy" Relationship="Model.FK_endpoint_policy_assignments_policies_PolicyId" FromRole="endpoint_policy_assignments" ToRole="policy" />
+        </EntityType>
+        <EntityType Name="policy">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="Name" Type="String" Nullable="false" MaxLength="128" FixedLength="false" Unicode="true" />
+          <Property Name="Description" Type="String" MaxLength="512" FixedLength="false" Unicode="true" />
+          <Property Name="IsEnabled" Type="Boolean" Nullable="false" />
+          <Property Name="UpdatedAt" Type="DateTimeOffset" Nullable="false" Precision="7" />
+          <Property Name="IsSystem" Type="Boolean" Nullable="false" />
+          <NavigationProperty Name="endpoint_policy_assignments" Relationship="Model.FK_endpoint_policy_assignments_policies_PolicyId" FromRole="policy" ToRole="endpoint_policy_assignments" />
+          <NavigationProperty Name="policy_claims" Relationship="Model.FK_policy_claims_policies_AuthorizationPolicyEntityId" FromRole="policy" ToRole="policy_claims" />
+          <NavigationProperty Name="policy_roles" Relationship="Model.FK_policy_roles_policies_AuthorizationPolicyEntityId" FromRole="policy" ToRole="policy_roles" />
+        </EntityType>
+        <EntityType Name="policy_claims">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="AuthorizationPolicyEntityId" Type="Int32" Nullable="false" />
+          <Property Name="Type" Type="String" Nullable="false" MaxLength="256" FixedLength="false" Unicode="true" />
+          <Property Name="Value" Type="String" MaxLength="256" FixedLength="false" Unicode="true" />
+          <NavigationProperty Name="policy" Relationship="Model.FK_policy_claims_policies_AuthorizationPolicyEntityId" FromRole="policy_claims" ToRole="policy" />
+        </EntityType>
+        <EntityType Name="policy_roles">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="AuthorizationPolicyEntityId" Type="Int32" Nullable="false" />
+          <Property Name="RoleId" Type="Int32" Nullable="false" />
+          <Property Name="RoleName" Type="String" Nullable="false" MaxLength="256" FixedLength="false" Unicode="true" />
+          <NavigationProperty Name="policy" Relationship="Model.FK_policy_roles_policies_AuthorizationPolicyEntityId" FromRole="policy_roles" ToRole="policy" />
+          <NavigationProperty Name="role" Relationship="Model.FK_policy_roles_roles_RoleId" FromRole="policy_roles" ToRole="role" />
+        </EntityType>
+        <EntityType Name="public_endpoints">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="MatchType" Type="String" Nullable="false" MaxLength="32" FixedLength="false" Unicode="true" />
+          <Property Name="Area" Type="String" MaxLength="64" FixedLength="false" Unicode="true" />
+          <Property Name="Controller" Type="String" MaxLength="128" FixedLength="false" Unicode="true" />
+          <Property Name="Action" Type="String" MaxLength="128" FixedLength="false" Unicode="true" />
+          <Property Name="Page" Type="String" MaxLength="256" FixedLength="false" Unicode="true" />
+          <Property Name="Path" Type="String" MaxLength="512" FixedLength="false" Unicode="true" />
+          <Property Name="Regex" Type="String" MaxLength="512" FixedLength="false" Unicode="true" />
+          <Property Name="Notes" Type="String" MaxLength="512" FixedLength="false" Unicode="true" />
+          <Property Name="IsEnabled" Type="Boolean" Nullable="false" />
+          <Property Name="Priority" Type="Int32" Nullable="false" />
+          <Property Name="UpdatedAt" Type="DateTimeOffset" Nullable="false" Precision="7" />
+        </EntityType>
+        <EntityType Name="role_claims">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="RoleId" Type="Int32" Nullable="false" />
+          <Property Name="ClaimType" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="ClaimValue" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <NavigationProperty Name="role" Relationship="Model.FK_role_claims_roles_RoleId" FromRole="role_claims" ToRole="role" />
+        </EntityType>
+        <EntityType Name="role">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="name" Type="String" MaxLength="256" FixedLength="false" Unicode="true" />
+          <Property Name="NormalizedName" Type="String" MaxLength="256" FixedLength="false" Unicode="true" />
+          <Property Name="ConcurrencyStamp" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <NavigationProperty Name="policy_roles" Relationship="Model.FK_policy_roles_roles_RoleId" FromRole="role" ToRole="policy_roles" />
+          <NavigationProperty Name="role_claims" Relationship="Model.FK_role_claims_roles_RoleId" FromRole="role" ToRole="role_claims" />
+          <NavigationProperty Name="users" Relationship="Model.user_roles" FromRole="role" ToRole="user" />
+        </EntityType>
+        <EntityType Name="user_claims">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="UserId" Type="Int32" Nullable="false" />
+          <Property Name="ClaimType" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="ClaimValue" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <NavigationProperty Name="user" Relationship="Model.FK_user_claims_users_UserId" FromRole="user_claims" ToRole="user" />
+        </EntityType>
+        <EntityType Name="user_logins">
+          <Key>
+            <PropertyRef Name="LoginProvider" />
+            <PropertyRef Name="ProviderKey" />
+          </Key>
+          <Property Name="LoginProvider" Type="String" Nullable="false" MaxLength="128" FixedLength="false" Unicode="true" />
+          <Property Name="ProviderKey" Type="String" Nullable="false" MaxLength="128" FixedLength="false" Unicode="true" />
+          <Property Name="ProviderDisplayName" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="UserId" Type="Int32" Nullable="false" />
+          <NavigationProperty Name="user" Relationship="Model.FK_user_logins_users_UserId" FromRole="user_logins" ToRole="user" />
+        </EntityType>
+        <EntityType Name="user_tokens">
+          <Key>
+            <PropertyRef Name="UserId" />
+            <PropertyRef Name="LoginProvider" />
+            <PropertyRef Name="Name" />
+          </Key>
+          <Property Name="UserId" Type="Int32" Nullable="false" />
+          <Property Name="LoginProvider" Type="String" Nullable="false" MaxLength="128" FixedLength="false" Unicode="true" />
+          <Property Name="Name" Type="String" Nullable="false" MaxLength="128" FixedLength="false" Unicode="true" />
+          <Property Name="Value" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <NavigationProperty Name="user" Relationship="Model.FK_user_tokens_users_UserId" FromRole="user_tokens" ToRole="user" />
+        </EntityType>
+        <EntityType Name="user">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="FirstName" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="LastName" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="UserName" Type="String" MaxLength="256" FixedLength="false" Unicode="true" />
+          <Property Name="NormalizedUserName" Type="String" MaxLength="256" FixedLength="false" Unicode="true" />
+          <Property Name="Email" Type="String" MaxLength="256" FixedLength="false" Unicode="true" />
+          <Property Name="NormalizedEmail" Type="String" MaxLength="256" FixedLength="false" Unicode="true" />
+          <Property Name="EmailConfirmed" Type="Boolean" Nullable="false" />
+          <Property Name="PasswordHash" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="SecurityStamp" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="ConcurrencyStamp" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="PhoneNumber" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="PhoneNumberConfirmed" Type="Boolean" Nullable="false" />
+          <Property Name="TwoFactorEnabled" Type="Boolean" Nullable="false" />
+          <Property Name="LockoutEnd" Type="DateTimeOffset" Precision="7" />
+          <Property Name="LockoutEnabled" Type="Boolean" Nullable="false" />
+          <Property Name="AccessFailedCount" Type="Int32" Nullable="false" />
+          <NavigationProperty Name="user_claims" Relationship="Model.FK_user_claims_users_UserId" FromRole="user" ToRole="user_claims" />
+          <NavigationProperty Name="user_logins" Relationship="Model.FK_user_logins_users_UserId" FromRole="user" ToRole="user_logins" />
+          <NavigationProperty Name="user_tokens" Relationship="Model.FK_user_tokens_users_UserId" FromRole="user" ToRole="user_tokens" />
+          <NavigationProperty Name="roles" Relationship="Model.user_roles" FromRole="user" ToRole="role" />
+        </EntityType>
+        <Association Name="FK_endpoint_policy_assignments_policies_PolicyId">
+          <End Type="Model.policy" Role="policy" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Type="Model.endpoint_policy_assignments" Role="endpoint_policy_assignments" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="policy">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="endpoint_policy_assignments">
+              <PropertyRef Name="PolicyId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_policy_claims_policies_AuthorizationPolicyEntityId">
+          <End Type="Model.policy" Role="policy" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Type="Model.policy_claims" Role="policy_claims" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="policy">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="policy_claims">
+              <PropertyRef Name="AuthorizationPolicyEntityId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_policy_roles_policies_AuthorizationPolicyEntityId">
+          <End Type="Model.policy" Role="policy" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Type="Model.policy_roles" Role="policy_roles" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="policy">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="policy_roles">
+              <PropertyRef Name="AuthorizationPolicyEntityId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_policy_roles_roles_RoleId">
+          <End Type="Model.role" Role="role" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Type="Model.policy_roles" Role="policy_roles" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="role">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="policy_roles">
+              <PropertyRef Name="RoleId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_role_claims_roles_RoleId">
+          <End Type="Model.role" Role="role" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Type="Model.role_claims" Role="role_claims" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="role">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="role_claims">
+              <PropertyRef Name="RoleId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_user_claims_users_UserId">
+          <End Type="Model.user" Role="user" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Type="Model.user_claims" Role="user_claims" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="user">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="user_claims">
+              <PropertyRef Name="UserId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_user_logins_users_UserId">
+          <End Type="Model.user" Role="user" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Type="Model.user_logins" Role="user_logins" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="user">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="user_logins">
+              <PropertyRef Name="UserId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_user_tokens_users_UserId">
+          <End Type="Model.user" Role="user" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Type="Model.user_tokens" Role="user_tokens" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="user">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="user_tokens">
+              <PropertyRef Name="UserId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="user_roles">
+          <End Type="Model.role" Role="role" Multiplicity="*" />
+          <End Type="Model.user" Role="user" Multiplicity="*" />
+        </Association>
         </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
     <edmx:Mappings>
     <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
   <EntityContainerMapping StorageEntityContainer="ModelStoreContainer" CdmEntityContainer="ModelContainer">
-    <EntitySetMapping Name="SW_forms">
-      <EntityTypeMapping TypeName="IsTypeOf(Model.SW_forms)">
-        <MappingFragment StoreEntitySet="SW_forms">
-          <ScalarProperty Name="Id" ColumnName="Id" />
-          <ScalarProperty Name="uuid" ColumnName="uuid" />
-          <ScalarProperty Name="name" ColumnName="name" />
-          <ScalarProperty Name="desc" ColumnName="desc" />
-          <ScalarProperty Name="form" ColumnName="form" />
-          <ScalarProperty Name="isApproval_01" ColumnName="isApproval_01" />
-          <ScalarProperty Name="isApproval_02" ColumnName="isApproval_02" />
-          <ScalarProperty Name="isApproval_03" ColumnName="isApproval_03" />
-          <ScalarProperty Name="dateModified" ColumnName="dateModified" />
-          <ScalarProperty Name="SW_identityId" ColumnName="SW_identityId" />
-        </MappingFragment>
-      </EntityTypeMapping>
-    </EntitySetMapping>
     <EntitySetMapping Name="SW_formTableName">
       <EntityTypeMapping TypeName="IsTypeOf(Model.SW_formTableName)">
         <MappingFragment StoreEntitySet="SW_formTableName">
@@ -893,6 +1692,8 @@
         <MappingFragment StoreEntitySet="SW_roles">
           <ScalarProperty Name="Id" ColumnName="Id" />
           <ScalarProperty Name="name" ColumnName="name" />
+          <ScalarProperty Name="NormalizedName" ColumnName="NormalizedName" />
+          <ScalarProperty Name="ConcurrencyStamp" ColumnName="ConcurrencyStamp" />
         </MappingFragment>
       </EntityTypeMapping>
     </EntitySetMapping>
@@ -900,11 +1701,45 @@
       <EntityTypeMapping TypeName="IsTypeOf(Model.SW_users)">
         <MappingFragment StoreEntitySet="SW_users">
           <ScalarProperty Name="Id" ColumnName="Id" />
-          <ScalarProperty Name="fullName" ColumnName="fullName" />
-          <ScalarProperty Name="userName" ColumnName="userName" />
-          <ScalarProperty Name="email" ColumnName="email" />
-          <ScalarProperty Name="password" ColumnName="password" />
-          <ScalarProperty Name="SW_rolesId" ColumnName="SW_rolesId" />
+          <ScalarProperty Name="FirstName" ColumnName="FirstName" />
+          <ScalarProperty Name="LastName" ColumnName="LastName" />
+          <ScalarProperty Name="UserName" ColumnName="UserName" />
+          <ScalarProperty Name="NormalizedUserName" ColumnName="NormalizedUserName" />
+          <ScalarProperty Name="Email" ColumnName="Email" />
+          <ScalarProperty Name="NormalizedEmail" ColumnName="NormalizedEmail" />
+          <ScalarProperty Name="EmailConfirmed" ColumnName="EmailConfirmed" />
+          <ScalarProperty Name="PasswordHash" ColumnName="PasswordHash" />
+          <ScalarProperty Name="SecurityStamp" ColumnName="SecurityStamp" />
+          <ScalarProperty Name="ConcurrencyStamp" ColumnName="ConcurrencyStamp" />
+          <ScalarProperty Name="PhoneNumber" ColumnName="PhoneNumber" />
+          <ScalarProperty Name="PhoneNumberConfirmed" ColumnName="PhoneNumberConfirmed" />
+          <ScalarProperty Name="TwoFactorEnabled" ColumnName="TwoFactorEnabled" />
+          <ScalarProperty Name="LockoutEnd" ColumnName="LockoutEnd" />
+          <ScalarProperty Name="LockoutEnabled" ColumnName="LockoutEnabled" />
+          <ScalarProperty Name="AccessFailedCount" ColumnName="AccessFailedCount" />
+        </MappingFragment>
+      </EntityTypeMapping>
+    </EntitySetMapping>
+    <EntitySetMapping Name="SW_formTableData_Types">
+      <EntityTypeMapping TypeName="IsTypeOf(Model.SW_formTableData_Types)">
+        <MappingFragment StoreEntitySet="SW_formTableData_Types">
+          <ScalarProperty Name="Id" ColumnName="Id" />
+          <ScalarProperty Name="type" ColumnName="type" />
+          <ScalarProperty Name="field" ColumnName="field" />
+          <ScalarProperty Name="SW_formsId" ColumnName="SW_formsId" />
+        </MappingFragment>
+      </EntityTypeMapping>
+    </EntitySetMapping>
+    <EntitySetMapping Name="SW_forms">
+      <EntityTypeMapping TypeName="IsTypeOf(Model.SW_forms)">
+        <MappingFragment StoreEntitySet="SW_forms">
+          <ScalarProperty Name="Id" ColumnName="Id" />
+          <ScalarProperty Name="uuid" ColumnName="uuid" />
+          <ScalarProperty Name="name" ColumnName="name" />
+          <ScalarProperty Name="desc" ColumnName="desc" />
+          <ScalarProperty Name="form" ColumnName="form" />
+          <ScalarProperty Name="dateModified" ColumnName="dateModified" />
+          <ScalarProperty Name="SW_identityId" ColumnName="SW_identityId" />
         </MappingFragment>
       </EntityTypeMapping>
     </EntitySetMapping>
@@ -1163,19 +1998,189 @@
           <ScalarProperty Name="FormData249" ColumnName="FormData249" />
           <ScalarProperty Name="FormData250" ColumnName="FormData250" />
           <ScalarProperty Name="SW_formsId" ColumnName="SW_formsId" />
+          <ScalarProperty Name="isApproval_01" ColumnName="isApproval_01" />
+          <ScalarProperty Name="isApproval_02" ColumnName="isApproval_02" />
+          <ScalarProperty Name="isApproval_03" ColumnName="isApproval_03" />
         </MappingFragment>
       </EntityTypeMapping>
     </EntitySetMapping>
-    <EntitySetMapping Name="SW_formTableData_Types">
-      <EntityTypeMapping TypeName="IsTypeOf(Model.SW_formTableData_Types)">
-        <MappingFragment StoreEntitySet="SW_formTableData_Types">
+    <EntitySetMapping Name="SW_formProcesses">
+      <EntityTypeMapping TypeName="IsTypeOf(Model.SW_formProcesses)">
+        <MappingFragment StoreEntitySet="SW_formProcesses">
           <ScalarProperty Name="Id" ColumnName="Id" />
-          <ScalarProperty Name="type" ColumnName="type" />
-          <ScalarProperty Name="field" ColumnName="field" />
+          <ScalarProperty Name="url" ColumnName="url" />
           <ScalarProperty Name="SW_formsId" ColumnName="SW_formsId" />
         </MappingFragment>
       </EntityTypeMapping>
     </EntitySetMapping>
+    <EntitySetMapping Name="SW_formReport">
+      <EntityTypeMapping TypeName="IsTypeOf(Model.SW_formReport)">
+        <MappingFragment StoreEntitySet="SW_formReport">
+          <ScalarProperty Name="Id" ColumnName="Id" />
+          <ScalarProperty Name="url" ColumnName="url" />
+          <ScalarProperty Name="SW_formsId" ColumnName="SW_formsId" />
+        </MappingFragment>
+      </EntityTypeMapping>
+    </EntitySetMapping>
+          <EntitySetMapping Name="C__EFMigrationsHistory_Identity">
+            <EntityTypeMapping TypeName="Model.C__EFMigrationsHistory_Identity">
+              <MappingFragment StoreEntitySet="__EFMigrationsHistory_Identity">
+                <ScalarProperty Name="ProductVersion" ColumnName="ProductVersion" />
+                <ScalarProperty Name="MigrationId" ColumnName="MigrationId" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="endpoint_policy_assignments">
+            <EntityTypeMapping TypeName="Model.endpoint_policy_assignments">
+              <MappingFragment StoreEntitySet="endpoint_policy_assignments">
+                <ScalarProperty Name="UpdatedAt" ColumnName="UpdatedAt" />
+                <ScalarProperty Name="Priority" ColumnName="Priority" />
+                <ScalarProperty Name="IsEnabled" ColumnName="IsEnabled" />
+                <ScalarProperty Name="PolicyName" ColumnName="PolicyName" />
+                <ScalarProperty Name="PolicyId" ColumnName="PolicyId" />
+                <ScalarProperty Name="Notes" ColumnName="Notes" />
+                <ScalarProperty Name="Regex" ColumnName="Regex" />
+                <ScalarProperty Name="Path" ColumnName="Path" />
+                <ScalarProperty Name="Page" ColumnName="Page" />
+                <ScalarProperty Name="Action" ColumnName="Action" />
+                <ScalarProperty Name="Controller" ColumnName="Controller" />
+                <ScalarProperty Name="Area" ColumnName="Area" />
+                <ScalarProperty Name="MatchType" ColumnName="MatchType" />
+                <ScalarProperty Name="Id" ColumnName="Id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="policies">
+            <EntityTypeMapping TypeName="Model.policy">
+              <MappingFragment StoreEntitySet="policies">
+                <ScalarProperty Name="IsSystem" ColumnName="IsSystem" />
+                <ScalarProperty Name="UpdatedAt" ColumnName="UpdatedAt" />
+                <ScalarProperty Name="IsEnabled" ColumnName="IsEnabled" />
+                <ScalarProperty Name="Description" ColumnName="Description" />
+                <ScalarProperty Name="Name" ColumnName="Name" />
+                <ScalarProperty Name="Id" ColumnName="Id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="policy_claims">
+            <EntityTypeMapping TypeName="Model.policy_claims">
+              <MappingFragment StoreEntitySet="policy_claims">
+                <ScalarProperty Name="Value" ColumnName="Value" />
+                <ScalarProperty Name="Type" ColumnName="Type" />
+                <ScalarProperty Name="AuthorizationPolicyEntityId" ColumnName="AuthorizationPolicyEntityId" />
+                <ScalarProperty Name="Id" ColumnName="Id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="policy_roles">
+            <EntityTypeMapping TypeName="Model.policy_roles">
+              <MappingFragment StoreEntitySet="policy_roles">
+                <ScalarProperty Name="RoleName" ColumnName="RoleName" />
+                <ScalarProperty Name="RoleId" ColumnName="RoleId" />
+                <ScalarProperty Name="AuthorizationPolicyEntityId" ColumnName="AuthorizationPolicyEntityId" />
+                <ScalarProperty Name="Id" ColumnName="Id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="public_endpoints">
+            <EntityTypeMapping TypeName="Model.public_endpoints">
+              <MappingFragment StoreEntitySet="public_endpoints">
+                <ScalarProperty Name="UpdatedAt" ColumnName="UpdatedAt" />
+                <ScalarProperty Name="Priority" ColumnName="Priority" />
+                <ScalarProperty Name="IsEnabled" ColumnName="IsEnabled" />
+                <ScalarProperty Name="Notes" ColumnName="Notes" />
+                <ScalarProperty Name="Regex" ColumnName="Regex" />
+                <ScalarProperty Name="Path" ColumnName="Path" />
+                <ScalarProperty Name="Page" ColumnName="Page" />
+                <ScalarProperty Name="Action" ColumnName="Action" />
+                <ScalarProperty Name="Controller" ColumnName="Controller" />
+                <ScalarProperty Name="Area" ColumnName="Area" />
+                <ScalarProperty Name="MatchType" ColumnName="MatchType" />
+                <ScalarProperty Name="Id" ColumnName="Id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="role_claims">
+            <EntityTypeMapping TypeName="Model.role_claims">
+              <MappingFragment StoreEntitySet="role_claims">
+                <ScalarProperty Name="ClaimValue" ColumnName="ClaimValue" />
+                <ScalarProperty Name="ClaimType" ColumnName="ClaimType" />
+                <ScalarProperty Name="RoleId" ColumnName="RoleId" />
+                <ScalarProperty Name="Id" ColumnName="Id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="roles">
+            <EntityTypeMapping TypeName="Model.role">
+              <MappingFragment StoreEntitySet="roles">
+                <ScalarProperty Name="ConcurrencyStamp" ColumnName="ConcurrencyStamp" />
+                <ScalarProperty Name="NormalizedName" ColumnName="NormalizedName" />
+                <ScalarProperty Name="name" ColumnName="name" />
+                <ScalarProperty Name="Id" ColumnName="Id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="user_claims">
+            <EntityTypeMapping TypeName="Model.user_claims">
+              <MappingFragment StoreEntitySet="user_claims">
+                <ScalarProperty Name="ClaimValue" ColumnName="ClaimValue" />
+                <ScalarProperty Name="ClaimType" ColumnName="ClaimType" />
+                <ScalarProperty Name="UserId" ColumnName="UserId" />
+                <ScalarProperty Name="Id" ColumnName="Id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="user_logins">
+            <EntityTypeMapping TypeName="Model.user_logins">
+              <MappingFragment StoreEntitySet="user_logins">
+                <ScalarProperty Name="UserId" ColumnName="UserId" />
+                <ScalarProperty Name="ProviderDisplayName" ColumnName="ProviderDisplayName" />
+                <ScalarProperty Name="ProviderKey" ColumnName="ProviderKey" />
+                <ScalarProperty Name="LoginProvider" ColumnName="LoginProvider" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="user_tokens">
+            <EntityTypeMapping TypeName="Model.user_tokens">
+              <MappingFragment StoreEntitySet="user_tokens">
+                <ScalarProperty Name="Value" ColumnName="Value" />
+                <ScalarProperty Name="Name" ColumnName="Name" />
+                <ScalarProperty Name="LoginProvider" ColumnName="LoginProvider" />
+                <ScalarProperty Name="UserId" ColumnName="UserId" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="users">
+            <EntityTypeMapping TypeName="Model.user">
+              <MappingFragment StoreEntitySet="users">
+                <ScalarProperty Name="AccessFailedCount" ColumnName="AccessFailedCount" />
+                <ScalarProperty Name="LockoutEnabled" ColumnName="LockoutEnabled" />
+                <ScalarProperty Name="LockoutEnd" ColumnName="LockoutEnd" />
+                <ScalarProperty Name="TwoFactorEnabled" ColumnName="TwoFactorEnabled" />
+                <ScalarProperty Name="PhoneNumberConfirmed" ColumnName="PhoneNumberConfirmed" />
+                <ScalarProperty Name="PhoneNumber" ColumnName="PhoneNumber" />
+                <ScalarProperty Name="ConcurrencyStamp" ColumnName="ConcurrencyStamp" />
+                <ScalarProperty Name="SecurityStamp" ColumnName="SecurityStamp" />
+                <ScalarProperty Name="PasswordHash" ColumnName="PasswordHash" />
+                <ScalarProperty Name="EmailConfirmed" ColumnName="EmailConfirmed" />
+                <ScalarProperty Name="NormalizedEmail" ColumnName="NormalizedEmail" />
+                <ScalarProperty Name="Email" ColumnName="Email" />
+                <ScalarProperty Name="NormalizedUserName" ColumnName="NormalizedUserName" />
+                <ScalarProperty Name="UserName" ColumnName="UserName" />
+                <ScalarProperty Name="LastName" ColumnName="LastName" />
+                <ScalarProperty Name="FirstName" ColumnName="FirstName" />
+                <ScalarProperty Name="Id" ColumnName="Id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <AssociationSetMapping Name="user_roles" TypeName="Model.user_roles" StoreEntitySet="user_roles">
+            <EndProperty Name="user">
+              <ScalarProperty Name="Id" ColumnName="UserId" />
+            </EndProperty>
+            <EndProperty Name="role">
+              <ScalarProperty Name="Id" ColumnName="RoleId" />
+            </EndProperty>
+          </AssociationSetMapping>
   </EntityContainerMapping>
 </Mapping></edmx:Mappings>
   </edmx:Runtime>

@@ -1,39 +1,49 @@
 ﻿@model SWIMS.Models.SW_formTableName
 
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "formTableName | NEW";
 }
-
-<h1>Create</h1>
-
-<h4>SW_formTableName</h4>
 <hr />
 <div class="row">
-    <div class="col-md-4">
-        <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="name" class="control-label"></label>
-                <input asp-for="name" class="form-control" />
-                <span asp-validation-for="name" class="text-danger"></span>
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <a asp-action="Create" class="btn btn-success">Create New</a>
             </div>
-            <div class="form-group">
-                <label asp-for="field" class="control-label"></label>
-                <input asp-for="field" class="form-control" />
-                <span asp-validation-for="field" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="SW_formsId" class="control-label"></label>
-                <select asp-for="SW_formsId" class ="form-control" asp-items="ViewBag.SW_formsId"></select>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
-            </div>
-        </form>
-    </div>
-</div>
+            <div class="card-body">
+                <form asp-action="Create">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
+                    <div class="row mb-24 gy-3 align-items-center">
+                        <label asp-for="name" class="form-label mb-0 col-sm-4">NAME:</label>
+                        <div class="col-sm-10">
+                            <input asp-for="name" class="form-control" placeholder="..."  />
+                            <span asp-validation-for="name" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row mb-24 gy-3 align-items-center">
+                        <label asp-for="field" class="form-label mb-0 col-sm-4">FIELD:</label>
+                        <div class="col-sm-10">
+                            <input asp-for="field" class="form-control" placeholder="..." />
+                            <span asp-validation-for="field" class="text-danger"></span>
+                        </div>
+                    </div>
+
+
+                    <div class="row mb-24 gy-3 align-items-center">
+                        <label asp-for="SW_formsId" class="form-label mb-0 col-sm-4"></label>
+                        <div class="col-sm-10">
+                            <select asp-for="SW_formsId" class="form-control" asp-items="ViewBag.SW_formsId"></select>
+                        </div>                        
+                    </div>
+
+                    <input type="submit" value="Create" class="btn btn-primary" />
+
+                </form>
+            </div>
+        </div>
+
+    </div>
 </div>
 

@@ -142,7 +142,7 @@ namespace SWIMS.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,uuid,name,desc,form,isApproval_01,isApproval_02,isApproval_03,dateModified,SW_identityId")] SW_form sW_form)
+        public async Task<IActionResult> Create([Bind("Id,uuid,name,desc,form,dateModified,SW_identityId")] SW_form sW_form)
         {
             if (ModelState.IsValid)
             {
@@ -226,7 +226,7 @@ namespace SWIMS.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,uuid,name,desc,form,isApproval_01,isApproval_02,isApproval_03,dateModified,SW_identityId")] SW_form sW_form)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,uuid,name,desc,form,dateModified,SW_identityId")] SW_form sW_form)
         {
             if (id != sW_form.Id)
             {
