@@ -511,5 +511,11 @@ public partial class SW_formTableDatum
 
     public int SW_formsId { get; set; }
 
+    public byte? isApproval_01 { get; set; }
+
+    public byte? isApproval_02 { get; set; }
+
+    public byte? isApproval_03 { get; set; }
+
     public virtual SW_form SW_forms { get; set; }
 }

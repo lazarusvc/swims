@@ -12,14 +12,18 @@ namespace Model_Designer
     using System;
     using System.Collections.Generic;
     
-    public partial class SW_users
+    public partial class user
     {
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
+        public user()
+        {
+            this.user_claims = new HashSet<user_claims>();
+            this.user_logins = new HashSet<user_logins>();
+            this.user_tokens = new HashSet<user_tokens>();
+            this.roles = new HashSet<role>();
+        }
+    
         public int Id { get; set; }
-        public string fullName { get; set; }
-        public string userName { get; set; }
-        public string email { get; set; }
-        public string password { get; set; }
-        public int SW_rolesId { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string UserName { get; set; }
@@ -37,6 +41,13 @@ namespace Model_Designer
         public bool LockoutEnabled { get; set; }
         public int AccessFailedCount { get; set; }
     
-        public virtual SW_roles SW_roles { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<user_claims> user_claims { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<user_logins> user_logins { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<user_tokens> user_tokens { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<role> roles { get; set; }
     }
 }

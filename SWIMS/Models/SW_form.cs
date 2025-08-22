@@ -17,15 +17,11 @@ public partial class SW_form
 
     public string form { get; set; }
 
-    public byte? isApproval_01 { get; set; }
-
-    public byte? isApproval_02 { get; set; }
-
-    public byte? isApproval_03 { get; set; }
-
     public DateTime dateModified { get; set; }
 
     public int SW_identityId { get; set; }
+
+    public virtual ICollection<SW_formReport> SW_formReports { get; set; } = new List<SW_formReport>();
 
     public virtual ICollection<SW_formTableDatum> SW_formTableData { get; set; } = new List<SW_formTableDatum>();
 

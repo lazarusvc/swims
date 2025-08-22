@@ -15,6 +15,10 @@ public partial class SwimsDb_moreContext : DbContext
 
     public virtual DbSet<SW_form> SW_forms { get; set; }
 
+    public virtual DbSet<SW_formProcess> SW_formProcesses { get; set; }
+
+    public virtual DbSet<SW_formReport> SW_formReports { get; set; }
+
     public virtual DbSet<SW_formTableData_Type> SW_formTableData_Types { get; set; }
 
     public virtual DbSet<SW_formTableDatum> SW_formTableData { get; set; }
@@ -36,6 +40,25 @@ public partial class SwimsDb_moreContext : DbContext
                 .HasForeignKey(d => d.SW_identityId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_SW_identitySW_forms");
+        });
+
+        modelBuilder.Entity<SW_formProcess>(entity =>
+        {
+            entity.Property(e => e.url).IsRequired();
+        });
+
+        modelBuilder.Entity<SW_formReport>(entity =>
+        {
+            entity.ToTable("SW_formReport");
+
+            entity.HasIndex(e => e.SW_formsId, "IX_FK_SW_formsSW_formReport");
+
+            entity.Property(e => e.url).IsRequired();
+
+            entity.HasOne(d => d.SW_forms).WithMany(p => p.SW_formReports)
+                .HasForeignKey(d => d.SW_formsId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_SW_formsSW_formReport");
         });
 
         modelBuilder.Entity<SW_formTableData_Type>(entity =>

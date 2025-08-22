@@ -266,6 +266,9 @@ namespace Model_Designer
         public string FormData249 { get; set; }
         public string FormData250 { get; set; }
         public int SW_formsId { get; set; }
+        public Nullable<byte> isApproval_01 { get; set; }
+        public Nullable<byte> isApproval_02 { get; set; }
+        public Nullable<byte> isApproval_03 { get; set; }
     
         public virtual SW_forms SW_forms { get; set; }
     }

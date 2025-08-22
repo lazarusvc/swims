@@ -17,28 +17,31 @@ namespace Model_Designer
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
         public SW_forms()
         {
-            this.SW_formTableName = new HashSet<SW_formTableName>();
             this.SW_formTableData = new HashSet<SW_formTableData>();
             this.SW_formTableData_Types = new HashSet<SW_formTableData_Types>();
+            this.SW_formTableName = new HashSet<SW_formTableName>();
+            this.SW_formProcesses = new HashSet<SW_formProcesses>();
+            this.SW_formReport = new HashSet<SW_formReport>();
         }
     
         public int Id { get; set; }
-        public Nullable<int> uuid { get; set; }
+        public string uuid { get; set; }
         public string name { get; set; }
         public string desc { get; set; }
         public string form { get; set; }
-        public Nullable<byte> isApproval_01 { get; set; }
-        public Nullable<byte> isApproval_02 { get; set; }
-        public Nullable<byte> isApproval_03 { get; set; }
         public System.DateTime dateModified { get; set; }
         public int SW_identityId { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<SW_formTableName> SW_formTableName { get; set; }
-        public virtual SW_identity SW_identity { get; set; }
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<SW_formTableData> SW_formTableData { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<SW_formTableData_Types> SW_formTableData_Types { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<SW_formTableName> SW_formTableName { get; set; }
+        public virtual SW_identity SW_identity { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<SW_formProcesses> SW_formProcesses { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<SW_formReport> SW_formReport { get; set; }
     }
 }

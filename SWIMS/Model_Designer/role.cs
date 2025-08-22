@@ -12,12 +12,14 @@ namespace Model_Designer
     using System;
     using System.Collections.Generic;
     
-    public partial class SW_roles
+    public partial class role
     {
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
-        public SW_roles()
+        public role()
         {
-            this.SW_users = new HashSet<SW_users>();
+            this.policy_roles = new HashSet<policy_roles>();
+            this.role_claims = new HashSet<role_claims>();
+            this.users = new HashSet<user>();
         }
     
         public int Id { get; set; }
@@ -26,6 +28,10 @@ namespace Model_Designer
         public string ConcurrencyStamp { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<SW_users> SW_users { get; set; }
+        public virtual ICollection<policy_roles> policy_roles { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<role_claims> role_claims { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<user> users { get; set; }
     }
 }

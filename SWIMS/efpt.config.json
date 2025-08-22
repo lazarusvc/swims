@@ -16,6 +16,14 @@
    "T4TemplatePath": null,
    "Tables": [
       {
+         "Name": "[dbo].[SW_formProcesses]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[SW_formReport]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[dbo].[SW_forms]",
          "ObjectType": 0
       },
