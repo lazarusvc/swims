@@ -1,0 +1,27 @@
+﻿@model IEnumerable<SWIMS.Models.Reports.SwReport>
+@{
+    ViewData["Title"] = "Reports (Admin)";
+}
+<h2>Reports</h2>
+<p><a class="btn btn-primary" asp-action="Create">New Report</a></p>
+<table class="table table-sm align-middle">
+    <thead><tr><th>Name</th><th>Description</th><th>Role</th><th>Params</th><th></th></tr></thead>
+    <tbody>
+        @foreach (var r in Model)
+        {
+            <tr>
+                <td>@r.Name</td>
+                <td>@r.Desc</td>
+                <td>@r.RoleId</td>
+                <td><a asp-area="Admin" asp-controller="ReportParams" asp-action="Index" asp-route-reportId="@r.Id">Manage</a></td>
+                <td class="text-end">
+                    <a class="btn btn-sm btn-outline-secondary" asp-action="Edit" asp-route-id="@r.Id">Edit</a>
+                    <form asp-action="Delete" asp-route-id="@r.Id" method="post" class="d-inline">
+                        @Html.AntiForgeryToken()
+                        <button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
