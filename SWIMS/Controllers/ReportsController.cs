@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using SWIMS.Data.Reports;
+using SWIMS.Models.ViewModels;
 using SWIMS.Services.Reporting;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,37 +26,60 @@ namespace SWIMS.Controllers
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            var roleIds = User.Claims.Where(c => c.Type == ClaimTypes.Role)
-                                     .Select(c => c.Value).ToList();
-
-            var reports = await _db.SwReports
-                .Where(r => roleIds.Contains(r.RoleId))
-                .OrderBy(r => r.Desc ?? r.Name)
-                .ToListAsync();
-
-            return View(reports);
+            var roleIds = User.Claims.Where(c => c.Type == ClaimTypes.Role).Select(c => c.Value).ToList();
+            var reports = await _db.SwReports.Where(r => roleIds.Contains(r.RoleId))
+                                             .OrderBy(r => r.Desc ?? r.Name)
+                                             .ToListAsync();
+            return View(new ReportsIndexViewModel { Reports = reports });
         }
 
         [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> Run(int id)
         {
+            var roleIds = User.Claims.Where(c => c.Type == ClaimTypes.Role).Select(c => c.Value).ToList();
+            var reports = await _db.SwReports.Where(r => roleIds.Contains(r.RoleId))
+                                             .OrderBy(r => r.Desc ?? r.Name)
+                                             .ToListAsync();
+
             var rpt = await _db.SwReports.Include(r => r.Params).FirstOrDefaultAsync(r => r.Id == id);
             if (rpt == null) return NotFound();
 
             var parms = rpt.ParamCheck
                 ? rpt.Params.Select(p => new KeyValuePair<string, string>(p.ParamKey.Trim(), p.ParamValue.Trim()))
-                : Enumerable.Empty<KeyValuePair<string, string>>();
+                : System.Linq.Enumerable.Empty<KeyValuePair<string, string>>();
 
             var url = _url.BuildUrl(rpt.Name, parms, rpt.PathOverride);
-            return View("Viewer", model: url);
+
+            var vm = new ReportsIndexViewModel
+            {
+                Reports = reports,
+                SelectedId = id,
+                ViewerUrl = url,
+                ViewerMode = "Ssrs"
+            };
+            return View("Index", vm); // <— RETURN INDEX WITH IFRAME BELOW
         }
 
-        // returns a page that embeds Inline() in an <iframe>
         [HttpPost, ValidateAntiForgeryToken]
-        public IActionResult PdfPage(int id, string format = "PDF")
+        public async Task<IActionResult> PdfPage(int id, string format = "PDF")
         {
-            ViewBag.Id = id; ViewBag.Format = format;
-            return View("PdfViewer");
+            var roleIds = User.Claims.Where(c => c.Type == ClaimTypes.Role).Select(c => c.Value).ToList();
+            var reports = await _db.SwReports.Where(r => roleIds.Contains(r.RoleId))
+                                             .OrderBy(r => r.Desc ?? r.Name)
+                                             .ToListAsync();
+
+            var exists = await _db.SwReports.AnyAsync(r => r.Id == id);
+            if (!exists) return NotFound();
+
+            var vm = new ReportsIndexViewModel
+            {
+                Reports = reports,
+                SelectedId = id,
+                ViewerUrl = Url.Action("Inline", "Reports", new { id, format }),
+                ViewerMode = "Inline",
+                Format = format
+            };
+            return View("Index", vm); // <— SAME PAGE, embeds /Reports/Inline
         }
 
         // server-side render and stream inline
