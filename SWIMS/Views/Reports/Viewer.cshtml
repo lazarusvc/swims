@@ -1,0 +1,7 @@
+﻿@model string  @* SSRS URL *@
+@{
+    ViewData["Title"] = "Report";
+}
+<div class="ratio ratio-16x9 mt-3">
+  <iframe src="@Model" width="100%" height="100%" style="border:0;" loading="lazy" allowfullscreen></iframe>
+</div>

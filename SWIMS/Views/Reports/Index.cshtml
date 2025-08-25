@@ -1,0 +1,25 @@
+﻿@model IEnumerable<SWIMS.Models.Reports.SwReport>
+@{
+    ViewData["Title"] = "Reports";
+}
+<div class="card">
+    <div class="card-body">
+        <form asp-action="Run" method="post">
+            <div class="row g-2 align-items-end">
+                <div class="col-md-8">
+                    <label class="form-label">Select a report</label>
+                    <select class="form-select" name="id" required>
+                        <option value="">Choose…</option>
+                        @foreach (var r in Model)
+                        {
+                            <option value="@r.Id">@((r.Desc ?? r.Name))</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-4 text-end">
+                    <button class="btn btn-primary" type="submit">Open</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
