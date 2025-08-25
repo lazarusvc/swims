@@ -5,6 +5,9 @@
 @using Microsoft.AspNetCore.Identity
 @using SWIMS.Models
 
+@using Microsoft.AspNetCore.Authorization
+@inject IAuthorizationService Authz
+
 @inject SignInManager<SwUser> SignInManager
 @inject UserManager<SwUser> UserManager
 @inject RoleManager<SwRole> RoleManager
@@ -146,6 +149,16 @@
             }
 
             
+            @if ((await Authz.AuthorizeAsync(User, "ReportsView")).Succeeded)
+            {
+                <li class="sidebar-menu-group-title">Reports</li>
+                <li>
+                    <a asp-area="Reports" asp-controller="Reports" asp-action="Index">
+                        <iconify-icon icon="mdi:file-chart-outline" class="menu-icon"></iconify-icon>
+                        <span>Reports</span>
+                    </a>
+                </li>
+            }
 
             
 
