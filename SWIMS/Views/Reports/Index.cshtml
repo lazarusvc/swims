@@ -5,6 +5,7 @@
 <div class="card">
     <div class="card-body">
         <form asp-action="Run" method="post">
+            @Html.AntiForgeryToken()
             <div class="row g-2 align-items-end">
                 <div class="col-md-8">
                     <label class="form-label">Select a report</label>
@@ -17,7 +18,8 @@
                     </select>
                 </div>
                 <div class="col-md-4 text-end">
-                    <button class="btn btn-primary" type="submit">Open</button>
+                    <button class="btn btn-primary me-2" type="submit" formaction="@Url.Action("Run", "Reports")">Open</button>
+                    <button class="btn btn-outline-secondary" type="submit" formaction="@Url.Action("PdfPage", "Reports")">View PDF Inline</button>
                 </div>
             </div>
         </form>
