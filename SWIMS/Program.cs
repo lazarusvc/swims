@@ -15,11 +15,13 @@ using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using SWIMS.Data;
+using SWIMS.Data.Reports;
 using SWIMS.Models;
 using SWIMS.Models.StoredProcs;
 using SWIMS.Services;
 using SWIMS.Services.Auth;
 using SWIMS.Services.Diagnostics;
+using SWIMS.Services.Reporting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -46,6 +48,16 @@ builder.Services.AddDbContext<SwimsStoredProcsDbContext>(options =>
 
 builder.Services.Configure<StoredProcOptions>(
     builder.Configuration.GetSection("StoredProcs"));
+
+builder.Services.AddDbContext<SwimsReportsDbContext>(options =>
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        sql => sql.MigrationsHistoryTable("__EFMigrationsHistory_Reports", "rpt")
+    ));
+
+
+builder.Services.Configure<ReportingOptions>(builder.Configuration.GetSection("Reporting"));
+builder.Services.AddScoped<ISsrsUrlBuilder, SsrsUrlBuilder>();
 
 // Configure Razor Pages
 builder.Services.AddRazorPages();
