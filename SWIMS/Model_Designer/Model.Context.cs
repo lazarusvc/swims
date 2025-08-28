@@ -25,28 +25,10 @@ namespace Model_Designer
             throw new UnintentionalCodeFirstException();
         }
     
+        public virtual DbSet<SW_forms> SW_forms { get; set; }
         public virtual DbSet<SW_formTableName> SW_formTableName { get; set; }
         public virtual DbSet<SW_identity> SW_identity { get; set; }
         public virtual DbSet<SW_roles> SW_roles { get; set; }
         public virtual DbSet<SW_users> SW_users { get; set; }
-        public virtual DbSet<SW_formTableData_Types> SW_formTableData_Types { get; set; }
-        public virtual DbSet<SW_forms> SW_forms { get; set; }
-        public virtual DbSet<SW_formTableData> SW_formTableData { get; set; }
-        public virtual DbSet<stored_process_params> stored_process_params { get; set; }
-        public virtual DbSet<stored_processes> stored_processes { get; set; }
-        public virtual DbSet<SW_formProcesses> SW_formProcesses { get; set; }
-        public virtual DbSet<SW_formReport> SW_formReport { get; set; }
-        public virtual DbSet<C__EFMigrationsHistory_Identity> C__EFMigrationsHistory_Identity { get; set; }
-        public virtual DbSet<endpoint_policy_assignments> endpoint_policy_assignments { get; set; }
-        public virtual DbSet<policy> policies { get; set; }
-        public virtual DbSet<policy_claims> policy_claims { get; set; }
-        public virtual DbSet<policy_roles> policy_roles { get; set; }
-        public virtual DbSet<public_endpoints> public_endpoints { get; set; }
-        public virtual DbSet<role_claims> role_claims { get; set; }
-        public virtual DbSet<role> roles { get; set; }
-        public virtual DbSet<user_claims> user_claims { get; set; }
-        public virtual DbSet<user_logins> user_logins { get; set; }
-        public virtual DbSet<user_tokens> user_tokens { get; set; }
-        public virtual DbSet<user> users { get; set; }
     }
 }

@@ -17,9 +17,6 @@
     @:Layout = "@Model.LayoutPageFile";
         }
 @:}
-@:
-@:<h1>@Model.ViewName</h1>
-@:
     }
     else
     {
@@ -42,7 +39,7 @@
 @:<div class="card-header">
 @:<a asp-action="Create" class="btn btn-success">Create New</a>
 @:</div>
-@:<div class="card-body">
+@:<div class="card-body" style="overflow-x:scroll;">
 @:<table class="table bordered-table mb-0" id="dataTable" data-page-length='10'>
     @:<thead>
         @:<tr>

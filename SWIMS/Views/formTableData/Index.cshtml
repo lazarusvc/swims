@@ -4,768 +4,778 @@
     ViewData["Title"] = "Index";
 }
 
-<h1>Index</h1>
-
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
+<br />
+<div class="card basic-data-table">
+<div class="card-header">
+<a asp-action="Create" class="btn btn-success">Create New</a>
+</div>
+    <div class="card-body" style="overflow-x:scroll;">
+<table class="table bordered-table mb-0" id="dataTable" data-page-length='10'>
     <thead>
         <tr>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData01)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData02)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData03)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData04)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData05)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData06)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData07)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData08)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData09)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData10)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData11)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData12)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData13)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData14)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData15)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData16)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData17)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData18)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData19)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData20)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData21)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData22)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData23)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData24)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData25)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData26)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData27)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData28)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData29)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData30)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData31)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData32)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData33)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData34)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData35)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData36)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData37)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData38)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData39)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData40)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData41)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData42)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData43)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData44)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData45)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData46)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData47)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData48)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData49)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData50)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData51)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData52)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData53)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData54)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData55)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData56)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData57)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData58)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData59)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData60)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData61)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData62)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData63)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData64)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData65)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData66)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData67)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData68)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData69)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData70)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData71)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData72)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData73)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData74)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData75)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData76)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData77)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData78)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData79)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData80)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData81)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData82)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData83)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData84)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData85)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData86)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData87)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData88)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData89)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData90)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData91)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData92)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData93)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData94)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData95)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData96)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData97)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData98)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData99)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData100)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData101)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData102)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData103)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData104)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData105)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData106)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData107)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData108)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData109)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData110)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData111)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData112)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData113)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData114)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData115)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData116)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData117)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData118)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData119)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData120)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData121)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData122)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData123)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData124)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData125)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData126)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData127)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData128)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData129)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData130)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData131)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData132)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData133)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData134)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData135)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData136)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData137)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData138)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData139)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData140)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData141)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData142)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData143)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData144)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData145)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData146)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData147)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData148)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData149)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData150)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData151)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData152)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData153)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData154)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData155)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData156)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData157)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData158)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData159)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData160)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData161)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData162)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData163)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData164)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData165)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData166)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData167)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData168)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData169)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData170)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData171)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData172)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData173)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData174)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData175)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData176)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData177)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData178)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData179)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData180)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData181)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData182)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData183)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData184)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData185)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData186)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData187)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData188)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData189)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData190)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData191)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData192)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData193)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData194)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData195)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData196)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData197)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData198)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData199)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData200)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData201)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData202)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData203)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData204)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData205)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData206)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData207)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData208)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData209)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData210)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData211)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData212)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData213)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData214)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData215)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData216)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData217)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData218)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData219)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData220)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData221)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData222)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData223)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData224)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData225)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData226)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData227)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData228)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData229)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData230)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData231)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData232)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData233)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData234)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData235)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData236)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData237)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData238)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData239)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData240)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData241)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData242)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData243)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData244)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData245)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData246)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData247)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData248)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData249)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.FormData250)
             </th>
-            <th>
+            <th scope="col">
+                @Html.DisplayNameFor(model => model.isApproval_01)
+            </th>
+            <th scope="col">
+                @Html.DisplayNameFor(model => model.isApproval_02)
+            </th>
+            <th scope="col">
+                @Html.DisplayNameFor(model => model.isApproval_03)
+            </th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.SW_forms)
             </th>
-            <th></th>
+            <th scope="col">Manage</th>
         </tr>
     </thead>
     <tbody>
@@ -1522,14 +1532,28 @@
                 @Html.DisplayFor(modelItem => item.FormData250)
             </td>
             <td>
+                @Html.DisplayFor(modelItem => item.isApproval_01)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.isApproval_02)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.isApproval_03)
+            </td>
+            <td>
                 @Html.DisplayFor(modelItem => item.SW_forms.name)
             </td>
             <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                <a asp-action="Details" asp-route-id="@item.Id" class="w-32-px h-32-px bg-primary-light text-primary-600 rounded-circle d-inline-flex align-items-center justify-content-center"><iconify-icon icon="iconamoon:eye-light"></iconify-icon></a>
+                <a asp-action="Edit" asp-route-id="@item.Id" class="w-32-px h-32-px bg-success-focus text-success-main rounded-circle d-inline-flex align-items-center justify-content-center"><iconify-icon icon="lucide:edit"></iconify-icon></a>
+                <a asp-action="Delete" asp-route-id="@item.Id" class="w-32-px h-32-px bg-danger-focus text-danger-main rounded-circle d-inline-flex align-items-center justify-content-center"><iconify-icon icon="mingcute:delete-2-line"></iconify-icon></a>
             </td>
         </tr>
 }
     </tbody>
 </table>
+</div>
+</div>
+<script src="~/lib/jquery/dist/jquery.js"></script>
+<script src="~/js/datatables.min.js"></script>
+<script type="text/javascript"> let table = new DataTable('#dataTable');</script>

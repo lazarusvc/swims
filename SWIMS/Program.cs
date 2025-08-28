@@ -1,11 +1,11 @@
-// -------------------------------------------------------------------
+﻿// -------------------------------------------------------------------
 // File:    Program.cs
 // Author:  N/A
 // Created: N/A
 // Purpose: Entry point for SWIMS ASP.NET Core application; configures services, middleware, and runs the web host.
 // Dependencies:
 //   - Microsoft.AspNetCore.Builder, Hosting, Identity, EF Core, Configuration
-//   - SWIMS.Data.SwimsDbContext, SWIMS.Models.SwUser, SWIMS.Models.SwRole
+//   - SWIMS.Data.SwimsIdentityDbContext, SWIMS.Models.SwUser, SWIMS.Models.SwRole
 //   - SWIMS.Services.BcryptPasswordHasher, LdapAuthService, SeedData
 // -------------------------------------------------------------------
 
@@ -16,18 +16,36 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using SWIMS.Data;
 using SWIMS.Models;
+using SWIMS.Models.StoredProcs;
 using SWIMS.Services;
+using SWIMS.Services.Auth;
+using SWIMS.Services.Diagnostics;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // ------------------------------------------------------
 // Configure database context and EF Core migrations
 // ------------------------------------------------------
-builder.Services.AddDbContext<SwimsDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddDbContext<SwimsIdentityDbContext>(options =>
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        sql => sql.MigrationsHistoryTable("__EFMigrationsHistory_Identity", "auth")
+    ));
 
 builder.Services.AddDbContext<SwimsDb_moreContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        sql => sql.MigrationsHistoryTable("__EFMigrationsHistory_More", "dbo")
+    ));
+
+builder.Services.AddDbContext<SwimsStoredProcsDbContext>(options =>
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        sql => sql.MigrationsHistoryTable("__EFMigrationsHistory", "sp")
+    ));
+
+builder.Services.Configure<StoredProcOptions>(
+    builder.Configuration.GetSection("StoredProcs"));
 
 // Configure Razor Pages
 builder.Services.AddRazorPages();
@@ -48,14 +66,32 @@ builder.Services
         options.Tokens.AuthenticatorTokenProvider = TokenOptions.DefaultAuthenticatorProvider;
     })
     .AddRoles<SwRole>()
-    .AddEntityFrameworkStores<SwimsDbContext>()
+    .AddEntityFrameworkStores<SwimsIdentityDbContext>()
     .AddDefaultTokenProviders();
+
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("AdminOnly", p => p.RequireRole("Admin"));
+    options.AddPolicy("ProgramManager", p => p.RequireRole("Admin", "ProgramManager"));
+});
+
+builder.Services.AddMemoryCache();
+builder.Services.AddScoped<IPolicyStore, EfPolicyStore>();
+builder.Services.AddSingleton<IAuthorizationPolicyProvider, DbAuthorizationPolicyProvider>();
+
+builder.Services.AddSingleton<IEndpointCatalog, EndpointCatalog>();
+
 
 // Use BCrypt for password hashing
 builder.Services.AddScoped<IPasswordHasher<SwUser>, BcryptPasswordHasher>();
 
 // LDAP authentication service singleton
 builder.Services.AddSingleton<ILdapAuthService, LdapAuthService>();
+
+// Stored Procedures Module
+builder.Services.AddDataProtection(); // optional but recommended if using per-proc SQL logins
+builder.Services.AddSingleton<StoredProcedureRunner>();
 
 
 // Configure application cookie paths
@@ -70,14 +106,40 @@ builder.Services.ConfigureApplicationCookie(options =>
 // ------------------------------------------------------
 builder.Services.AddControllersWithViews();
 
+builder.Services.AddScoped<IPublicAccessStore, EfPublicAccessStore>();
+builder.Services.AddScoped<IEndpointPolicyAssignmentStore, EfEndpointPolicyAssignmentStore>();
+builder.Services.AddScoped<IAuthorizationHandler, PublicOrAuthenticatedHandler>();
+
+// enable fallback (allow public if in DB, else require auth)
+var enablePublicFallback = builder.Configuration.GetValue<bool?>("Auth:EnablePublicOrAuthenticatedFallback") ?? true;
+builder.Services.AddAuthorization(options =>
+{
+    if (enablePublicFallback)
+    {
+        options.FallbackPolicy = new AuthorizationPolicyBuilder()
+            .AddRequirements(new PublicOrAuthenticatedRequirement())
+            .Build();
+    }
+
+    // keep parachute static policies
+    options.AddPolicy("AdminOnly", p => p.RequireRole("Admin"));
+    options.AddPolicy("ProgramManager", p => p.RequireRole("Admin", "ProgramManager"));
+});
+
+// Add global filter to enforce DB endpoint→policy assignments
+builder.Services.AddControllersWithViews(o =>
+{
+    o.Filters.Add<SWIMS.Services.Auth.DbEndpointPolicyFilter>();
+});
+
 // Global authorization policy: require authenticated users for all MVC controllers
-    //builder.Services.AddControllersWithViews(options =>
-    //{
-    //    var policy = new AuthorizationPolicyBuilder()
-    //                     .RequireAuthenticatedUser()
-    //                     .Build();
-    //    options.Filters.Add(new AuthorizeFilter(policy));
-    //});
+//builder.Services.AddControllersWithViews(options =>
+//{
+//    var policy = new AuthorizationPolicyBuilder()
+//                     .RequireAuthenticatedUser()
+//                     .Build();
+//    options.Filters.Add(new AuthorizeFilter(policy));
+//});
 
 
 var app = builder.Build();
@@ -87,10 +149,10 @@ using var scope = app.Services.CreateScope();
 var services = scope.ServiceProvider;
 
 // Run pending migrations and seed default data
-var db_1 = services.GetRequiredService<SwimsDbContext>();
-//var db_2 = services.GetRequiredService<SwimsDb_moreContext>();
-db_1.Database.Migrate();
-//db_2.Database.Migrate();
+// var db_1 = services.GetRequiredService<SwimsIdentityDbContext>();
+// var db_2 = services.GetRequiredService<SwimsDb_moreContext>();
+// db_1.Database.Migrate();
+// db_2.Database.Migrate();
 await SeedData.EnsureSeedDataAsync(services);
 
 
@@ -128,6 +190,11 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapStaticAssets();
+
+app.MapControllerRoute(
+    name: "areas",
+    pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
+
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}")

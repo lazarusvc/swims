@@ -132,13 +132,13 @@ namespace SWIMS.Areas.Identity.Pages.Account
                     Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
 
 
-               // 2a) If password is correct but 2FA is required, redirect into the 2FA page
+                // 2a) If password is correct but 2FA is required, redirect into the 2FA page
                 if (result.RequiresTwoFactor)
-                    {
-                        return RedirectToPage(
-                        "./LoginWith2fa",
-                        new { ReturnUrl = returnUrl, RememberMe = Input.RememberMe });
-                    }
+                {
+                    return RedirectToPage(
+                    "./LoginWith2fa",
+                    new { ReturnUrl = returnUrl, RememberMe = Input.RememberMe });
+                }
 
                 // 2b) If that fails, try finding by email and retry with their UserName
                 if (!result.Succeeded)
@@ -150,11 +150,11 @@ namespace SWIMS.Areas.Identity.Pages.Account
                             byEmail.UserName, Input.Password, Input.RememberMe, lockoutOnFailure: false);
 
                         if (result.RequiresTwoFactor)
-                            {
-                                return RedirectToPage(
-                                "./LoginWith2fa",
-                                new { ReturnUrl = returnUrl, RememberMe = Input.RememberMe });
-                            }
+                        {
+                            return RedirectToPage(
+                            "./LoginWith2fa",
+                            new { ReturnUrl = returnUrl, RememberMe = Input.RememberMe });
+                        }
                     }
                 }
 
@@ -187,9 +187,18 @@ namespace SWIMS.Areas.Identity.Pages.Account
                             user = new SwUser
                             {
                                 UserName = ldapUser.Username,
-                                Email = ldapUser.Username.Contains("@")
-                                    ? ldapUser.Username
-                                    : $"{ldapUser.Username}@ldap.orleindustries.fake",
+
+                                // Prefer the email from LDAP; fall back to UPN-style if needed
+                                Email = !string.IsNullOrWhiteSpace(ldapUser.Email)
+                                    ? ldapUser.Email
+                                    : (ldapUser.Username.Contains("@")
+                                        ? ldapUser.Username
+                                        : $"{ldapUser.Username}@{_configuration["Ldap:UpnSuffix"]}"),
+
+                                // Pull first/last name from LDAP when present
+                                FirstName = ldapUser.FirstName ?? string.Empty,
+                                LastName = ldapUser.LastName ?? string.Empty,
+
                                 EmailConfirmed = true
                             };
 
@@ -234,7 +243,44 @@ namespace SWIMS.Areas.Identity.Pages.Account
                         }
                     }
 
-                    // 6. Now sign in with an up-to-date cookie (including roles)
+                    // 5b. Persist useful LDAP profile claims in the DB (for audits/notifications)
+                    //     We upsert: name, given_name, family_name, email, plus upn/sam/dn.
+                    async Task UpsertAsync(string type, string value)
+                    {
+                        if (string.IsNullOrWhiteSpace(value)) return;
+
+                        var existingClaims = await _userManager.GetClaimsAsync(user);
+                        var existing = existingClaims.FirstOrDefault(c => c.Type == type);
+
+                        if (existing == null)
+                        {
+                            await _userManager.AddClaimAsync(user, new Claim(type, value));
+                        }
+                        else if (!string.Equals(existing.Value, value, StringComparison.Ordinal))
+                        {
+                            await _userManager.RemoveClaimAsync(user, existing);
+                            await _userManager.AddClaimAsync(user, new Claim(type, value));
+                        }
+                    }
+
+                    var emailForClaims = !string.IsNullOrWhiteSpace(ldapUser.Email)
+                        ? ldapUser.Email
+                        : (ldapUser.Username.Contains("@")
+                            ? ldapUser.Username
+                            : $"{ldapUser.Username}@{_configuration["Ldap:UpnSuffix"]}");
+
+                    // Standard claims
+                    await UpsertAsync(ClaimTypes.Name, ldapUser.DisplayName ?? ldapUser.Username ?? string.Empty);
+                    await UpsertAsync(ClaimTypes.GivenName, ldapUser.FirstName ?? string.Empty);
+                    await UpsertAsync(ClaimTypes.Surname, ldapUser.LastName ?? string.Empty);
+                    await UpsertAsync(ClaimTypes.Email, emailForClaims);
+
+                    // Helpful custom claims
+                    await UpsertAsync("upn", emailForClaims);
+                    await UpsertAsync("sam", ldapUser.Username ?? string.Empty);
+                    await UpsertAsync("dn", ldapUser.DistinguishedName ?? string.Empty);
+
+                    // 6. Now sign in with an up-to-date cookie (including roles & DB claims)
                     await _signInManager.SignInAsync(user, isPersistent: Input.RememberMe);
                     _logger.LogInformation($"LDAP user '{user.UserName}' signed in via Identity.");
 

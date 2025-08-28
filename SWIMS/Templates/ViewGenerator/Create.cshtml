@@ -17,9 +17,6 @@
     @:Layout = "@Model.LayoutPageFile";
         }
 @:}
-@:
-@:<h1>@Model.ViewName</h1>
-@:
     }
     else
     {
@@ -43,9 +40,9 @@
 @:<div class="col-md-12">
 @:<div class="card">
 @:<div class="card-header">
-@:<a asp-action="Create" class="btn btn-success">Create New</a>
+@:<a asp-action="Index" class="bg-primary-light text-primary-600 d-inline-flex align-items-center justify-content-center" style="padding: 10px;"> @Model.ViewDataTypeShortName listings</a>
 @:</div>
-@:<div class="card-body">
+@:<div class="card-body" style="overflow-y:scroll; max-height: 250px;">
         @:<form asp-action="@Model.ViewName">
         @:<div asp-validation-summary="ModelOnly" class="text-danger"></div>
         foreach (var property in Model.ModelMetadata.Properties)

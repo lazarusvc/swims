@@ -9,7 +9,7 @@
 <div class="row gy-4">
     <div class="col-md-8">
         <div id="fb-editor"></div>
-        <button type="button" class="btn btn-warning-100 text-warning-600 radius-8 px-14 py-6 text-sm" id="getJSON" style="float: right;">
+        <button type="button" class="btn btn-warning-100 text-warning-600 radius-8 px-14 py-6 text-sm" id="sv_2FormInput" style="float: right;">
             Save
         </button>
     </div>
@@ -87,11 +87,11 @@ var frm = document.getElementById("form");
 jQuery(function ($) {
     // --------------------------------------- Form Builder - options
     var options = {
-        disabledActionButtons: ['data', 'save']
+            disabledActionButtons: ['data', 'save']
     };
     var formBuilder = $(fbEditor).formBuilder(options);
 
-    document.getElementById('getJSON').addEventListener('click', function() {
+        document.getElementById('sv_2FormInput').addEventListener('click', function() {
             frm.value = formBuilder.formData;
     });
 });

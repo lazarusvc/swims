@@ -1,0 +1,61 @@
+﻿@model SWIMS.Models.ViewModels.RunStoredProcessResultViewModel
+@{
+    ViewData["Title"] = $"Results: {Model.Name}";
+    var hasRows = Model.Table != null && Model.Table.Rows.Count > 0;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="d-flex align-items-center">
+        @if (hasRows && Model.ProcessId > 0)
+        {
+            <a class="btn btn-outline-primary me-2"
+               asp-action="Export"
+               asp-route-id="@Model.ProcessId"
+               asp-route-format="csv">
+                Export CSV
+            </a>
+        }
+        <a class="btn btn-outline-secondary" asp-action="Index">Back</a>
+    </div>
+</div>
+
+<p class="text-muted">@Model.Description</p>
+
+@if (!string.IsNullOrWhiteSpace(Model.Error))
+{
+    <div class="alert alert-danger">@Model.Error</div>
+}
+else if (!hasRows)
+{
+    <div class="alert alert-info">Executed successfully. No rows returned.</div>
+}
+else
+{
+    <div class="alert alert-success small">
+        Returned @Model.Table!.Rows.Count row@(Model.Table.Rows.Count == 1 ? "" : "s").
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-striped table-sm">
+            <thead>
+                <tr>
+                    @foreach (System.Data.DataColumn col in Model.Table.Columns)
+                    {
+                        <th>@col.ColumnName</th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (System.Data.DataRow row in Model.Table.Rows)
+                {
+                    <tr>
+                        @foreach (var obj in row.ItemArray)
+                        {
+                            <td>@(obj ?? "")</td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

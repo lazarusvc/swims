@@ -5,189 +5,20 @@
     <!-- SSDL content -->
     <edmx:StorageModels>
     <Schema Namespace="Model.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
-        <EntityType Name="__EFMigrationsHistory_Identity">
-          <Key>
-            <PropertyRef Name="MigrationId" />
-          </Key>
-          <Property Name="MigrationId" Type="nvarchar" MaxLength="150" Nullable="false" />
-          <Property Name="ProductVersion" Type="nvarchar" MaxLength="32" Nullable="false" />
-        </EntityType>
-        <EntityType Name="endpoint_policy_assignments">
-          <Key>
-            <PropertyRef Name="Id" />
-          </Key>
-          <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
-          <Property Name="MatchType" Type="nvarchar" MaxLength="32" Nullable="false" />
-          <Property Name="Area" Type="nvarchar" MaxLength="64" />
-          <Property Name="Controller" Type="nvarchar" MaxLength="128" />
-          <Property Name="Action" Type="nvarchar" MaxLength="128" />
-          <Property Name="Page" Type="nvarchar" MaxLength="256" />
-          <Property Name="Path" Type="nvarchar" MaxLength="512" />
-          <Property Name="Regex" Type="nvarchar" MaxLength="512" />
-          <Property Name="Notes" Type="nvarchar" MaxLength="512" />
-          <Property Name="PolicyId" Type="int" Nullable="false" />
-          <Property Name="PolicyName" Type="nvarchar" MaxLength="128" Nullable="false" />
-          <Property Name="IsEnabled" Type="bit" Nullable="false" />
-          <Property Name="Priority" Type="int" Nullable="false" />
-          <Property Name="UpdatedAt" Type="datetimeoffset" Precision="7" Nullable="false" />
-        </EntityType>
-        <EntityType Name="policies">
-          <Key>
-            <PropertyRef Name="Id" />
-          </Key>
-          <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
-          <Property Name="Name" Type="nvarchar" MaxLength="128" Nullable="false" />
-          <Property Name="Description" Type="nvarchar" MaxLength="512" />
-          <Property Name="IsEnabled" Type="bit" Nullable="false" />
-          <Property Name="UpdatedAt" Type="datetimeoffset" Precision="7" Nullable="false" />
-          <Property Name="IsSystem" Type="bit" Nullable="false" />
-        </EntityType>
-        <EntityType Name="policy_claims">
-          <Key>
-            <PropertyRef Name="Id" />
-          </Key>
-          <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
-          <Property Name="AuthorizationPolicyEntityId" Type="int" Nullable="false" />
-          <Property Name="Type" Type="nvarchar" MaxLength="256" Nullable="false" />
-          <Property Name="Value" Type="nvarchar" MaxLength="256" />
-        </EntityType>
-        <EntityType Name="policy_roles">
-          <Key>
-            <PropertyRef Name="Id" />
-          </Key>
-          <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
-          <Property Name="AuthorizationPolicyEntityId" Type="int" Nullable="false" />
-          <Property Name="RoleId" Type="int" Nullable="false" />
-          <Property Name="RoleName" Type="nvarchar" MaxLength="256" Nullable="false" />
-        </EntityType>
-        <EntityType Name="public_endpoints">
-          <Key>
-            <PropertyRef Name="Id" />
-          </Key>
-          <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
-          <Property Name="MatchType" Type="nvarchar" MaxLength="32" Nullable="false" />
-          <Property Name="Area" Type="nvarchar" MaxLength="64" />
-          <Property Name="Controller" Type="nvarchar" MaxLength="128" />
-          <Property Name="Action" Type="nvarchar" MaxLength="128" />
-          <Property Name="Page" Type="nvarchar" MaxLength="256" />
-          <Property Name="Path" Type="nvarchar" MaxLength="512" />
-          <Property Name="Regex" Type="nvarchar" MaxLength="512" />
-          <Property Name="Notes" Type="nvarchar" MaxLength="512" />
-          <Property Name="IsEnabled" Type="bit" Nullable="false" />
-          <Property Name="Priority" Type="int" Nullable="false" />
-          <Property Name="UpdatedAt" Type="datetimeoffset" Precision="7" Nullable="false" />
-        </EntityType>
-        <EntityType Name="role_claims">
-          <Key>
-            <PropertyRef Name="Id" />
-          </Key>
-          <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
-          <Property Name="RoleId" Type="int" Nullable="false" />
-          <Property Name="ClaimType" Type="nvarchar(max)" />
-          <Property Name="ClaimValue" Type="nvarchar(max)" />
-        </EntityType>
-        <EntityType Name="roles">
-          <Key>
-            <PropertyRef Name="Id" />
-          </Key>
-          <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
-          <Property Name="name" Type="nvarchar" MaxLength="256" />
-          <Property Name="NormalizedName" Type="nvarchar" MaxLength="256" />
-          <Property Name="ConcurrencyStamp" Type="nvarchar(max)" />
-        </EntityType>
-        <EntityType Name="user_claims">
-          <Key>
-            <PropertyRef Name="Id" />
-          </Key>
-          <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
-          <Property Name="UserId" Type="int" Nullable="false" />
-          <Property Name="ClaimType" Type="nvarchar(max)" />
-          <Property Name="ClaimValue" Type="nvarchar(max)" />
-        </EntityType>
-        <EntityType Name="user_logins">
-          <Key>
-            <PropertyRef Name="LoginProvider" />
-            <PropertyRef Name="ProviderKey" />
-          </Key>
-          <Property Name="LoginProvider" Type="nvarchar" MaxLength="128" Nullable="false" />
-          <Property Name="ProviderKey" Type="nvarchar" MaxLength="128" Nullable="false" />
-          <Property Name="ProviderDisplayName" Type="nvarchar(max)" />
-          <Property Name="UserId" Type="int" Nullable="false" />
-        </EntityType>
-        <EntityType Name="user_roles">
-          <Key>
-            <PropertyRef Name="UserId" />
-            <PropertyRef Name="RoleId" />
-          </Key>
-          <Property Name="UserId" Type="int" Nullable="false" />
-          <Property Name="RoleId" Type="int" Nullable="false" />
-        </EntityType>
-        <EntityType Name="user_tokens">
-          <Key>
-            <PropertyRef Name="UserId" />
-            <PropertyRef Name="LoginProvider" />
-            <PropertyRef Name="Name" />
-          </Key>
-          <Property Name="UserId" Type="int" Nullable="false" />
-          <Property Name="LoginProvider" Type="nvarchar" MaxLength="128" Nullable="false" />
-          <Property Name="Name" Type="nvarchar" MaxLength="128" Nullable="false" />
-          <Property Name="Value" Type="nvarchar(max)" />
-        </EntityType>
-        <EntityType Name="users">
-          <Key>
-            <PropertyRef Name="Id" />
-          </Key>
-          <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
-          <Property Name="FirstName" Type="nvarchar(max)" />
-          <Property Name="LastName" Type="nvarchar(max)" />
-          <Property Name="UserName" Type="nvarchar" MaxLength="256" />
-          <Property Name="NormalizedUserName" Type="nvarchar" MaxLength="256" />
-          <Property Name="Email" Type="nvarchar" MaxLength="256" />
-          <Property Name="NormalizedEmail" Type="nvarchar" MaxLength="256" />
-          <Property Name="EmailConfirmed" Type="bit" Nullable="false" />
-          <Property Name="PasswordHash" Type="nvarchar(max)" />
-          <Property Name="SecurityStamp" Type="nvarchar(max)" />
-          <Property Name="ConcurrencyStamp" Type="nvarchar(max)" />
-          <Property Name="PhoneNumber" Type="nvarchar(max)" />
-          <Property Name="PhoneNumberConfirmed" Type="bit" Nullable="false" />
-          <Property Name="TwoFactorEnabled" Type="bit" Nullable="false" />
-          <Property Name="LockoutEnd" Type="datetimeoffset" Precision="7" />
-          <Property Name="LockoutEnabled" Type="bit" Nullable="false" />
-          <Property Name="AccessFailedCount" Type="int" Nullable="false" />
-        </EntityType>
-        <EntityType Name="SW_formProcesses">
-          <Key>
-            <PropertyRef Name="Id" />
-          </Key>
-          <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
-          <Property Name="url" Type="nvarchar(max)" Nullable="false" />
-          <Property Name="SW_formsId" Type="int" Nullable="false" />
-        </EntityType>
-        <EntityType Name="SW_formReport">
-          <Key>
-            <PropertyRef Name="Id" />
-          </Key>
-          <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
-          <Property Name="url" Type="nvarchar(max)" Nullable="false" />
-          <Property Name="SW_formsId" Type="int" Nullable="false" />
-        </EntityType>
         <EntityType Name="SW_forms">
           <Key>
             <PropertyRef Name="Id" />
           </Key>
           <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
-          <Property Name="uuid" Type="nvarchar(max)" />
+          <Property Name="uuid" Type="int" Nullable="false" />
           <Property Name="name" Type="nvarchar(max)" Nullable="false" />
           <Property Name="desc" Type="nvarchar(max)" />
           <Property Name="form" Type="nvarchar(max)" />
+          <Property Name="isApproval_01" Type="tinyint" />
+          <Property Name="isApproval_02" Type="tinyint" />
+          <Property Name="isApproval_03" Type="tinyint" />
           <Property Name="dateModified" Type="datetime" Nullable="false" />
           <Property Name="SW_identityId" Type="int" Nullable="false" />
-        </EntityType>
-        <EntityType Name="SW_formTableData">
-          <Key>
-            <PropertyRef Name="Id" />
-          </Key>
-          <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="FormData01" Type="nvarchar(max)" />
           <Property Name="FormData02" Type="nvarchar(max)" />
           <Property Name="FormData03" Type="nvarchar(max)" />
@@ -438,27 +269,13 @@
           <Property Name="FormData248" Type="nvarchar(max)" />
           <Property Name="FormData249" Type="nvarchar(max)" />
           <Property Name="FormData250" Type="nvarchar(max)" />
-          <Property Name="SW_formsId" Type="int" Nullable="false" />
-          <Property Name="isApproval_01" Type="tinyint" />
-          <Property Name="isApproval_02" Type="tinyint" />
-          <Property Name="isApproval_03" Type="tinyint" />
-        </EntityType>
-        <EntityType Name="SW_formTableData_Types">
-          <Key>
-            <PropertyRef Name="Id" />
-          </Key>
-          <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
-          <Property Name="type" Type="nvarchar(max)" />
-          <Property Name="field" Type="nvarchar(max)" />
-          <Property Name="SW_formsId" Type="int" Nullable="false" />
         </EntityType>
         <EntityType Name="SW_formTableName">
           <Key>
             <PropertyRef Name="Id" />
           </Key>
           <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
-          <Property Name="name" Type="nvarchar(max)" />
-          <Property Name="field" Type="nvarchar(max)" />
+          <Property Name="name" Type="nvarchar(max)" Nullable="false" />
           <Property Name="SW_formsId" Type="int" Nullable="false" />
         </EntityType>
         <EntityType Name="SW_identity">
@@ -480,138 +297,19 @@
             <PropertyRef Name="Id" />
           </Key>
           <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
-          <Property Name="name" Type="nvarchar" MaxLength="256" />
-          <Property Name="NormalizedName" Type="nvarchar" MaxLength="256" />
-          <Property Name="ConcurrencyStamp" Type="nvarchar(max)" />
+          <Property Name="name" Type="nvarchar(max)" Nullable="false" />
         </EntityType>
         <EntityType Name="SW_users">
           <Key>
             <PropertyRef Name="Id" />
           </Key>
           <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
-          <Property Name="FirstName" Type="nvarchar(max)" />
-          <Property Name="LastName" Type="nvarchar(max)" />
-          <Property Name="UserName" Type="nvarchar" MaxLength="256" />
-          <Property Name="NormalizedUserName" Type="nvarchar" MaxLength="256" />
-          <Property Name="Email" Type="nvarchar" MaxLength="256" />
-          <Property Name="NormalizedEmail" Type="nvarchar" MaxLength="256" />
-          <Property Name="EmailConfirmed" Type="bit" Nullable="false" />
-          <Property Name="PasswordHash" Type="nvarchar(max)" />
-          <Property Name="SecurityStamp" Type="nvarchar(max)" />
-          <Property Name="ConcurrencyStamp" Type="nvarchar(max)" />
-          <Property Name="PhoneNumber" Type="nvarchar(max)" />
-          <Property Name="PhoneNumberConfirmed" Type="bit" Nullable="false" />
-          <Property Name="TwoFactorEnabled" Type="bit" Nullable="false" />
-          <Property Name="LockoutEnd" Type="datetimeoffset" Precision="7" />
-          <Property Name="LockoutEnabled" Type="bit" Nullable="false" />
-          <Property Name="AccessFailedCount" Type="int" Nullable="false" />
+          <Property Name="fullName" Type="nvarchar(max)" Nullable="false" />
+          <Property Name="userName" Type="nvarchar(max)" Nullable="false" />
+          <Property Name="email" Type="nvarchar(max)" Nullable="false" />
+          <Property Name="password" Type="nvarchar(max)" Nullable="false" />
+          <Property Name="SW_rolesId" Type="int" Nullable="false" />
         </EntityType>
-        <Association Name="FK_endpoint_policy_assignments_policies_PolicyId">
-          <End Role="policies" Type="Self.policies" Multiplicity="1">
-            <OnDelete Action="Cascade" />
-          </End>
-          <End Role="endpoint_policy_assignments" Type="Self.endpoint_policy_assignments" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="policies">
-              <PropertyRef Name="Id" />
-            </Principal>
-            <Dependent Role="endpoint_policy_assignments">
-              <PropertyRef Name="PolicyId" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
-        <Association Name="FK_policy_claims_policies_AuthorizationPolicyEntityId">
-          <End Role="policies" Type="Self.policies" Multiplicity="1">
-            <OnDelete Action="Cascade" />
-          </End>
-          <End Role="policy_claims" Type="Self.policy_claims" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="policies">
-              <PropertyRef Name="Id" />
-            </Principal>
-            <Dependent Role="policy_claims">
-              <PropertyRef Name="AuthorizationPolicyEntityId" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
-        <Association Name="FK_policy_roles_policies_AuthorizationPolicyEntityId">
-          <End Role="policies" Type="Self.policies" Multiplicity="1">
-            <OnDelete Action="Cascade" />
-          </End>
-          <End Role="policy_roles" Type="Self.policy_roles" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="policies">
-              <PropertyRef Name="Id" />
-            </Principal>
-            <Dependent Role="policy_roles">
-              <PropertyRef Name="AuthorizationPolicyEntityId" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
-        <Association Name="FK_policy_roles_roles_RoleId">
-          <End Role="roles" Type="Self.roles" Multiplicity="1">
-            <OnDelete Action="Cascade" />
-          </End>
-          <End Role="policy_roles" Type="Self.policy_roles" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="roles">
-              <PropertyRef Name="Id" />
-            </Principal>
-            <Dependent Role="policy_roles">
-              <PropertyRef Name="RoleId" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
-        <Association Name="FK_role_claims_roles_RoleId">
-          <End Role="roles" Type="Self.roles" Multiplicity="1">
-            <OnDelete Action="Cascade" />
-          </End>
-          <End Role="role_claims" Type="Self.role_claims" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="roles">
-              <PropertyRef Name="Id" />
-            </Principal>
-            <Dependent Role="role_claims">
-              <PropertyRef Name="RoleId" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
-        <Association Name="FK_SW_formsSW_formReport">
-          <End Role="SW_forms" Type="Self.SW_forms" Multiplicity="1" />
-          <End Role="SW_formReport" Type="Self.SW_formReport" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="SW_forms">
-              <PropertyRef Name="Id" />
-            </Principal>
-            <Dependent Role="SW_formReport">
-              <PropertyRef Name="SW_formsId" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
-        <Association Name="FK_SW_formsSW_formTableData">
-          <End Role="SW_forms" Type="Self.SW_forms" Multiplicity="1" />
-          <End Role="SW_formTableData" Type="Self.SW_formTableData" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="SW_forms">
-              <PropertyRef Name="Id" />
-            </Principal>
-            <Dependent Role="SW_formTableData">
-              <PropertyRef Name="SW_formsId" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
-        <Association Name="FK_SW_formsSW_formTableData_Types">
-          <End Role="SW_forms" Type="Self.SW_forms" Multiplicity="1" />
-          <End Role="SW_formTableData_Types" Type="Self.SW_formTableData_Types" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="SW_forms">
-              <PropertyRef Name="Id" />
-            </Principal>
-            <Dependent Role="SW_formTableData_Types">
-              <PropertyRef Name="SW_formsId" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
         <Association Name="FK_SW_formsSW_formTableName">
           <End Role="SW_forms" Type="Self.SW_forms" Multiplicity="1" />
           <End Role="SW_formTableName" Type="Self.SW_formTableName" Multiplicity="*" />
@@ -636,323 +334,9 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
-        <Association Name="FK_user_claims_users_UserId">
-          <End Role="users" Type="Self.users" Multiplicity="1">
-            <OnDelete Action="Cascade" />
-          </End>
-          <End Role="user_claims" Type="Self.user_claims" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="users">
-              <PropertyRef Name="Id" />
-            </Principal>
-            <Dependent Role="user_claims">
-              <PropertyRef Name="UserId" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
-        <Association Name="FK_user_logins_users_UserId">
-          <End Role="users" Type="Self.users" Multiplicity="1">
-            <OnDelete Action="Cascade" />
-          </End>
-          <End Role="user_logins" Type="Self.user_logins" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="users">
-              <PropertyRef Name="Id" />
-            </Principal>
-            <Dependent Role="user_logins">
-              <PropertyRef Name="UserId" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
-        <Association Name="FK_user_roles_roles_RoleId">
-          <End Role="roles" Type="Self.roles" Multiplicity="1">
-            <OnDelete Action="Cascade" />
-          </End>
-          <End Role="user_roles" Type="Self.user_roles" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="roles">
-              <PropertyRef Name="Id" />
-            </Principal>
-            <Dependent Role="user_roles">
-              <PropertyRef Name="RoleId" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
-        <Association Name="FK_user_roles_users_UserId">
-          <End Role="users" Type="Self.users" Multiplicity="1">
-            <OnDelete Action="Cascade" />
-          </End>
-          <End Role="user_roles" Type="Self.user_roles" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="users">
-              <PropertyRef Name="Id" />
-            </Principal>
-            <Dependent Role="user_roles">
-              <PropertyRef Name="UserId" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
-        <Association Name="FK_user_tokens_users_UserId">
-          <End Role="users" Type="Self.users" Multiplicity="1">
-            <OnDelete Action="Cascade" />
-          </End>
-          <End Role="user_tokens" Type="Self.user_tokens" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="users">
-              <PropertyRef Name="Id" />
-            </Principal>
-            <Dependent Role="user_tokens">
-              <PropertyRef Name="UserId" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
-        <EntityContainer Name="ModelStoreContainer">
-          <EntitySet Name="__EFMigrationsHistory_Identity" EntityType="Self.__EFMigrationsHistory_Identity" Schema="auth" store:Type="Tables" />
-          <EntitySet Name="endpoint_policy_assignments" EntityType="Self.endpoint_policy_assignments" Schema="auth" store:Type="Tables" />
-          <EntitySet Name="policies" EntityType="Self.policies" Schema="auth" store:Type="Tables" />
-          <EntitySet Name="policy_claims" EntityType="Self.policy_claims" Schema="auth" store:Type="Tables" />
-          <EntitySet Name="policy_roles" EntityType="Self.policy_roles" Schema="auth" store:Type="Tables" />
-          <EntitySet Name="public_endpoints" EntityType="Self.public_endpoints" Schema="auth" store:Type="Tables" />
-          <EntitySet Name="role_claims" EntityType="Self.role_claims" Schema="auth" store:Type="Tables" />
-          <EntitySet Name="roles" EntityType="Self.roles" Schema="auth" store:Type="Tables" />
-          <EntitySet Name="user_claims" EntityType="Self.user_claims" Schema="auth" store:Type="Tables" />
-          <EntitySet Name="user_logins" EntityType="Self.user_logins" Schema="auth" store:Type="Tables" />
-          <EntitySet Name="user_roles" EntityType="Self.user_roles" Schema="auth" store:Type="Tables" />
-          <EntitySet Name="user_tokens" EntityType="Self.user_tokens" Schema="auth" store:Type="Tables" />
-          <EntitySet Name="users" EntityType="Self.users" Schema="auth" store:Type="Tables" />
-          <EntitySet Name="SW_formProcesses" EntityType="Self.SW_formProcesses" Schema="dbo" store:Type="Tables" />
-          <EntitySet Name="SW_formReport" EntityType="Self.SW_formReport" Schema="dbo" store:Type="Tables" />
-          <EntitySet Name="SW_forms" EntityType="Self.SW_forms" Schema="dbo" store:Type="Tables" />
-          <EntitySet Name="SW_formTableData" EntityType="Self.SW_formTableData" Schema="dbo" store:Type="Tables" />
-          <EntitySet Name="SW_formTableData_Types" EntityType="Self.SW_formTableData_Types" Schema="dbo" store:Type="Tables" />
-          <EntitySet Name="SW_formTableName" EntityType="Self.SW_formTableName" Schema="dbo" store:Type="Tables" />
-          <EntitySet Name="SW_identity" EntityType="Self.SW_identity" Schema="dbo" store:Type="Tables" />
-          <EntitySet Name="SW_roles" EntityType="Self.SW_roles" Schema="dbo" store:Type="Tables" />
-          <EntitySet Name="SW_users" EntityType="Self.SW_users" Schema="dbo" store:Type="Tables" />
-          <AssociationSet Name="FK_endpoint_policy_assignments_policies_PolicyId" Association="Self.FK_endpoint_policy_assignments_policies_PolicyId">
-            <End Role="policies" EntitySet="policies" />
-            <End Role="endpoint_policy_assignments" EntitySet="endpoint_policy_assignments" />
-          </AssociationSet>
-          <AssociationSet Name="FK_policy_claims_policies_AuthorizationPolicyEntityId" Association="Self.FK_policy_claims_policies_AuthorizationPolicyEntityId">
-            <End Role="policies" EntitySet="policies" />
-            <End Role="policy_claims" EntitySet="policy_claims" />
-          </AssociationSet>
-          <AssociationSet Name="FK_policy_roles_policies_AuthorizationPolicyEntityId" Association="Self.FK_policy_roles_policies_AuthorizationPolicyEntityId">
-            <End Role="policies" EntitySet="policies" />
-            <End Role="policy_roles" EntitySet="policy_roles" />
-          </AssociationSet>
-          <AssociationSet Name="FK_policy_roles_roles_RoleId" Association="Self.FK_policy_roles_roles_RoleId">
-            <End Role="roles" EntitySet="roles" />
-            <End Role="policy_roles" EntitySet="policy_roles" />
-          </AssociationSet>
-          <AssociationSet Name="FK_role_claims_roles_RoleId" Association="Self.FK_role_claims_roles_RoleId">
-            <End Role="roles" EntitySet="roles" />
-            <End Role="role_claims" EntitySet="role_claims" />
-          </AssociationSet>
-          <AssociationSet Name="FK_SW_formsSW_formReport" Association="Self.FK_SW_formsSW_formReport">
-            <End Role="SW_forms" EntitySet="SW_forms" />
-            <End Role="SW_formReport" EntitySet="SW_formReport" />
-          </AssociationSet>
-          <AssociationSet Name="FK_SW_formsSW_formTableData" Association="Self.FK_SW_formsSW_formTableData">
-            <End Role="SW_forms" EntitySet="SW_forms" />
-            <End Role="SW_formTableData" EntitySet="SW_formTableData" />
-          </AssociationSet>
-          <AssociationSet Name="FK_SW_formsSW_formTableData_Types" Association="Self.FK_SW_formsSW_formTableData_Types">
-            <End Role="SW_forms" EntitySet="SW_forms" />
-            <End Role="SW_formTableData_Types" EntitySet="SW_formTableData_Types" />
-          </AssociationSet>
-          <AssociationSet Name="FK_SW_formsSW_formTableName" Association="Self.FK_SW_formsSW_formTableName">
-            <End Role="SW_forms" EntitySet="SW_forms" />
-            <End Role="SW_formTableName" EntitySet="SW_formTableName" />
-          </AssociationSet>
-          <AssociationSet Name="FK_SW_identitySW_forms" Association="Self.FK_SW_identitySW_forms">
-            <End Role="SW_identity" EntitySet="SW_identity" />
-            <End Role="SW_forms" EntitySet="SW_forms" />
-          </AssociationSet>
-          <AssociationSet Name="FK_user_claims_users_UserId" Association="Self.FK_user_claims_users_UserId">
-            <End Role="users" EntitySet="users" />
-            <End Role="user_claims" EntitySet="user_claims" />
-          </AssociationSet>
-          <AssociationSet Name="FK_user_logins_users_UserId" Association="Self.FK_user_logins_users_UserId">
-            <End Role="users" EntitySet="users" />
-            <End Role="user_logins" EntitySet="user_logins" />
-          </AssociationSet>
-          <AssociationSet Name="FK_user_roles_roles_RoleId" Association="Self.FK_user_roles_roles_RoleId">
-            <End Role="roles" EntitySet="roles" />
-            <End Role="user_roles" EntitySet="user_roles" />
-          </AssociationSet>
-          <AssociationSet Name="FK_user_roles_users_UserId" Association="Self.FK_user_roles_users_UserId">
-            <End Role="users" EntitySet="users" />
-            <End Role="user_roles" EntitySet="user_roles" />
-          </AssociationSet>
-          <AssociationSet Name="FK_user_tokens_users_UserId" Association="Self.FK_user_tokens_users_UserId">
-            <End Role="users" EntitySet="users" />
-            <End Role="user_tokens" EntitySet="user_tokens" />
-          </AssociationSet>
-        </EntityContainer>
-      </Schema></edmx:StorageModels>
-    <!-- CSDL content -->
-    <edmx:ConceptualModels>
-      <Schema xmlns="http://schemas.microsoft.com/ado/2009/11/edm" xmlns:cg="http://schemas.microsoft.com/ado/2006/04/codegeneration" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" Namespace="Model" Alias="Self" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" annotation:UseStrongSpatialTypes="false">
-        <EntityContainer Name="ModelContainer" annotation:LazyLoadingEnabled="true">
-          <EntitySet Name="SW_formTableName" EntityType="Model.SW_formTableName" />
-          <EntitySet Name="SW_identity" EntityType="Model.SW_identity" />
-          <EntitySet Name="SW_roles" EntityType="Model.SW_roles" />
-          <EntitySet Name="SW_users" EntityType="Model.SW_users" />
-          <AssociationSet Name="FK_SW_rolesSW_users" Association="Model.FK_SW_rolesSW_users">
-            <End Role="SW_roles" EntitySet="SW_roles" />
-            <End Role="SW_users" EntitySet="SW_users" />
-          </AssociationSet>
-          <EntitySet Name="SW_formTableData_Types" EntityType="Model.SW_formTableData_Types" />
-          <EntitySet Name="SW_forms" EntityType="Model.SW_forms" />
-          <EntitySet Name="SW_formTableData" EntityType="Model.SW_formTableData" />
-          <EntitySet Name="stored_process_params" EntityType="Model.stored_process_params" />
-          <EntitySet Name="stored_processes" EntityType="Model.stored_processes" />
-          <AssociationSet Name="FK_SW_formsSW_formTableData" Association="Model.FK_SW_formsSW_formTableData">
-            <End Role="SW_forms" EntitySet="SW_forms" />
-            <End Role="SW_formTableData" EntitySet="SW_formTableData" />
-          </AssociationSet>
-          <AssociationSet Name="FK_SW_formsSW_formTableData_Types" Association="Model.FK_SW_formsSW_formTableData_Types">
-            <End Role="SW_forms" EntitySet="SW_forms" />
-            <End Role="SW_formTableData_Types" EntitySet="SW_formTableData_Types" />
-          </AssociationSet>
-          <AssociationSet Name="FK_SW_formsSW_formTableName" Association="Model.FK_SW_formsSW_formTableName">
-            <End Role="SW_forms" EntitySet="SW_forms" />
-            <End Role="SW_formTableName" EntitySet="SW_formTableName" />
-          </AssociationSet>
-          <AssociationSet Name="FK_SW_identitySW_forms" Association="Model.FK_SW_identitySW_forms">
-            <End Role="SW_identity" EntitySet="SW_identity" />
-            <End Role="SW_forms" EntitySet="SW_forms" />
-          </AssociationSet>
-          <AssociationSet Name="FK_stored_process_params_stored_processes_StoredProcessId" Association="Model.FK_stored_process_params_stored_processes_StoredProcessId">
-            <End Role="stored_processes" EntitySet="stored_processes" />
-            <End Role="stored_process_params" EntitySet="stored_process_params" />
-          </AssociationSet>
-          <EntitySet Name="SW_formProcesses" EntityType="Model.SW_formProcesses" />
-          <AssociationSet Name="SW_formsSW_formProcesses" Association="Model.SW_formsSW_formProcesses">
-            <End Role="SW_forms" EntitySet="SW_forms" />
-            <End Role="SW_formProcesses" EntitySet="SW_formProcesses" />
-          </AssociationSet>
-          <EntitySet Name="SW_formReport" EntityType="Model.SW_formReport" />
-          <AssociationSet Name="SW_formsSW_formReport" Association="Model.SW_formsSW_formReport">
-            <End Role="SW_forms" EntitySet="SW_forms" />
-            <End Role="SW_formReport" EntitySet="SW_formReport" />
-          </AssociationSet>
-          <EntitySet Name="C__EFMigrationsHistory_Identity" EntityType="Model.C__EFMigrationsHistory_Identity" />
-          <EntitySet Name="endpoint_policy_assignments" EntityType="Model.endpoint_policy_assignments" />
-          <EntitySet Name="policies" EntityType="Model.policy" />
-          <EntitySet Name="policy_claims" EntityType="Model.policy_claims" />
-          <EntitySet Name="policy_roles" EntityType="Model.policy_roles" />
-          <EntitySet Name="public_endpoints" EntityType="Model.public_endpoints" />
-          <EntitySet Name="role_claims" EntityType="Model.role_claims" />
-          <EntitySet Name="roles" EntityType="Model.role" />
-          <EntitySet Name="user_claims" EntityType="Model.user_claims" />
-          <EntitySet Name="user_logins" EntityType="Model.user_logins" />
-          <EntitySet Name="user_tokens" EntityType="Model.user_tokens" />
-          <EntitySet Name="users" EntityType="Model.user" />
-          <AssociationSet Name="FK_endpoint_policy_assignments_policies_PolicyId" Association="Model.FK_endpoint_policy_assignments_policies_PolicyId">
-            <End Role="policy" EntitySet="policies" />
-            <End Role="endpoint_policy_assignments" EntitySet="endpoint_policy_assignments" />
-          </AssociationSet>
-          <AssociationSet Name="FK_policy_claims_policies_AuthorizationPolicyEntityId" Association="Model.FK_policy_claims_policies_AuthorizationPolicyEntityId">
-            <End Role="policy" EntitySet="policies" />
-            <End Role="policy_claims" EntitySet="policy_claims" />
-          </AssociationSet>
-          <AssociationSet Name="FK_policy_roles_policies_AuthorizationPolicyEntityId" Association="Model.FK_policy_roles_policies_AuthorizationPolicyEntityId">
-            <End Role="policy" EntitySet="policies" />
-            <End Role="policy_roles" EntitySet="policy_roles" />
-          </AssociationSet>
-          <AssociationSet Name="FK_policy_roles_roles_RoleId" Association="Model.FK_policy_roles_roles_RoleId">
-            <End Role="role" EntitySet="roles" />
-            <End Role="policy_roles" EntitySet="policy_roles" />
-          </AssociationSet>
-          <AssociationSet Name="FK_role_claims_roles_RoleId" Association="Model.FK_role_claims_roles_RoleId">
-            <End Role="role" EntitySet="roles" />
-            <End Role="role_claims" EntitySet="role_claims" />
-          </AssociationSet>
-          <AssociationSet Name="FK_user_claims_users_UserId" Association="Model.FK_user_claims_users_UserId">
-            <End Role="user" EntitySet="users" />
-            <End Role="user_claims" EntitySet="user_claims" />
-          </AssociationSet>
-          <AssociationSet Name="FK_user_logins_users_UserId" Association="Model.FK_user_logins_users_UserId">
-            <End Role="user" EntitySet="users" />
-            <End Role="user_logins" EntitySet="user_logins" />
-          </AssociationSet>
-          <AssociationSet Name="FK_user_tokens_users_UserId" Association="Model.FK_user_tokens_users_UserId">
-            <End Role="user" EntitySet="users" />
-            <End Role="user_tokens" EntitySet="user_tokens" />
-          </AssociationSet>
-          <AssociationSet Name="user_roles" Association="Model.user_roles">
-            <End Role="role" EntitySet="roles" />
-            <End Role="user" EntitySet="users" />
-          </AssociationSet>
-        </EntityContainer>
-        <EntityType Name="SW_formTableName">
-          <Key>
-            <PropertyRef Name="Id" />
-          </Key>
-          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="name" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
-          <Property Name="field" Type="String" MaxLength="Max" Unicode="true" FixedLength="false" />
-          <Property Name="SW_formsId" Type="Int32" Nullable="false" />
-          <NavigationProperty Name="SW_forms" Relationship="Model.FK_SW_formsSW_formTableName" FromRole="SW_formTableName" ToRole="SW_forms" />
-        </EntityType>
-        <EntityType Name="SW_identity">
-          <Key>
-            <PropertyRef Name="Id" />
-          </Key>
-          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="name" Type="String" Nullable="false" MaxLength="Max" FixedLength="false" Unicode="true" />
-          <Property Name="desc" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
-          <Property Name="logo" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
-          <Property Name="media_01" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
-          <Property Name="media_02" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
-          <Property Name="media_03" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
-          <Property Name="header" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
-          <Property Name="signature" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
-          <NavigationProperty Name="SW_forms" Relationship="Model.FK_SW_identitySW_forms" FromRole="SW_identity" ToRole="SW_forms" />
-        </EntityType>
-        <EntityType Name="SW_roles">
-          <Key>
-            <PropertyRef Name="Id" />
-          </Key>
-          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="name" Type="String" MaxLength="256" FixedLength="false" Unicode="true" />
-          <NavigationProperty Name="SW_users" Relationship="Model.FK_SW_rolesSW_users" FromRole="SW_roles" ToRole="SW_users" />
-          <Property Name="NormalizedName" Type="String" MaxLength="256" FixedLength="false" Unicode="true" />
-          <Property Name="ConcurrencyStamp" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
-        </EntityType>
-        <EntityType Name="SW_users">
-          <Key>
-            <PropertyRef Name="Id" />
-          </Key>
-          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="fullName" Type="String" Nullable="false" MaxLength="Max" FixedLength="false" Unicode="true" />
-          <Property Name="userName" Type="String" Nullable="false" MaxLength="Max" FixedLength="false" Unicode="true" />
-          <Property Name="email" Type="String" Nullable="false" MaxLength="Max" FixedLength="false" Unicode="true" />
-          <Property Name="password" Type="String" Nullable="false" MaxLength="Max" FixedLength="false" Unicode="true" />
-          <Property Name="SW_rolesId" Type="Int32" Nullable="false" />
-          <NavigationProperty Name="SW_roles" Relationship="Model.FK_SW_rolesSW_users" FromRole="SW_users" ToRole="SW_roles" />
-          <Property Name="FirstName" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
-          <Property Name="LastName" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
-          <Property Name="UserName" Type="String" MaxLength="256" FixedLength="false" Unicode="true" />
-          <Property Name="NormalizedUserName" Type="String" MaxLength="256" FixedLength="false" Unicode="true" />
-          <Property Name="Email" Type="String" MaxLength="256" FixedLength="false" Unicode="true" />
-          <Property Name="NormalizedEmail" Type="String" MaxLength="256" FixedLength="false" Unicode="true" />
-          <Property Name="EmailConfirmed" Type="Boolean" Nullable="false" />
-          <Property Name="PasswordHash" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
-          <Property Name="SecurityStamp" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
-          <Property Name="ConcurrencyStamp" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
-          <Property Name="PhoneNumber" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
-          <Property Name="PhoneNumberConfirmed" Type="Boolean" Nullable="false" />
-          <Property Name="TwoFactorEnabled" Type="Boolean" Nullable="false" />
-          <Property Name="LockoutEnd" Type="DateTimeOffset" Precision="7" />
-          <Property Name="LockoutEnabled" Type="Boolean" Nullable="false" />
-          <Property Name="AccessFailedCount" Type="Int32" Nullable="false" />
-        </EntityType>
         <Association Name="FK_SW_rolesSW_users">
-          <End Type="Model.SW_roles" Role="SW_roles" Multiplicity="1" />
-          <End Type="Model.SW_users" Role="SW_users" Multiplicity="*" />
+          <End Role="SW_roles" Type="Self.SW_roles" Multiplicity="1" />
+          <End Role="SW_users" Type="Self.SW_users" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="SW_roles">
               <PropertyRef Name="Id" />
@@ -962,39 +346,62 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
-        <EntityType Name="SW_formTableData_Types">
-          <Key>
-            <PropertyRef Name="Id" />
-          </Key>
-          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="type" Type="String" MaxLength="Max" Unicode="true" FixedLength="false" />
-          <Property Name="field" Type="String" MaxLength="Max" Unicode="true" FixedLength="false" />
-          <Property Name="SW_formsId" Type="Int32" Nullable="false" />
-          <NavigationProperty Name="SW_forms" Relationship="Model.FK_SW_formsSW_formTableData_Types" FromRole="SW_formTableData_Types" ToRole="SW_forms" />
-        </EntityType>
+        <EntityContainer Name="ModelStoreContainer">
+          <EntitySet Name="SW_forms" EntityType="Self.SW_forms" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="SW_formTableName" EntityType="Self.SW_formTableName" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="SW_identity" EntityType="Self.SW_identity" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="SW_roles" EntityType="Self.SW_roles" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="SW_users" EntityType="Self.SW_users" Schema="dbo" store:Type="Tables" />
+          <AssociationSet Name="FK_SW_formsSW_formTableName" Association="Self.FK_SW_formsSW_formTableName">
+            <End Role="SW_forms" EntitySet="SW_forms" />
+            <End Role="SW_formTableName" EntitySet="SW_formTableName" />
+          </AssociationSet>
+          <AssociationSet Name="FK_SW_identitySW_forms" Association="Self.FK_SW_identitySW_forms">
+            <End Role="SW_identity" EntitySet="SW_identity" />
+            <End Role="SW_forms" EntitySet="SW_forms" />
+          </AssociationSet>
+          <AssociationSet Name="FK_SW_rolesSW_users" Association="Self.FK_SW_rolesSW_users">
+            <End Role="SW_roles" EntitySet="SW_roles" />
+            <End Role="SW_users" EntitySet="SW_users" />
+          </AssociationSet>
+        </EntityContainer>
+      </Schema></edmx:StorageModels>
+    <!-- CSDL content -->
+    <edmx:ConceptualModels>
+      <Schema xmlns="http://schemas.microsoft.com/ado/2009/11/edm" xmlns:cg="http://schemas.microsoft.com/ado/2006/04/codegeneration" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" Namespace="Model" Alias="Self" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" annotation:UseStrongSpatialTypes="false">
+        <EntityContainer Name="ModelContainer" annotation:LazyLoadingEnabled="true">
+          <EntitySet Name="SW_forms" EntityType="Model.SW_forms" />
+          <EntitySet Name="SW_formTableName" EntityType="Model.SW_formTableName" />
+          <EntitySet Name="SW_identity" EntityType="Model.SW_identity" />
+          <EntitySet Name="SW_roles" EntityType="Model.SW_roles" />
+          <EntitySet Name="SW_users" EntityType="Model.SW_users" />
+          <AssociationSet Name="FK_SW_formsSW_formTableName" Association="Model.FK_SW_formsSW_formTableName">
+            <End Role="SW_forms" EntitySet="SW_forms" />
+            <End Role="SW_formTableName" EntitySet="SW_formTableName" />
+          </AssociationSet>
+          <AssociationSet Name="FK_SW_identitySW_forms" Association="Model.FK_SW_identitySW_forms">
+            <End Role="SW_identity" EntitySet="SW_identity" />
+            <End Role="SW_forms" EntitySet="SW_forms" />
+          </AssociationSet>
+          <AssociationSet Name="FK_SW_rolesSW_users" Association="Model.FK_SW_rolesSW_users">
+            <End Role="SW_roles" EntitySet="SW_roles" />
+            <End Role="SW_users" EntitySet="SW_users" />
+          </AssociationSet>
+        </EntityContainer>
         <EntityType Name="SW_forms">
           <Key>
             <PropertyRef Name="Id" />
           </Key>
           <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="uuid" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="uuid" Type="Int32" Nullable="false" />
           <Property Name="name" Type="String" Nullable="false" MaxLength="Max" FixedLength="false" Unicode="true" />
           <Property Name="desc" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
           <Property Name="form" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="isApproval_01" Type="Byte" />
+          <Property Name="isApproval_02" Type="Byte" />
+          <Property Name="isApproval_03" Type="Byte" />
           <Property Name="dateModified" Type="DateTime" Nullable="false" Precision="3" />
           <Property Name="SW_identityId" Type="Int32" Nullable="false" />
-          <NavigationProperty Name="SW_formTableData" Relationship="Model.FK_SW_formsSW_formTableData" FromRole="SW_forms" ToRole="SW_formTableData" />
-          <NavigationProperty Name="SW_formTableData_Types" Relationship="Model.FK_SW_formsSW_formTableData_Types" FromRole="SW_forms" ToRole="SW_formTableData_Types" />
-          <NavigationProperty Name="SW_formTableName" Relationship="Model.FK_SW_formsSW_formTableName" FromRole="SW_forms" ToRole="SW_formTableName" />
-          <NavigationProperty Name="SW_identity" Relationship="Model.FK_SW_identitySW_forms" FromRole="SW_forms" ToRole="SW_identity" />
-          <NavigationProperty Name="SW_formProcesses" Relationship="Model.SW_formsSW_formProcesses" FromRole="SW_forms" ToRole="SW_formProcesses" />
-          <NavigationProperty Name="SW_formReport" Relationship="Model.SW_formsSW_formReport" FromRole="SW_forms" ToRole="SW_formReport" />
-        </EntityType>
-        <EntityType Name="SW_formTableData">
-          <Key>
-            <PropertyRef Name="Id" />
-          </Key>
-          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <Property Name="FormData01" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
           <Property Name="FormData02" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
           <Property Name="FormData03" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
@@ -1245,61 +652,54 @@
           <Property Name="FormData248" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
           <Property Name="FormData249" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
           <Property Name="FormData250" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <NavigationProperty Name="SW_formTableName" Relationship="Model.FK_SW_formsSW_formTableName" FromRole="SW_forms" ToRole="SW_formTableName" />
+          <NavigationProperty Name="SW_identity" Relationship="Model.FK_SW_identitySW_forms" FromRole="SW_forms" ToRole="SW_identity" />
+          <Property Name="Property1" Type="String" Nullable="false" />
+        </EntityType>
+        <EntityType Name="SW_formTableName">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="name" Type="String" Nullable="false" MaxLength="Max" FixedLength="false" Unicode="true" />
           <Property Name="SW_formsId" Type="Int32" Nullable="false" />
-          <Property Name="isApproval_01" Type="Byte" />
-          <Property Name="isApproval_02" Type="Byte" />
-          <Property Name="isApproval_03" Type="Byte" />
-          <NavigationProperty Name="SW_forms" Relationship="Model.FK_SW_formsSW_formTableData" FromRole="SW_formTableData" ToRole="SW_forms" />
+          <NavigationProperty Name="SW_forms" Relationship="Model.FK_SW_formsSW_formTableName" FromRole="SW_formTableName" ToRole="SW_forms" />
         </EntityType>
-        <EntityType Name="stored_process_params">
+        <EntityType Name="SW_identity">
           <Key>
             <PropertyRef Name="Id" />
           </Key>
           <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="StoredProcessId" Type="Int32" Nullable="false" />
-          <Property Name="Key" Type="String" Nullable="false" MaxLength="128" FixedLength="false" Unicode="true" />
-          <Property Name="Value" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
-          <Property Name="DataType" Type="String" Nullable="false" MaxLength="64" FixedLength="false" Unicode="true" />
-          <NavigationProperty Name="stored_processes" Relationship="Model.FK_stored_process_params_stored_processes_StoredProcessId" FromRole="stored_process_params" ToRole="stored_processes" />
+          <Property Name="name" Type="String" Nullable="false" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="desc" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="logo" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="media_01" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="media_02" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="media_03" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="header" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="signature" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <NavigationProperty Name="SW_forms" Relationship="Model.FK_SW_identitySW_forms" FromRole="SW_identity" ToRole="SW_forms" />
         </EntityType>
-        <EntityType Name="stored_processes">
+        <EntityType Name="SW_roles">
           <Key>
             <PropertyRef Name="Id" />
           </Key>
           <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="Name" Type="String" Nullable="false" MaxLength="256" FixedLength="false" Unicode="true" />
-          <Property Name="Description" Type="String" Nullable="false" MaxLength="1024" FixedLength="false" Unicode="true" />
-          <Property Name="ConnectionKey" Type="String" MaxLength="128" FixedLength="false" Unicode="true" />
-          <Property Name="DataSource" Type="String" MaxLength="256" FixedLength="false" Unicode="true" />
-          <Property Name="Database" Type="String" MaxLength="256" FixedLength="false" Unicode="true" />
-          <Property Name="DbUserEncrypted" Type="String" MaxLength="512" FixedLength="false" Unicode="true" />
-          <Property Name="DbPasswordEncrypted" Type="String" MaxLength="1024" FixedLength="false" Unicode="true" />
-          <NavigationProperty Name="stored_process_params" Relationship="Model.FK_stored_process_params_stored_processes_StoredProcessId" FromRole="stored_processes" ToRole="stored_process_params" />
+          <Property Name="name" Type="String" Nullable="false" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <NavigationProperty Name="SW_users" Relationship="Model.FK_SW_rolesSW_users" FromRole="SW_roles" ToRole="SW_users" />
         </EntityType>
-        <Association Name="FK_SW_formsSW_formTableData">
-          <End Type="Model.SW_forms" Role="SW_forms" Multiplicity="1" />
-          <End Type="Model.SW_formTableData" Role="SW_formTableData" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="SW_forms">
-              <PropertyRef Name="Id" />
-            </Principal>
-            <Dependent Role="SW_formTableData">
-              <PropertyRef Name="SW_formsId" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
-        <Association Name="FK_SW_formsSW_formTableData_Types">
-          <End Type="Model.SW_forms" Role="SW_forms" Multiplicity="1" />
-          <End Type="Model.SW_formTableData_Types" Role="SW_formTableData_Types" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="SW_forms">
-              <PropertyRef Name="Id" />
-            </Principal>
-            <Dependent Role="SW_formTableData_Types">
-              <PropertyRef Name="SW_formsId" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
+        <EntityType Name="SW_users">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="fullName" Type="String" Nullable="false" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="userName" Type="String" Nullable="false" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="email" Type="String" Nullable="false" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="password" Type="String" Nullable="false" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="SW_rolesId" Type="Int32" Nullable="false" />
+          <NavigationProperty Name="SW_roles" Relationship="Model.FK_SW_rolesSW_users" FromRole="SW_users" ToRole="SW_roles" />
+        </EntityType>
         <Association Name="FK_SW_formsSW_formTableName">
           <End Type="Model.SW_forms" Role="SW_forms" Multiplicity="1" />
           <End Type="Model.SW_formTableName" Role="SW_formTableName" Multiplicity="*" />
@@ -1324,337 +724,17 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
-        <Association Name="FK_stored_process_params_stored_processes_StoredProcessId">
-          <End Type="Model.stored_processes" Role="stored_processes" Multiplicity="1">
-            <OnDelete Action="Cascade" />
-          </End>
-          <End Type="Model.stored_process_params" Role="stored_process_params" Multiplicity="*" />
+        <Association Name="FK_SW_rolesSW_users">
+          <End Type="Model.SW_roles" Role="SW_roles" Multiplicity="1" />
+          <End Type="Model.SW_users" Role="SW_users" Multiplicity="*" />
           <ReferentialConstraint>
-            <Principal Role="stored_processes">
+            <Principal Role="SW_roles">
               <PropertyRef Name="Id" />
             </Principal>
-            <Dependent Role="stored_process_params">
-              <PropertyRef Name="StoredProcessId" />
+            <Dependent Role="SW_users">
+              <PropertyRef Name="SW_rolesId" />
             </Dependent>
           </ReferentialConstraint>
-        </Association>
-        <EntityType Name="SW_formProcesses">
-          <Key>
-            <PropertyRef Name="Id" />
-          </Key>
-          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="url" Type="String" Nullable="false" MaxLength="Max" Unicode="true" FixedLength="false" />
-          <NavigationProperty Name="SW_forms" Relationship="Model.SW_formsSW_formProcesses" FromRole="SW_formProcesses" ToRole="SW_forms" />
-          <Property Name="SW_formsId" Type="Int32" Nullable="false" />
-        </EntityType>
-        <Association Name="SW_formsSW_formProcesses">
-          <End Type="Model.SW_forms" Role="SW_forms" Multiplicity="1" />
-          <End Type="Model.SW_formProcesses" Role="SW_formProcesses" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="SW_forms">
-              <PropertyRef Name="Id" />
-            </Principal>
-            <Dependent Role="SW_formProcesses">
-              <PropertyRef Name="SW_formsId" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
-        <EntityType Name="SW_formReport">
-          <Key>
-            <PropertyRef Name="Id" />
-          </Key>
-          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="url" Type="String" Nullable="false" MaxLength="Max" Unicode="true" FixedLength="false" />
-          <NavigationProperty Name="SW_forms" Relationship="Model.SW_formsSW_formReport" FromRole="SW_formReport" ToRole="SW_forms" />
-          <Property Name="SW_formsId" Type="Int32" Nullable="false" />
-        </EntityType>
-        <Association Name="SW_formsSW_formReport">
-          <End Type="Model.SW_forms" Role="SW_forms" Multiplicity="1" />
-          <End Type="Model.SW_formReport" Role="SW_formReport" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="SW_forms">
-              <PropertyRef Name="Id" />
-            </Principal>
-            <Dependent Role="SW_formReport">
-              <PropertyRef Name="SW_formsId" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
-        <EntityType Name="C__EFMigrationsHistory_Identity">
-          <Key>
-            <PropertyRef Name="MigrationId" />
-          </Key>
-          <Property Name="MigrationId" Type="String" Nullable="false" MaxLength="150" FixedLength="false" Unicode="true" />
-          <Property Name="ProductVersion" Type="String" Nullable="false" MaxLength="32" FixedLength="false" Unicode="true" />
-        </EntityType>
-        <EntityType Name="endpoint_policy_assignments">
-          <Key>
-            <PropertyRef Name="Id" />
-          </Key>
-          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="MatchType" Type="String" Nullable="false" MaxLength="32" FixedLength="false" Unicode="true" />
-          <Property Name="Area" Type="String" MaxLength="64" FixedLength="false" Unicode="true" />
-          <Property Name="Controller" Type="String" MaxLength="128" FixedLength="false" Unicode="true" />
-          <Property Name="Action" Type="String" MaxLength="128" FixedLength="false" Unicode="true" />
-          <Property Name="Page" Type="String" MaxLength="256" FixedLength="false" Unicode="true" />
-          <Property Name="Path" Type="String" MaxLength="512" FixedLength="false" Unicode="true" />
-          <Property Name="Regex" Type="String" MaxLength="512" FixedLength="false" Unicode="true" />
-          <Property Name="Notes" Type="String" MaxLength="512" FixedLength="false" Unicode="true" />
-          <Property Name="PolicyId" Type="Int32" Nullable="false" />
-          <Property Name="PolicyName" Type="String" Nullable="false" MaxLength="128" FixedLength="false" Unicode="true" />
-          <Property Name="IsEnabled" Type="Boolean" Nullable="false" />
-          <Property Name="Priority" Type="Int32" Nullable="false" />
-          <Property Name="UpdatedAt" Type="DateTimeOffset" Nullable="false" Precision="7" />
-          <NavigationProperty Name="policy" Relationship="Model.FK_endpoint_policy_assignments_policies_PolicyId" FromRole="endpoint_policy_assignments" ToRole="policy" />
-        </EntityType>
-        <EntityType Name="policy">
-          <Key>
-            <PropertyRef Name="Id" />
-          </Key>
-          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="Name" Type="String" Nullable="false" MaxLength="128" FixedLength="false" Unicode="true" />
-          <Property Name="Description" Type="String" MaxLength="512" FixedLength="false" Unicode="true" />
-          <Property Name="IsEnabled" Type="Boolean" Nullable="false" />
-          <Property Name="UpdatedAt" Type="DateTimeOffset" Nullable="false" Precision="7" />
-          <Property Name="IsSystem" Type="Boolean" Nullable="false" />
-          <NavigationProperty Name="endpoint_policy_assignments" Relationship="Model.FK_endpoint_policy_assignments_policies_PolicyId" FromRole="policy" ToRole="endpoint_policy_assignments" />
-          <NavigationProperty Name="policy_claims" Relationship="Model.FK_policy_claims_policies_AuthorizationPolicyEntityId" FromRole="policy" ToRole="policy_claims" />
-          <NavigationProperty Name="policy_roles" Relationship="Model.FK_policy_roles_policies_AuthorizationPolicyEntityId" FromRole="policy" ToRole="policy_roles" />
-        </EntityType>
-        <EntityType Name="policy_claims">
-          <Key>
-            <PropertyRef Name="Id" />
-          </Key>
-          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="AuthorizationPolicyEntityId" Type="Int32" Nullable="false" />
-          <Property Name="Type" Type="String" Nullable="false" MaxLength="256" FixedLength="false" Unicode="true" />
-          <Property Name="Value" Type="String" MaxLength="256" FixedLength="false" Unicode="true" />
-          <NavigationProperty Name="policy" Relationship="Model.FK_policy_claims_policies_AuthorizationPolicyEntityId" FromRole="policy_claims" ToRole="policy" />
-        </EntityType>
-        <EntityType Name="policy_roles">
-          <Key>
-            <PropertyRef Name="Id" />
-          </Key>
-          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="AuthorizationPolicyEntityId" Type="Int32" Nullable="false" />
-          <Property Name="RoleId" Type="Int32" Nullable="false" />
-          <Property Name="RoleName" Type="String" Nullable="false" MaxLength="256" FixedLength="false" Unicode="true" />
-          <NavigationProperty Name="policy" Relationship="Model.FK_policy_roles_policies_AuthorizationPolicyEntityId" FromRole="policy_roles" ToRole="policy" />
-          <NavigationProperty Name="role" Relationship="Model.FK_policy_roles_roles_RoleId" FromRole="policy_roles" ToRole="role" />
-        </EntityType>
-        <EntityType Name="public_endpoints">
-          <Key>
-            <PropertyRef Name="Id" />
-          </Key>
-          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="MatchType" Type="String" Nullable="false" MaxLength="32" FixedLength="false" Unicode="true" />
-          <Property Name="Area" Type="String" MaxLength="64" FixedLength="false" Unicode="true" />
-          <Property Name="Controller" Type="String" MaxLength="128" FixedLength="false" Unicode="true" />
-          <Property Name="Action" Type="String" MaxLength="128" FixedLength="false" Unicode="true" />
-          <Property Name="Page" Type="String" MaxLength="256" FixedLength="false" Unicode="true" />
-          <Property Name="Path" Type="String" MaxLength="512" FixedLength="false" Unicode="true" />
-          <Property Name="Regex" Type="String" MaxLength="512" FixedLength="false" Unicode="true" />
-          <Property Name="Notes" Type="String" MaxLength="512" FixedLength="false" Unicode="true" />
-          <Property Name="IsEnabled" Type="Boolean" Nullable="false" />
-          <Property Name="Priority" Type="Int32" Nullable="false" />
-          <Property Name="UpdatedAt" Type="DateTimeOffset" Nullable="false" Precision="7" />
-        </EntityType>
-        <EntityType Name="role_claims">
-          <Key>
-            <PropertyRef Name="Id" />
-          </Key>
-          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="RoleId" Type="Int32" Nullable="false" />
-          <Property Name="ClaimType" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
-          <Property Name="ClaimValue" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
-          <NavigationProperty Name="role" Relationship="Model.FK_role_claims_roles_RoleId" FromRole="role_claims" ToRole="role" />
-        </EntityType>
-        <EntityType Name="role">
-          <Key>
-            <PropertyRef Name="Id" />
-          </Key>
-          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="name" Type="String" MaxLength="256" FixedLength="false" Unicode="true" />
-          <Property Name="NormalizedName" Type="String" MaxLength="256" FixedLength="false" Unicode="true" />
-          <Property Name="ConcurrencyStamp" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
-          <NavigationProperty Name="policy_roles" Relationship="Model.FK_policy_roles_roles_RoleId" FromRole="role" ToRole="policy_roles" />
-          <NavigationProperty Name="role_claims" Relationship="Model.FK_role_claims_roles_RoleId" FromRole="role" ToRole="role_claims" />
-          <NavigationProperty Name="users" Relationship="Model.user_roles" FromRole="role" ToRole="user" />
-        </EntityType>
-        <EntityType Name="user_claims">
-          <Key>
-            <PropertyRef Name="Id" />
-          </Key>
-          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="UserId" Type="Int32" Nullable="false" />
-          <Property Name="ClaimType" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
-          <Property Name="ClaimValue" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
-          <NavigationProperty Name="user" Relationship="Model.FK_user_claims_users_UserId" FromRole="user_claims" ToRole="user" />
-        </EntityType>
-        <EntityType Name="user_logins">
-          <Key>
-            <PropertyRef Name="LoginProvider" />
-            <PropertyRef Name="ProviderKey" />
-          </Key>
-          <Property Name="LoginProvider" Type="String" Nullable="false" MaxLength="128" FixedLength="false" Unicode="true" />
-          <Property Name="ProviderKey" Type="String" Nullable="false" MaxLength="128" FixedLength="false" Unicode="true" />
-          <Property Name="ProviderDisplayName" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
-          <Property Name="UserId" Type="Int32" Nullable="false" />
-          <NavigationProperty Name="user" Relationship="Model.FK_user_logins_users_UserId" FromRole="user_logins" ToRole="user" />
-        </EntityType>
-        <EntityType Name="user_tokens">
-          <Key>
-            <PropertyRef Name="UserId" />
-            <PropertyRef Name="LoginProvider" />
-            <PropertyRef Name="Name" />
-          </Key>
-          <Property Name="UserId" Type="Int32" Nullable="false" />
-          <Property Name="LoginProvider" Type="String" Nullable="false" MaxLength="128" FixedLength="false" Unicode="true" />
-          <Property Name="Name" Type="String" Nullable="false" MaxLength="128" FixedLength="false" Unicode="true" />
-          <Property Name="Value" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
-          <NavigationProperty Name="user" Relationship="Model.FK_user_tokens_users_UserId" FromRole="user_tokens" ToRole="user" />
-        </EntityType>
-        <EntityType Name="user">
-          <Key>
-            <PropertyRef Name="Id" />
-          </Key>
-          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="FirstName" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
-          <Property Name="LastName" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
-          <Property Name="UserName" Type="String" MaxLength="256" FixedLength="false" Unicode="true" />
-          <Property Name="NormalizedUserName" Type="String" MaxLength="256" FixedLength="false" Unicode="true" />
-          <Property Name="Email" Type="String" MaxLength="256" FixedLength="false" Unicode="true" />
-          <Property Name="NormalizedEmail" Type="String" MaxLength="256" FixedLength="false" Unicode="true" />
-          <Property Name="EmailConfirmed" Type="Boolean" Nullable="false" />
-          <Property Name="PasswordHash" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
-          <Property Name="SecurityStamp" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
-          <Property Name="ConcurrencyStamp" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
-          <Property Name="PhoneNumber" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
-          <Property Name="PhoneNumberConfirmed" Type="Boolean" Nullable="false" />
-          <Property Name="TwoFactorEnabled" Type="Boolean" Nullable="false" />
-          <Property Name="LockoutEnd" Type="DateTimeOffset" Precision="7" />
-          <Property Name="LockoutEnabled" Type="Boolean" Nullable="false" />
-          <Property Name="AccessFailedCount" Type="Int32" Nullable="false" />
-          <NavigationProperty Name="user_claims" Relationship="Model.FK_user_claims_users_UserId" FromRole="user" ToRole="user_claims" />
-          <NavigationProperty Name="user_logins" Relationship="Model.FK_user_logins_users_UserId" FromRole="user" ToRole="user_logins" />
-          <NavigationProperty Name="user_tokens" Relationship="Model.FK_user_tokens_users_UserId" FromRole="user" ToRole="user_tokens" />
-          <NavigationProperty Name="roles" Relationship="Model.user_roles" FromRole="user" ToRole="role" />
-        </EntityType>
-        <Association Name="FK_endpoint_policy_assignments_policies_PolicyId">
-          <End Type="Model.policy" Role="policy" Multiplicity="1">
-            <OnDelete Action="Cascade" />
-          </End>
-          <End Type="Model.endpoint_policy_assignments" Role="endpoint_policy_assignments" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="policy">
-              <PropertyRef Name="Id" />
-            </Principal>
-            <Dependent Role="endpoint_policy_assignments">
-              <PropertyRef Name="PolicyId" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
-        <Association Name="FK_policy_claims_policies_AuthorizationPolicyEntityId">
-          <End Type="Model.policy" Role="policy" Multiplicity="1">
-            <OnDelete Action="Cascade" />
-          </End>
-          <End Type="Model.policy_claims" Role="policy_claims" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="policy">
-              <PropertyRef Name="Id" />
-            </Principal>
-            <Dependent Role="policy_claims">
-              <PropertyRef Name="AuthorizationPolicyEntityId" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
-        <Association Name="FK_policy_roles_policies_AuthorizationPolicyEntityId">
-          <End Type="Model.policy" Role="policy" Multiplicity="1">
-            <OnDelete Action="Cascade" />
-          </End>
-          <End Type="Model.policy_roles" Role="policy_roles" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="policy">
-              <PropertyRef Name="Id" />
-            </Principal>
-            <Dependent Role="policy_roles">
-              <PropertyRef Name="AuthorizationPolicyEntityId" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
-        <Association Name="FK_policy_roles_roles_RoleId">
-          <End Type="Model.role" Role="role" Multiplicity="1">
-            <OnDelete Action="Cascade" />
-          </End>
-          <End Type="Model.policy_roles" Role="policy_roles" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="role">
-              <PropertyRef Name="Id" />
-            </Principal>
-            <Dependent Role="policy_roles">
-              <PropertyRef Name="RoleId" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
-        <Association Name="FK_role_claims_roles_RoleId">
-          <End Type="Model.role" Role="role" Multiplicity="1">
-            <OnDelete Action="Cascade" />
-          </End>
-          <End Type="Model.role_claims" Role="role_claims" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="role">
-              <PropertyRef Name="Id" />
-            </Principal>
-            <Dependent Role="role_claims">
-              <PropertyRef Name="RoleId" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
-        <Association Name="FK_user_claims_users_UserId">
-          <End Type="Model.user" Role="user" Multiplicity="1">
-            <OnDelete Action="Cascade" />
-          </End>
-          <End Type="Model.user_claims" Role="user_claims" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="user">
-              <PropertyRef Name="Id" />
-            </Principal>
-            <Dependent Role="user_claims">
-              <PropertyRef Name="UserId" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
-        <Association Name="FK_user_logins_users_UserId">
-          <End Type="Model.user" Role="user" Multiplicity="1">
-            <OnDelete Action="Cascade" />
-          </End>
-          <End Type="Model.user_logins" Role="user_logins" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="user">
-              <PropertyRef Name="Id" />
-            </Principal>
-            <Dependent Role="user_logins">
-              <PropertyRef Name="UserId" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
-        <Association Name="FK_user_tokens_users_UserId">
-          <End Type="Model.user" Role="user" Multiplicity="1">
-            <OnDelete Action="Cascade" />
-          </End>
-          <End Type="Model.user_tokens" Role="user_tokens" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="user">
-              <PropertyRef Name="Id" />
-            </Principal>
-            <Dependent Role="user_tokens">
-              <PropertyRef Name="UserId" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
-        <Association Name="user_roles">
-          <End Type="Model.role" Role="role" Multiplicity="*" />
-          <End Type="Model.user" Role="user" Multiplicity="*" />
         </Association>
         </Schema>
     </edmx:ConceptualModels>
@@ -1662,526 +742,317 @@
     <edmx:Mappings>
     <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
   <EntityContainerMapping StorageEntityContainer="ModelStoreContainer" CdmEntityContainer="ModelContainer">
-    <EntitySetMapping Name="SW_formTableName">
-      <EntityTypeMapping TypeName="IsTypeOf(Model.SW_formTableName)">
-        <MappingFragment StoreEntitySet="SW_formTableName">
-          <ScalarProperty Name="Id" ColumnName="Id" />
-          <ScalarProperty Name="name" ColumnName="name" />
-          <ScalarProperty Name="field" ColumnName="field" />
-          <ScalarProperty Name="SW_formsId" ColumnName="SW_formsId" />
-        </MappingFragment>
-      </EntityTypeMapping>
-    </EntitySetMapping>
-    <EntitySetMapping Name="SW_identity">
-      <EntityTypeMapping TypeName="IsTypeOf(Model.SW_identity)">
-        <MappingFragment StoreEntitySet="SW_identity">
-          <ScalarProperty Name="Id" ColumnName="Id" />
-          <ScalarProperty Name="name" ColumnName="name" />
-          <ScalarProperty Name="desc" ColumnName="desc" />
-          <ScalarProperty Name="logo" ColumnName="logo" />
-          <ScalarProperty Name="media_01" ColumnName="media_01" />
-          <ScalarProperty Name="media_02" ColumnName="media_02" />
-          <ScalarProperty Name="media_03" ColumnName="media_03" />
-          <ScalarProperty Name="header" ColumnName="header" />
-          <ScalarProperty Name="signature" ColumnName="signature" />
-        </MappingFragment>
-      </EntityTypeMapping>
-    </EntitySetMapping>
-    <EntitySetMapping Name="SW_roles">
-      <EntityTypeMapping TypeName="IsTypeOf(Model.SW_roles)">
-        <MappingFragment StoreEntitySet="SW_roles">
-          <ScalarProperty Name="Id" ColumnName="Id" />
-          <ScalarProperty Name="name" ColumnName="name" />
-          <ScalarProperty Name="NormalizedName" ColumnName="NormalizedName" />
-          <ScalarProperty Name="ConcurrencyStamp" ColumnName="ConcurrencyStamp" />
-        </MappingFragment>
-      </EntityTypeMapping>
-    </EntitySetMapping>
-    <EntitySetMapping Name="SW_users">
-      <EntityTypeMapping TypeName="IsTypeOf(Model.SW_users)">
-        <MappingFragment StoreEntitySet="SW_users">
-          <ScalarProperty Name="Id" ColumnName="Id" />
-          <ScalarProperty Name="FirstName" ColumnName="FirstName" />
-          <ScalarProperty Name="LastName" ColumnName="LastName" />
-          <ScalarProperty Name="UserName" ColumnName="UserName" />
-          <ScalarProperty Name="NormalizedUserName" ColumnName="NormalizedUserName" />
-          <ScalarProperty Name="Email" ColumnName="Email" />
-          <ScalarProperty Name="NormalizedEmail" ColumnName="NormalizedEmail" />
-          <ScalarProperty Name="EmailConfirmed" ColumnName="EmailConfirmed" />
-          <ScalarProperty Name="PasswordHash" ColumnName="PasswordHash" />
-          <ScalarProperty Name="SecurityStamp" ColumnName="SecurityStamp" />
-          <ScalarProperty Name="ConcurrencyStamp" ColumnName="ConcurrencyStamp" />
-          <ScalarProperty Name="PhoneNumber" ColumnName="PhoneNumber" />
-          <ScalarProperty Name="PhoneNumberConfirmed" ColumnName="PhoneNumberConfirmed" />
-          <ScalarProperty Name="TwoFactorEnabled" ColumnName="TwoFactorEnabled" />
-          <ScalarProperty Name="LockoutEnd" ColumnName="LockoutEnd" />
-          <ScalarProperty Name="LockoutEnabled" ColumnName="LockoutEnabled" />
-          <ScalarProperty Name="AccessFailedCount" ColumnName="AccessFailedCount" />
-        </MappingFragment>
-      </EntityTypeMapping>
-    </EntitySetMapping>
-    <EntitySetMapping Name="SW_formTableData_Types">
-      <EntityTypeMapping TypeName="IsTypeOf(Model.SW_formTableData_Types)">
-        <MappingFragment StoreEntitySet="SW_formTableData_Types">
-          <ScalarProperty Name="Id" ColumnName="Id" />
-          <ScalarProperty Name="type" ColumnName="type" />
-          <ScalarProperty Name="field" ColumnName="field" />
-          <ScalarProperty Name="SW_formsId" ColumnName="SW_formsId" />
-        </MappingFragment>
-      </EntityTypeMapping>
-    </EntitySetMapping>
-    <EntitySetMapping Name="SW_forms">
-      <EntityTypeMapping TypeName="IsTypeOf(Model.SW_forms)">
-        <MappingFragment StoreEntitySet="SW_forms">
-          <ScalarProperty Name="Id" ColumnName="Id" />
-          <ScalarProperty Name="uuid" ColumnName="uuid" />
-          <ScalarProperty Name="name" ColumnName="name" />
-          <ScalarProperty Name="desc" ColumnName="desc" />
-          <ScalarProperty Name="form" ColumnName="form" />
-          <ScalarProperty Name="dateModified" ColumnName="dateModified" />
-          <ScalarProperty Name="SW_identityId" ColumnName="SW_identityId" />
-        </MappingFragment>
-      </EntityTypeMapping>
-    </EntitySetMapping>
-    <EntitySetMapping Name="SW_formTableData">
-      <EntityTypeMapping TypeName="IsTypeOf(Model.SW_formTableData)">
-        <MappingFragment StoreEntitySet="SW_formTableData">
-          <ScalarProperty Name="Id" ColumnName="Id" />
-          <ScalarProperty Name="FormData01" ColumnName="FormData01" />
-          <ScalarProperty Name="FormData02" ColumnName="FormData02" />
-          <ScalarProperty Name="FormData03" ColumnName="FormData03" />
-          <ScalarProperty Name="FormData04" ColumnName="FormData04" />
-          <ScalarProperty Name="FormData05" ColumnName="FormData05" />
-          <ScalarProperty Name="FormData06" ColumnName="FormData06" />
-          <ScalarProperty Name="FormData07" ColumnName="FormData07" />
-          <ScalarProperty Name="FormData08" ColumnName="FormData08" />
-          <ScalarProperty Name="FormData09" ColumnName="FormData09" />
-          <ScalarProperty Name="FormData10" ColumnName="FormData10" />
-          <ScalarProperty Name="FormData11" ColumnName="FormData11" />
-          <ScalarProperty Name="FormData12" ColumnName="FormData12" />
-          <ScalarProperty Name="FormData13" ColumnName="FormData13" />
-          <ScalarProperty Name="FormData14" ColumnName="FormData14" />
-          <ScalarProperty Name="FormData15" ColumnName="FormData15" />
-          <ScalarProperty Name="FormData16" ColumnName="FormData16" />
-          <ScalarProperty Name="FormData17" ColumnName="FormData17" />
-          <ScalarProperty Name="FormData18" ColumnName="FormData18" />
-          <ScalarProperty Name="FormData19" ColumnName="FormData19" />
-          <ScalarProperty Name="FormData20" ColumnName="FormData20" />
-          <ScalarProperty Name="FormData21" ColumnName="FormData21" />
-          <ScalarProperty Name="FormData22" ColumnName="FormData22" />
-          <ScalarProperty Name="FormData23" ColumnName="FormData23" />
-          <ScalarProperty Name="FormData24" ColumnName="FormData24" />
-          <ScalarProperty Name="FormData25" ColumnName="FormData25" />
-          <ScalarProperty Name="FormData26" ColumnName="FormData26" />
-          <ScalarProperty Name="FormData27" ColumnName="FormData27" />
-          <ScalarProperty Name="FormData28" ColumnName="FormData28" />
-          <ScalarProperty Name="FormData29" ColumnName="FormData29" />
-          <ScalarProperty Name="FormData30" ColumnName="FormData30" />
-          <ScalarProperty Name="FormData31" ColumnName="FormData31" />
-          <ScalarProperty Name="FormData32" ColumnName="FormData32" />
-          <ScalarProperty Name="FormData33" ColumnName="FormData33" />
-          <ScalarProperty Name="FormData34" ColumnName="FormData34" />
-          <ScalarProperty Name="FormData35" ColumnName="FormData35" />
-          <ScalarProperty Name="FormData36" ColumnName="FormData36" />
-          <ScalarProperty Name="FormData37" ColumnName="FormData37" />
-          <ScalarProperty Name="FormData38" ColumnName="FormData38" />
-          <ScalarProperty Name="FormData39" ColumnName="FormData39" />
-          <ScalarProperty Name="FormData40" ColumnName="FormData40" />
-          <ScalarProperty Name="FormData41" ColumnName="FormData41" />
-          <ScalarProperty Name="FormData42" ColumnName="FormData42" />
-          <ScalarProperty Name="FormData43" ColumnName="FormData43" />
-          <ScalarProperty Name="FormData44" ColumnName="FormData44" />
-          <ScalarProperty Name="FormData45" ColumnName="FormData45" />
-          <ScalarProperty Name="FormData46" ColumnName="FormData46" />
-          <ScalarProperty Name="FormData47" ColumnName="FormData47" />
-          <ScalarProperty Name="FormData48" ColumnName="FormData48" />
-          <ScalarProperty Name="FormData49" ColumnName="FormData49" />
-          <ScalarProperty Name="FormData50" ColumnName="FormData50" />
-          <ScalarProperty Name="FormData51" ColumnName="FormData51" />
-          <ScalarProperty Name="FormData52" ColumnName="FormData52" />
-          <ScalarProperty Name="FormData53" ColumnName="FormData53" />
-          <ScalarProperty Name="FormData54" ColumnName="FormData54" />
-          <ScalarProperty Name="FormData55" ColumnName="FormData55" />
-          <ScalarProperty Name="FormData56" ColumnName="FormData56" />
-          <ScalarProperty Name="FormData57" ColumnName="FormData57" />
-          <ScalarProperty Name="FormData58" ColumnName="FormData58" />
-          <ScalarProperty Name="FormData59" ColumnName="FormData59" />
-          <ScalarProperty Name="FormData60" ColumnName="FormData60" />
-          <ScalarProperty Name="FormData61" ColumnName="FormData61" />
-          <ScalarProperty Name="FormData62" ColumnName="FormData62" />
-          <ScalarProperty Name="FormData63" ColumnName="FormData63" />
-          <ScalarProperty Name="FormData64" ColumnName="FormData64" />
-          <ScalarProperty Name="FormData65" ColumnName="FormData65" />
-          <ScalarProperty Name="FormData66" ColumnName="FormData66" />
-          <ScalarProperty Name="FormData67" ColumnName="FormData67" />
-          <ScalarProperty Name="FormData68" ColumnName="FormData68" />
-          <ScalarProperty Name="FormData69" ColumnName="FormData69" />
-          <ScalarProperty Name="FormData70" ColumnName="FormData70" />
-          <ScalarProperty Name="FormData71" ColumnName="FormData71" />
-          <ScalarProperty Name="FormData72" ColumnName="FormData72" />
-          <ScalarProperty Name="FormData73" ColumnName="FormData73" />
-          <ScalarProperty Name="FormData74" ColumnName="FormData74" />
-          <ScalarProperty Name="FormData75" ColumnName="FormData75" />
-          <ScalarProperty Name="FormData76" ColumnName="FormData76" />
-          <ScalarProperty Name="FormData77" ColumnName="FormData77" />
-          <ScalarProperty Name="FormData78" ColumnName="FormData78" />
-          <ScalarProperty Name="FormData79" ColumnName="FormData79" />
-          <ScalarProperty Name="FormData80" ColumnName="FormData80" />
-          <ScalarProperty Name="FormData81" ColumnName="FormData81" />
-          <ScalarProperty Name="FormData82" ColumnName="FormData82" />
-          <ScalarProperty Name="FormData83" ColumnName="FormData83" />
-          <ScalarProperty Name="FormData84" ColumnName="FormData84" />
-          <ScalarProperty Name="FormData85" ColumnName="FormData85" />
-          <ScalarProperty Name="FormData86" ColumnName="FormData86" />
-          <ScalarProperty Name="FormData87" ColumnName="FormData87" />
-          <ScalarProperty Name="FormData88" ColumnName="FormData88" />
-          <ScalarProperty Name="FormData89" ColumnName="FormData89" />
-          <ScalarProperty Name="FormData90" ColumnName="FormData90" />
-          <ScalarProperty Name="FormData91" ColumnName="FormData91" />
-          <ScalarProperty Name="FormData92" ColumnName="FormData92" />
-          <ScalarProperty Name="FormData93" ColumnName="FormData93" />
-          <ScalarProperty Name="FormData94" ColumnName="FormData94" />
-          <ScalarProperty Name="FormData95" ColumnName="FormData95" />
-          <ScalarProperty Name="FormData96" ColumnName="FormData96" />
-          <ScalarProperty Name="FormData97" ColumnName="FormData97" />
-          <ScalarProperty Name="FormData98" ColumnName="FormData98" />
-          <ScalarProperty Name="FormData99" ColumnName="FormData99" />
-          <ScalarProperty Name="FormData100" ColumnName="FormData100" />
-          <ScalarProperty Name="FormData101" ColumnName="FormData101" />
-          <ScalarProperty Name="FormData102" ColumnName="FormData102" />
-          <ScalarProperty Name="FormData103" ColumnName="FormData103" />
-          <ScalarProperty Name="FormData104" ColumnName="FormData104" />
-          <ScalarProperty Name="FormData105" ColumnName="FormData105" />
-          <ScalarProperty Name="FormData106" ColumnName="FormData106" />
-          <ScalarProperty Name="FormData107" ColumnName="FormData107" />
-          <ScalarProperty Name="FormData108" ColumnName="FormData108" />
-          <ScalarProperty Name="FormData109" ColumnName="FormData109" />
-          <ScalarProperty Name="FormData110" ColumnName="FormData110" />
-          <ScalarProperty Name="FormData111" ColumnName="FormData111" />
-          <ScalarProperty Name="FormData112" ColumnName="FormData112" />
-          <ScalarProperty Name="FormData113" ColumnName="FormData113" />
-          <ScalarProperty Name="FormData114" ColumnName="FormData114" />
-          <ScalarProperty Name="FormData115" ColumnName="FormData115" />
-          <ScalarProperty Name="FormData116" ColumnName="FormData116" />
-          <ScalarProperty Name="FormData117" ColumnName="FormData117" />
-          <ScalarProperty Name="FormData118" ColumnName="FormData118" />
-          <ScalarProperty Name="FormData119" ColumnName="FormData119" />
-          <ScalarProperty Name="FormData120" ColumnName="FormData120" />
-          <ScalarProperty Name="FormData121" ColumnName="FormData121" />
-          <ScalarProperty Name="FormData122" ColumnName="FormData122" />
-          <ScalarProperty Name="FormData123" ColumnName="FormData123" />
-          <ScalarProperty Name="FormData124" ColumnName="FormData124" />
-          <ScalarProperty Name="FormData125" ColumnName="FormData125" />
-          <ScalarProperty Name="FormData126" ColumnName="FormData126" />
-          <ScalarProperty Name="FormData127" ColumnName="FormData127" />
-          <ScalarProperty Name="FormData128" ColumnName="FormData128" />
-          <ScalarProperty Name="FormData129" ColumnName="FormData129" />
-          <ScalarProperty Name="FormData130" ColumnName="FormData130" />
-          <ScalarProperty Name="FormData131" ColumnName="FormData131" />
-          <ScalarProperty Name="FormData132" ColumnName="FormData132" />
-          <ScalarProperty Name="FormData133" ColumnName="FormData133" />
-          <ScalarProperty Name="FormData134" ColumnName="FormData134" />
-          <ScalarProperty Name="FormData135" ColumnName="FormData135" />
-          <ScalarProperty Name="FormData136" ColumnName="FormData136" />
-          <ScalarProperty Name="FormData137" ColumnName="FormData137" />
-          <ScalarProperty Name="FormData138" ColumnName="FormData138" />
-          <ScalarProperty Name="FormData139" ColumnName="FormData139" />
-          <ScalarProperty Name="FormData140" ColumnName="FormData140" />
-          <ScalarProperty Name="FormData141" ColumnName="FormData141" />
-          <ScalarProperty Name="FormData142" ColumnName="FormData142" />
-          <ScalarProperty Name="FormData143" ColumnName="FormData143" />
-          <ScalarProperty Name="FormData144" ColumnName="FormData144" />
-          <ScalarProperty Name="FormData145" ColumnName="FormData145" />
-          <ScalarProperty Name="FormData146" ColumnName="FormData146" />
-          <ScalarProperty Name="FormData147" ColumnName="FormData147" />
-          <ScalarProperty Name="FormData148" ColumnName="FormData148" />
-          <ScalarProperty Name="FormData149" ColumnName="FormData149" />
-          <ScalarProperty Name="FormData150" ColumnName="FormData150" />
-          <ScalarProperty Name="FormData151" ColumnName="FormData151" />
-          <ScalarProperty Name="FormData152" ColumnName="FormData152" />
-          <ScalarProperty Name="FormData153" ColumnName="FormData153" />
-          <ScalarProperty Name="FormData154" ColumnName="FormData154" />
-          <ScalarProperty Name="FormData155" ColumnName="FormData155" />
-          <ScalarProperty Name="FormData156" ColumnName="FormData156" />
-          <ScalarProperty Name="FormData157" ColumnName="FormData157" />
-          <ScalarProperty Name="FormData158" ColumnName="FormData158" />
-          <ScalarProperty Name="FormData159" ColumnName="FormData159" />
-          <ScalarProperty Name="FormData160" ColumnName="FormData160" />
-          <ScalarProperty Name="FormData161" ColumnName="FormData161" />
-          <ScalarProperty Name="FormData162" ColumnName="FormData162" />
-          <ScalarProperty Name="FormData163" ColumnName="FormData163" />
-          <ScalarProperty Name="FormData164" ColumnName="FormData164" />
-          <ScalarProperty Name="FormData165" ColumnName="FormData165" />
-          <ScalarProperty Name="FormData166" ColumnName="FormData166" />
-          <ScalarProperty Name="FormData167" ColumnName="FormData167" />
-          <ScalarProperty Name="FormData168" ColumnName="FormData168" />
-          <ScalarProperty Name="FormData169" ColumnName="FormData169" />
-          <ScalarProperty Name="FormData170" ColumnName="FormData170" />
-          <ScalarProperty Name="FormData171" ColumnName="FormData171" />
-          <ScalarProperty Name="FormData172" ColumnName="FormData172" />
-          <ScalarProperty Name="FormData173" ColumnName="FormData173" />
-          <ScalarProperty Name="FormData174" ColumnName="FormData174" />
-          <ScalarProperty Name="FormData175" ColumnName="FormData175" />
-          <ScalarProperty Name="FormData176" ColumnName="FormData176" />
-          <ScalarProperty Name="FormData177" ColumnName="FormData177" />
-          <ScalarProperty Name="FormData178" ColumnName="FormData178" />
-          <ScalarProperty Name="FormData179" ColumnName="FormData179" />
-          <ScalarProperty Name="FormData180" ColumnName="FormData180" />
-          <ScalarProperty Name="FormData181" ColumnName="FormData181" />
-          <ScalarProperty Name="FormData182" ColumnName="FormData182" />
-          <ScalarProperty Name="FormData183" ColumnName="FormData183" />
-          <ScalarProperty Name="FormData184" ColumnName="FormData184" />
-          <ScalarProperty Name="FormData185" ColumnName="FormData185" />
-          <ScalarProperty Name="FormData186" ColumnName="FormData186" />
-          <ScalarProperty Name="FormData187" ColumnName="FormData187" />
-          <ScalarProperty Name="FormData188" ColumnName="FormData188" />
-          <ScalarProperty Name="FormData189" ColumnName="FormData189" />
-          <ScalarProperty Name="FormData190" ColumnName="FormData190" />
-          <ScalarProperty Name="FormData191" ColumnName="FormData191" />
-          <ScalarProperty Name="FormData192" ColumnName="FormData192" />
-          <ScalarProperty Name="FormData193" ColumnName="FormData193" />
-          <ScalarProperty Name="FormData194" ColumnName="FormData194" />
-          <ScalarProperty Name="FormData195" ColumnName="FormData195" />
-          <ScalarProperty Name="FormData196" ColumnName="FormData196" />
-          <ScalarProperty Name="FormData197" ColumnName="FormData197" />
-          <ScalarProperty Name="FormData198" ColumnName="FormData198" />
-          <ScalarProperty Name="FormData199" ColumnName="FormData199" />
-          <ScalarProperty Name="FormData200" ColumnName="FormData200" />
-          <ScalarProperty Name="FormData201" ColumnName="FormData201" />
-          <ScalarProperty Name="FormData202" ColumnName="FormData202" />
-          <ScalarProperty Name="FormData203" ColumnName="FormData203" />
-          <ScalarProperty Name="FormData204" ColumnName="FormData204" />
-          <ScalarProperty Name="FormData205" ColumnName="FormData205" />
-          <ScalarProperty Name="FormData206" ColumnName="FormData206" />
-          <ScalarProperty Name="FormData207" ColumnName="FormData207" />
-          <ScalarProperty Name="FormData208" ColumnName="FormData208" />
-          <ScalarProperty Name="FormData209" ColumnName="FormData209" />
-          <ScalarProperty Name="FormData210" ColumnName="FormData210" />
-          <ScalarProperty Name="FormData211" ColumnName="FormData211" />
-          <ScalarProperty Name="FormData212" ColumnName="FormData212" />
-          <ScalarProperty Name="FormData213" ColumnName="FormData213" />
-          <ScalarProperty Name="FormData214" ColumnName="FormData214" />
-          <ScalarProperty Name="FormData215" ColumnName="FormData215" />
-          <ScalarProperty Name="FormData216" ColumnName="FormData216" />
-          <ScalarProperty Name="FormData217" ColumnName="FormData217" />
-          <ScalarProperty Name="FormData218" ColumnName="FormData218" />
-          <ScalarProperty Name="FormData219" ColumnName="FormData219" />
-          <ScalarProperty Name="FormData220" ColumnName="FormData220" />
-          <ScalarProperty Name="FormData221" ColumnName="FormData221" />
-          <ScalarProperty Name="FormData222" ColumnName="FormData222" />
-          <ScalarProperty Name="FormData223" ColumnName="FormData223" />
-          <ScalarProperty Name="FormData224" ColumnName="FormData224" />
-          <ScalarProperty Name="FormData225" ColumnName="FormData225" />
-          <ScalarProperty Name="FormData226" ColumnName="FormData226" />
-          <ScalarProperty Name="FormData227" ColumnName="FormData227" />
-          <ScalarProperty Name="FormData228" ColumnName="FormData228" />
-          <ScalarProperty Name="FormData229" ColumnName="FormData229" />
-          <ScalarProperty Name="FormData230" ColumnName="FormData230" />
-          <ScalarProperty Name="FormData231" ColumnName="FormData231" />
-          <ScalarProperty Name="FormData232" ColumnName="FormData232" />
-          <ScalarProperty Name="FormData233" ColumnName="FormData233" />
-          <ScalarProperty Name="FormData234" ColumnName="FormData234" />
-          <ScalarProperty Name="FormData235" ColumnName="FormData235" />
-          <ScalarProperty Name="FormData236" ColumnName="FormData236" />
-          <ScalarProperty Name="FormData237" ColumnName="FormData237" />
-          <ScalarProperty Name="FormData238" ColumnName="FormData238" />
-          <ScalarProperty Name="FormData239" ColumnName="FormData239" />
-          <ScalarProperty Name="FormData240" ColumnName="FormData240" />
-          <ScalarProperty Name="FormData241" ColumnName="FormData241" />
-          <ScalarProperty Name="FormData242" ColumnName="FormData242" />
-          <ScalarProperty Name="FormData243" ColumnName="FormData243" />
-          <ScalarProperty Name="FormData244" ColumnName="FormData244" />
-          <ScalarProperty Name="FormData245" ColumnName="FormData245" />
-          <ScalarProperty Name="FormData246" ColumnName="FormData246" />
-          <ScalarProperty Name="FormData247" ColumnName="FormData247" />
-          <ScalarProperty Name="FormData248" ColumnName="FormData248" />
-          <ScalarProperty Name="FormData249" ColumnName="FormData249" />
-          <ScalarProperty Name="FormData250" ColumnName="FormData250" />
-          <ScalarProperty Name="SW_formsId" ColumnName="SW_formsId" />
-          <ScalarProperty Name="isApproval_01" ColumnName="isApproval_01" />
-          <ScalarProperty Name="isApproval_02" ColumnName="isApproval_02" />
-          <ScalarProperty Name="isApproval_03" ColumnName="isApproval_03" />
-        </MappingFragment>
-      </EntityTypeMapping>
-    </EntitySetMapping>
-    <EntitySetMapping Name="SW_formProcesses">
-      <EntityTypeMapping TypeName="IsTypeOf(Model.SW_formProcesses)">
-        <MappingFragment StoreEntitySet="SW_formProcesses">
-          <ScalarProperty Name="Id" ColumnName="Id" />
-          <ScalarProperty Name="url" ColumnName="url" />
-          <ScalarProperty Name="SW_formsId" ColumnName="SW_formsId" />
-        </MappingFragment>
-      </EntityTypeMapping>
-    </EntitySetMapping>
-    <EntitySetMapping Name="SW_formReport">
-      <EntityTypeMapping TypeName="IsTypeOf(Model.SW_formReport)">
-        <MappingFragment StoreEntitySet="SW_formReport">
-          <ScalarProperty Name="Id" ColumnName="Id" />
-          <ScalarProperty Name="url" ColumnName="url" />
-          <ScalarProperty Name="SW_formsId" ColumnName="SW_formsId" />
-        </MappingFragment>
-      </EntityTypeMapping>
-    </EntitySetMapping>
-          <EntitySetMapping Name="C__EFMigrationsHistory_Identity">
-            <EntityTypeMapping TypeName="Model.C__EFMigrationsHistory_Identity">
-              <MappingFragment StoreEntitySet="__EFMigrationsHistory_Identity">
-                <ScalarProperty Name="ProductVersion" ColumnName="ProductVersion" />
-                <ScalarProperty Name="MigrationId" ColumnName="MigrationId" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
-          <EntitySetMapping Name="endpoint_policy_assignments">
-            <EntityTypeMapping TypeName="Model.endpoint_policy_assignments">
-              <MappingFragment StoreEntitySet="endpoint_policy_assignments">
-                <ScalarProperty Name="UpdatedAt" ColumnName="UpdatedAt" />
-                <ScalarProperty Name="Priority" ColumnName="Priority" />
-                <ScalarProperty Name="IsEnabled" ColumnName="IsEnabled" />
-                <ScalarProperty Name="PolicyName" ColumnName="PolicyName" />
-                <ScalarProperty Name="PolicyId" ColumnName="PolicyId" />
-                <ScalarProperty Name="Notes" ColumnName="Notes" />
-                <ScalarProperty Name="Regex" ColumnName="Regex" />
-                <ScalarProperty Name="Path" ColumnName="Path" />
-                <ScalarProperty Name="Page" ColumnName="Page" />
-                <ScalarProperty Name="Action" ColumnName="Action" />
-                <ScalarProperty Name="Controller" ColumnName="Controller" />
-                <ScalarProperty Name="Area" ColumnName="Area" />
-                <ScalarProperty Name="MatchType" ColumnName="MatchType" />
+          <EntitySetMapping Name="SW_forms">
+            <EntityTypeMapping TypeName="Model.SW_forms">
+              <MappingFragment StoreEntitySet="SW_forms">
+                <ScalarProperty Name="FormData250" ColumnName="FormData250" />
+                <ScalarProperty Name="FormData249" ColumnName="FormData249" />
+                <ScalarProperty Name="FormData248" ColumnName="FormData248" />
+                <ScalarProperty Name="FormData247" ColumnName="FormData247" />
+                <ScalarProperty Name="FormData246" ColumnName="FormData246" />
+                <ScalarProperty Name="FormData245" ColumnName="FormData245" />
+                <ScalarProperty Name="FormData244" ColumnName="FormData244" />
+                <ScalarProperty Name="FormData243" ColumnName="FormData243" />
+                <ScalarProperty Name="FormData242" ColumnName="FormData242" />
+                <ScalarProperty Name="FormData241" ColumnName="FormData241" />
+                <ScalarProperty Name="FormData240" ColumnName="FormData240" />
+                <ScalarProperty Name="FormData239" ColumnName="FormData239" />
+                <ScalarProperty Name="FormData238" ColumnName="FormData238" />
+                <ScalarProperty Name="FormData237" ColumnName="FormData237" />
+                <ScalarProperty Name="FormData236" ColumnName="FormData236" />
+                <ScalarProperty Name="FormData235" ColumnName="FormData235" />
+                <ScalarProperty Name="FormData234" ColumnName="FormData234" />
+                <ScalarProperty Name="FormData233" ColumnName="FormData233" />
+                <ScalarProperty Name="FormData232" ColumnName="FormData232" />
+                <ScalarProperty Name="FormData231" ColumnName="FormData231" />
+                <ScalarProperty Name="FormData230" ColumnName="FormData230" />
+                <ScalarProperty Name="FormData229" ColumnName="FormData229" />
+                <ScalarProperty Name="FormData228" ColumnName="FormData228" />
+                <ScalarProperty Name="FormData227" ColumnName="FormData227" />
+                <ScalarProperty Name="FormData226" ColumnName="FormData226" />
+                <ScalarProperty Name="FormData225" ColumnName="FormData225" />
+                <ScalarProperty Name="FormData224" ColumnName="FormData224" />
+                <ScalarProperty Name="FormData223" ColumnName="FormData223" />
+                <ScalarProperty Name="FormData222" ColumnName="FormData222" />
+                <ScalarProperty Name="FormData221" ColumnName="FormData221" />
+                <ScalarProperty Name="FormData220" ColumnName="FormData220" />
+                <ScalarProperty Name="FormData219" ColumnName="FormData219" />
+                <ScalarProperty Name="FormData218" ColumnName="FormData218" />
+                <ScalarProperty Name="FormData217" ColumnName="FormData217" />
+                <ScalarProperty Name="FormData216" ColumnName="FormData216" />
+                <ScalarProperty Name="FormData215" ColumnName="FormData215" />
+                <ScalarProperty Name="FormData214" ColumnName="FormData214" />
+                <ScalarProperty Name="FormData213" ColumnName="FormData213" />
+                <ScalarProperty Name="FormData212" ColumnName="FormData212" />
+                <ScalarProperty Name="FormData211" ColumnName="FormData211" />
+                <ScalarProperty Name="FormData210" ColumnName="FormData210" />
+                <ScalarProperty Name="FormData209" ColumnName="FormData209" />
+                <ScalarProperty Name="FormData208" ColumnName="FormData208" />
+                <ScalarProperty Name="FormData207" ColumnName="FormData207" />
+                <ScalarProperty Name="FormData206" ColumnName="FormData206" />
+                <ScalarProperty Name="FormData205" ColumnName="FormData205" />
+                <ScalarProperty Name="FormData204" ColumnName="FormData204" />
+                <ScalarProperty Name="FormData203" ColumnName="FormData203" />
+                <ScalarProperty Name="FormData202" ColumnName="FormData202" />
+                <ScalarProperty Name="FormData201" ColumnName="FormData201" />
+                <ScalarProperty Name="FormData200" ColumnName="FormData200" />
+                <ScalarProperty Name="FormData199" ColumnName="FormData199" />
+                <ScalarProperty Name="FormData198" ColumnName="FormData198" />
+                <ScalarProperty Name="FormData197" ColumnName="FormData197" />
+                <ScalarProperty Name="FormData196" ColumnName="FormData196" />
+                <ScalarProperty Name="FormData195" ColumnName="FormData195" />
+                <ScalarProperty Name="FormData194" ColumnName="FormData194" />
+                <ScalarProperty Name="FormData193" ColumnName="FormData193" />
+                <ScalarProperty Name="FormData192" ColumnName="FormData192" />
+                <ScalarProperty Name="FormData191" ColumnName="FormData191" />
+                <ScalarProperty Name="FormData190" ColumnName="FormData190" />
+                <ScalarProperty Name="FormData189" ColumnName="FormData189" />
+                <ScalarProperty Name="FormData188" ColumnName="FormData188" />
+                <ScalarProperty Name="FormData187" ColumnName="FormData187" />
+                <ScalarProperty Name="FormData186" ColumnName="FormData186" />
+                <ScalarProperty Name="FormData185" ColumnName="FormData185" />
+                <ScalarProperty Name="FormData184" ColumnName="FormData184" />
+                <ScalarProperty Name="FormData183" ColumnName="FormData183" />
+                <ScalarProperty Name="FormData182" ColumnName="FormData182" />
+                <ScalarProperty Name="FormData181" ColumnName="FormData181" />
+                <ScalarProperty Name="FormData180" ColumnName="FormData180" />
+                <ScalarProperty Name="FormData179" ColumnName="FormData179" />
+                <ScalarProperty Name="FormData178" ColumnName="FormData178" />
+                <ScalarProperty Name="FormData177" ColumnName="FormData177" />
+                <ScalarProperty Name="FormData176" ColumnName="FormData176" />
+                <ScalarProperty Name="FormData175" ColumnName="FormData175" />
+                <ScalarProperty Name="FormData174" ColumnName="FormData174" />
+                <ScalarProperty Name="FormData173" ColumnName="FormData173" />
+                <ScalarProperty Name="FormData172" ColumnName="FormData172" />
+                <ScalarProperty Name="FormData171" ColumnName="FormData171" />
+                <ScalarProperty Name="FormData170" ColumnName="FormData170" />
+                <ScalarProperty Name="FormData169" ColumnName="FormData169" />
+                <ScalarProperty Name="FormData168" ColumnName="FormData168" />
+                <ScalarProperty Name="FormData167" ColumnName="FormData167" />
+                <ScalarProperty Name="FormData166" ColumnName="FormData166" />
+                <ScalarProperty Name="FormData165" ColumnName="FormData165" />
+                <ScalarProperty Name="FormData164" ColumnName="FormData164" />
+                <ScalarProperty Name="FormData163" ColumnName="FormData163" />
+                <ScalarProperty Name="FormData162" ColumnName="FormData162" />
+                <ScalarProperty Name="FormData161" ColumnName="FormData161" />
+                <ScalarProperty Name="FormData160" ColumnName="FormData160" />
+                <ScalarProperty Name="FormData159" ColumnName="FormData159" />
+                <ScalarProperty Name="FormData158" ColumnName="FormData158" />
+                <ScalarProperty Name="FormData157" ColumnName="FormData157" />
+                <ScalarProperty Name="FormData156" ColumnName="FormData156" />
+                <ScalarProperty Name="FormData155" ColumnName="FormData155" />
+                <ScalarProperty Name="FormData154" ColumnName="FormData154" />
+                <ScalarProperty Name="FormData153" ColumnName="FormData153" />
+                <ScalarProperty Name="FormData152" ColumnName="FormData152" />
+                <ScalarProperty Name="FormData151" ColumnName="FormData151" />
+                <ScalarProperty Name="FormData150" ColumnName="FormData150" />
+                <ScalarProperty Name="FormData149" ColumnName="FormData149" />
+                <ScalarProperty Name="FormData148" ColumnName="FormData148" />
+                <ScalarProperty Name="FormData147" ColumnName="FormData147" />
+                <ScalarProperty Name="FormData146" ColumnName="FormData146" />
+                <ScalarProperty Name="FormData145" ColumnName="FormData145" />
+                <ScalarProperty Name="FormData144" ColumnName="FormData144" />
+                <ScalarProperty Name="FormData143" ColumnName="FormData143" />
+                <ScalarProperty Name="FormData142" ColumnName="FormData142" />
+                <ScalarProperty Name="FormData141" ColumnName="FormData141" />
+                <ScalarProperty Name="FormData140" ColumnName="FormData140" />
+                <ScalarProperty Name="FormData139" ColumnName="FormData139" />
+                <ScalarProperty Name="FormData138" ColumnName="FormData138" />
+                <ScalarProperty Name="FormData137" ColumnName="FormData137" />
+                <ScalarProperty Name="FormData136" ColumnName="FormData136" />
+                <ScalarProperty Name="FormData135" ColumnName="FormData135" />
+                <ScalarProperty Name="FormData134" ColumnName="FormData134" />
+                <ScalarProperty Name="FormData133" ColumnName="FormData133" />
+                <ScalarProperty Name="FormData132" ColumnName="FormData132" />
+                <ScalarProperty Name="FormData131" ColumnName="FormData131" />
+                <ScalarProperty Name="FormData130" ColumnName="FormData130" />
+                <ScalarProperty Name="FormData129" ColumnName="FormData129" />
+                <ScalarProperty Name="FormData128" ColumnName="FormData128" />
+                <ScalarProperty Name="FormData127" ColumnName="FormData127" />
+                <ScalarProperty Name="FormData126" ColumnName="FormData126" />
+                <ScalarProperty Name="FormData125" ColumnName="FormData125" />
+                <ScalarProperty Name="FormData124" ColumnName="FormData124" />
+                <ScalarProperty Name="FormData123" ColumnName="FormData123" />
+                <ScalarProperty Name="FormData122" ColumnName="FormData122" />
+                <ScalarProperty Name="FormData121" ColumnName="FormData121" />
+                <ScalarProperty Name="FormData120" ColumnName="FormData120" />
+                <ScalarProperty Name="FormData119" ColumnName="FormData119" />
+                <ScalarProperty Name="FormData118" ColumnName="FormData118" />
+                <ScalarProperty Name="FormData117" ColumnName="FormData117" />
+                <ScalarProperty Name="FormData116" ColumnName="FormData116" />
+                <ScalarProperty Name="FormData115" ColumnName="FormData115" />
+                <ScalarProperty Name="FormData114" ColumnName="FormData114" />
+                <ScalarProperty Name="FormData113" ColumnName="FormData113" />
+                <ScalarProperty Name="FormData112" ColumnName="FormData112" />
+                <ScalarProperty Name="FormData111" ColumnName="FormData111" />
+                <ScalarProperty Name="FormData110" ColumnName="FormData110" />
+                <ScalarProperty Name="FormData109" ColumnName="FormData109" />
+                <ScalarProperty Name="FormData108" ColumnName="FormData108" />
+                <ScalarProperty Name="FormData107" ColumnName="FormData107" />
+                <ScalarProperty Name="FormData106" ColumnName="FormData106" />
+                <ScalarProperty Name="FormData105" ColumnName="FormData105" />
+                <ScalarProperty Name="FormData104" ColumnName="FormData104" />
+                <ScalarProperty Name="FormData103" ColumnName="FormData103" />
+                <ScalarProperty Name="FormData102" ColumnName="FormData102" />
+                <ScalarProperty Name="FormData101" ColumnName="FormData101" />
+                <ScalarProperty Name="FormData100" ColumnName="FormData100" />
+                <ScalarProperty Name="FormData99" ColumnName="FormData99" />
+                <ScalarProperty Name="FormData98" ColumnName="FormData98" />
+                <ScalarProperty Name="FormData97" ColumnName="FormData97" />
+                <ScalarProperty Name="FormData96" ColumnName="FormData96" />
+                <ScalarProperty Name="FormData95" ColumnName="FormData95" />
+                <ScalarProperty Name="FormData94" ColumnName="FormData94" />
+                <ScalarProperty Name="FormData93" ColumnName="FormData93" />
+                <ScalarProperty Name="FormData92" ColumnName="FormData92" />
+                <ScalarProperty Name="FormData91" ColumnName="FormData91" />
+                <ScalarProperty Name="FormData90" ColumnName="FormData90" />
+                <ScalarProperty Name="FormData89" ColumnName="FormData89" />
+                <ScalarProperty Name="FormData88" ColumnName="FormData88" />
+                <ScalarProperty Name="FormData87" ColumnName="FormData87" />
+                <ScalarProperty Name="FormData86" ColumnName="FormData86" />
+                <ScalarProperty Name="FormData85" ColumnName="FormData85" />
+                <ScalarProperty Name="FormData84" ColumnName="FormData84" />
+                <ScalarProperty Name="FormData83" ColumnName="FormData83" />
+                <ScalarProperty Name="FormData82" ColumnName="FormData82" />
+                <ScalarProperty Name="FormData81" ColumnName="FormData81" />
+                <ScalarProperty Name="FormData80" ColumnName="FormData80" />
+                <ScalarProperty Name="FormData79" ColumnName="FormData79" />
+                <ScalarProperty Name="FormData78" ColumnName="FormData78" />
+                <ScalarProperty Name="FormData77" ColumnName="FormData77" />
+                <ScalarProperty Name="FormData76" ColumnName="FormData76" />
+                <ScalarProperty Name="FormData75" ColumnName="FormData75" />
+                <ScalarProperty Name="FormData74" ColumnName="FormData74" />
+                <ScalarProperty Name="FormData73" ColumnName="FormData73" />
+                <ScalarProperty Name="FormData72" ColumnName="FormData72" />
+                <ScalarProperty Name="FormData71" ColumnName="FormData71" />
+                <ScalarProperty Name="FormData70" ColumnName="FormData70" />
+                <ScalarProperty Name="FormData69" ColumnName="FormData69" />
+                <ScalarProperty Name="FormData68" ColumnName="FormData68" />
+                <ScalarProperty Name="FormData67" ColumnName="FormData67" />
+                <ScalarProperty Name="FormData66" ColumnName="FormData66" />
+                <ScalarProperty Name="FormData65" ColumnName="FormData65" />
+                <ScalarProperty Name="FormData64" ColumnName="FormData64" />
+                <ScalarProperty Name="FormData63" ColumnName="FormData63" />
+                <ScalarProperty Name="FormData62" ColumnName="FormData62" />
+                <ScalarProperty Name="FormData61" ColumnName="FormData61" />
+                <ScalarProperty Name="FormData60" ColumnName="FormData60" />
+                <ScalarProperty Name="FormData59" ColumnName="FormData59" />
+                <ScalarProperty Name="FormData58" ColumnName="FormData58" />
+                <ScalarProperty Name="FormData57" ColumnName="FormData57" />
+                <ScalarProperty Name="FormData56" ColumnName="FormData56" />
+                <ScalarProperty Name="FormData55" ColumnName="FormData55" />
+                <ScalarProperty Name="FormData54" ColumnName="FormData54" />
+                <ScalarProperty Name="FormData53" ColumnName="FormData53" />
+                <ScalarProperty Name="FormData52" ColumnName="FormData52" />
+                <ScalarProperty Name="FormData51" ColumnName="FormData51" />
+                <ScalarProperty Name="FormData50" ColumnName="FormData50" />
+                <ScalarProperty Name="FormData49" ColumnName="FormData49" />
+                <ScalarProperty Name="FormData48" ColumnName="FormData48" />
+                <ScalarProperty Name="FormData47" ColumnName="FormData47" />
+                <ScalarProperty Name="FormData46" ColumnName="FormData46" />
+                <ScalarProperty Name="FormData45" ColumnName="FormData45" />
+                <ScalarProperty Name="FormData44" ColumnName="FormData44" />
+                <ScalarProperty Name="FormData43" ColumnName="FormData43" />
+                <ScalarProperty Name="FormData42" ColumnName="FormData42" />
+                <ScalarProperty Name="FormData41" ColumnName="FormData41" />
+                <ScalarProperty Name="FormData40" ColumnName="FormData40" />
+                <ScalarProperty Name="FormData39" ColumnName="FormData39" />
+                <ScalarProperty Name="FormData38" ColumnName="FormData38" />
+                <ScalarProperty Name="FormData37" ColumnName="FormData37" />
+                <ScalarProperty Name="FormData36" ColumnName="FormData36" />
+                <ScalarProperty Name="FormData35" ColumnName="FormData35" />
+                <ScalarProperty Name="FormData34" ColumnName="FormData34" />
+                <ScalarProperty Name="FormData33" ColumnName="FormData33" />
+                <ScalarProperty Name="FormData32" ColumnName="FormData32" />
+                <ScalarProperty Name="FormData31" ColumnName="FormData31" />
+                <ScalarProperty Name="FormData30" ColumnName="FormData30" />
+                <ScalarProperty Name="FormData29" ColumnName="FormData29" />
+                <ScalarProperty Name="FormData28" ColumnName="FormData28" />
+                <ScalarProperty Name="FormData27" ColumnName="FormData27" />
+                <ScalarProperty Name="FormData26" ColumnName="FormData26" />
+                <ScalarProperty Name="FormData25" ColumnName="FormData25" />
+                <ScalarProperty Name="FormData24" ColumnName="FormData24" />
+                <ScalarProperty Name="FormData23" ColumnName="FormData23" />
+                <ScalarProperty Name="FormData22" ColumnName="FormData22" />
+                <ScalarProperty Name="FormData21" ColumnName="FormData21" />
+                <ScalarProperty Name="FormData20" ColumnName="FormData20" />
+                <ScalarProperty Name="FormData19" ColumnName="FormData19" />
+                <ScalarProperty Name="FormData18" ColumnName="FormData18" />
+                <ScalarProperty Name="FormData17" ColumnName="FormData17" />
+                <ScalarProperty Name="FormData16" ColumnName="FormData16" />
+                <ScalarProperty Name="FormData15" ColumnName="FormData15" />
+                <ScalarProperty Name="FormData14" ColumnName="FormData14" />
+                <ScalarProperty Name="FormData13" ColumnName="FormData13" />
+                <ScalarProperty Name="FormData12" ColumnName="FormData12" />
+                <ScalarProperty Name="FormData11" ColumnName="FormData11" />
+                <ScalarProperty Name="FormData10" ColumnName="FormData10" />
+                <ScalarProperty Name="FormData09" ColumnName="FormData09" />
+                <ScalarProperty Name="FormData08" ColumnName="FormData08" />
+                <ScalarProperty Name="FormData07" ColumnName="FormData07" />
+                <ScalarProperty Name="FormData06" ColumnName="FormData06" />
+                <ScalarProperty Name="FormData05" ColumnName="FormData05" />
+                <ScalarProperty Name="FormData04" ColumnName="FormData04" />
+                <ScalarProperty Name="FormData03" ColumnName="FormData03" />
+                <ScalarProperty Name="FormData02" ColumnName="FormData02" />
+                <ScalarProperty Name="FormData01" ColumnName="FormData01" />
+                <ScalarProperty Name="SW_identityId" ColumnName="SW_identityId" />
+                <ScalarProperty Name="dateModified" ColumnName="dateModified" />
+                <ScalarProperty Name="isApproval_03" ColumnName="isApproval_03" />
+                <ScalarProperty Name="isApproval_02" ColumnName="isApproval_02" />
+                <ScalarProperty Name="isApproval_01" ColumnName="isApproval_01" />
+                <ScalarProperty Name="form" ColumnName="form" />
+                <ScalarProperty Name="desc" ColumnName="desc" />
+                <ScalarProperty Name="name" ColumnName="name" />
+                <ScalarProperty Name="uuid" ColumnName="uuid" />
                 <ScalarProperty Name="Id" ColumnName="Id" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
-          <EntitySetMapping Name="policies">
-            <EntityTypeMapping TypeName="Model.policy">
-              <MappingFragment StoreEntitySet="policies">
-                <ScalarProperty Name="IsSystem" ColumnName="IsSystem" />
-                <ScalarProperty Name="UpdatedAt" ColumnName="UpdatedAt" />
-                <ScalarProperty Name="IsEnabled" ColumnName="IsEnabled" />
-                <ScalarProperty Name="Description" ColumnName="Description" />
-                <ScalarProperty Name="Name" ColumnName="Name" />
-                <ScalarProperty Name="Id" ColumnName="Id" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
-          <EntitySetMapping Name="policy_claims">
-            <EntityTypeMapping TypeName="Model.policy_claims">
-              <MappingFragment StoreEntitySet="policy_claims">
-                <ScalarProperty Name="Value" ColumnName="Value" />
-                <ScalarProperty Name="Type" ColumnName="Type" />
-                <ScalarProperty Name="AuthorizationPolicyEntityId" ColumnName="AuthorizationPolicyEntityId" />
-                <ScalarProperty Name="Id" ColumnName="Id" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
-          <EntitySetMapping Name="policy_roles">
-            <EntityTypeMapping TypeName="Model.policy_roles">
-              <MappingFragment StoreEntitySet="policy_roles">
-                <ScalarProperty Name="RoleName" ColumnName="RoleName" />
-                <ScalarProperty Name="RoleId" ColumnName="RoleId" />
-                <ScalarProperty Name="AuthorizationPolicyEntityId" ColumnName="AuthorizationPolicyEntityId" />
-                <ScalarProperty Name="Id" ColumnName="Id" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
-          <EntitySetMapping Name="public_endpoints">
-            <EntityTypeMapping TypeName="Model.public_endpoints">
-              <MappingFragment StoreEntitySet="public_endpoints">
-                <ScalarProperty Name="UpdatedAt" ColumnName="UpdatedAt" />
-                <ScalarProperty Name="Priority" ColumnName="Priority" />
-                <ScalarProperty Name="IsEnabled" ColumnName="IsEnabled" />
-                <ScalarProperty Name="Notes" ColumnName="Notes" />
-                <ScalarProperty Name="Regex" ColumnName="Regex" />
-                <ScalarProperty Name="Path" ColumnName="Path" />
-                <ScalarProperty Name="Page" ColumnName="Page" />
-                <ScalarProperty Name="Action" ColumnName="Action" />
-                <ScalarProperty Name="Controller" ColumnName="Controller" />
-                <ScalarProperty Name="Area" ColumnName="Area" />
-                <ScalarProperty Name="MatchType" ColumnName="MatchType" />
-                <ScalarProperty Name="Id" ColumnName="Id" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
-          <EntitySetMapping Name="role_claims">
-            <EntityTypeMapping TypeName="Model.role_claims">
-              <MappingFragment StoreEntitySet="role_claims">
-                <ScalarProperty Name="ClaimValue" ColumnName="ClaimValue" />
-                <ScalarProperty Name="ClaimType" ColumnName="ClaimType" />
-                <ScalarProperty Name="RoleId" ColumnName="RoleId" />
-                <ScalarProperty Name="Id" ColumnName="Id" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
-          <EntitySetMapping Name="roles">
-            <EntityTypeMapping TypeName="Model.role">
-              <MappingFragment StoreEntitySet="roles">
-                <ScalarProperty Name="ConcurrencyStamp" ColumnName="ConcurrencyStamp" />
-                <ScalarProperty Name="NormalizedName" ColumnName="NormalizedName" />
+          <EntitySetMapping Name="SW_formTableName">
+            <EntityTypeMapping TypeName="Model.SW_formTableName">
+              <MappingFragment StoreEntitySet="SW_formTableName">
+                <ScalarProperty Name="SW_formsId" ColumnName="SW_formsId" />
                 <ScalarProperty Name="name" ColumnName="name" />
                 <ScalarProperty Name="Id" ColumnName="Id" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
-          <EntitySetMapping Name="user_claims">
-            <EntityTypeMapping TypeName="Model.user_claims">
-              <MappingFragment StoreEntitySet="user_claims">
-                <ScalarProperty Name="ClaimValue" ColumnName="ClaimValue" />
-                <ScalarProperty Name="ClaimType" ColumnName="ClaimType" />
-                <ScalarProperty Name="UserId" ColumnName="UserId" />
+          <EntitySetMapping Name="SW_identity">
+            <EntityTypeMapping TypeName="Model.SW_identity">
+              <MappingFragment StoreEntitySet="SW_identity">
+                <ScalarProperty Name="signature" ColumnName="signature" />
+                <ScalarProperty Name="header" ColumnName="header" />
+                <ScalarProperty Name="media_03" ColumnName="media_03" />
+                <ScalarProperty Name="media_02" ColumnName="media_02" />
+                <ScalarProperty Name="media_01" ColumnName="media_01" />
+                <ScalarProperty Name="logo" ColumnName="logo" />
+                <ScalarProperty Name="desc" ColumnName="desc" />
+                <ScalarProperty Name="name" ColumnName="name" />
                 <ScalarProperty Name="Id" ColumnName="Id" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
-          <EntitySetMapping Name="user_logins">
-            <EntityTypeMapping TypeName="Model.user_logins">
-              <MappingFragment StoreEntitySet="user_logins">
-                <ScalarProperty Name="UserId" ColumnName="UserId" />
-                <ScalarProperty Name="ProviderDisplayName" ColumnName="ProviderDisplayName" />
-                <ScalarProperty Name="ProviderKey" ColumnName="ProviderKey" />
-                <ScalarProperty Name="LoginProvider" ColumnName="LoginProvider" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
-          <EntitySetMapping Name="user_tokens">
-            <EntityTypeMapping TypeName="Model.user_tokens">
-              <MappingFragment StoreEntitySet="user_tokens">
-                <ScalarProperty Name="Value" ColumnName="Value" />
-                <ScalarProperty Name="Name" ColumnName="Name" />
-                <ScalarProperty Name="LoginProvider" ColumnName="LoginProvider" />
-                <ScalarProperty Name="UserId" ColumnName="UserId" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
-          <EntitySetMapping Name="users">
-            <EntityTypeMapping TypeName="Model.user">
-              <MappingFragment StoreEntitySet="users">
-                <ScalarProperty Name="AccessFailedCount" ColumnName="AccessFailedCount" />
-                <ScalarProperty Name="LockoutEnabled" ColumnName="LockoutEnabled" />
-                <ScalarProperty Name="LockoutEnd" ColumnName="LockoutEnd" />
-                <ScalarProperty Name="TwoFactorEnabled" ColumnName="TwoFactorEnabled" />
-                <ScalarProperty Name="PhoneNumberConfirmed" ColumnName="PhoneNumberConfirmed" />
-                <ScalarProperty Name="PhoneNumber" ColumnName="PhoneNumber" />
-                <ScalarProperty Name="ConcurrencyStamp" ColumnName="ConcurrencyStamp" />
-                <ScalarProperty Name="SecurityStamp" ColumnName="SecurityStamp" />
-                <ScalarProperty Name="PasswordHash" ColumnName="PasswordHash" />
-                <ScalarProperty Name="EmailConfirmed" ColumnName="EmailConfirmed" />
-                <ScalarProperty Name="NormalizedEmail" ColumnName="NormalizedEmail" />
-                <ScalarProperty Name="Email" ColumnName="Email" />
-                <ScalarProperty Name="NormalizedUserName" ColumnName="NormalizedUserName" />
-                <ScalarProperty Name="UserName" ColumnName="UserName" />
-                <ScalarProperty Name="LastName" ColumnName="LastName" />
-                <ScalarProperty Name="FirstName" ColumnName="FirstName" />
+          <EntitySetMapping Name="SW_roles">
+            <EntityTypeMapping TypeName="Model.SW_roles">
+              <MappingFragment StoreEntitySet="SW_roles">
+                <ScalarProperty Name="name" ColumnName="name" />
                 <ScalarProperty Name="Id" ColumnName="Id" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
-          <AssociationSetMapping Name="user_roles" TypeName="Model.user_roles" StoreEntitySet="user_roles">
-            <EndProperty Name="user">
-              <ScalarProperty Name="Id" ColumnName="UserId" />
-            </EndProperty>
-            <EndProperty Name="role">
-              <ScalarProperty Name="Id" ColumnName="RoleId" />
-            </EndProperty>
-          </AssociationSetMapping>
-  </EntityContainerMapping>
+          <EntitySetMapping Name="SW_users">
+            <EntityTypeMapping TypeName="Model.SW_users">
+              <MappingFragment StoreEntitySet="SW_users">
+                <ScalarProperty Name="SW_rolesId" ColumnName="SW_rolesId" />
+                <ScalarProperty Name="password" ColumnName="password" />
+                <ScalarProperty Name="email" ColumnName="email" />
+                <ScalarProperty Name="userName" ColumnName="userName" />
+                <ScalarProperty Name="fullName" ColumnName="fullName" />
+                <ScalarProperty Name="Id" ColumnName="Id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+        </EntityContainerMapping>
 </Mapping></edmx:Mappings>
   </edmx:Runtime>
   <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->

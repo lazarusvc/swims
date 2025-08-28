@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using SWIMS.Models;
+using SWIMS.Models.ViewModels;
 using System.Diagnostics;
 
 namespace SWIMS.Controllers

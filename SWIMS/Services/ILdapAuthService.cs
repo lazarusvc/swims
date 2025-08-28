@@ -8,7 +8,7 @@
 // -------------------------------------------------------------------
 
 using System.Threading.Tasks;
-using SWIMS.Models;
+using SWIMS.Models.ViewModels;
 
 namespace SWIMS.Services
 {
@@ -27,9 +27,9 @@ namespace SWIMS.Services
         /// The plaintext password to verify against the LDAP store.
         /// </param>
         /// <returns>
-        /// A <see cref="Task{TResult}"/> that resolves to an <see cref="LdapUser"/> instance
+        /// A <see cref="Task{TResult}"/> that resolves to an <see cref="LdapUserViewModel"/> instance
         /// if authentication succeeds; otherwise, <c>null</c>.
         /// </returns>
-        Task<LdapUser?> AuthenticateAsync(string username, string password);
+        Task<LdapUserViewModel?> AuthenticateAsync(string username, string password);
     }
 }
