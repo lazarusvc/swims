@@ -369,3 +369,4 @@ SWIMS/wwwroot/docfx/api/
 # DocFX-generated API metadata (rebuilt on every build)
 SWIMS/wwwroot/docs/
 
+/SWIMS.zip

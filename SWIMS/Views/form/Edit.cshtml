@@ -9,7 +9,7 @@
 <div class="row gy-4">
     <div class="col-md-8">
         <div id="fb-editor"></div>
-        <button type="button" class="btn btn-warning-100 text-warning-600 radius-8 px-14 py-6 text-sm" id="getJSON" style="float: right;">
+        <button type="button" class="btn btn-warning-100 text-warning-600 radius-8 px-14 py-6 text-sm" id="sv_2FormInput" style="float: right;">
             Save
         </button>
     </div>
@@ -89,14 +89,12 @@
     jQuery(function ($) {
         // --------------------------------------- Form Builder - options
         var options = {
-            dataType: 'json',
             disabledActionButtons: ['data', 'save'],
             formData: '@Html.Raw(@ViewBag.frm)'
         };
         var formBuilder = $(fbEditor).formBuilder(options);
 
-        document.getElementById('getJSON').addEventListener('click', function() {
-            console.log(formBuilder.actions.getData('json'));
+        document.getElementById('sv_2FormInput').addEventListener('click', function() {
                 frm.value = formBuilder.actions.getData('json');
         });
     });

@@ -1,0 +1,99 @@
+﻿@* Reusable partial for both PublicEndpoints and EndpointPolicies Create views.
+   We keep @model dynamic so it can accept either VM, as long as the property names match:
+   MatchType, Area, Controller, Action, Page, Path, Regex, IsEnabled, Priority, Notes. *@
+@model dynamic
+@using SWIMS.Models.Security
+
+<div class="mb-3">
+  <label class="form-label">Match Type</label>
+  <select name="MatchType" id="mtf-type" class="form-select">
+    @foreach (var t in MatchTypes.All)
+    {
+        var isSelected = string.Equals(Model.MatchType, t, StringComparison.OrdinalIgnoreCase);
+        <option value="@t" selected="@(isSelected ? "selected" : null)">@t</option>
+    }
+  </select>
+</div>
+
+<div class="row g-3 mtf-ca">
+  <div class="col-md-4">
+    <label class="form-label">Area</label>
+    <input name="Area" class="form-control" value="@(Model.Area ?? String.Empty)" />
+  </div>
+  <div class="col-md-4">
+    <label class="form-label">Controller</label>
+    <input name="Controller" class="form-control" value="@(Model.Controller ?? String.Empty)" />
+  </div>
+  <div class="col-md-4">
+    <label class="form-label">Action</label>
+    <input name="Action" class="form-control" value="@(Model.Action ?? String.Empty)" />
+  </div>
+</div>
+
+<div class="row g-3 mtf-page d-none">
+  <div class="col-md-4">
+    <label class="form-label">Area</label>
+    <input name="Area" class="form-control" value="@(Model.Area ?? String.Empty)" />
+  </div>
+  <div class="col-md-8">
+    <label class="form-label">Razor Page (route)</label>
+    <input name="Page" class="form-control" value="@(Model.Page ?? String.Empty)" placeholder="/Privacy or /Docs/Index" />
+  </div>
+</div>
+
+<div class="row g-3 mtf-path d-none">
+  <div class="col-md-12">
+    <label class="form-label">Path</label>
+    <input name="Path" class="form-control" value="@(Model.Path ?? String.Empty)" placeholder="/api/items?id=1" />
+  </div>
+</div>
+
+<div class="row g-3 mtf-regex d-none">
+  <div class="col-md-12">
+    <label class="form-label">Regex</label>
+    <input name="Regex" class="form-control" value="@(Model.Regex ?? String.Empty)" placeholder="^/docs(/.*)?$" />
+  </div>
+</div>
+
+<div class="row g-3 mt-3">
+  <div class="col-md-8">
+    <label class="form-label">Notes</label>
+    <input name="Notes" class="form-control" value="@(Model.Notes ?? String.Empty)" />
+  </div>
+  <div class="col-md-2">
+    <div class="form-check form-switch mt-4">
+            <input type="hidden" name="IsEnabled" value="false" />
+            <input type="checkbox" class="form-check-input" name="IsEnabled" value="true" checked="@(Model.IsEnabled ? "checked" : null)" />
+      <label class="form-check-label">Enabled</label>
+    </div>
+  </div>
+  <div class="col-md-2">
+    <label class="form-label">Priority</label>
+    <input type="number" name="Priority" class="form-control" value="@(Model.Priority ?? 100)" />
+  </div>
+</div>
+
+@section Scripts {
+  <script>
+    (function(){
+      const typeSel = document.getElementById('mtf-type');
+      const s = (sel, show) => document.querySelector(sel).classList.toggle('d-none', !show);
+
+      function applyVisibility(){
+        const t = typeSel.value;
+        s('.mtf-ca',    t === 'ControllerAction' || t === 'Controller'); // keep Area for Controller-only
+        // hide/show Controller/Action inputs if Controller-only
+        document.querySelectorAll('.mtf-ca input[name="Controller"], .mtf-ca input[name="Action"]').forEach(el => {
+          el.closest('.col-md-4').classList.toggle('d-none', t === 'Controller');
+        });
+
+        s('.mtf-page',  t === 'RazorPage');
+        s('.mtf-path',  t === 'Path');
+        s('.mtf-regex', t === 'Regex');
+      }
+
+      typeSel.addEventListener('change', applyVisibility);
+      applyVisibility();
+    })();
+  </script>
+}

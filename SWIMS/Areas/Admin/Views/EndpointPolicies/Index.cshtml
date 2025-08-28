@@ -1,0 +1,50 @@
+﻿@model List<EndpointPolicyListItemViewModel>
+@{
+    ViewData["Title"] = "Endpoint Policy Assignments";
+}
+<h2>Endpoint Policy Assignments</h2>
+@if (TempData["Ok"] is string ok)
+{
+    <div class="alert alert-success">@ok</div>
+}
+<p><a asp-action="Create" class="btn btn-primary">Add Assignment</a></p>
+<a asp-action="BulkCreate" class="btn btn-outline-secondary ms-2">Bulk Apply</a>
+
+
+<table class="table table-sm table-striped align-middle">
+    <thead><tr><th>Type</th><th>Target</th><th>Policy</th><th>Enabled</th><th>Priority</th><th>Updated</th><th></th></tr></thead>
+    <tbody>
+        @foreach (var x in Model)
+        {
+            var target =
+            x.MatchType switch
+            {
+                "ControllerAction" => $"{x.Area ?? "(root)"} / {x.Controller}:{x.Action}",
+                "Controller" => $"{x.Area ?? "(root)"} / {x.Controller}",
+                "RazorPage" => $"{x.Area ?? "(root)"} {x.Page}",
+                "Path" => x.Path,
+                "Regex" => x.Regex,
+                _ => ""
+            };
+            <tr>
+                <td>@x.MatchType</td>
+                <td>@target</td>
+                <td><span class="badge bg-secondary">@x.PolicyName</span></td>
+                <td>@(x.IsEnabled ? "Yes" : "No")</td>
+                <td>@x.Priority</td>
+                <td>@x.UpdatedAt.LocalDateTime</td>
+                <td class="text-end">
+                    <a asp-action="Edit" asp-route-id="@x.Id" class="btn btn-sm btn-outline-primary">Edit</a>
+                    <form asp-action="Toggle" asp-route-id="@x.Id" method="post" class="d-inline">
+                        @Html.AntiForgeryToken()
+                        <button class="btn btn-sm btn-outline-warning">@(x.IsEnabled ? "Disable" : "Enable")</button>
+                    </form>
+                    <form asp-action="Delete" asp-route-id="@x.Id" method="post" class="d-inline" onsubmit="return confirm('Delete this?');">
+                        @Html.AntiForgeryToken()
+                        <button class="btn btn-sm btn-outline-danger">Delete</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

@@ -22,8 +22,6 @@ namespace Model_Designer
     
         public int Id { get; set; }
         public string name { get; set; }
-        public string NormalizedName { get; set; }
-        public string ConcurrencyStamp { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<SW_users> SW_users { get; set; }

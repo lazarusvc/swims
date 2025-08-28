@@ -3,40 +3,40 @@
 @{
     ViewData["Title"] = "Index";
 }
-
-<h1>Index</h1>
-
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
+<br />
+<div class="card basic-data-table">
+<div class="card-header">
+<a asp-action="Create" class="btn btn-success">Create New</a>
+</div>
+<div class="card-body" style="overflow-x:scroll;">
+<table class="table bordered-table mb-0" id="dataTable" data-page-length='10'>
     <thead>
         <tr>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.name)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.desc)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.logo)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.media_01)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.media_02)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.media_03)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.header)
             </th>
-            <th>
+            <th scope="col">
                 @Html.DisplayNameFor(model => model.signature)
             </th>
-            <th></th>
+            <th scope="col">Manage</th>
         </tr>
     </thead>
     <tbody>
@@ -67,11 +67,16 @@
                 @Html.DisplayFor(modelItem => item.signature)
             </td>
             <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                <a asp-action="Details" asp-route-id="@item.Id" class="w-32-px h-32-px bg-primary-light text-primary-600 rounded-circle d-inline-flex align-items-center justify-content-center"><iconify-icon icon="iconamoon:eye-light"></iconify-icon></a>
+                <a asp-action="Edit" asp-route-id="@item.Id" class="w-32-px h-32-px bg-success-focus text-success-main rounded-circle d-inline-flex align-items-center justify-content-center"><iconify-icon icon="lucide:edit"></iconify-icon></a>
+                <a asp-action="Delete" asp-route-id="@item.Id" class="w-32-px h-32-px bg-danger-focus text-danger-main rounded-circle d-inline-flex align-items-center justify-content-center"><iconify-icon icon="mingcute:delete-2-line"></iconify-icon></a>
             </td>
         </tr>
 }
     </tbody>
 </table>
+</div>
+</div>
+<script src="~/lib/jquery/dist/jquery.js"></script>
+<script src="~/js/datatables.min.js"></script>
+<script type="text/javascript"> let table = new DataTable('#dataTable');</script>

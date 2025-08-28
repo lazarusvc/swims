@@ -1,1279 +1,1803 @@
 ﻿@model SWIMS.Models.SW_formTableDatum
 
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "SW_formTableDatum | NEW";
 }
 
-<h1>Create</h1>
-
-<h4>SW_formTableDatum</h4>
 <hr />
 <div class="row">
-    <div class="col-md-4">
+<div class="col-md-12">
+<div class="card">
+<div class="card-header">
+<a asp-action="Create" class="btn btn-success">Create New</a>
+</div>
+            <div class="card-body" style="overflow-y:scroll; max-height: 250px;">
         <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="FormData01" class="control-label"></label>
-                <input asp-for="FormData01" class="form-control" />
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData01" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData01" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData01" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData02" class="control-label"></label>
-                <input asp-for="FormData02" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData02" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData02" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData02" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData03" class="control-label"></label>
-                <input asp-for="FormData03" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData03" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData03" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData03" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData04" class="control-label"></label>
-                <input asp-for="FormData04" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData04" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData04" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData04" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData05" class="control-label"></label>
-                <input asp-for="FormData05" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData05" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData05" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData05" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData06" class="control-label"></label>
-                <input asp-for="FormData06" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData06" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData06" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData06" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData07" class="control-label"></label>
-                <input asp-for="FormData07" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData07" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData07" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData07" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData08" class="control-label"></label>
-                <input asp-for="FormData08" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData08" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData08" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData08" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData09" class="control-label"></label>
-                <input asp-for="FormData09" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData09" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData09" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData09" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData10" class="control-label"></label>
-                <input asp-for="FormData10" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData10" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData10" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData10" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData11" class="control-label"></label>
-                <input asp-for="FormData11" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData11" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData11" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData11" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData12" class="control-label"></label>
-                <input asp-for="FormData12" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData12" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData12" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData12" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData13" class="control-label"></label>
-                <input asp-for="FormData13" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData13" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData13" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData13" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData14" class="control-label"></label>
-                <input asp-for="FormData14" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData14" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData14" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData14" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData15" class="control-label"></label>
-                <input asp-for="FormData15" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData15" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData15" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData15" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData16" class="control-label"></label>
-                <input asp-for="FormData16" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData16" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData16" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData16" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData17" class="control-label"></label>
-                <input asp-for="FormData17" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData17" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData17" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData17" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData18" class="control-label"></label>
-                <input asp-for="FormData18" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData18" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData18" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData18" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData19" class="control-label"></label>
-                <input asp-for="FormData19" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData19" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData19" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData19" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData20" class="control-label"></label>
-                <input asp-for="FormData20" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData20" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData20" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData20" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData21" class="control-label"></label>
-                <input asp-for="FormData21" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData21" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData21" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData21" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData22" class="control-label"></label>
-                <input asp-for="FormData22" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData22" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData22" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData22" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData23" class="control-label"></label>
-                <input asp-for="FormData23" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData23" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData23" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData23" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData24" class="control-label"></label>
-                <input asp-for="FormData24" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData24" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData24" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData24" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData25" class="control-label"></label>
-                <input asp-for="FormData25" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData25" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData25" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData25" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData26" class="control-label"></label>
-                <input asp-for="FormData26" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData26" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData26" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData26" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData27" class="control-label"></label>
-                <input asp-for="FormData27" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData27" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData27" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData27" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData28" class="control-label"></label>
-                <input asp-for="FormData28" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData28" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData28" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData28" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData29" class="control-label"></label>
-                <input asp-for="FormData29" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData29" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData29" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData29" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData30" class="control-label"></label>
-                <input asp-for="FormData30" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData30" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData30" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData30" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData31" class="control-label"></label>
-                <input asp-for="FormData31" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData31" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData31" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData31" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData32" class="control-label"></label>
-                <input asp-for="FormData32" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData32" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData32" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData32" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData33" class="control-label"></label>
-                <input asp-for="FormData33" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData33" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData33" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData33" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData34" class="control-label"></label>
-                <input asp-for="FormData34" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData34" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData34" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData34" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData35" class="control-label"></label>
-                <input asp-for="FormData35" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData35" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData35" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData35" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData36" class="control-label"></label>
-                <input asp-for="FormData36" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData36" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData36" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData36" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData37" class="control-label"></label>
-                <input asp-for="FormData37" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData37" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData37" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData37" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData38" class="control-label"></label>
-                <input asp-for="FormData38" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData38" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData38" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData38" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData39" class="control-label"></label>
-                <input asp-for="FormData39" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData39" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData39" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData39" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData40" class="control-label"></label>
-                <input asp-for="FormData40" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData40" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData40" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData40" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData41" class="control-label"></label>
-                <input asp-for="FormData41" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData41" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData41" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData41" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData42" class="control-label"></label>
-                <input asp-for="FormData42" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData42" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData42" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData42" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData43" class="control-label"></label>
-                <input asp-for="FormData43" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData43" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData43" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData43" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData44" class="control-label"></label>
-                <input asp-for="FormData44" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData44" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData44" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData44" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData45" class="control-label"></label>
-                <input asp-for="FormData45" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData45" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData45" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData45" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData46" class="control-label"></label>
-                <input asp-for="FormData46" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData46" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData46" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData46" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData47" class="control-label"></label>
-                <input asp-for="FormData47" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData47" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData47" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData47" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData48" class="control-label"></label>
-                <input asp-for="FormData48" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData48" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData48" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData48" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData49" class="control-label"></label>
-                <input asp-for="FormData49" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData49" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData49" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData49" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData50" class="control-label"></label>
-                <input asp-for="FormData50" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData50" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData50" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData50" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData51" class="control-label"></label>
-                <input asp-for="FormData51" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData51" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData51" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData51" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData52" class="control-label"></label>
-                <input asp-for="FormData52" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData52" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData52" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData52" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData53" class="control-label"></label>
-                <input asp-for="FormData53" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData53" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData53" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData53" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData54" class="control-label"></label>
-                <input asp-for="FormData54" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData54" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData54" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData54" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData55" class="control-label"></label>
-                <input asp-for="FormData55" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData55" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData55" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData55" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData56" class="control-label"></label>
-                <input asp-for="FormData56" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData56" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData56" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData56" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData57" class="control-label"></label>
-                <input asp-for="FormData57" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData57" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData57" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData57" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData58" class="control-label"></label>
-                <input asp-for="FormData58" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData58" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData58" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData58" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData59" class="control-label"></label>
-                <input asp-for="FormData59" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData59" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData59" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData59" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData60" class="control-label"></label>
-                <input asp-for="FormData60" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData60" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData60" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData60" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData61" class="control-label"></label>
-                <input asp-for="FormData61" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData61" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData61" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData61" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData62" class="control-label"></label>
-                <input asp-for="FormData62" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData62" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData62" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData62" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData63" class="control-label"></label>
-                <input asp-for="FormData63" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData63" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData63" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData63" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData64" class="control-label"></label>
-                <input asp-for="FormData64" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData64" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData64" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData64" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData65" class="control-label"></label>
-                <input asp-for="FormData65" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData65" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData65" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData65" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData66" class="control-label"></label>
-                <input asp-for="FormData66" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData66" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData66" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData66" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData67" class="control-label"></label>
-                <input asp-for="FormData67" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData67" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData67" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData67" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData68" class="control-label"></label>
-                <input asp-for="FormData68" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData68" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData68" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData68" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData69" class="control-label"></label>
-                <input asp-for="FormData69" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData69" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData69" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData69" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData70" class="control-label"></label>
-                <input asp-for="FormData70" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData70" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData70" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData70" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData71" class="control-label"></label>
-                <input asp-for="FormData71" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData71" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData71" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData71" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData72" class="control-label"></label>
-                <input asp-for="FormData72" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData72" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData72" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData72" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData73" class="control-label"></label>
-                <input asp-for="FormData73" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData73" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData73" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData73" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData74" class="control-label"></label>
-                <input asp-for="FormData74" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData74" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData74" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData74" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData75" class="control-label"></label>
-                <input asp-for="FormData75" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData75" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData75" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData75" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData76" class="control-label"></label>
-                <input asp-for="FormData76" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData76" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData76" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData76" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData77" class="control-label"></label>
-                <input asp-for="FormData77" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData77" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData77" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData77" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData78" class="control-label"></label>
-                <input asp-for="FormData78" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData78" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData78" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData78" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData79" class="control-label"></label>
-                <input asp-for="FormData79" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData79" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData79" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData79" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData80" class="control-label"></label>
-                <input asp-for="FormData80" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData80" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData80" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData80" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData81" class="control-label"></label>
-                <input asp-for="FormData81" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData81" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData81" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData81" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData82" class="control-label"></label>
-                <input asp-for="FormData82" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData82" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData82" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData82" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData83" class="control-label"></label>
-                <input asp-for="FormData83" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData83" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData83" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData83" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData84" class="control-label"></label>
-                <input asp-for="FormData84" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData84" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData84" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData84" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData85" class="control-label"></label>
-                <input asp-for="FormData85" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData85" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData85" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData85" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData86" class="control-label"></label>
-                <input asp-for="FormData86" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData86" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData86" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData86" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData87" class="control-label"></label>
-                <input asp-for="FormData87" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData87" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData87" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData87" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData88" class="control-label"></label>
-                <input asp-for="FormData88" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData88" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData88" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData88" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData89" class="control-label"></label>
-                <input asp-for="FormData89" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData89" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData89" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData89" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData90" class="control-label"></label>
-                <input asp-for="FormData90" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData90" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData90" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData90" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData91" class="control-label"></label>
-                <input asp-for="FormData91" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData91" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData91" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData91" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData92" class="control-label"></label>
-                <input asp-for="FormData92" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData92" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData92" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData92" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData93" class="control-label"></label>
-                <input asp-for="FormData93" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData93" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData93" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData93" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData94" class="control-label"></label>
-                <input asp-for="FormData94" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData94" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData94" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData94" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData95" class="control-label"></label>
-                <input asp-for="FormData95" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData95" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData95" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData95" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData96" class="control-label"></label>
-                <input asp-for="FormData96" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData96" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData96" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData96" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData97" class="control-label"></label>
-                <input asp-for="FormData97" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData97" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData97" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData97" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData98" class="control-label"></label>
-                <input asp-for="FormData98" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData98" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData98" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData98" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData99" class="control-label"></label>
-                <input asp-for="FormData99" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData99" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData99" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData99" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData100" class="control-label"></label>
-                <input asp-for="FormData100" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData100" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData100" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData100" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData101" class="control-label"></label>
-                <input asp-for="FormData101" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData101" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData101" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData101" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData102" class="control-label"></label>
-                <input asp-for="FormData102" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData102" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData102" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData102" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData103" class="control-label"></label>
-                <input asp-for="FormData103" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData103" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData103" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData103" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData104" class="control-label"></label>
-                <input asp-for="FormData104" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData104" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData104" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData104" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData105" class="control-label"></label>
-                <input asp-for="FormData105" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData105" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData105" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData105" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData106" class="control-label"></label>
-                <input asp-for="FormData106" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData106" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData106" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData106" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData107" class="control-label"></label>
-                <input asp-for="FormData107" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData107" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData107" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData107" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData108" class="control-label"></label>
-                <input asp-for="FormData108" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData108" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData108" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData108" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData109" class="control-label"></label>
-                <input asp-for="FormData109" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData109" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData109" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData109" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData110" class="control-label"></label>
-                <input asp-for="FormData110" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData110" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData110" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData110" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData111" class="control-label"></label>
-                <input asp-for="FormData111" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData111" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData111" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData111" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData112" class="control-label"></label>
-                <input asp-for="FormData112" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData112" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData112" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData112" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData113" class="control-label"></label>
-                <input asp-for="FormData113" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData113" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData113" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData113" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData114" class="control-label"></label>
-                <input asp-for="FormData114" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData114" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData114" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData114" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData115" class="control-label"></label>
-                <input asp-for="FormData115" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData115" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData115" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData115" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData116" class="control-label"></label>
-                <input asp-for="FormData116" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData116" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData116" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData116" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData117" class="control-label"></label>
-                <input asp-for="FormData117" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData117" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData117" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData117" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData118" class="control-label"></label>
-                <input asp-for="FormData118" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData118" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData118" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData118" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData119" class="control-label"></label>
-                <input asp-for="FormData119" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData119" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData119" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData119" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData120" class="control-label"></label>
-                <input asp-for="FormData120" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData120" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData120" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData120" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData121" class="control-label"></label>
-                <input asp-for="FormData121" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData121" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData121" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData121" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData122" class="control-label"></label>
-                <input asp-for="FormData122" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData122" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData122" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData122" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData123" class="control-label"></label>
-                <input asp-for="FormData123" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData123" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData123" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData123" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData124" class="control-label"></label>
-                <input asp-for="FormData124" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData124" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData124" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData124" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData125" class="control-label"></label>
-                <input asp-for="FormData125" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData125" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData125" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData125" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData126" class="control-label"></label>
-                <input asp-for="FormData126" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData126" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData126" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData126" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData127" class="control-label"></label>
-                <input asp-for="FormData127" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData127" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData127" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData127" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData128" class="control-label"></label>
-                <input asp-for="FormData128" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData128" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData128" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData128" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData129" class="control-label"></label>
-                <input asp-for="FormData129" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData129" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData129" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData129" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData130" class="control-label"></label>
-                <input asp-for="FormData130" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData130" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData130" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData130" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData131" class="control-label"></label>
-                <input asp-for="FormData131" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData131" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData131" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData131" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData132" class="control-label"></label>
-                <input asp-for="FormData132" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData132" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData132" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData132" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData133" class="control-label"></label>
-                <input asp-for="FormData133" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData133" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData133" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData133" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData134" class="control-label"></label>
-                <input asp-for="FormData134" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData134" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData134" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData134" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData135" class="control-label"></label>
-                <input asp-for="FormData135" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData135" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData135" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData135" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData136" class="control-label"></label>
-                <input asp-for="FormData136" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData136" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData136" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData136" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData137" class="control-label"></label>
-                <input asp-for="FormData137" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData137" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData137" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData137" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData138" class="control-label"></label>
-                <input asp-for="FormData138" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData138" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData138" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData138" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData139" class="control-label"></label>
-                <input asp-for="FormData139" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData139" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData139" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData139" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData140" class="control-label"></label>
-                <input asp-for="FormData140" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData140" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData140" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData140" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData141" class="control-label"></label>
-                <input asp-for="FormData141" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData141" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData141" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData141" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData142" class="control-label"></label>
-                <input asp-for="FormData142" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData142" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData142" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData142" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData143" class="control-label"></label>
-                <input asp-for="FormData143" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData143" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData143" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData143" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData144" class="control-label"></label>
-                <input asp-for="FormData144" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData144" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData144" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData144" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData145" class="control-label"></label>
-                <input asp-for="FormData145" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData145" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData145" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData145" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData146" class="control-label"></label>
-                <input asp-for="FormData146" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData146" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData146" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData146" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData147" class="control-label"></label>
-                <input asp-for="FormData147" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData147" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData147" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData147" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData148" class="control-label"></label>
-                <input asp-for="FormData148" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData148" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData148" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData148" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData149" class="control-label"></label>
-                <input asp-for="FormData149" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData149" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData149" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData149" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData150" class="control-label"></label>
-                <input asp-for="FormData150" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData150" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData150" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData150" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData151" class="control-label"></label>
-                <input asp-for="FormData151" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData151" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData151" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData151" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData152" class="control-label"></label>
-                <input asp-for="FormData152" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData152" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData152" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData152" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData153" class="control-label"></label>
-                <input asp-for="FormData153" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData153" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData153" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData153" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData154" class="control-label"></label>
-                <input asp-for="FormData154" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData154" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData154" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData154" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData155" class="control-label"></label>
-                <input asp-for="FormData155" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData155" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData155" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData155" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData156" class="control-label"></label>
-                <input asp-for="FormData156" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData156" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData156" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData156" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData157" class="control-label"></label>
-                <input asp-for="FormData157" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData157" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData157" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData157" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData158" class="control-label"></label>
-                <input asp-for="FormData158" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData158" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData158" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData158" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData159" class="control-label"></label>
-                <input asp-for="FormData159" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData159" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData159" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData159" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData160" class="control-label"></label>
-                <input asp-for="FormData160" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData160" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData160" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData160" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData161" class="control-label"></label>
-                <input asp-for="FormData161" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData161" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData161" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData161" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData162" class="control-label"></label>
-                <input asp-for="FormData162" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData162" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData162" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData162" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData163" class="control-label"></label>
-                <input asp-for="FormData163" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData163" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData163" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData163" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData164" class="control-label"></label>
-                <input asp-for="FormData164" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData164" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData164" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData164" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData165" class="control-label"></label>
-                <input asp-for="FormData165" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData165" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData165" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData165" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData166" class="control-label"></label>
-                <input asp-for="FormData166" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData166" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData166" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData166" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData167" class="control-label"></label>
-                <input asp-for="FormData167" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData167" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData167" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData167" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData168" class="control-label"></label>
-                <input asp-for="FormData168" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData168" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData168" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData168" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData169" class="control-label"></label>
-                <input asp-for="FormData169" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData169" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData169" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData169" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData170" class="control-label"></label>
-                <input asp-for="FormData170" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData170" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData170" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData170" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData171" class="control-label"></label>
-                <input asp-for="FormData171" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData171" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData171" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData171" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData172" class="control-label"></label>
-                <input asp-for="FormData172" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData172" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData172" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData172" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData173" class="control-label"></label>
-                <input asp-for="FormData173" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData173" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData173" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData173" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData174" class="control-label"></label>
-                <input asp-for="FormData174" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData174" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData174" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData174" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData175" class="control-label"></label>
-                <input asp-for="FormData175" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData175" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData175" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData175" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData176" class="control-label"></label>
-                <input asp-for="FormData176" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData176" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData176" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData176" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData177" class="control-label"></label>
-                <input asp-for="FormData177" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData177" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData177" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData177" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData178" class="control-label"></label>
-                <input asp-for="FormData178" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData178" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData178" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData178" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData179" class="control-label"></label>
-                <input asp-for="FormData179" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData179" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData179" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData179" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData180" class="control-label"></label>
-                <input asp-for="FormData180" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData180" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData180" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData180" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData181" class="control-label"></label>
-                <input asp-for="FormData181" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData181" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData181" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData181" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData182" class="control-label"></label>
-                <input asp-for="FormData182" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData182" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData182" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData182" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData183" class="control-label"></label>
-                <input asp-for="FormData183" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData183" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData183" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData183" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData184" class="control-label"></label>
-                <input asp-for="FormData184" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData184" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData184" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData184" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData185" class="control-label"></label>
-                <input asp-for="FormData185" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData185" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData185" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData185" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData186" class="control-label"></label>
-                <input asp-for="FormData186" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData186" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData186" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData186" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData187" class="control-label"></label>
-                <input asp-for="FormData187" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData187" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData187" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData187" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData188" class="control-label"></label>
-                <input asp-for="FormData188" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData188" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData188" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData188" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData189" class="control-label"></label>
-                <input asp-for="FormData189" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData189" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData189" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData189" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData190" class="control-label"></label>
-                <input asp-for="FormData190" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData190" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData190" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData190" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData191" class="control-label"></label>
-                <input asp-for="FormData191" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData191" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData191" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData191" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData192" class="control-label"></label>
-                <input asp-for="FormData192" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData192" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData192" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData192" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData193" class="control-label"></label>
-                <input asp-for="FormData193" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData193" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData193" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData193" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData194" class="control-label"></label>
-                <input asp-for="FormData194" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData194" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData194" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData194" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData195" class="control-label"></label>
-                <input asp-for="FormData195" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData195" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData195" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData195" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData196" class="control-label"></label>
-                <input asp-for="FormData196" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData196" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData196" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData196" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData197" class="control-label"></label>
-                <input asp-for="FormData197" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData197" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData197" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData197" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData198" class="control-label"></label>
-                <input asp-for="FormData198" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData198" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData198" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData198" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData199" class="control-label"></label>
-                <input asp-for="FormData199" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData199" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData199" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData199" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData200" class="control-label"></label>
-                <input asp-for="FormData200" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData200" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData200" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData200" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData201" class="control-label"></label>
-                <input asp-for="FormData201" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData201" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData201" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData201" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData202" class="control-label"></label>
-                <input asp-for="FormData202" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData202" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData202" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData202" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData203" class="control-label"></label>
-                <input asp-for="FormData203" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData203" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData203" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData203" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData204" class="control-label"></label>
-                <input asp-for="FormData204" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData204" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData204" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData204" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData205" class="control-label"></label>
-                <input asp-for="FormData205" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData205" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData205" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData205" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData206" class="control-label"></label>
-                <input asp-for="FormData206" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData206" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData206" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData206" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData207" class="control-label"></label>
-                <input asp-for="FormData207" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData207" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData207" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData207" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData208" class="control-label"></label>
-                <input asp-for="FormData208" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData208" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData208" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData208" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData209" class="control-label"></label>
-                <input asp-for="FormData209" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData209" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData209" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData209" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData210" class="control-label"></label>
-                <input asp-for="FormData210" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData210" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData210" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData210" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData211" class="control-label"></label>
-                <input asp-for="FormData211" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData211" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData211" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData211" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData212" class="control-label"></label>
-                <input asp-for="FormData212" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData212" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData212" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData212" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData213" class="control-label"></label>
-                <input asp-for="FormData213" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData213" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData213" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData213" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData214" class="control-label"></label>
-                <input asp-for="FormData214" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData214" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData214" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData214" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData215" class="control-label"></label>
-                <input asp-for="FormData215" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData215" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData215" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData215" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData216" class="control-label"></label>
-                <input asp-for="FormData216" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData216" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData216" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData216" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData217" class="control-label"></label>
-                <input asp-for="FormData217" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData217" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData217" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData217" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData218" class="control-label"></label>
-                <input asp-for="FormData218" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData218" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData218" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData218" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData219" class="control-label"></label>
-                <input asp-for="FormData219" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData219" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData219" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData219" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData220" class="control-label"></label>
-                <input asp-for="FormData220" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData220" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData220" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData220" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData221" class="control-label"></label>
-                <input asp-for="FormData221" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData221" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData221" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData221" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData222" class="control-label"></label>
-                <input asp-for="FormData222" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData222" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData222" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData222" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData223" class="control-label"></label>
-                <input asp-for="FormData223" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData223" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData223" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData223" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData224" class="control-label"></label>
-                <input asp-for="FormData224" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData224" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData224" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData224" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData225" class="control-label"></label>
-                <input asp-for="FormData225" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData225" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData225" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData225" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData226" class="control-label"></label>
-                <input asp-for="FormData226" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData226" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData226" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData226" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData227" class="control-label"></label>
-                <input asp-for="FormData227" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData227" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData227" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData227" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData228" class="control-label"></label>
-                <input asp-for="FormData228" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData228" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData228" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData228" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData229" class="control-label"></label>
-                <input asp-for="FormData229" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData229" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData229" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData229" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData230" class="control-label"></label>
-                <input asp-for="FormData230" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData230" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData230" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData230" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData231" class="control-label"></label>
-                <input asp-for="FormData231" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData231" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData231" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData231" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData232" class="control-label"></label>
-                <input asp-for="FormData232" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData232" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData232" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData232" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData233" class="control-label"></label>
-                <input asp-for="FormData233" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData233" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData233" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData233" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData234" class="control-label"></label>
-                <input asp-for="FormData234" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData234" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData234" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData234" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData235" class="control-label"></label>
-                <input asp-for="FormData235" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData235" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData235" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData235" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData236" class="control-label"></label>
-                <input asp-for="FormData236" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData236" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData236" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData236" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData237" class="control-label"></label>
-                <input asp-for="FormData237" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData237" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData237" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData237" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData238" class="control-label"></label>
-                <input asp-for="FormData238" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData238" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData238" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData238" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData239" class="control-label"></label>
-                <input asp-for="FormData239" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData239" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData239" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData239" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData240" class="control-label"></label>
-                <input asp-for="FormData240" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData240" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData240" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData240" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData241" class="control-label"></label>
-                <input asp-for="FormData241" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData241" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData241" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData241" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData242" class="control-label"></label>
-                <input asp-for="FormData242" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData242" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData242" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData242" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData243" class="control-label"></label>
-                <input asp-for="FormData243" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData243" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData243" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData243" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData244" class="control-label"></label>
-                <input asp-for="FormData244" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData244" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData244" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData244" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData245" class="control-label"></label>
-                <input asp-for="FormData245" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData245" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData245" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData245" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData246" class="control-label"></label>
-                <input asp-for="FormData246" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData246" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData246" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData246" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData247" class="control-label"></label>
-                <input asp-for="FormData247" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData247" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData247" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData247" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData248" class="control-label"></label>
-                <input asp-for="FormData248" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData248" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData248" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData248" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData249" class="control-label"></label>
-                <input asp-for="FormData249" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData249" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData249" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData249" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FormData250" class="control-label"></label>
-                <input asp-for="FormData250" class="form-control" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="FormData250" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="FormData250" class="form-control" placeholder="..."/>
                 <span asp-validation-for="FormData250" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="SW_formsId" class="control-label"></label>
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="SW_formsId" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
                 <select asp-for="SW_formsId" class ="form-control" asp-items="ViewBag.SW_formsId"></select>
+                </div>
             </div>
-            <div class="form-group">
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="isApproval_01" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="isApproval_01" class="form-control" placeholder="..."/>
+                <span asp-validation-for="isApproval_01" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="isApproval_02" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="isApproval_02" class="form-control" placeholder="..."/>
+                <span asp-validation-for="isApproval_02" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="isApproval_03" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="isApproval_03" class="form-control" placeholder="..."/>
+                <span asp-validation-for="isApproval_03" class="text-danger"></span>
+                </div>
+            </div>
                 <input type="submit" value="Create" class="btn btn-primary" />
-            </div>
         </form>
+        </div>
     </div>
 </div>
-
-<div>
-    <a asp-action="Index">Back to List</a>
 </div>
 
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.SqlServer.Server;
+using SWIMS.Data;
 using SWIMS.Models;
 using System;
 using System.Collections.Generic;
@@ -19,7 +20,7 @@ namespace SWIMS.Controllers
 
         public formController(SwimsDb_moreContext context)
         {
-            _context = context;
+            _context = context;            
         }
 
         public string GenerateNewUuidAsString()
@@ -31,13 +32,17 @@ namespace SWIMS.Controllers
         [HttpGet]
         public async Task<IActionResult> Program(string? uuid)
         {
-            // 0. Varibales from DB forms table
+            // 0. Varibales 
             var f_Linq = _context.SW_forms.Where(m => m.uuid.Equals(uuid));
             int formId = Convert.ToInt32(f_Linq.Select(m => m.Id).FirstOrDefault());
             ViewBag.formId = formId;
             ViewBag.form = f_Linq.Select(m => m.form).FirstOrDefault();
             ViewBag.formName = f_Linq.Select(m => m.name).FirstOrDefault();
-            
+
+            ViewBag.processes = _context.SW_formProcesses
+            .Select(c => new SelectListItem() { Text = c.url, Value = c.url })
+            .ToList();
+
 
             // 1. Fetch form with JSON
             var swForm = await _context.SW_forms.FindAsync(formId);
@@ -282,9 +287,19 @@ namespace SWIMS.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var sW_form = await _context.SW_forms.FindAsync(id);
-            if (sW_form != null)
+            var formData = await _context.SW_formTableData.FirstOrDefaultAsync(x => x.SW_formsId == id); // to remove corresponding form Data
+            var formDataType = await _context.SW_formTableData_Types.FirstOrDefaultAsync(x => x.SW_formsId == id); // to remove corresponding form Data Type
+            var formDataName = await _context.SW_formTableNames.FirstOrDefaultAsync(x => x.SW_formsId == id); // to remove corresponding form Data Name
+            var formProcess = await _context.SW_formProcesses.FirstOrDefaultAsync(x => x.SW_formsId == id); // to remove corresponding form Processes
+            var formReport = await _context.SW_formReports.FirstOrDefaultAsync(x => x.SW_formsId == id); // to remove corresponding form Reports
+            if (sW_form != null && formData != null && formDataType != null && formDataName != null && formProcess != null && formReport != null)
             {
                 _context.SW_forms.Remove(sW_form);
+                _context.SW_formTableData.Remove(formData);
+                _context.SW_formTableData_Types.Remove(formDataType);
+                _context.SW_formTableNames.Remove(formDataName);
+                _context.SW_formProcesses.Remove(formProcess);
+                _context.SW_formReports.Remove(formReport);
             }
 
             await _context.SaveChangesAsync();

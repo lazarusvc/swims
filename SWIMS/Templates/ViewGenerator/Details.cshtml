@@ -18,8 +18,6 @@
         }
 @:}
 @:
-@:<h1>@Model.ViewName</h1>
-@:
     }
     else
     {
@@ -39,10 +37,13 @@
         //    PushIndent("    ");
     }
 }
-<div>
-    <h4>@Model.ViewDataTypeShortName</h4>
-    <hr />
-    <dl class="row">
+<br />
+<div class="card basic-data-table">
+    <div class="card-header">
+        <a asp-action="Index" class="bg-primary-light text-primary-600 d-inline-flex align-items-center justify-content-center" style="padding: 10px;"> @Model.ViewDataTypeShortName listings</a>
+    </div>
+    <div class="card-body" style="overflow-y:scroll; max-height: 250px;">
+     <dl class="row">
 @{
     Dictionary<string, IPropertyMetadata> propertyLookup = ((IModelMetadata)Model.ModelMetadata).Properties.ToDictionary(x => x.PropertyName, x => x);
     Dictionary<string, INavigationMetadata> navigationLookup = ((IModelMetadata)Model.ModelMetadata).Navigations.ToDictionary(x => x.AssociationPropertyName, x => x);
@@ -53,7 +54,7 @@
             && property.Scaffold && !property.IsForeignKey && !property.IsPrimaryKey)
         {
         <dt class = "col-sm-2">
-            @@Html.DisplayNameFor(model => model.@GetValueExpression(property))
+            @@Html.DisplayNameFor(model => model.@GetValueExpression(property)).ToUpper():
         </dt>
         <dd class = "col-sm-10">
             @@Html.DisplayFor(model => model.@GetValueExpression(property))
@@ -62,7 +63,7 @@
         else if (navigationLookup.TryGetValue(item.Name, out INavigationMetadata navigation))
         {
         <dt class = "col-sm-2">
-            @@Html.DisplayNameFor(model => model.@GetValueExpression(navigation))
+            @@Html.DisplayNameFor(model => model.@GetValueExpression(navigation)).ToUpper():
         </dt>
         <dd class = "col-sm-10">
             @@Html.DisplayFor(model => model.@GetValueExpression(navigation).@navigation.DisplayPropertyName)
@@ -70,21 +71,10 @@
         }
     }
 }    </dl>
+
+    </div>
 </div>
-<div>
-@{
-    string pkName = GetPrimaryKeyName();
-    if (pkName != null)
-    {
-    @:<a asp-action="Edit" asp-route-id="@@Model?.@pkName">Edit</a> |
-    @:<a asp-action="Index">Back to List</a>
-    }
-    else
-    {
-    @:@@Html.ActionLink("Edit", "Edit", new { /* id = Model.PrimaryKey */ }) |
-    @:<a asp-action="Index">Back to List</a>
-    }
-}</div>
+
 @{
     if (!Model.IsPartialView && !Model.IsLayoutPageSelected)
     {
@@ -95,12 +85,6 @@
 }
 @functions
 {
-    string GetPrimaryKeyName()
-    {
-        return (Model.ModelMetadata.PrimaryKeys != null && Model.ModelMetadata.PrimaryKeys.Length == 1)
-        ? Model.ModelMetadata.PrimaryKeys[0].PropertyName
-        : null;
-    }
 
     string GetValueExpression(IPropertyMetadata property)
     {

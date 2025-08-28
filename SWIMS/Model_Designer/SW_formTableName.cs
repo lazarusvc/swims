@@ -16,7 +16,6 @@ namespace Model_Designer
     {
         public int Id { get; set; }
         public string name { get; set; }
-        public string field { get; set; }
         public int SW_formsId { get; set; }
     
         public virtual SW_forms SW_forms { get; set; }
