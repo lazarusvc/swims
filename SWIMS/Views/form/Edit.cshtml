@@ -72,7 +72,7 @@
                     </div>
 
                     <p>modified:</p>
-                    <input asp-for="dateModified" type="hidden" type="datetime" value="@ViewBag.datetime" />
+                    <input asp-for="dateModified" type="hidden" type="datetime" value="@System.DateTime.Now" />
                     <span asp-validation-for="dateModified" class="text-danger"></span>
                     <input type="submit" value="Edit" id="saveData" class="btn btn-primary" width="100" />
                 </form>

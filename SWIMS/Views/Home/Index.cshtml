@@ -78,13 +78,13 @@
         <div class="col-lg-6">
             <div class="card radius-12 overflow-hidden h-100 d-flex align-items-center flex-nowrap flex-row">
                 <div class="d-flex flex-shrink-0 w-170-px h-100">
-                    <img src="~/uploads/@ViewBag.formImage" class="h-100 w-100 object-fit-cover" alt="" />
+                    <img src="~/uploads/@inx.image" class="h-100 w-100 object-fit-cover" alt="" />
                 </div>
                 <div class="card-body p-16 flex-grow-1">
-                    <h5 class="card-title text-lg text-primary-light mb-6">@inx.Value</h5>
-                    <p class="card-text text-neutral-600 mb-16">@ViewBag.formDesc</p>
-                    <a asp-action="Program" asp-controller="form" asp-route-uuid="@inx.Text" type="button" class="btn rounded-pill btn-outline-primary-600 radius-8 px-20 py-11 d-flex align-items-center gap-2">
-                        <iconify-icon icon="mingcute:square-arrow-right-line" class="text-xl"></iconify-icon> FORM ID:- @inx.Text.Substring(0, 5) ...
+                    <h5 class="card-title text-lg text-primary-light mb-6">@inx.name</h5>
+                    <p class="card-text text-neutral-600 mb-16">@inx.desc</p>
+                    <a asp-action="Program" asp-controller="form" asp-route-uuid="@inx.uuid" type="button" class="btn rounded-pill btn-outline-primary-600 radius-8 px-20 py-11 d-flex align-items-center gap-2">
+                        <iconify-icon icon="mingcute:square-arrow-right-line" class="text-xl"></iconify-icon> FORM ID:- @inx.uuid.Substring(0, 5) ...
                     </a>
                 </div>
             </div>
