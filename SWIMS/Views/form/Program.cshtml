@@ -13,7 +13,7 @@
                 <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
                     <div>
                         <p class="fw-medium text-primary-light mb-1">Total Entries</p>
-                        <h6 class="mb-0">0</h6>
+                        <h6 class="mb-0">@ViewBag.entries</h6>
                     </div>
                     <div class="w-50-px h-50-px bg-cyan rounded-circle d-flex justify-content-center align-items-center">
                         <iconify-icon icon="gridicons:multiple-users" class="text-white text-2xl mb-0"></iconify-icon>
@@ -34,7 +34,7 @@
                 <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
                     <div>
                         <p class="fw-medium text-info-light mb-1">Total Pending Approval</p>
-                        <h6 class="mb-0">0</h6>
+                        <h6 class="mb-0">@ViewBag.entries_pending</h6>
                     </div>
                     <div class="w-50-px h-50-px bg-danger rounded-circle d-flex justify-content-center align-items-center">
                         <iconify-icon icon="gridicons:multiple-users" class="text-white text-2xl mb-0"></iconify-icon>
@@ -55,7 +55,7 @@
                 <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
                     <div>
                         <p class="fw-medium text-primary-light mb-1">Total Completed</p>
-                        <h6 class="mb-0">0</h6>
+                        <h6 class="mb-0">@ViewBag.entries_approved</h6>
                     </div>
                     <div class="w-50-px h-50-px bg-success-main rounded-circle d-flex justify-content-center align-items-center">
                         <iconify-icon icon="gridicons:multiple-users" class="text-white text-2xl mb-0"></iconify-icon>

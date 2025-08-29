@@ -19,7 +19,7 @@
                 <h5 class="card-title mb-0">Complete & Save</h5>
             </div>
             <div class="card-body">
-        <form asp-action="Edit">
+        <form asp-action="Edit" method="post" enctype="multipart/form-data">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="Id" />
 
@@ -60,6 +60,14 @@
                         <label asp-for="SW_identityId" class="form-label mb-0 col-sm-4">LOCATION:</label>
                         <div class="col-sm-10">
                             <select asp-for="SW_identityId" class="form-control" asp-items="ViewBag.SW_identityId" readonly></select>
+                        </div>
+                    </div>
+
+                    <div class="row mb-24 gy-3 align-items-center">
+                        <label asp-for="image" class="form-label mb-0 col-sm-4">IMAGE:</label>
+                        <div class="col-sm-10">
+                            <input asp-for="image" type="file" class="form-control" />
+                            <span asp-validation-for="image" class="text-danger"></span>
                         </div>
                     </div>
 
