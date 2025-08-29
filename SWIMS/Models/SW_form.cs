@@ -21,6 +21,12 @@ public partial class SW_form
 
     public int SW_identityId { get; set; }
 
+    public bool? is_linking { get; set; }
+
+    public string image { get; set; }
+
+    public string header { get; set; }
+
     public virtual ICollection<SW_formReport> SW_formReports { get; set; } = new List<SW_formReport>();
 
     public virtual ICollection<SW_formTableDatum> SW_formTableData { get; set; } = new List<SW_formTableDatum>();

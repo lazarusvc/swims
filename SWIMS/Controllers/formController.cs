@@ -11,6 +11,7 @@ using System.Linq;
 using System.Reflection.Metadata.Ecma335;
 using System.Text.Json;
 using System.Threading.Tasks;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace SWIMS.Controllers
 {
@@ -38,10 +39,25 @@ namespace SWIMS.Controllers
             ViewBag.formId = formId;
             ViewBag.form = f_Linq.Select(m => m.form).FirstOrDefault();
             ViewBag.formName = f_Linq.Select(m => m.name).FirstOrDefault();
+            ViewBag.formImage = f_Linq.Select(m => m.image).FirstOrDefault();
+            ViewBag.formDesc = f_Linq.Select(m => m.desc).FirstOrDefault();
 
             ViewBag.processes = _context.SW_formProcesses
-            .Select(c => new SelectListItem() { Text = c.url, Value = c.url })
-            .ToList();
+                .Where(c => c.SW_formsId == formId)
+                .Select(c => new SelectListItem() { Text = c.url, Value = c.url })
+                .ToList();
+
+            ViewBag.entries = _context.SW_formTableData.Where(c => c.SW_formsId == formId).Count();
+            ViewBag.entries_pending = _context.SW_formTableData.Where(
+                c => c.SW_formsId == formId && 
+                c.isApproval_01 == 0 ||
+                c.isApproval_02 == 0 ||
+                c.isApproval_03 == 0).Count();
+            ViewBag.entries_approved = _context.SW_formTableData.Where(
+                c => c.SW_formsId == formId &&
+                c.isApproval_01 == 1 ||
+                c.isApproval_02 == 1 ||
+                c.isApproval_03 == 1).Count();
 
 
             // 1. Fetch form with JSON
@@ -147,11 +163,44 @@ namespace SWIMS.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,uuid,name,desc,form,dateModified,SW_identityId")] SW_form sW_form)
+        public async Task<IActionResult> Create([Bind("Id,uuid,name,desc,form,dateModified,SW_identityId,is_linking,image,header")] SW_form sW_form, IFormFile image)
         {
+            if (image == null || image.Length == 0)
+            {
+                return BadRequest("No file uploaded.");
+            }
+
+            // Define a path to save the file (e.g., in wwwroot/uploads)
+            var uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+            if (!Directory.Exists(uploadPath))
+            {
+                Directory.CreateDirectory(uploadPath);
+            }
+
+            // Create a unique file name to avoid conflicts
+            var uniqueFileName = Guid.NewGuid().ToString() + "_" + image.FileName;
+            var filePath = Path.Combine(uploadPath, uniqueFileName);
+
+            // Save the file to the server
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await image.CopyToAsync(stream);
+            }
+
             if (ModelState.IsValid)
             {
-                _context.Add(sW_form);
+                _context.Add(new SW_form 
+                { 
+                    uuid = sW_form.uuid,
+                    name = sW_form.name,
+                    desc = sW_form.desc,
+                    form = sW_form.form,
+                    dateModified = sW_form.dateModified,
+                    SW_identityId = sW_form.SW_identityId,
+                    is_linking = sW_form.is_linking,
+                    image = uniqueFileName,
+                    header = sW_form.header
+                });
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Complete), new { id = sW_form.Id});
             }
@@ -231,7 +280,7 @@ namespace SWIMS.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,uuid,name,desc,form,dateModified,SW_identityId")] SW_form sW_form)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,uuid,name,desc,form,dateModified,SW_identityId,is_linking,image,header")] SW_form sW_form, IFormFile image)
         {
             if (id != sW_form.Id)
             {
@@ -242,7 +291,32 @@ namespace SWIMS.Controllers
             {
                 try
                 {
-                    _context.Update(sW_form);
+                    if (image == null || image.Length == 0)
+                    {
+                        return BadRequest("No file uploaded.");
+                    }
+
+                    // Define a path to save the file (e.g., in wwwroot/uploads)
+                    var uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+                    if (!Directory.Exists(uploadPath))
+                    {
+                        Directory.CreateDirectory(uploadPath);
+                    }
+
+                    // Create a unique file name to avoid conflicts
+                    var uniqueFileName = Guid.NewGuid().ToString() + "_" + image.FileName;
+                    var filePath = Path.Combine(uploadPath, uniqueFileName);
+
+                    // Save the file to the server
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await image.CopyToAsync(stream);
+                    }
+
+                    _context.Update(new SW_form
+                    { 
+                        image = uniqueFileName
+                    });
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)

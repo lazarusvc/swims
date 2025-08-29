@@ -26,9 +26,9 @@
      inkscape:document-units="mm"
      showgrid="false"
      showguides="true"
-     inkscape:zoom="4"
-     inkscape:cx="73.375"
-     inkscape:cy="42.125"
+     inkscape:zoom="5.6568542"
+     inkscape:cx="145.92916"
+     inkscape:cy="141.68652"
      inkscape:window-width="2560"
      inkscape:window-height="1361"
      inkscape:window-x="2391"
@@ -310,7 +310,7 @@
                   <g
                      id="g1819"
                      style="fill:#333333;fill-opacity:1;stroke:none"
-                     transform="translate(-20.669358,-1.1594972)"
+                     transform="matrix(0.53799273,0,0,0.53799273,2.76637,32.199394)"
                      inkscape:export-filename="SWIMS\wwwroot\WowDash\images\logo.png"
                      inkscape:export-xdpi="96"
                      inkscape:export-ydpi="96">
@@ -339,7 +339,7 @@
                   <g
                      id="g2117"
                      style="fill:#e6e6e6;fill-opacity:1;stroke:none"
-                     transform="translate(-21.903472,-14.049132)"
+                     transform="matrix(0.53799408,0,0,0.53799408,2.8970815,24.41753)"
                      inkscape:export-filename="SWIMS\wwwroot\WowDash\images\logo-light.png"
                      inkscape:export-xdpi="96"
                      inkscape:export-ydpi="96">
