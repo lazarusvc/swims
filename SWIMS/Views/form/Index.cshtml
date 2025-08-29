@@ -53,6 +53,7 @@
                             @Html.DisplayFor(modelItem => item.SW_identity.name)
                         </td>
                         <td>
+                            <a asp-action="Complete" asp-route-id="@item.Id" class="w-32-px h-32-px bg-yellow-light text-yellow-main rounded-circle d-inline-flex align-items-center justify-content-center"><iconify-icon icon="bitcoin-icons:share-filled"></iconify-icon></a>
                             <a asp-action="Details" asp-route-id="@item.Id" class="w-32-px h-32-px bg-primary-light text-primary-600 rounded-circle d-inline-flex align-items-center justify-content-center"><iconify-icon icon="iconamoon:eye-light"></iconify-icon></a>
                             <a asp-action="Edit" asp-route-id="@item.Id" class="w-32-px h-32-px bg-success-focus text-success-main rounded-circle d-inline-flex align-items-center justify-content-center"><iconify-icon icon="lucide:edit"></iconify-icon></a>
                             <a asp-action="Delete" asp-route-id="@item.Id" class="w-32-px h-32-px bg-danger-focus text-danger-main rounded-circle d-inline-flex align-items-center justify-content-center"><iconify-icon icon="mingcute:delete-2-line"></iconify-icon></a>

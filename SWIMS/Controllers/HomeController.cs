@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using SWIMS.Models;
 using SWIMS.Models.ViewModels;
+using System;
 using System.Diagnostics;
 
 namespace SWIMS.Controllers
@@ -38,8 +39,10 @@ namespace SWIMS.Controllers
         {
             SwimsDb_moreContext context = _context;
             ViewBag.frmBtn = _context.SW_forms
-            .Select(c => new SelectListItem() { Text = c.uuid, Value = c.name })
+            //.Select(c => new SelectListItem() { Text = c.uuid, Value = c.name })
             .ToList();
+
+
             return View();
         }
 

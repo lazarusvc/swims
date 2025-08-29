@@ -202,7 +202,7 @@ namespace SWIMS.Controllers
                     header = sW_form.header
                 });
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Complete), new { id = sW_form.Id});
+                return RedirectToAction(nameof(Index), new { id = sW_form.Id});
             }
             ViewData["SW_identityId"] = new SelectList(_context.SW_identities, "Id", "name", sW_form.SW_identityId);
             return View(sW_form);
@@ -269,7 +269,6 @@ namespace SWIMS.Controllers
             {
                 return NotFound();
             }
-            ViewBag.datetime = System.DateTime.UtcNow;
             ViewBag.frm = _context.SW_forms.Where(x => x.Id == id).Select(x => x.form).FirstOrDefault();
             ViewData["SW_identityId"] = new SelectList(_context.SW_identities, "Id", "name", sW_form.SW_identityId);
             return View(sW_form);
@@ -287,36 +286,34 @@ namespace SWIMS.Controllers
                 return NotFound();
             }
 
+            if (image == null || image.Length == 0)
+            {
+                return BadRequest("No file uploaded.");
+            }
+
+            // Define a path to save the file (e.g., in wwwroot/uploads)
+            var uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+            if (!Directory.Exists(uploadPath))
+            {
+                Directory.CreateDirectory(uploadPath);
+            }
+
+            // Create a unique file name to avoid conflicts
+            var uniqueFileName = Guid.NewGuid().ToString() + "_" + image.FileName;
+            sW_form.image = uniqueFileName;
+            var filePath = Path.Combine(uploadPath, uniqueFileName);
+
+            // Save the file to the server
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await image.CopyToAsync(stream);
+            }
+
             if (ModelState.IsValid)
             {
                 try
                 {
-                    if (image == null || image.Length == 0)
-                    {
-                        return BadRequest("No file uploaded.");
-                    }
-
-                    // Define a path to save the file (e.g., in wwwroot/uploads)
-                    var uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
-                    if (!Directory.Exists(uploadPath))
-                    {
-                        Directory.CreateDirectory(uploadPath);
-                    }
-
-                    // Create a unique file name to avoid conflicts
-                    var uniqueFileName = Guid.NewGuid().ToString() + "_" + image.FileName;
-                    var filePath = Path.Combine(uploadPath, uniqueFileName);
-
-                    // Save the file to the server
-                    using (var stream = new FileStream(filePath, FileMode.Create))
-                    {
-                        await image.CopyToAsync(stream);
-                    }
-
-                    _context.Update(new SW_form
-                    { 
-                        image = uniqueFileName
-                    });
+                    _context.Update(sW_form);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
