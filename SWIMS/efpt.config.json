@@ -12,9 +12,21 @@
    "ProjectRootNamespace": "SWIMS",
    "Schemas": null,
    "SelectedHandlebarsLanguage": 2,
-   "SelectedToBeGenerated": 2,
+   "SelectedToBeGenerated": 0,
    "T4TemplatePath": null,
    "Tables": [
+      {
+         "Name": "[dbo].[SW_beneficiary]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[SW_city]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[SW_financial_institution]",
+         "ObjectType": 0
+      },
       {
          "Name": "[dbo].[SW_formProcesses]",
          "ObjectType": 0
@@ -41,6 +53,10 @@
       },
       {
          "Name": "[dbo].[SW_identity]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[SW_organization]",
          "ObjectType": 0
       }
    ],

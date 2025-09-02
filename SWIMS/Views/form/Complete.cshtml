@@ -7,22 +7,29 @@
 <br />
 <div class="row">
     <div class="col-md-12">
-        <div id="fb-rendered-form"></div>
+        <div class="card">
+            <div class="card-header">                
+            </div>
+            <div class="card-body">
+                <div id="fb-rendered-form"></div>
+            </div>
+        </div>
     </div>
     <div class="col-md-12">
+        <br/>
         <div class="btn-group" role="group" aria-label="Default button group">
             <form asp-action="Complete">
                 <input type="hidden" name="formId" value="@ViewBag.id" />
-                <button type="submit" class="btn btn-outline-success text-success-main px-20 py-13 radius-8 text-dark d-flex" style="border-top-right-radius:0px; border-bottom-right-radius: 0px;">
+                <button type="submit" class="btn btn-success text-success-main px-20 py-13 radius-8 text-dark d-flex" style="border-top-right-radius:0px; border-bottom-right-radius: 0px;">
                     <iconify-icon icon="bitcoin-icons:share-filled" class="text-xl"></iconify-icon>
                     Publish
                 </button> 
             </form>
-            <button asp-action="Edit" asp-route-id="@ViewBag.id" type="button" class="btn btn-outline-info text-info-main px-20 py-13 radius-8 text-dark d-flex">
+            <button asp-action="Edit" asp-route-id="@ViewBag.id" type="button" class="btn btn-info text-info-main px-20 py-13 radius-8 text-dark d-flex">
                 <iconify-icon icon="lucide:edit"></iconify-icon>
                 Edit
             </button>
-            <button asp-action="Delete" asp-route-id="@ViewBag.id" type="button" class="btn btn-outline-danger text-danger-main px-20 py-13 radius-8 text-dark d-flex">
+            <button asp-action="Delete" asp-route-id="@ViewBag.id" type="button" class="btn btn-danger text-danger-main px-20 py-13 radius-8 text-dark d-flex">
                 <iconify-icon icon="mingcute:delete-2-line"></iconify-icon>
                 Delete
             </button>
