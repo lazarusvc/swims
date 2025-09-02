@@ -13,6 +13,12 @@ public partial class SwimsDb_moreContext : DbContext
     {
     }
 
+    public virtual DbSet<SW_beneficiary> SW_beneficiaries { get; set; }
+
+    public virtual DbSet<SW_city> SW_cities { get; set; }
+
+    public virtual DbSet<SW_financial_institution> SW_financial_institutions { get; set; }
+
     public virtual DbSet<SW_form> SW_forms { get; set; }
 
     public virtual DbSet<SW_formProcess> SW_formProcesses { get; set; }
@@ -27,11 +33,31 @@ public partial class SwimsDb_moreContext : DbContext
 
     public virtual DbSet<SW_identity> SW_identities { get; set; }
 
+    public virtual DbSet<SW_organization> SW_organizations { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<SW_beneficiary>(entity =>
+        {
+            entity.ToTable("SW_beneficiary");
+
+            entity.Property(e => e.uuid).IsRequired();
+        });
+
+        modelBuilder.Entity<SW_city>(entity =>
+        {
+            entity.ToTable("SW_city");
+        });
+
+        modelBuilder.Entity<SW_financial_institution>(entity =>
+        {
+            entity.ToTable("SW_financial_institution");
+        });
+
         modelBuilder.Entity<SW_form>(entity =>
         {
             entity.HasIndex(e => e.SW_identityId, "IX_FK_SW_identitySW_forms");
+
             entity.Property(e => e.dateModified).HasColumnType("datetime");
             entity.Property(e => e.name).IsRequired();
 
@@ -97,6 +123,11 @@ public partial class SwimsDb_moreContext : DbContext
             entity.ToTable("SW_identity");
 
             entity.Property(e => e.name).IsRequired();
+        });
+
+        modelBuilder.Entity<SW_organization>(entity =>
+        {
+            entity.ToTable("SW_organization");
         });
 
         OnModelCreatingPartial(modelBuilder);
