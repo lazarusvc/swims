@@ -20,6 +20,7 @@ using SWIMS.Models.StoredProcs;
 using SWIMS.Services;
 using SWIMS.Services.Auth;
 using SWIMS.Services.Diagnostics;
+using SWIMS.Controllers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -141,6 +142,13 @@ builder.Services.AddControllersWithViews(o =>
 //    options.Filters.Add(new AuthorizeFilter(policy));
 //});
 
+// Add OpenAPI Support to project
+builder.Services.AddOpenApi();
+
+builder.Services.AddEndpointsApiExplorer();
+
+builder.Services.AddSwaggerGen();
+
 
 var app = builder.Build();
 
@@ -168,6 +176,12 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+};
+
 app.UseHttpsRedirection();
 
 // Ensure default wwwroot static files are served
@@ -184,7 +198,6 @@ app.UseFileServer(new FileServerOptions
     EnableDirectoryBrowsing = false
 });
 
-
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
@@ -200,5 +213,15 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
 
+app.MapOpenApi();
+
 app.MapRazorPages();
+
+app.MapSW_beneficiaryEndpoints();
+
+app.MapSW_cityEndpoints();
+
+app.MapSW_financial_institutionEndpoints();
+
+app.MapSW_organizationEndpoints();
 app.Run();
