@@ -113,7 +113,16 @@ var frm = document.getElementById("form");
 jQuery(function ($) {
     // --------------------------------------- Form Builder - options
     var options = {
-            disabledActionButtons: ['data', 'save']
+            disabledActionButtons: ['data', 'save'],
+            typeUserAttrs: {
+              text: {
+                readonly: {
+                  type: "checkbox",
+                  label: "readonly",
+                  value: false
+                }
+              }
+            }
     };
     var formBuilder = $(fbEditor).formBuilder(options);
 

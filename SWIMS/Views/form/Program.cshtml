@@ -148,6 +148,9 @@
 <script src="~/lib/formbuilder/form-render.min.js"></script>
 <script src="~/js/datatables.min.js"></script>
 <script type="text/javascript">
+    // RENDER FORM
+    //
+    // -----------------------------------------------------------------------------------------------------
     jQuery(function($) {
       var container = document.getElementById('fb-rendered-form');
       var formData = '@Html.Raw(ViewBag.form)';
@@ -161,5 +164,79 @@
       $(container).formRender(formRenderOpts);
     });
 
+    // API LOGIC
+    // 
+    // Traverse all <select> fields (recursively).
+    // For each field, check if its name attribute matches a database model (served from an API endpoint).
+    // If there’s a match and the field is a <select>, populate it with options from the API response.
+    //
+    // -----------------------------------------------------------------------------------------------------
+    $(document).ready(function () {
+
+
+        function findFields($root) {
+
+            $root.find("input[name], select[name], textarea[name]").each(function () {
+                var $field = $(this);
+                var fieldName = $field.attr("name");
+
+                //  Grab classes into an array
+                var fieldClasses = ($field.attr("class")).split(/\s+/).filter(c => c.length > 0);
+
+                $.ajax({
+                    url: "/api/" + fieldName,
+                    method: "GET",
+                    dataType: "json",
+                    success: function (data) {
+                        if (!data) return;                        
+
+                        // Case 1: Populate select dropdowns
+                        if ($field.is("select")) {
+                            $field.empty(); // Clear existing options
+                            $.each(data, function (i, opt) {
+                                var $opt = $("<option>").val(opt.id).text(opt.name);
+                                if (data.defaultValue && data.defaultValue == opt.value) {
+                                    $opt.prop("selected", true);
+                                }
+                                $field.append($opt);                                
+                            });
+                        }
+  
+                        $("select[name="+ fieldName +"]").on("keyup change", function() {
+
+                            var select_list_classVAL = $(this).children("option:selected").text();
+
+                            if (fieldName === "beneficiary") {
+                                $("." + fieldName).val(select_list_classVAL);
+                            }
+                            if (fieldName === "city") {
+                                $("." + fieldName).val(select_list_classVAL);
+                            }
+                            if (fieldName === "financial_institution") {
+                                $("." + fieldName).val(select_list_classVAL);
+                            }
+                            if (fieldName === "organization") {
+                                $("." + fieldName).val(select_list_classVAL);
+                            }
+                        });                      
+
+
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Error loading data for " + fieldName + ":", error);
+                    }
+                });
+            });
+        }
+
+        // Scope to only inside #fb-rendered-form
+        var $formContainer = $("#fb-rendered-form");
+        if ($formContainer.length) {
+            findFields($formContainer);
+        }
+    });
+    // TABLE DATATABLE INIT
+    //
+    // -----------------------------------------------------------------------------------------------------
     let table = new DataTable('#dataTable');
 </script>

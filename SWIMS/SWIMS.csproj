@@ -39,7 +39,9 @@
 
 	  <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.*" />
 	  <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="9.0.*" />
+	  <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.0" />
 	  <PackageReference Include="QRCoder" Version="1.6.0" />
+	  <PackageReference Include="Swashbuckle.AspNetCore" Version="6.9.0" />
 	  <PackageReference Include="System.DirectoryServices.Protocols" Version="9.0.8" />
   </ItemGroup>
 
@@ -52,19 +54,5 @@
   <ItemGroup>
     <None Include="efpt.config.json.user" />
   </ItemGroup>
-
-	<!-- Auto-generate DocFX site after each build -->
-	<Target Name="GenerateDocFX" AfterTargets="Build" Condition="'$(DocFxBuildEnabled)'=='true'">
-		<!-- restore local tools -->
-		<Exec WorkingDirectory="$(ProjectDir)wwwroot\docfx" Command="dotnet tool restore" />
-
-		<!-- generate metadata -->
-		<Exec WorkingDirectory="$(ProjectDir)wwwroot\docfx" Command="dotnet tool run docfx metadata --logLevel verbose" />
-
-		<!-- build the site -->
-		<Exec WorkingDirectory="$(ProjectDir)wwwroot\docfx" Command="dotnet tool run docfx build --logLevel verbose" />
-	</Target>
-
-
 
 </Project>
