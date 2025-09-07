@@ -22,22 +22,48 @@ namespace SWIMS.Areas.Admin.Controllers
 
         public async Task<IActionResult> Create()
         {
-            ViewBag.RoleId = new SelectList(await _roles.Roles.ToListAsync(), "Id", "Name");
-            return View(new SwReport());
+            var roles = await _roles.Roles.OrderBy(r => r.Name).ToListAsync();
+
+            // Value = Name, Text = Name  (we store role *name* in SwReport.RoleId)
+            ViewBag.RoleId = new SelectList(roles, "Name", "Name");
+
+            var adminRoleName = roles.FirstOrDefault(r => r.Name == "Admin")?.Name;
+            return View(new SwReport { RoleId = adminRoleName ?? string.Empty });
         }
+
 
         [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(SwReport m)
         {
-            if (!ModelState.IsValid) { ViewBag.RoleId = new SelectList(_roles.Roles, "Id", "Name", m.RoleId); return View(m); }
-            _db.Add(m); await _db.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            if (!ModelState.IsValid)
+            {
+                ViewBag.RoleId = new SelectList(await _roles.Roles.ToListAsync(), "Name", "Name", m.RoleId);
+                return View(m);
+            }
+
+            try
+            {
+                _db.Add(m);
+                await _db.SaveChangesAsync();
+                TempData["Ok"] = "Report created.";
+                // Optional: jump to Params if they checked the box
+                if (m.ParamCheck)
+                    return RedirectToAction("Index", "ReportParams", new { area = "Admin", reportId = m.Id });
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, "Create failed: " + ex.Message);
+                ViewBag.RoleId = new SelectList(await _roles.Roles.ToListAsync(), "Name", "Name", m.RoleId);
+                return View(m);
+            }
         }
+
 
         public async Task<IActionResult> Edit(int id)
         {
             var m = await _db.SwReports.FindAsync(id); if (m == null) return NotFound();
-            ViewBag.RoleId = new SelectList(await _roles.Roles.ToListAsync(), "Id", "Name", m.RoleId);
+            ViewBag.RoleId = new SelectList(await _roles.Roles.ToListAsync(), "Name", "Name", m.RoleId);
             return View(m);
         }
 
@@ -45,7 +71,8 @@ namespace SWIMS.Areas.Admin.Controllers
         public async Task<IActionResult> Edit(int id, SwReport m)
         {
             if (id != m.Id) return BadRequest();
-            if (!ModelState.IsValid) { ViewBag.RoleId = new SelectList(_roles.Roles, "Id", "Name", m.RoleId); return View(m); }
+            if (!ModelState.IsValid) {
+                ViewBag.RoleId = new SelectList(_roles.Roles, "Name", "Name", m.RoleId); return View(m); }
             _db.Update(m); await _db.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }

@@ -35,7 +35,7 @@
         <label class="form-check-label" asp-for="ParamCheck">Apply stored parameters</label>
     </div>
 
-    <button class="btn btn-primary" type="submit">Create</button>
+    <button class="btn btn-primary" type="submit" asp-action="Create" asp-route-reportId="@Model.Id">Create</button>
     <a class="btn btn-link" asp-action="Index">Cancel</a>
 </form>
 

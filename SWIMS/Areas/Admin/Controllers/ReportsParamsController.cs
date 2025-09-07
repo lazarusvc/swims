@@ -4,54 +4,69 @@ using Microsoft.EntityFrameworkCore;
 using SWIMS.Data.Reports;
 using SWIMS.Models.Reports;
 
-namespace SWIMS.Areas.Admin.Controllers
+[Area("Admin")]
+[Authorize(Policy = "ReportsAdmin")]
+public class ReportParamsController : Controller
 {
-    [Area("Admin")]
-    [Authorize(Policy = "ReportsAdmin")]
-    public class ReportParamsController : Controller
+    private readonly SwimsReportsDbContext _db;
+    public ReportParamsController(SwimsReportsDbContext db) { _db = db; }
+
+    public async Task<IActionResult> Index(int reportId)
     {
-        private readonly SwimsReportsDbContext _db;
-        public ReportParamsController(SwimsReportsDbContext db) { _db = db; }
+        var report = await _db.SwReports.FindAsync(reportId);
+        if (report == null) return NotFound();
+        ViewBag.Report = report;
 
-        public async Task<IActionResult> Index(int reportId)
-        {
-            var report = await _db.SwReports.FindAsync(reportId); if (report == null) return NotFound();
-            ViewBag.Report = report;
-            var items = await _db.SwReportParams.Where(p => p.SwReportId == reportId).OrderBy(p => p.ParamKey).ToListAsync();
-            return View(items);
-        }
+        var items = await _db.SwReportParams
+            .Where(p => p.SwReportId == reportId)
+            .OrderBy(p => p.ParamKey)
+            .ToListAsync();
 
-        public IActionResult Create(int reportId) => View(new SwReportParam { SwReportId = reportId });
+        return View(items);
+    }
 
-        [HttpPost, ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(SwReportParam m)
-        {
-            if (!ModelState.IsValid) return View(m);
-            _db.Add(m); await _db.SaveChangesAsync();
-            return RedirectToAction(nameof(Index), new { reportId = m.SwReportId });
-        }
+    public IActionResult Create(int reportId) =>
+        View(new SwReportParam { SwReportId = reportId });
 
-        public async Task<IActionResult> Edit(int id)
-        {
-            var m = await _db.SwReportParams.FindAsync(id); if (m == null) return NotFound();
-            return View(m);
-        }
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> Create([Bind("SwReportId,ParamKey,ParamValue,ParamDataType")] SwReportParam m)
+    {
+        if (!ModelState.IsValid) return View(m);
 
-        [HttpPost, ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, SwReportParam m)
-        {
-            if (id != m.Id) return BadRequest();
-            if (!ModelState.IsValid) return View(m);
-            _db.Update(m); await _db.SaveChangesAsync();
-            return RedirectToAction(nameof(Index), new { reportId = m.SwReportId });
-        }
+        _db.Add(m);
+        await _db.SaveChangesAsync();
+        TempData["Ok"] = "Parameter added.";
+        return RedirectToAction(nameof(Index), new { reportId = m.SwReportId });
+    }
 
-        [HttpPost, ValidateAntiForgeryToken]
-        public async Task<IActionResult> Delete(int id)
-        {
-            var m = await _db.SwReportParams.FindAsync(id); if (m == null) return NotFound();
-            var rid = m.SwReportId; _db.Remove(m); await _db.SaveChangesAsync();
-            return RedirectToAction(nameof(Index), new { reportId = rid });
-        }
+    public async Task<IActionResult> Edit(int id)
+    {
+        var m = await _db.SwReportParams.FindAsync(id);
+        if (m == null) return NotFound();
+        return View(m);
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> Edit(int id, [Bind("Id,SwReportId,ParamKey,ParamValue,ParamDataType")] SwReportParam m)
+    {
+        if (id != m.Id) return BadRequest();
+        if (!ModelState.IsValid) return View(m);
+
+        _db.Update(m);
+        await _db.SaveChangesAsync();
+        TempData["Ok"] = "Parameter saved.";
+        return RedirectToAction(nameof(Index), new { reportId = m.SwReportId });
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var m = await _db.SwReportParams.FindAsync(id);
+        if (m == null) return NotFound();
+        var rid = m.SwReportId;
+        _db.Remove(m);
+        await _db.SaveChangesAsync();
+        TempData["Ok"] = "Parameter deleted.";
+        return RedirectToAction(nameof(Index), new { reportId = rid });
     }
 }

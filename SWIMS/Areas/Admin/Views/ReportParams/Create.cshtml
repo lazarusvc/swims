@@ -1,23 +1,31 @@
 ﻿@model SWIMS.Models.Reports.SwReportParam
-@{
-    ViewData["Title"] = "Create Parameter";
-}
-<h2>@ViewData["Title"]</h2>
 
-<form asp-action="Create" method="post">
+@{
+    ViewData["Title"] = "Create New Report Parameters";
+}
+
+@if (TempData["Ok"] is string ok && !string.IsNullOrWhiteSpace(ok))
+{
+    <div class="alert alert-success">@ok</div>
+}
+
+
+<form asp-area="Admin" asp-controller="ReportParams" asp-action="Create" method="post">
     @Html.AntiForgeryToken()
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
     <input type="hidden" asp-for="SwReportId" />
 
     <div class="mb-3">
         <label class="form-label">Param Key</label>
         <input asp-for="ParamKey" class="form-control" />
-        <span class="text-muted">Must match SSRS parameter name</span>
+        <span asp-validation-for="ParamKey" class="text-danger"></span>
     </div>
 
     <div class="mb-3">
         <label class="form-label">Param Value</label>
         <input asp-for="ParamValue" class="form-control" />
+        <span asp-validation-for="ParamValue" class="text-danger"></span>
     </div>
 
     <div class="mb-3">
