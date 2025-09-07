@@ -3,6 +3,13 @@
     ViewData["Title"] = "Reports (Admin)";
 }
 <h2>Reports</h2>
+
+@if (TempData["Ok"] is string ok && !string.IsNullOrWhiteSpace(ok))
+{
+    <div class="alert alert-success">@ok</div>
+}
+
+
 <p><a class="btn btn-primary" asp-action="Create">New Report</a></p>
 <table class="table table-sm align-middle">
     <thead><tr><th>Name</th><th>Description</th><th>Role</th><th>Params</th><th></th></tr></thead>

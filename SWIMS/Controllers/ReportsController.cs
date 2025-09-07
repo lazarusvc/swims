@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace SWIMS.Controllers
 {
-    [Authorize(Policy = "ReportsView")]
+   [Authorize(Policy = "ReportsView")]
     public class ReportsController : Controller
     {
         private readonly SwimsReportsDbContext _db;

@@ -8,26 +8,26 @@ namespace SWIMS.Models.Reports
     {
         public int Id { get; set; }
 
-
         [Required, MaxLength(256)]
-        public string Name { get; set; } = default!; // e.g. "Monthly Report.rdl" or logical alias
-
+        [Display(Name = "Report Name (.rdl or alias)")]
+        public string Name { get; set; } = default!;
 
         [MaxLength(512)]
+        [Display(Name = "Description")]
         public string? Desc { get; set; }
 
-
         [MaxLength(256)]
-        public string? PathOverride { get; set; } // optional SSRS folder/name override
+        [Display(Name = "Path Override (optional)")]
+        public string? PathOverride { get; set; }
 
+        [Required(ErrorMessage = "A role is required to gate who can see this report.")]
+        [Display(Name = "Visible To Role")]
+        public string RoleId { get; set; } = default!;
 
-        [Required]
-        public string RoleId { get; set; } = default!; // FK to AspNetRoles (SwRole)
-
-
+        [Display(Name = "Apply stored parameters")]
         public bool ParamCheck { get; set; }
 
-
         public ICollection<SwReportParam> Params { get; set; } = new List<SwReportParam>();
+
     }
 }
