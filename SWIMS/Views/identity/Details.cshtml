@@ -1,0 +1,66 @@
+﻿@model SWIMS.Models.SW_identity
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<br />
+<div class="card basic-data-table">
+    <div class="card-header">
+        <a asp-action="Index" class="bg-primary-light text-primary-600 d-inline-flex align-items-center justify-content-center" style="padding: 10px;"> SW_identity listings</a>
+    </div>
+    <div class="card-body" style="overflow-y:scroll; max-height: 250px;">
+     <dl class="row">
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.name).ToUpper():
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.name)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.desc).ToUpper():
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.desc)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.logo).ToUpper():
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.logo)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.media_01).ToUpper():
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.media_01)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.media_02).ToUpper():
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.media_02)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.media_03).ToUpper():
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.media_03)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.header).ToUpper():
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.header)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.signature).ToUpper():
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.signature)
+        </dd>
+    </dl>
+
+    </div>
+</div>
+

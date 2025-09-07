@@ -38,10 +38,7 @@ namespace SWIMS.Data.Reports
                 .WithMany(r => r.Params)
                 .HasForeignKey(x => x.SwReportId)
                 .OnDelete(DeleteBehavior.Cascade);
-                b.HasOne(x => x.SwSiteIdentity)
-                .WithMany()
-                .HasForeignKey(x => x.SwSiteIdentityId)
-                .OnDelete(DeleteBehavior.NoAction);
+                
             });
         }
     }

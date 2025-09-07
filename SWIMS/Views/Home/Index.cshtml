@@ -1,38 +1,255 @@
 ﻿@{
-    ViewData["title"] = "Home";
+    ViewData["title"] = "Social Welfare Information Management System (SWIMS)";
     ViewData["subTitle"] = "Main";
 }
 
-<div class="text-center">
-    <h6 class="display-4">
-        Social Welfare Information Management System (SWIMS)
-    </h6>
-</div>
-
-
+<!-- STATS -------------------------------------------------------- -->
 <div class="row gy-4">
-    <div class="col-xl-6">
-        <div class="card h-100 p-0">
-            <div class="card-header border-bottom bg-base py-16 px-24">
-                <h6 class="text-lg fw-semibold mb-0">Column Charts</h6>
-            </div>
+    <!-- Earning Static End -->
+    <div class="col-lg-6">
+        <div class="card h-100 border shadow-none radius-8 overflow-hidden">
             <div class="card-body p-24">
-                <div id="columnChart" class=""></div>
+                <div class="d-flex align-items-center flex-wrap gap-2 justify-content-between">
+                    <h6 class="mb-2 fw-bold text-lg">Users Overview</h6>
+                    <div class="">
+                        <select class="form-select form-select-sm w-auto bg-base border text-secondary-light">
+                            <option>Current</option>
+                        </select>
+                    </div>
+                </div>
+
+
+                <div id="userOverviewDonutChart"></div>
+
+                <ul class="d-flex flex-wrap align-items-center justify-content-between mt-3 gap-3">
+                    <li class="d-flex align-items-center gap-2">
+                        <span class="w-12-px h-12-px radius-2 bg-primary-600"></span>
+                        <span class="text-secondary-light text-sm fw-normal">
+                            New:
+                            <span class="text-primary-light fw-semibold">500</span>
+                        </span>
+                    </li>
+                    <li class="d-flex align-items-center gap-2">
+                        <span class="w-12-px h-12-px radius-2 bg-yellow"></span>
+                        <span class="text-secondary-light text-sm fw-normal">
+                            Subscribed:
+                            <span class="text-primary-light fw-semibold">300</span>
+                        </span>
+                    </li>
+                </ul>
+
             </div>
         </div>
     </div>
-    <div class="col-xl-12">
-        <div class="card h-100 p-0">
-            <div class="card-header border-bottom bg-base py-16 px-24">
-                <h6 class="text-lg fw-semibold mb-0">Actions::</h6>
-            </div>
+
+    <!-- Total Transactions Start -->
+    <div class="col-lg-6">
+        <div class="card h-100 border shadow-none">
             <div class="card-body p-24">
-                <div class="d-flex flex-wrap align-items-center gap-3">
-                    <button type="button" class="btn rounded-pill btn-outline-primary-600 radius-8 px-20 py-11 d-flex align-items-center gap-2">
-                        <iconify-icon icon="mingcute:square-arrow-right-line" class="text-xl"></iconify-icon> [Form Name]
-                    </button>
+                <div class="d-flex align-items-center flex-wrap gap-2 justify-content-between mb-20">
+                    <h6 class="mb-2 fw-bold text-lg">Total Transactions </h6>
+                    <div class="">
+                        <select class="form-select form-select-sm w-auto bg-base border text-secondary-light">
+                            <option>Current</option>
+                        </select>
+                    </div>
+                </div>
+
+                <ul class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-28">
+                    <li class="d-flex align-items-center gap-2">
+                        <span class="w-16-px h-16-px radius-2 bg-primary-600"></span>
+                        <span class="text-secondary-light text-lg fw-normal">
+                            Total Gain:
+                            <span class="text-primary-light fw-bold text-lg">$50,000</span>
+                        </span>
+                    </li>
+                </ul>
+
+                <div id="transactionLineChart"></div>
+
+            </div>
+        </div>
+    </div>
+    <!-- Total Transactions End -->
+    <!-- PROGRAMS -------------------------------------------------------- -->
+    @foreach (var inx in ViewBag.frmBtn)
+    {
+        <div class="col-lg-6">
+            <div class="card radius-12 overflow-hidden h-100 d-flex align-items-center flex-nowrap flex-row">
+                <div class="d-flex flex-shrink-0 w-170-px h-100">
+                    <img src="~/uploads/@inx.image" class="h-100 w-100 object-fit-cover" alt="" />
+                </div>
+                <div class="card-body p-16 flex-grow-1">
+                    <h5 class="card-title text-lg text-primary-light mb-6">@inx.name</h5>
+                    <p class="card-text text-neutral-600 mb-16">@inx.desc</p>
+                    <a asp-action="Program" asp-controller="form" asp-route-uuid="@inx.uuid" type="button" class="btn rounded-pill btn-outline-primary-600 radius-8 px-20 py-11 d-flex align-items-center gap-2">
+                        <iconify-icon icon="mingcute:square-arrow-right-line" class="text-xl"></iconify-icon> FORM ID:- @inx.uuid.Substring(0, 5) ...
+                    </a>
                 </div>
             </div>
         </div>
-    </div>
+        <br />
+    }
 </div>
+
+<script src="~/js/apexcharts.min.js"></script>
+<script>
+    // ================================ Users Overview Donut chart Start ================================
+    var options = {
+        series: [500, 500, 500],
+        colors: ['#FF9F29', '#487FFF', '#E4F1FF'],
+        labels: ['Active', 'New', 'Total'],
+        legend: {
+            show: false
+        },
+        chart: {
+            type: 'donut',
+            height: 135,
+            sparkline: {
+                enabled: true // Remove whitespace
+            },
+            margin: {
+                top: 0,
+                right: 0,
+                bottom: 0,
+                left: 0
+            },
+            padding: {
+                top: 0,
+                right: 0,
+                bottom: 0,
+                left: 0
+            }
+        },
+        stroke: {
+            width: 0,
+        },
+        dataLabels: {
+            enabled: false
+        },
+        responsive: [{
+            breakpoint: 480,
+            options: {
+                chart: {
+                    width: 200
+                },
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }],
+    };
+
+    var chart = new ApexCharts(document.querySelector('#userOverviewDonutChart'), options);
+    chart.render();
+    // ================================ Users Overview Donut chart End ================================
+
+    // ================================ Total Transaction line chart Start ================================
+    var options = {
+        series: [{
+            name: 'This month',
+            data: [4, 16, 12, 28, 22, 38, 23]
+        }],
+        chart: {
+            height: 145,
+            type: 'line',
+            toolbar: {
+                show: false
+            },
+            zoom: {
+                enabled: false
+            },
+            dropShadow: {
+                enabled: true,
+                top: 6,
+                left: 0,
+                blur: 4,
+                color: '#000',
+                opacity: 0.1,
+            },
+        },
+        dataLabels: {
+            enabled: false
+        },
+        stroke: {
+            curve: 'smooth',
+            width: 3
+        },
+        markers: {
+            size: 0,
+            strokeWidth: 3,
+            hover: {
+                size: 8
+            }
+        },
+        tooltip: {
+            enabled: true,
+            x: {
+                show: true,
+            },
+            y: {
+                show: false,
+            },
+            z: {
+                show: false,
+            }
+        },
+        grid: {
+            row: {
+                colors: ['transparent', 'transparent'], // takes an array which will be repeated on columns
+                opacity: 0.5
+            },
+            borderColor: '#D1D5DB',
+            strokeDashArray: 3,
+        },
+        yaxis: {
+            labels: {
+                formatter: function (value) {
+                    return '$' + value + 'k';
+                },
+                style: {
+                    fontSize: '14px'
+                }
+            },
+        },
+        xaxis: {
+            categories: ['Mon', 'Tues', 'Wed', 'Thurs', 'Fri', 'Sat', 'Sun'],
+            tooltip: {
+                enabled: false
+            },
+            labels: {
+                formatter: function (value) {
+                    return value;
+                },
+                style: {
+                    fontSize: '14px'
+                }
+            },
+            axisBorder: {
+                show: false
+            },
+            crosshairs: {
+                show: true,
+                width: 20,
+                stroke: {
+                    width: 0
+                },
+                fill: {
+                    type: 'solid',
+                    color: '#B1B9C4',
+                    gradient: {
+                        colorFrom: '#D8E3F0',
+                        colorTo: '#BED1E6',
+                        stops: [0, 100],
+                        opacityFrom: 0.4,
+                        opacityTo: 0.5,
+                    },
+                }
+            }
+        }
+    };
+
+    var chart = new ApexCharts(document.querySelector('#transactionLineChart'), options);
+    chart.render();
+    // ================================ Total Transaction line chart End ================================
+</script>

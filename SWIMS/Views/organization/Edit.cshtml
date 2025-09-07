@@ -1,0 +1,54 @@
+﻿@model SWIMS.Models.SW_organization
+
+@{
+    ViewData["Title"] = "SW_organization | EDIT";
+}
+<hr />
+<div class="row">
+<div class="col-md-12">
+<div class="card">
+<div class="card-header">
+<a asp-action="Index" class="bg-primary-light text-primary-600 d-inline-flex align-items-center justify-content-center" style="padding: 10px;"> SW_organization listings</a>
+</div>
+<div class="card-body">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="Id" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="vendor_id"  class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="vendor_id" class="form-control" />
+                <span asp-validation-for="vendor_id" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="name"  class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="name" class="form-control" />
+                <span asp-validation-for="name" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="type"  class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="type" class="form-control" />
+                <span asp-validation-for="type" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="active"  class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="active" class="form-control" />
+                <span asp-validation-for="active" class="text-danger"></span>
+                </div>
+            </div>
+                <input type="submit" value="Save" class="btn btn-primary" />
+        </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

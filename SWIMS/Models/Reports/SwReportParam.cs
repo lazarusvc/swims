@@ -24,7 +24,5 @@ namespace SWIMS.Models.Reports
         public SwReport SwReport { get; set; } = default!;
 
 
-        public int? SwSiteIdentityId { get; set; } // optional scoping per site/office
-        public SwSiteIdentity? SwSiteIdentity { get; set; }
     }
 }
