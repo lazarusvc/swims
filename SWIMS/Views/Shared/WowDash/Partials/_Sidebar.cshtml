@@ -126,17 +126,17 @@
                 </a>
                 <ul class="sidebar-submenu">
                     <li>
-                        <a asp-controller="StoredProcesses" asp-action="Index">
+                        <a asp-area="" asp-controller="StoredProcesses" asp-action="Index">
                             <iconify-icon icon="mdi:play-circle-outline" class="menu-icon"></iconify-icon> Run SPs
                         </a>
                     </li>
                     <li>
-                        <a asp-controller="StoredProcessesAdmin" asp-action="Index">
+                        <a asp-area="" asp-controller="StoredProcessesAdmin" asp-action="Index">
                             <iconify-icon icon="tabler:database-cog" class="menu-icon"></iconify-icon> SP Management
                         </a>
                     </li>
                     <li>
-                        <a asp-controller="StoredProcessParams" asp-action="Index">
+                        <a asp-area="" asp-controller="StoredProcessParams" asp-action="Index">
                             <iconify-icon icon="tabler:adjustments" class="menu-icon"></iconify-icon> SP Parameters
                         </a>
                     </li>
@@ -151,32 +151,32 @@
                 </a>
                 <ul class="sidebar-submenu">
                     <li>
-                        <a asp-controller="SiteIdentity" asp-action="Index">
+                        <a asp-area="" asp-controller="identity" asp-action="Index">
                             <iconify-icon icon="tabler:id" class="menu-icon"></iconify-icon> Site Identity
                         </a>
                     </li>
                     <li>
-                        <a asp-controller="Forms" asp-action="Index">
+                        <a asp-area="" asp-controller="form" asp-action="Index">
                             <iconify-icon icon="mdi:form-select" class="menu-icon"></iconify-icon> Form Management
                         </a>
                     </li>
                     <li>
-                        <a asp-controller="Beneficiaries" asp-action="Index">
-                            <iconify-icon icon="tabler:handshake" class="menu-icon"></iconify-icon> Beneficiaries
+                        <a asp-area="" asp-controller="beneficiary" asp-action="Index">
+                            <iconify-icon icon="mdi:handshake" class="menu-icon"></iconify-icon> Beneficiaries
                         </a>
                     </li>
                     <li>
-                        <a asp-controller="Cities" asp-action="Index">
+                        <a asp-area="" asp-controller="city" asp-action="Index">
                             <iconify-icon icon="tabler:building-skyscraper" class="menu-icon"></iconify-icon> Cities
                         </a>
                     </li>
                     <li>
-                        <a asp-controller="Organizations" asp-action="Index">
+                        <a asp-area="" asp-controller="organization" asp-action="Index">
                             <iconify-icon icon="tabler:building-community" class="menu-icon"></iconify-icon> Organizations
                         </a>
                     </li>
                     <li>
-                        <a asp-controller="FinancialInstitutions" asp-action="Index">
+                        <a asp-area="" asp-controller="financial_institution" asp-action="Index">
                             <iconify-icon icon="tabler:building-bank" class="menu-icon"></iconify-icon> Financial Institutions
                         </a>
                     </li>
@@ -223,7 +223,7 @@
             <!-- REPORTING --------------------------------------------------------- -->
             <li class="sidebar-menu-group-title">Reports</li>
             <li>
-                <a asp-controller="Reports" asp-action="Index">
+                <a asp-area="" asp-controller="Reports" asp-action="Index">
                     <iconify-icon icon="mdi:file-chart-outline" class="menu-icon"></iconify-icon>
                     <span>Reports</span>
                 </a>
