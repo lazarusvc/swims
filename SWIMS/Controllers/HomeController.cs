@@ -9,29 +9,28 @@
 //   - System.Diagnostics.Activity
 // -------------------------------------------------------------------
 
-using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using SWIMS.Models;
 using SWIMS.Models.ViewModels;
+using System.Diagnostics;
 
 namespace SWIMS.Controllers
 {
     /// <summary>
     /// Provides actions for the home page, privacy policy, and error display.
     /// </summary>
-    public class HomeController : Controller
+    /// <remarks>
+    /// Creates a new <see cref="HomeController"/> with the specified logger.
+    /// </remarks>
+    /// <param name="context"></param>
+    /// <param name="logger">
+    /// The <see cref="ILogger{HomeController}"/> used for logging.
+    /// </param>
+    public class HomeController(SwimsDb_moreContext context, ILogger<HomeController> logger) : Controller
     {
-        private readonly ILogger<HomeController> _logger;
-
-        /// <summary>
-        /// Creates a new <see cref="HomeController"/> with the specified logger.
-        /// </summary>
-        /// <param name="logger">
-        /// The <see cref="ILogger{HomeController}"/> used for logging.
-        /// </param>
-        public HomeController(ILogger<HomeController> logger)
-        {
-            _logger = logger;
-        }
+        private readonly SwimsDb_moreContext _context = context;
+        private readonly ILogger<HomeController> _logger = logger;
 
         /// <summary>
         /// Displays the application home page.
@@ -39,6 +38,7 @@ namespace SWIMS.Controllers
         /// <returns>A <see cref="ViewResult"/> for the Index view.</returns>
         public IActionResult Index()
         {
+            ViewBag.frmBtn = _context.SW_forms.AsNoTracking().ToList();
             return View();
         }
 

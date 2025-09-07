@@ -1,0 +1,82 @@
+﻿@model SWIMS.Models.SW_identity
+
+@{
+    ViewData["Title"] = "SW_identity | EDIT";
+}
+<hr />
+<div class="row">
+<div class="col-md-12">
+<div class="card">
+<div class="card-header">
+<a asp-action="Index" class="btn btn-info">Home</a>
+</div>
+<div class="card-body" style="overflow-y:scroll; max-height: 250px;">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="Id" />
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="name"  class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="name" class="form-control" />
+                <span asp-validation-for="name" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="desc"  class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="desc" class="form-control" />
+                <span asp-validation-for="desc" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="logo"  class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="logo" class="form-control" />
+                <span asp-validation-for="logo" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="media_01"  class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="media_01" class="form-control" />
+                <span asp-validation-for="media_01" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="media_02"  class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="media_02" class="form-control" />
+                <span asp-validation-for="media_02" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="media_03"  class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="media_03" class="form-control" />
+                <span asp-validation-for="media_03" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="header"  class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="header" class="form-control" />
+                <span asp-validation-for="header" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="signature"  class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="signature" class="form-control" />
+                <span asp-validation-for="signature" class="text-danger"></span>
+                </div>
+            </div>
+                <input type="submit" value="Save" class="btn btn-primary" />
+        </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
