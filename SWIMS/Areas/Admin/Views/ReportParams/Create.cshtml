@@ -1,16 +1,21 @@
 ﻿@model SWIMS.Models.Reports.SwReportParam
-
 @{
     ViewData["Title"] = "Create New Report Parameters";
 }
-
 @if (TempData["Ok"] is string ok && !string.IsNullOrWhiteSpace(ok))
 {
     <div class="alert alert-success">@ok</div>
 }
+@if (TempData["Err"] is string er && !string.IsNullOrWhiteSpace(er))
+{
+    <div class="alert alert-danger">@er</div>
+}
 
-
-<form asp-area="Admin" asp-controller="ReportParams" asp-action="Create" method="post">
+<form asp-area="Admin"
+      asp-controller="ReportParams"
+      asp-action="Create"
+      asp-route-reportId="@Model.SwReportId"
+      method="post">
     @Html.AntiForgeryToken()
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
