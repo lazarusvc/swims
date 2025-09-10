@@ -24,8 +24,9 @@ namespace SWIMS.Services.Reporting
         {
             var folder = string.IsNullOrWhiteSpace(pathOverride) ? _opt.ReportPathRoot : pathOverride;
             var reportPath = (folder.TrimEnd('/') + "/" + reportName.Trim()).Replace(".rdl", string.Empty);
-            var baseUrl = $"{_opt.ReportServerUrl}?{Uri.EscapeDataString(reportPath)}";
 
+            // Start with the classic ReportServer URL
+            var baseUrl = $"{_opt.ReportServerUrl}?{Uri.EscapeDataString(reportPath)}";
 
             var qp = new List<string>();
             foreach (var kv in parameters ?? Enumerable.Empty<KeyValuePair<string, string>>())
@@ -37,10 +38,32 @@ namespace SWIMS.Services.Reporting
             }
             if (_opt.UrlAccess.HideToolbar) qp.Add("rc:Toolbar=false");
             if (_opt.UrlAccess.UseEmbed) qp.Add("rs:Embed=true");
-            if (!string.IsNullOrWhiteSpace(_opt.UrlAccess.Zoom)) qp.Add($"rc:Zoom={Uri.EscapeDataString(_opt.UrlAccess.Zoom!)}");
+            if (!string.IsNullOrWhiteSpace(_opt.UrlAccess.Zoom))
+                qp.Add($"rc:Zoom={Uri.EscapeDataString(_opt.UrlAccess.Zoom!)}");
 
+            var fullUrl = qp.Count > 0 ? baseUrl + "&" + string.Join("&", qp) : baseUrl;
 
-            return qp.Count > 0 ? baseUrl + "&" + string.Join("&", qp) : baseUrl;
+            // Rewrite to same-origin relay (/ssrs) if enabled
+            if (_opt.UseReverseProxy)
+            {
+                var proxyBase = string.IsNullOrWhiteSpace(_opt.ReverseProxyBasePath) ? "/ssrs" : _opt.ReverseProxyBasePath;
+                try
+                {
+                    var u = new Uri(fullUrl, UriKind.Absolute);                 // http://host/ReportServer?%2F...
+                    const string reportServerPrefix = "/ReportServer";
+                    var remainder = u.PathAndQuery.StartsWith(reportServerPrefix, StringComparison.OrdinalIgnoreCase)
+                        ? u.PathAndQuery.Substring(reportServerPrefix.Length)   // -> "?%2F..."
+                        : u.PathAndQuery;
+                    return $"{proxyBase.TrimEnd('/')}{remainder}";              // /ssrs?%2F...
+                }
+                catch
+                {
+                    var i = fullUrl.IndexOf("/ReportServer", StringComparison.OrdinalIgnoreCase);
+                    if (i >= 0) return proxyBase.TrimEnd('/') + fullUrl.Substring(i + "/ReportServer".Length);
+                }
+            }
+
+            return fullUrl; // fallback: direct ReportServer
         }
 
 
