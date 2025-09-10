@@ -151,7 +151,19 @@ builder.Services.AddControllersWithViews(o =>
 //                     .RequireAuthenticatedUser()
 //                     .Build();
 //    options.Filters.Add(new AuthorizeFilter(policy));
-//});
+
+
+builder.Services.AddHttpClient("ssrs-proxy")
+    .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+    {
+        UseCookies = false,
+        AllowAutoRedirect = false,
+        UseProxy = false,
+        // If SSRS uses Windows Integrated auth and the app pool identity is allowed:
+        UseDefaultCredentials = true
+    });
+
+
 
 
 var app = builder.Build();
