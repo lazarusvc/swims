@@ -8,7 +8,8 @@
 <div class="row">
     <div class="col-md-12">
         <div class="card">
-            <div class="card-header">                
+            <div class="card-header">
+                @Html.Raw(@ViewBag.header)
             </div>
             <div class="card-body">
                 <div id="fb-rendered-form"></div>
@@ -25,14 +26,14 @@
                     Publish
                 </button> 
             </form>
-            <button asp-action="Edit" asp-route-id="@ViewBag.id" type="button" class="btn btn-info text-info-main px-20 py-13 radius-8 text-dark d-flex">
+            <a asp-action="Edit" asp-route-id="@ViewBag.id" type="button" class="btn btn-info text-info-main px-20 py-13 radius-8 text-dark d-flex">
                 <iconify-icon icon="lucide:edit"></iconify-icon>
                 Edit
-            </button>
-            <button asp-action="Delete" asp-route-id="@ViewBag.id" type="button" class="btn btn-danger text-danger-main px-20 py-13 radius-8 text-dark d-flex">
+            </a>
+            <a asp-action="Delete" asp-route-id="@ViewBag.id" type="button" class="btn btn-danger text-danger-main px-20 py-13 radius-8 text-dark d-flex">
                 <iconify-icon icon="mingcute:delete-2-line"></iconify-icon>
                 Delete
-            </button>
+            </a>
         </div>
     </div>    
 </div>

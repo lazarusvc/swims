@@ -2,26 +2,18 @@
 @{
     ViewData["Title"] = "Delete Parameter";
 }
-<h6 style="color:red;">Are you sure you want to delete this?</h6>
-<div class="card basic-data-table">
-    <div class="card-header">
-        <form asp-action="Delete" method="post">
-            @Html.AntiForgeryToken()
-            <input type="hidden" name="id" value="@Model.Id" />
-            <button type="submit" class="btn btn-danger">Confirm Delete</button>
-            <a class="btn btn-outline-secondary" asp-action="Index" asp-route-processId="@Model.StoredProcessId">Cancel</a>
-        </form>
-    </div>
-    <div class="card-body">
-        <div>
-            <dl class="row">
-                <dt class="col-sm-3">Key</dt>
-                <dd class="col-sm-9">@Model.Key</dd>
-                <dt class="col-sm-3">Type</dt>
-                <dd class="col-sm-9">@Model.DataType</dd>
-                <dt class="col-sm-3">Value</dt>
-                <dd class="col-sm-9">@Model.Value</dd>
-            </dl>
-        </div>
-    </div>
-</div>
+<h2>Delete Parameter</h2>
+<dl class="row">
+    <dt class="col-sm-3">Key</dt>
+    <dd class="col-sm-9">@Model.Key</dd>
+    <dt class="col-sm-3">Type</dt>
+    <dd class="col-sm-9">@Model.DataType</dd>
+    <dt class="col-sm-3">Value</dt>
+    <dd class="col-sm-9">@Model.Value</dd>
+</dl>
+<form asp-action="Delete" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="id" value="@Model.Id" />
+    <button type="submit" class="btn btn-danger">Confirm Delete</button>
+    <a class="btn btn-outline-secondary" asp-action="Index" asp-route-processId="@Model.StoredProcessId">Cancel</a>
+</form>

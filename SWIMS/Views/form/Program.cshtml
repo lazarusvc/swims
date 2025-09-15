@@ -2,7 +2,6 @@
 @{
     ViewData["Title"] = "Program - " + @ViewBag.formName;
 }
-@model FormTableViewModel
 
 <hr />
 <br />
@@ -77,6 +76,7 @@
         <div class="card radius-12 h-100">
             <div class="card-body py-16 px-24" style="overflow-y: scroll; height:500px;">
                 <form asp-action="Create" asp-controller="formTableData">
+                    @Html.Raw(@ViewBag.header)
                     <div id="fb-rendered-form"></div>
                     <input type="hidden" name="SW_formsId" value="@ViewBag.formId" />
                     <button type="submit" class="btn btn-success">Submit</button>

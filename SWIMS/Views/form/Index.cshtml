@@ -22,9 +22,6 @@
                                 Form Name:
                             </th>
                             <th scope="col">
-                                Description:
-                            </th>
-                            <th scope="col">
                                 Modified:
                             </th>
                             <th scope="col">
@@ -43,10 +40,7 @@
                                     @item.uuid.Substring(0, 5) ...
                                 </td>
                                 <td>
-                                    @item.name.Substring(0, 10) ...
-                                </td>
-                                <td>
-                                    @item.uuid.Substring(0, 10) ...
+                                    @item.name
                                 </td>
                                 <td>
                                     @item.dateModified.ToLocalTime()
@@ -73,19 +67,19 @@
                 Form References
             </div>
             <div class="card-body">
-                <a asp-action="Index" asp-controller="formTableData" type="button" class="btn rounded-pill btn-outline-primary-600 radius-8 px-20 py-11 d-flex align-items-center gap-2">
+                <a asp-area="" asp-action="Index" asp-controller="formTableData" type="button" class="btn rounded-pill btn-outline-primary-600 radius-8 px-20 py-11 d-flex align-items-center gap-2">
                     <iconify-icon icon="mingcute:square-arrow-right-line" class="text-xl"></iconify-icon> Form Data
                 </a><br />
-                <a asp-action="Index" asp-controller="formTableName" type="button" class="btn rounded-pill btn-outline-primary-600 radius-8 px-20 py-11 d-flex align-items-center gap-2">
+                <a asp-area="" asp-action="Index" asp-controller="formTableName" type="button" class="btn rounded-pill btn-outline-primary-600 radius-8 px-20 py-11 d-flex align-items-center gap-2">
                     <iconify-icon icon="mingcute:square-arrow-right-line" class="text-xl"></iconify-icon> Form Data Names
                 </a><br />
-                <a asp-action="Index" asp-controller="formTableData_Type" type="button" class="btn rounded-pill btn-outline-primary-600 radius-8 px-20 py-11 d-flex align-items-center gap-2">
+                <a asp-area="" asp-action="Index" asp-controller="formTableData_Type" type="button" class="btn rounded-pill btn-outline-primary-600 radius-8 px-20 py-11 d-flex align-items-center gap-2">
                     <iconify-icon icon="mingcute:square-arrow-right-line" class="text-xl"></iconify-icon> Form Data Types
                 </a><br />
-                <a asp-action="Index" asp-controller="formProcess" type="button" class="btn rounded-pill btn-outline-primary-600 radius-8 px-20 py-11 d-flex align-items-center gap-2">
+                <a asp-area="" asp-action="Index" asp-controller="formProcess" type="button" class="btn rounded-pill btn-outline-primary-600 radius-8 px-20 py-11 d-flex align-items-center gap-2">
                     <iconify-icon icon="mingcute:square-arrow-right-line" class="text-xl"></iconify-icon> Form Processes
                 </a><br />
-                <a asp-action="Index" asp-controller="formReport" type="button" class="btn rounded-pill btn-outline-primary-600 radius-8 px-20 py-11 d-flex align-items-center gap-2">
+                <a asp-area="" asp-action="Index" asp-controller="formReport" type="button" class="btn rounded-pill btn-outline-primary-600 radius-8 px-20 py-11 d-flex align-items-center gap-2">
                     <iconify-icon icon="mingcute:square-arrow-right-line" class="text-xl"></iconify-icon> Form Reports
                 </a>
             </div>

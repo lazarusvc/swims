@@ -1,4 +1,4 @@
-﻿// T4 code generation is enabled for model 'C:\Users\lazarusa\Documents\Git Projects\SWIMS\MAIN__3.0\SWIMS\Model_Designer\Model.edmx'. 
+﻿// T4 code generation is enabled for model 'C:\Users\lazarusa\Documents\Git Projects\SWIMS\MAIN__2.0\SWIMS\Model_Designer\Model.edmx'. 
 // To enable legacy code generation, change the value of the 'Code Generation Strategy' designer
 // property to 'Legacy ObjectContext'. This property is available in the Properties Window when the model
 // is open in the designer.

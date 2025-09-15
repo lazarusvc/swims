@@ -1,9 +1,9 @@
 ﻿@model SWIMS.Models.ViewModels.StoredProcessParamEditViewModel
 @{
-    ViewData["Title"] = "Add Parameter for:";
+    ViewData["Title"] = "Add Parameter";
     var proc = (SWIMS.Models.StoredProcess)ViewBag.Process;
 }
-<p>@proc.Name</p>
+<h2>Add Parameter for: @proc.Name</h2>
 <form asp-action="Create" method="post">
   @Html.AntiForgeryToken()
   <input type="hidden" asp-for="StoredProcessId" />

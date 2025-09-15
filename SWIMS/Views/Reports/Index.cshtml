@@ -1,0 +1,41 @@
+﻿@model SWIMS.Models.ViewModels.ReportsIndexViewModel
+@{
+    ViewData["Title"] = "Reports";
+
+    var items = Model.Reports.Select(r => new SelectListItem
+    {
+        Value = r.Id.ToString(),
+        Text = r.Desc ?? r.Name,
+        Selected = (Model.SelectedId == r.Id)
+    });
+}
+<div class="card">
+  <div class="card-body">
+    <form asp-action="Run" method="post">
+      @Html.AntiForgeryToken()
+      <div class="row g-2 align-items-end">
+        <div class="col-md-8">
+          <label class="form-label">Select a report</label>
+          <select class="form-select" name="id" required>
+            <option value="">Choose…</option>
+                @foreach (var it in items)
+                {
+                    <option value="@it.Value" selected="@(it.Selected ? "selected" : null)">@it.Text</option>
+                }
+          </select>
+        </div>
+        <div class="col-md-4 text-end">
+          <button class="btn btn-primary me-2" type="submit" formaction="@Url.Action("Run","Reports")">Open</button>
+          <button class="btn btn-outline-secondary" type="submit" formaction="@Url.Action("PdfPage","Reports")">View PDF Inline</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(Model?.ViewerUrl))
+{
+  <div class="ratio ratio-16x9 mt-3">
+    <iframe src="@Model.ViewerUrl" width="100%" height="100%" style="border:0;" loading="lazy" allowfullscreen></iframe>
+  </div>
+}

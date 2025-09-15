@@ -1,7 +1,8 @@
 ﻿@model SWIMS.Models.ViewModels.RunStoredProcessViewModel
 @{
-    ViewData["Title"] = $"Run: {Model.Name}";
+    ViewData["Title"] = $"Run {Model.Name}";
 }
+<h2>Run: @Model.Name</h2>
 <p class="text-muted">@Model.Description</p>
 @if (!string.IsNullOrWhiteSpace(Model.ConnectionDisplay))
 {
