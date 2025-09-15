@@ -13,6 +13,10 @@ public partial class SwimsDb_moreContext : DbContext
     {
     }
 
+    public virtual DbSet<SW_identity> SW_identities { get; set; }
+
+    public virtual DbSet<SW_organization> SW_organizations { get; set; }
+
     public virtual DbSet<SW_beneficiary> SW_beneficiaries { get; set; }
 
     public virtual DbSet<SW_city> SW_cities { get; set; }
@@ -31,12 +35,20 @@ public partial class SwimsDb_moreContext : DbContext
 
     public virtual DbSet<SW_formTableName> SW_formTableNames { get; set; }
 
-    public virtual DbSet<SW_identity> SW_identities { get; set; }
-
-    public virtual DbSet<SW_organization> SW_organizations { get; set; }
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<SW_identity>(entity =>
+        {
+            entity.ToTable("SW_identity");
+
+            entity.Property(e => e.name).IsRequired();
+        });
+
+        modelBuilder.Entity<SW_organization>(entity =>
+        {
+            entity.ToTable("SW_organization");
+        });
+
         modelBuilder.Entity<SW_beneficiary>(entity =>
         {
             entity.ToTable("SW_beneficiary");
@@ -116,18 +128,6 @@ public partial class SwimsDb_moreContext : DbContext
                 .HasForeignKey(d => d.SW_formsId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_SW_formsSW_formTableName");
-        });
-
-        modelBuilder.Entity<SW_identity>(entity =>
-        {
-            entity.ToTable("SW_identity");
-
-            entity.Property(e => e.name).IsRequired();
-        });
-
-        modelBuilder.Entity<SW_organization>(entity =>
-        {
-            entity.ToTable("SW_organization");
         });
 
         OnModelCreatingPartial(modelBuilder);

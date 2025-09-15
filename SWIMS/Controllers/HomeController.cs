@@ -10,11 +10,9 @@
 // -------------------------------------------------------------------
 
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using SWIMS.Models;
 using SWIMS.Models.ViewModels;
-using System;
 using System.Diagnostics;
 
 namespace SWIMS.Controllers
@@ -22,27 +20,25 @@ namespace SWIMS.Controllers
     /// <summary>
     /// Provides actions for the home page, privacy policy, and error display.
     /// </summary>
-    public class HomeController : Controller
+    /// <remarks>
+    /// Creates a new <see cref="HomeController"/> with the specified logger.
+    /// </remarks>
+    /// <param name="context"></param>
+    /// <param name="logger">
+    /// The <see cref="ILogger{HomeController}"/> used for logging.
+    /// </param>
+    public class HomeController(SwimsDb_moreContext context, ILogger<HomeController> logger) : Controller
     {
+        private readonly SwimsDb_moreContext _context = context;
+        private readonly ILogger<HomeController> _logger = logger;
 
-        //private readonly ILogger<HomeController> _logger;
-
-
-
-        private readonly SwimsDb_moreContext _context;
-        public HomeController(SwimsDb_moreContext context)
-        {
-            _context = context;
-        }
-
+        /// <summary>
+        /// Displays the application home page.
+        /// </summary>
+        /// <returns>A <see cref="ViewResult"/> for the Index view.</returns>
         public IActionResult Index()
         {
-            SwimsDb_moreContext context = _context;
-            ViewBag.frmBtn = _context.SW_forms
-            //.Select(c => new SelectListItem() { Text = c.uuid, Value = c.name })
-            .ToList();
-
-
+            ViewBag.frmBtn = _context.SW_forms.AsNoTracking().ToList();
             return View();
         }
 

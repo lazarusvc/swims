@@ -15,12 +15,13 @@ using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using SWIMS.Data;
+using SWIMS.Data.Reports;
 using SWIMS.Models;
 using SWIMS.Models.StoredProcs;
 using SWIMS.Services;
 using SWIMS.Services.Auth;
 using SWIMS.Services.Diagnostics;
-using SWIMS.Controllers;
+using SWIMS.Services.Reporting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -47,6 +48,16 @@ builder.Services.AddDbContext<SwimsStoredProcsDbContext>(options =>
 
 builder.Services.Configure<StoredProcOptions>(
     builder.Configuration.GetSection("StoredProcs"));
+
+builder.Services.AddDbContext<SwimsReportsDbContext>(options =>
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        sql => sql.MigrationsHistoryTable("__EFMigrationsHistory_Reports", "rpt")
+    ));
+
+
+builder.Services.Configure<ReportingOptions>(builder.Configuration.GetSection("Reporting"));
+builder.Services.AddScoped<ISsrsUrlBuilder, SsrsUrlBuilder>();
 
 // Configure Razor Pages
 builder.Services.AddRazorPages();
@@ -142,13 +153,21 @@ builder.Services.AddControllersWithViews(o =>
 //    options.Filters.Add(new AuthorizeFilter(policy));
 //});
 
+
+
+builder.Services.AddHttpClient("ssrs-proxy")
+    .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+    {
+        UseCookies = false,
+        AllowAutoRedirect = false,
+        UseProxy = false,
+        // If SSRS uses Windows Integrated auth and the app pool identity is allowed:
+        UseDefaultCredentials = true
+    });
+
 // Add OpenAPI Support to project
 builder.Services.AddOpenApi();
-
 builder.Services.AddEndpointsApiExplorer();
-
-builder.Services.AddSwaggerGen();
-
 
 var app = builder.Build();
 
@@ -176,12 +195,6 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-};
-
 app.UseHttpsRedirection();
 
 // Ensure default wwwroot static files are served
@@ -198,6 +211,7 @@ app.UseFileServer(new FileServerOptions
     EnableDirectoryBrowsing = false
 });
 
+
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
@@ -213,15 +227,12 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
 
-app.MapOpenApi();
-
 app.MapRazorPages();
 
+app.MapOpenApi();
 app.MapSW_beneficiaryEndpoints();
-
 app.MapSW_cityEndpoints();
-
 app.MapSW_financial_institutionEndpoints();
-
 app.MapSW_organizationEndpoints();
+
 app.Run();

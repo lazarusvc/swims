@@ -5,6 +5,8 @@
     var proc = ViewBag.Process as SWIMS.Models.StoredProcess;
     var processes = ViewBag.Processes as SelectList;
 }
+<h2>Parameters</h2>
+
 <form asp-action="Select" method="post" class="mb-3">
     @Html.AntiForgeryToken()
     <div class="input-group">
@@ -25,7 +27,7 @@ else
     <p class="text-muted">@proc.Description</p>
     <p>
         <a class="btn btn-success" asp-action="Create" asp-route-processId="@proc.Id">Add Parameter</a>
-        <a class="btn btn-outline-secondary" asp-controller="StoredProcessesAdmin" asp-action="Index">Back to Processes</a>
+        <a class="btn btn-outline-secondary" asp-area="" asp-controller="StoredProcessesAdmin" asp-action="Index">Back to Processes</a>
     </p>
 
     if (!Model.Any())

@@ -1,0 +1,50 @@
+﻿@model IEnumerable<SWIMS.Models.Reports.SwReport>
+@{
+    ViewData["Title"] = "Reports (Admin)";
+}
+
+@if (TempData["Ok"] is string ok && !string.IsNullOrWhiteSpace(ok))
+{
+    <div class="alert alert-success">@ok</div>
+}
+
+<div class="card basic-data-table">
+    <div class="card-header">
+        <a asp-action="Create" class="btn btn-success">Create New</a>
+    </div>
+    <div class="card-body" style="overflow-x:scroll;">
+        <table class="table bordered-table mb-0" id="dataTable" data-page-length='10'>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Role</th>
+                    <th>Params</th>
+                    <th></th>
+                </tr>
+                </thead>
+            <tbody>
+                @foreach (var r in Model)
+                {
+                    <tr>
+                        <td>@r.Name</td>
+                        <td>@r.Desc</td>
+                        <td>@r.RoleId</td>
+                        <td><a asp-area="Admin" asp-controller="ReportParams" asp-action="Index" asp-route-reportId="@r.Id">Manage</a></td>
+                        <td class="text-end">
+                            <a asp-action="Edit" asp-route-id="@r.Id" class="w-32-px h-32-px bg-success-focus text-success-main rounded-circle d-inline-flex align-items-center justify-content-center"><iconify-icon icon="lucide:edit"></iconify-icon></a>
+                            <form asp-action="Delete" asp-route-id="@r.Id" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <button class="w-32-px h-32-px bg-danger-focus text-danger-main rounded-circle d-inline-flex align-items-center justify-content-center" type="submit"><iconify-icon icon="mingcute:delete-2-line"></iconify-icon></button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script src="~/lib/jquery/dist/jquery.js"></script>
+<script src="~/js/datatables.min.js"></script>
+<script type="text/javascript"> let table = new DataTable('#dataTable');</script>

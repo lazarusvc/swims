@@ -4,60 +4,15 @@
   <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
     <!-- Diagram content (shape and connector positions) -->
     <edmx:Diagrams>
-      <Diagram DiagramId="f14f822ad5d94bd59830f38001665507" Name="Diagram1" ZoomLevel="188" >
+      <Diagram DiagramId="f14f822ad5d94bd59830f38001665507" Name="Diagram1" ZoomLevel="113" >
+        <EntityTypeShape EntityType="Model.SW_forms" Width="2.75" PointX="3.375" PointY="0.75" FillColor="Yellow" />
+        <EntityTypeShape EntityType="Model.SW_formTableName" Width="2.25" PointX="7.25" PointY="0.75" FillColor="Yellow" />
         <EntityTypeShape EntityType="Model.SW_identity" Width="1.75" PointX="0.625" PointY="5.125" FillColor="192, 0, 192" />
         <EntityTypeShape EntityType="Model.SW_roles" Width="1.75" PointX="0.625" PointY="3.25" />
         <EntityTypeShape EntityType="Model.SW_users" Width="1.75" PointX="0.625" PointY="0.75" />
-        <AssociationConnector Association="Model.FK_SW_rolesSW_users" />
-        <EntityTypeShape EntityType="Model.C__EFMigrationsHistory_Identity" Width="1.5" PointX="0.75" PointY="8.75" />
-        <EntityTypeShape EntityType="Model.endpoint_policy_assignments" Width="1.5" PointX="10" PointY="18.625" />
-        <EntityTypeShape EntityType="Model.policy" Width="1.5" PointX="7.75" PointY="5.5" />
-        <EntityTypeShape EntityType="Model.policy_claims" Width="1.5" PointX="10" PointY="23.125" />
-        <EntityTypeShape EntityType="Model.policy_roles" Width="1.5" PointX="10" PointY="8.75" />
-        <EntityTypeShape EntityType="Model.public_endpoints" Width="1.5" PointX="0.75" PointY="11.75" />
-        <EntityTypeShape EntityType="Model.role_claims" Width="1.5" PointX="10" PointY="5.875" />
-        <EntityTypeShape EntityType="Model.role" Width="1.5" PointX="7.75" PointY="9.625" />
-        <EntityTypeShape EntityType="Model.user_claims" Width="1.5" PointX="12.25" PointY="14" />
-        <EntityTypeShape EntityType="Model.user_logins" Width="1.5" PointX="12.25" PointY="11.375" />
-        <EntityTypeShape EntityType="Model.user_tokens" Width="1.5" PointX="12.25" PointY="16.75" />
-        <EntityTypeShape EntityType="Model.user" Width="1.5" PointX="10" PointY="12.625" />
-        <EntityTypeShape EntityType="Model.C__EFMigrationsHistory" Width="1.5" PointX="12.75" PointY="4.75" />
-        <EntityTypeShape EntityType="Model.SW_formProcesses" Width="1.5" PointX="12.75" PointY="7.75" />
-        <EntityTypeShape EntityType="Model.SW_formReport" Width="1.5" PointX="7.25" PointY="28.5" />
-        <EntityTypeShape EntityType="Model.SW_formTableData" Width="1.5" PointX="7.25" PointY="33.625" />
-        <EntityTypeShape EntityType="Model.SW_formTableData_Types" Width="1.5" PointX="7.25" PointY="31" />
-        <EntityTypeShape EntityType="Model.SW_role_claims" Width="1.5" PointX="3.5" PointY="61.125" />
-        <EntityTypeShape EntityType="Model.SW_user_claims" Width="1.5" PointX="3.5" PointY="52.375" />
-        <EntityTypeShape EntityType="Model.SW_user_logins" Width="1.5" PointX="3.5" PointY="55" />
-        <EntityTypeShape EntityType="Model.SW_user_tokens" Width="1.5" PointX="3.5" PointY="57.75" />
-        <EntityTypeShape EntityType="Model.stored_process_params" Width="1.5" PointX="13" PointY="1.25" />
-        <EntityTypeShape EntityType="Model.stored_processes" Width="1.5" PointX="10.75" PointY="1" />
-        <AssociationConnector Association="Model.FK_endpoint_policy_assignments_policies_PolicyId" />
-        <AssociationConnector Association="Model.FK_policy_claims_policies_AuthorizationPolicyEntityId" />
-        <AssociationConnector Association="Model.FK_policy_roles_policies_AuthorizationPolicyEntityId" />
-        <AssociationConnector Association="Model.FK_policy_roles_roles_RoleId" />
-        <AssociationConnector Association="Model.FK_role_claims_roles_RoleId" />
-        <AssociationConnector Association="Model.FK_user_claims_users_UserId" />
-        <AssociationConnector Association="Model.FK_user_logins_users_UserId" />
-        <AssociationConnector Association="Model.FK_user_tokens_users_UserId" />
-        <AssociationConnector Association="Model.FK_SW_role_claims_SW_roles_RoleId" />
-        <AssociationConnector Association="Model.FK_SW_user_claims_SW_users_UserId" />
-        <AssociationConnector Association="Model.FK_SW_user_logins_SW_users_UserId" />
-        <AssociationConnector Association="Model.FK_SW_user_tokens_SW_users_UserId" />
-        <AssociationConnector Association="Model.FK_stored_process_params_stored_processes_StoredProcessId" />
-        <AssociationConnector Association="Model.user_roles" />
-        <AssociationConnector Association="Model.SW_user_roles" />
-        <EntityTypeShape EntityType="Model.SW_forms" Width="1.5" PointX="5.25" PointY="1.125" />
-        <EntityTypeShape EntityType="Model.SW_formTableName" Width="1.5" PointX="7.5" PointY="2.125" />
-        <AssociationConnector Association="Model.FK_SW_formsSW_formReport" />
-        <AssociationConnector Association="Model.FK_SW_formsSW_formTableData" />
-        <AssociationConnector Association="Model.FK_SW_formsSW_formTableData_Types" />
         <AssociationConnector Association="Model.FK_SW_formsSW_formTableName" />
         <AssociationConnector Association="Model.FK_SW_identitySW_forms" />
-        <EntityTypeShape EntityType="Model.SW_beneficiary" Width="3.125" PointX="9.375" PointY="26.5" />
-        <EntityTypeShape EntityType="Model.SW_financial_institution" Width="2.75" PointX="12.875" PointY="26.5" />
-        <EntityTypeShape EntityType="Model.SW_organization" Width="2.75" PointX="12.875" PointY="28.375" />
-        <EntityTypeShape EntityType="Model.SW_city" Width="3.125" PointX="9.375" PointY="30.125" />
+        <AssociationConnector Association="Model.FK_SW_rolesSW_users" />
       </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>

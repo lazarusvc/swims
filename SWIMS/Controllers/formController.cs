@@ -41,6 +41,7 @@ namespace SWIMS.Controllers
             ViewBag.formName = f_Linq.Select(m => m.name).FirstOrDefault();
             ViewBag.formImage = f_Linq.Select(m => m.image).FirstOrDefault();
             ViewBag.formDesc = f_Linq.Select(m => m.desc).FirstOrDefault();
+            ViewBag.header = f_Linq.Select(x => x.header).FirstOrDefault();
 
             ViewBag.processes = _context.SW_formProcesses
                 .Where(c => c.SW_formsId == formId)
@@ -212,6 +213,7 @@ namespace SWIMS.Controllers
         {
             ViewBag.id = id;
             ViewBag.frm = _context.SW_forms.Where(x => x.Id == id).Select(x => x.form).FirstOrDefault();
+            ViewBag.header = _context.SW_forms.Where(x => x.Id == id).Select(x => x.header).FirstOrDefault();
             return View();
         }
         [HttpPost]
@@ -270,7 +272,6 @@ namespace SWIMS.Controllers
                 return NotFound();
             }
             ViewBag.frm = _context.SW_forms.Where(x => x.Id == id).Select(x => x.form).FirstOrDefault();
-            ViewBag.img = _context.SW_forms.Where(x => x.Id == id).Select(x => x.image).FirstOrDefault();
             ViewData["SW_identityId"] = new SelectList(_context.SW_identities, "Id", "name", sW_form.SW_identityId);
             return View(sW_form);
         }
@@ -358,20 +359,36 @@ namespace SWIMS.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
+            // remove corresponding form Data
+            await _context.SW_formTableData
+                .Where(c => c.SW_formsId == id)
+                .ExecuteDeleteAsync();
+
+            // remove corresponding form Data Types
+            await _context.SW_formTableData_Types
+                .Where(c => c.SW_formsId == id)
+                .ExecuteDeleteAsync();
+
+            // remove corresponding form Data Names
+            await _context.SW_formTableNames
+                .Where(c => c.SW_formsId == id)
+                .ExecuteDeleteAsync();
+
+            // remove corresponding form Processes
+            await _context.SW_formProcesses
+                .Where(c => c.SW_formsId == id)
+                .ExecuteDeleteAsync();
+
+            // remove corresponding form Reports
+            await _context.SW_formReports
+                .Where(c => c.SW_formsId == id)
+                .ExecuteDeleteAsync();
+
+            // finally remove form
             var sW_form = await _context.SW_forms.FindAsync(id);
-            var formData = await _context.SW_formTableData.FirstOrDefaultAsync(x => x.SW_formsId == id); // to remove corresponding form Data
-            var formDataType = await _context.SW_formTableData_Types.FirstOrDefaultAsync(x => x.SW_formsId == id); // to remove corresponding form Data Type
-            var formDataName = await _context.SW_formTableNames.FirstOrDefaultAsync(x => x.SW_formsId == id); // to remove corresponding form Data Name
-            var formProcess = await _context.SW_formProcesses.FirstOrDefaultAsync(x => x.SW_formsId == id); // to remove corresponding form Processes
-            var formReport = await _context.SW_formReports.FirstOrDefaultAsync(x => x.SW_formsId == id); // to remove corresponding form Reports
-            if (sW_form != null && formData != null && formDataType != null && formDataName != null && formProcess != null && formReport != null)
+            if (sW_form != null)
             {
                 _context.SW_forms.Remove(sW_form);
-                _context.SW_formTableData.Remove(formData);
-                _context.SW_formTableData_Types.Remove(formDataType);
-                _context.SW_formTableNames.Remove(formDataName);
-                _context.SW_formProcesses.Remove(formProcess);
-                _context.SW_formReports.Remove(formReport);
             }
 
             await _context.SaveChangesAsync();

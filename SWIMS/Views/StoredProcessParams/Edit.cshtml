@@ -3,6 +3,7 @@
     ViewData["Title"] = "Edit Parameter";
     var proc = (SWIMS.Models.StoredProcess)ViewBag.Process;
 }
+<h2>Edit Parameter for: @proc.Name</h2>
 <form asp-action="Edit" method="post">
     @Html.AntiForgeryToken()
     <input type="hidden" asp-for="Id" />

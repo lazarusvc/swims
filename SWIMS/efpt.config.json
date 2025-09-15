@@ -16,47 +16,15 @@
    "T4TemplatePath": null,
    "Tables": [
       {
-         "Name": "[dbo].[SW_beneficiary]",
-         "ObjectType": 0
-      },
-      {
-         "Name": "[dbo].[SW_city]",
-         "ObjectType": 0
-      },
-      {
-         "Name": "[dbo].[SW_financial_institution]",
-         "ObjectType": 0
-      },
-      {
-         "Name": "[dbo].[SW_formProcesses]",
-         "ObjectType": 0
-      },
-      {
-         "Name": "[dbo].[SW_formReport]",
-         "ObjectType": 0
-      },
-      {
          "Name": "[dbo].[SW_forms]",
          "ObjectType": 0
       },
       {
-         "Name": "[dbo].[SW_formTableData]",
-         "ObjectType": 0
-      },
-      {
-         "Name": "[dbo].[SW_formTableData_Types]",
-         "ObjectType": 0
-      },
-      {
-         "Name": "[dbo].[SW_formTableName]",
+         "Name": "[dbo].[SW_forms_tableNames]",
          "ObjectType": 0
       },
       {
          "Name": "[dbo].[SW_identity]",
-         "ObjectType": 0
-      },
-      {
-         "Name": "[dbo].[SW_organization]",
          "ObjectType": 0
       }
    ],
@@ -64,7 +32,7 @@
    "UncountableWords": null,
    "UseAsyncStoredProcedureCalls": true,
    "UseBoolPropertiesWithoutDefaultSql": false,
-   "UseDatabaseNames": true,
+   "UseDatabaseNames": false,
    "UseDatabaseNamesForRoutines": true,
    "UseDateOnlyTimeOnly": false,
    "UseDbContextSplitting": false,

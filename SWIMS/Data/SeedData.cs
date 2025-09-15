@@ -141,6 +141,22 @@ namespace SWIMS.Data
                 description: "Access for program management features"
             );
 
+            // Reports policies
+            await UpsertPolicyAsync(
+                policyName: "ReportsView",
+                roleNames: new[] { "Admin", "ProgramManager" },
+                isSystem: true,
+                description: "Access to Reports module (viewer)"
+            );
+
+
+            await UpsertPolicyAsync(
+                policyName: "ReportsAdmin",
+                roleNames: new[] { "Admin" },
+                isSystem: true,
+                description: "Manage report definitions and parameters"
+            );
+
 
             // ---- PUBLIC ENDPOINTS ----
             async Task UpsertPublicEndpointAsync(

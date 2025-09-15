@@ -1,12 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using SWIMS.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+using SWIMS.Models;
 
 namespace SWIMS.Controllers
 {
@@ -22,7 +21,7 @@ namespace SWIMS.Controllers
         public string GenerateNewUuidAsString()
         {
             // Generates a new GUID and converts it to a string representation
-            return Guid.NewGuid().ToString()[..5];
+            return Guid.NewGuid().ToString();
         }
 
         // GET: beneficiary
@@ -61,24 +60,11 @@ namespace SWIMS.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,uuid,first_name,middle_name,last_name,dob,gender,martial_status,id_number,telephone_number,status,approved_amount,name")] SW_beneficiary sW_beneficiary)
+        public async Task<IActionResult> Create([Bind("Id,uuid,first_name,middle_name,last_name,dob,gender,martial_status,id_number,telephone_number,status,approved_amount")] SW_beneficiary sW_beneficiary)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(new SW_beneficiary { 
-                    uuid = sW_beneficiary.uuid,
-                    first_name = sW_beneficiary.first_name,
-                    middle_name = sW_beneficiary.middle_name,
-                    last_name = sW_beneficiary.last_name,
-                    dob = sW_beneficiary.dob,
-                    gender = sW_beneficiary.gender,
-                    martial_status = sW_beneficiary.martial_status,
-                    id_number = sW_beneficiary.id_number,
-                    telephone_number = sW_beneficiary.telephone_number,
-                    status = sW_beneficiary.status,
-                    approved_amount = sW_beneficiary.approved_amount,
-                    name = sW_beneficiary.first_name + " " + sW_beneficiary.last_name
-                });
+                _context.Add(sW_beneficiary);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
@@ -106,14 +92,12 @@ namespace SWIMS.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,uuid,first_name,middle_name,last_name,dob,gender,martial_status,id_number,telephone_number,status,approved_amount,name")] SW_beneficiary sW_beneficiary)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,uuid,first_name,middle_name,last_name,dob,gender,martial_status,id_number,telephone_number,status,approved_amount")] SW_beneficiary sW_beneficiary)
         {
             if (id != sW_beneficiary.Id)
             {
                 return NotFound();
             }
-
-            sW_beneficiary.name = sW_beneficiary.first_name + " " + sW_beneficiary.last_name;
 
             if (ModelState.IsValid)
             {
