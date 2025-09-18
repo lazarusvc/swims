@@ -156,11 +156,11 @@ builder.Services.AddControllersWithViews(o =>
 builder.Services.AddHttpClient("ssrs-proxy")
     .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
     {
-        UseCookies = false,
+        UseDefaultCredentials = true,     
+        PreAuthenticate = true,
         AllowAutoRedirect = false,
-        UseProxy = false,
-        // If SSRS uses Windows Integrated auth and the app pool identity is allowed:
-        UseDefaultCredentials = true
+        UseCookies = false,
+        UseProxy = false
     });
 
 
@@ -214,6 +214,8 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapStaticAssets();
+
+app.MapControllers();
 
 app.MapControllerRoute(
     name: "areas",
