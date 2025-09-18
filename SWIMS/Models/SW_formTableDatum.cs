@@ -517,5 +517,11 @@ public partial class SW_formTableDatum
 
     public byte? isApproval_03 { get; set; }
 
+    public string isAppComment_01 { get; set; }
+
+    public string isAppComment_02 { get; set; }
+
+    public string isAppComment_03 { get; set; }
+
     public virtual SW_form SW_forms { get; set; }
 }

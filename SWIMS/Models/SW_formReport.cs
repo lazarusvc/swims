@@ -11,6 +11,8 @@ public partial class SW_formReport
 
     public string url { get; set; }
 
+    public string name { get; set; }
+
     public int SW_formsId { get; set; }
 
     public virtual SW_form SW_forms { get; set; }

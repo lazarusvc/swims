@@ -1,0 +1,212 @@
+﻿<a asp-action="Index"><< | back</a>
+@{
+    ViewData["Title"] = "Approval";
+}
+
+
+<hr />
+<br />
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <!-- Form Wizard Start -->
+                <div class="form-wizard">
+                    <form action="#" method="post">
+                        <div class="form-wizard-header overflow-x-auto scroll-sm pb-8 my-32">
+                            <ul class="list-unstyled form-wizard-list style-two">
+                                <li class="form-wizard-list__item active">
+                                    <div class="form-wizard-list__line">
+                                        <span class="count">1</span>
+                                    </div>
+                                    <span class="text text-xs fw-semibold">APPROVER 1 </span>
+                                </li>
+                                <li class="form-wizard-list__item">
+                                    <div class="form-wizard-list__line">
+                                        <span class="count">2</span>
+                                    </div>
+                                    <span class="text text-xs fw-semibold">APPROVER 2 </span>
+                                </li>
+                                <li class="form-wizard-list__item">
+                                    <div class="form-wizard-list__line">
+                                        <span class="count">3</span>
+                                    </div>
+                                    <span class="text text-xs fw-semibold">APPROVER 3 </span>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <fieldset class="wizard-fieldset show"><!-- APPROVER 1 --------------- -->
+                            <div id="ex1" class="modal">
+                                <partial name="_formPreview" asp-route-id="" asp-route-uuid="" />
+                            </div>
+                            <p><a href="#ex1" rel="modal:open">View Form</a></p>
+
+                            <hr />
+                            <br />
+                            <form asp-action="Edit" asp-controller="formTableData">
+                                @* <input type="hidden" asp-for="Id" /> *@
+                                <input type="hidden"  />
+                                <textarea id="trumbowyg" placeholder="your comment ..."></textarea>
+                                <br/>
+                                <label>Approved By:</label>
+                                <input type="text" name="" value="..." placeholder="..." />
+                                <button type="submit" class="btn btn-success text-success-main px-20 py-13 text-white d-flex">
+                                    <iconify-icon icon="bitcoin-icons:share-filled" class="text-xl"></iconify-icon>
+                                    Approve
+                                </button>
+                            </form>
+
+                            <div class="form-group text-end">
+                                <button type="button" class="form-wizard-next-btn btn btn-primary-600 px-32">Next</button>
+                            </div>
+                        </fieldset>
+
+                        <fieldset class="wizard-fieldset">
+                            <div class="form-group text-end">
+                                <button type="button" class="form-wizard-next-btn btn btn-primary-600 px-32">Next</button>
+                            </div>
+                        </fieldset>
+
+                        <fieldset class="wizard-fieldset">
+                            <div class="form-group text-end">
+                                <button type="button" class="form-wizard-next-btn btn btn-primary-600 px-32">Next</button>
+                            </div>
+                        </fieldset>
+                    </form>
+                </div>
+                <!-- Form Wizard End -->
+            </div>
+        </div>
+    </div> 
+</div>
+
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/lib/jquery-modal/jquery.modal.min.js"></script>
+<link href="~/lib/jquery-modal/jquery.modal.min.css" rel="stylesheet" />
+<link href="~/lib/trumbowyg-editor/ui/trumbowyg.min.css" rel="stylesheet" />
+<script src="~/lib/trumbowyg-editor/trumbowyg.min.js"></script>
+<script type="text/javascript">
+    // =============================== Wizard Step Js Start ================================
+    jQuery(function($) {
+        // click on next button
+        $('.form-wizard-next-btn').on('click', function () {
+            var parentFieldset = $(this).parents('.wizard-fieldset');
+            var currentActiveStep = $(this).parents('.form-wizard').find('.form-wizard-list .active');
+            var next = $(this);
+            var nextWizardStep = true;
+            parentFieldset.find('.wizard-required').each(function () {
+                var thisValue = $(this).val();
+
+                if (thisValue == '') {
+                    $(this).siblings('.wizard-form-error').show();
+                    nextWizardStep = false;
+                } else {
+                    $(this).siblings('.wizard-form-error').hide();
+                }
+            });
+            if (nextWizardStep) {
+                next.parents('.wizard-fieldset').removeClass('show', '400');
+                currentActiveStep.removeClass('active').addClass('activated').next().addClass('active', '400');
+                next.parents('.wizard-fieldset').next('.wizard-fieldset').addClass('show', '400');
+                $(document).find('.wizard-fieldset').each(function () {
+                    if ($(this).hasClass('show')) {
+                        var formAtrr = $(this).attr('data-tab-content');
+                        $(document).find('.form-wizard-list .form-wizard-step-item').each(function () {
+                            if ($(this).attr('data-attr') == formAtrr) {
+                                $(this).addClass('active');
+                                var innerWidth = $(this).innerWidth();
+                                var position = $(this).position();
+                                $(document).find('.form-wizard-step-move').css({
+                                    'left': position.left,
+                                    'width': innerWidth
+                                });
+                            } else {
+                                $(this).removeClass('active');
+                            }
+                        });
+                    }
+                });
+            }
+        });
+        //click on previous button
+        $('.form-wizard-previous-btn').on('click', function () {
+            var counter = parseInt($('.wizard-counter').text());;
+            var prev = $(this);
+            var currentActiveStep = $(this).parents('.form-wizard').find('.form-wizard-list .active');
+            prev.parents('.wizard-fieldset').removeClass('show', '400');
+            prev.parents('.wizard-fieldset').prev('.wizard-fieldset').addClass('show', '400');
+            currentActiveStep.removeClass('active').prev().removeClass('activated').addClass('active', '400');
+            $(document).find('.wizard-fieldset').each(function () {
+                if ($(this).hasClass('show')) {
+                    var formAtrr = $(this).attr('data-tab-content');
+                    $(document).find('.form-wizard-list .form-wizard-step-item').each(function () {
+                        if ($(this).attr('data-attr') == formAtrr) {
+                            $(this).addClass('active');
+                            var innerWidth = $(this).innerWidth();
+                            var position = $(this).position();
+                            $(document).find('.form-wizard-step-move').css({
+                                'left': position.left,
+                                'width': innerWidth
+                            });
+                        } else {
+                            $(this).removeClass('active');
+                        }
+                    });
+                }
+            });
+        });
+        //click on form submit button
+        $(document).on('click', '.form-wizard .form-wizard-submit', function () {
+            var parentFieldset = $(this).parents('.wizard-fieldset');
+            var currentActiveStep = $(this).parents('.form-wizard').find('.form-wizard-list .active');
+            parentFieldset.find('.wizard-required').each(function () {
+                var thisValue = $(this).val();
+                if (thisValue == '') {
+                    $(this).siblings('.wizard-form-error').show();
+                } else {
+                    $(this).siblings('.wizard-form-error').hide();
+                }
+            });
+        });
+        // focus on input field check empty or not
+        $('.form-control').on('focus', function () {
+            var tmpThis = $(this).val();
+            if (tmpThis == '') {
+                $(this).parent().addClass('focus-input');
+            } else if (tmpThis != '') {
+                $(this).parent().addClass('focus-input');
+            }
+        }).on('blur', function () {
+            var tmpThis = $(this).val();
+            if (tmpThis == '') {
+                $(this).parent().removeClass('focus-input');
+                $(this).siblings('.wizard-form-error').show();
+            } else if (tmpThis != '') {
+                $(this).parent().addClass('focus-input');
+                $(this).siblings('.wizard-form-error').hide();
+            }
+        });
+    });
+
+    // ------------------------------------------- TINYMCE - WYSWYGET EDITOR
+    jQuery(function ($) {
+        $("#trumbowyg").trumbowyg({
+            btns: [
+                ['viewHTML'],
+                ['undo', 'redo'], // Only supported in Blink browsers
+                ['formatting'],
+                ['strong', 'em', 'del'],
+                ['superscript', 'subscript'],
+                ['link'],
+                ['insertImage'],
+                ['justifyLeft', 'justifyCenter', 'justifyRight', 'justifyFull'],
+                ['unorderedList', 'orderedList'],
+                ['horizontalRule'],
+                ['removeformat'],
+                ['fullscreen']
+            ],
+            autogrow: true
+        });
+    });
+</script>

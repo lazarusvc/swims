@@ -1,0 +1,29 @@
+﻿@Html.Raw(@ViewBag.header)
+<div id="fb-rendered-form"></div>
+
+<link href="~/css/forms-stylesheet.css" rel="stylesheet" />
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/lib/formbuilder/form-render.min.js"></script>
+<script type="text/javascript">
+    jQuery(function($) {
+      var container = document.getElementById('fb-rendered-form');
+      var formData = '@Html.Raw(ViewBag.form)';
+
+      var formRenderOpts = {
+        container,
+        formData,
+        dataType: 'json'
+      };
+
+      $(container).formRender(formRenderOpts);
+    });
+</script>
+
+@for (int i = 1; i < 250; i++)
+{
+    int j = i - 1;
+    <script>
+        $("input[name='txtInput_@i.ToString("D2")']").val("@Html.Raw(ViewBag.Collection[j])");
+    </script>
+
+}
