@@ -21,16 +21,16 @@
         <div class="btn-group" role="group" aria-label="Default button group">
             <form asp-action="Complete">
                 <input type="hidden" name="formId" value="@ViewBag.id" />
-                <button type="submit" class="btn btn-success text-success-main px-20 py-13 radius-8 text-dark d-flex" style="border-top-right-radius:0px; border-bottom-right-radius: 0px;">
+                <button type="submit" class="btn btn-success text-success-main px-20 py-13 radius-8 text-white d-flex" style="border-top-right-radius:0px; border-bottom-right-radius: 0px;">
                     <iconify-icon icon="bitcoin-icons:share-filled" class="text-xl"></iconify-icon>
                     Publish
                 </button> 
             </form>
-            <a asp-action="Edit" asp-route-id="@ViewBag.id" type="button" class="btn btn-info text-info-main px-20 py-13 radius-8 text-dark d-flex">
+            <a asp-action="Edit" asp-route-id="@ViewBag.id" type="button" class="btn btn-info text-info-main px-20 py-13 radius-8 text-white d-flex">
                 <iconify-icon icon="lucide:edit"></iconify-icon>
                 Edit
             </a>
-            <a asp-action="Delete" asp-route-id="@ViewBag.id" type="button" class="btn btn-danger text-danger-main px-20 py-13 radius-8 text-dark d-flex">
+            <a asp-action="Delete" asp-route-id="@ViewBag.id" type="button" class="btn btn-danger text-danger-main px-20 py-13 radius-8 text-white d-flex">
                 <iconify-icon icon="mingcute:delete-2-line"></iconify-icon>
                 Delete
             </a>
@@ -39,7 +39,7 @@
 </div>
 
 
-
+<link href="~/css/forms-stylesheet.css" rel="stylesheet" />
 <script src="~/lib/jquery/dist/jquery.min.js"></script>
 <script src="~/lib/formbuilder/form-render.min.js"></script>
 <script type="text/javascript">

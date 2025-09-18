@@ -56,7 +56,7 @@ namespace SWIMS.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,url,SW_formsId")] SW_formReport sW_formReport)
+        public async Task<IActionResult> Create([Bind("Id,url,name,SW_formsId")] SW_formReport sW_formReport)
         {
             if (ModelState.IsValid)
             {
@@ -90,7 +90,7 @@ namespace SWIMS.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,url,SW_formsId")] SW_formReport sW_formReport)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,url,name,SW_formsId")] SW_formReport sW_formReport)
         {
             if (id != sW_formReport.Id)
             {

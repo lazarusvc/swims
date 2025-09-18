@@ -11,5 +11,7 @@ public partial class SW_formProcess
 
     public string url { get; set; }
 
+    public string name { get; set; }
+
     public int SW_formsId { get; set; }
 }

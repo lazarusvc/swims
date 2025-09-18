@@ -27,6 +27,8 @@ public partial class SW_form
 
     public string header { get; set; }
 
+    public int? approvalAmt { get; set; }
+
     public virtual ICollection<SW_formReport> SW_formReports { get; set; } = new List<SW_formReport>();
 
     public virtual ICollection<SW_formTableDatum> SW_formTableData { get; set; } = new List<SW_formTableDatum>();

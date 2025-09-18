@@ -124,6 +124,293 @@ namespace SWIMS.Controllers
             return View(model);
         }
 
+
+        public IActionResult ApprovalList()
+        {
+            //ViewBag.formData = _context.SW_formTableData.Where(x => x.SW_formsId == formId).ToList();
+            return View();
+        }
+
+        [HttpGet]
+        public IActionResult Approval(string? uuid)
+        {
+            var f_Linq = _context.SW_forms.Where(m => m.uuid.Equals(uuid));
+            int formId = Convert.ToInt32(f_Linq.Select(m => m.Id).FirstOrDefault());
+            
+
+            return View();
+        }
+
+        public IActionResult Preview(int? id, string? uuid)
+        {
+            // ************** Varibales 
+            var f_Linq = _context.SW_forms.Where(m => m.uuid.Equals(uuid));
+            int formId = Convert.ToInt32(f_Linq.Select(m => m.Id).FirstOrDefault());
+            ViewBag.formId = formId;
+            ViewBag.form = f_Linq.Select(m => m.form).FirstOrDefault();
+            ViewBag.formName = f_Linq.Select(m => m.name).FirstOrDefault();
+            ViewBag.formImage = f_Linq.Select(m => m.image).FirstOrDefault();
+            ViewBag.formDesc = f_Linq.Select(m => m.desc).FirstOrDefault();
+            ViewBag.header = f_Linq.Select(x => x.header).FirstOrDefault();
+
+            // ************* FormData 
+            var _fData = _context.SW_formTableData.Where(x => x.Id == id).ToList().FirstOrDefault();
+            var stringArray = new string[250]
+            {
+                _fData.FormData01,
+                _fData.FormData02,
+                _fData.FormData03,
+                _fData.FormData04,
+                _fData.FormData05,
+                _fData.FormData06,
+                _fData.FormData07,
+                _fData.FormData08,
+                _fData.FormData09,
+                _fData.FormData10,
+                _fData.FormData11,
+                _fData.FormData12,
+                _fData.FormData13,
+                _fData.FormData14,
+                _fData.FormData15,
+                _fData.FormData16,
+                _fData.FormData17,
+                _fData.FormData18,
+                _fData.FormData19,
+                _fData.FormData20,
+                _fData.FormData21,
+                _fData.FormData22,
+                _fData.FormData23,
+                _fData.FormData24,
+                _fData.FormData25,
+                _fData.FormData26,
+                _fData.FormData27,
+                _fData.FormData28,
+                _fData.FormData29,
+                _fData.FormData30,
+                _fData.FormData31,
+                _fData.FormData32,
+                _fData.FormData33,
+                _fData.FormData34,
+                _fData.FormData35,
+                _fData.FormData36,
+                _fData.FormData37,
+                _fData.FormData38,
+                _fData.FormData39,
+                _fData.FormData40,
+                _fData.FormData41,
+                _fData.FormData42,
+                _fData.FormData43,
+                _fData.FormData44,
+                _fData.FormData45,
+                _fData.FormData46,
+                _fData.FormData47,
+                _fData.FormData48,
+                _fData.FormData49,
+                _fData.FormData50,
+                _fData.FormData51,
+                _fData.FormData52,
+                _fData.FormData53,
+                _fData.FormData54,
+                _fData.FormData55,
+                _fData.FormData56,
+                _fData.FormData57,
+                _fData.FormData58,
+                _fData.FormData59,
+                _fData.FormData60,
+                _fData.FormData61,
+                _fData.FormData62,
+                _fData.FormData63,
+                _fData.FormData64,
+                _fData.FormData65,
+                _fData.FormData66,
+                _fData.FormData67,
+                _fData.FormData68,
+                _fData.FormData69,
+                _fData.FormData70,
+                _fData.FormData71,
+                _fData.FormData72,
+                _fData.FormData73,
+                _fData.FormData74,
+                _fData.FormData75,
+                _fData.FormData76,
+                _fData.FormData77,
+                _fData.FormData78,
+                _fData.FormData79,
+                _fData.FormData80,
+                _fData.FormData81,
+                _fData.FormData82,
+                _fData.FormData83,
+                _fData.FormData84,
+                _fData.FormData85,
+                _fData.FormData86,
+                _fData.FormData87,
+                _fData.FormData88,
+                _fData.FormData89,
+                _fData.FormData90,
+                _fData.FormData91,
+                _fData.FormData92,
+                _fData.FormData93,
+                _fData.FormData94,
+                _fData.FormData95,
+                _fData.FormData96,
+                _fData.FormData97,
+                _fData.FormData98,
+                _fData.FormData99,
+                _fData.FormData100,
+                _fData.FormData101,
+                _fData.FormData102,
+                _fData.FormData103,
+                _fData.FormData104,
+                _fData.FormData105,
+                _fData.FormData106,
+                _fData.FormData107,
+                _fData.FormData108,
+                _fData.FormData109,
+                _fData.FormData110,
+                _fData.FormData111,
+                _fData.FormData112,
+                _fData.FormData113,
+                _fData.FormData114,
+                _fData.FormData115,
+                _fData.FormData116,
+                _fData.FormData117,
+                _fData.FormData118,
+                _fData.FormData119,
+                _fData.FormData120,
+                _fData.FormData121,
+                _fData.FormData122,
+                _fData.FormData123,
+                _fData.FormData124,
+                _fData.FormData125,
+                _fData.FormData126,
+                _fData.FormData127,
+                _fData.FormData128,
+                _fData.FormData129,
+                _fData.FormData130,
+                _fData.FormData131,
+                _fData.FormData132,
+                _fData.FormData133,
+                _fData.FormData134,
+                _fData.FormData135,
+                _fData.FormData136,
+                _fData.FormData137,
+                _fData.FormData138,
+                _fData.FormData139,
+                _fData.FormData140,
+                _fData.FormData141,
+                _fData.FormData142,
+                _fData.FormData143,
+                _fData.FormData144,
+                _fData.FormData145,
+                _fData.FormData146,
+                _fData.FormData147,
+                _fData.FormData148,
+                _fData.FormData149,
+                _fData.FormData150,
+                _fData.FormData151,
+                _fData.FormData152,
+                _fData.FormData153,
+                _fData.FormData154,
+                _fData.FormData155,
+                _fData.FormData156,
+                _fData.FormData157,
+                _fData.FormData158,
+                _fData.FormData159,
+                _fData.FormData160,
+                _fData.FormData161,
+                _fData.FormData162,
+                _fData.FormData163,
+                _fData.FormData164,
+                _fData.FormData165,
+                _fData.FormData166,
+                _fData.FormData167,
+                _fData.FormData168,
+                _fData.FormData169,
+                _fData.FormData170,
+                _fData.FormData171,
+                _fData.FormData172,
+                _fData.FormData173,
+                _fData.FormData174,
+                _fData.FormData175,
+                _fData.FormData176,
+                _fData.FormData177,
+                _fData.FormData178,
+                _fData.FormData179,
+                _fData.FormData180,
+                _fData.FormData181,
+                _fData.FormData182,
+                _fData.FormData183,
+                _fData.FormData184,
+                _fData.FormData185,
+                _fData.FormData186,
+                _fData.FormData187,
+                _fData.FormData188,
+                _fData.FormData189,
+                _fData.FormData190,
+                _fData.FormData191,
+                _fData.FormData192,
+                _fData.FormData193,
+                _fData.FormData194,
+                _fData.FormData195,
+                _fData.FormData196,
+                _fData.FormData197,
+                _fData.FormData198,
+                _fData.FormData199,
+                _fData.FormData200,
+                _fData.FormData201,
+                _fData.FormData202,
+                _fData.FormData203,
+                _fData.FormData204,
+                _fData.FormData205,
+                _fData.FormData206,
+                _fData.FormData207,
+                _fData.FormData208,
+                _fData.FormData209,
+                _fData.FormData210,
+                _fData.FormData211,
+                _fData.FormData212,
+                _fData.FormData213,
+                _fData.FormData214,
+                _fData.FormData215,
+                _fData.FormData216,
+                _fData.FormData217,
+                _fData.FormData218,
+                _fData.FormData219,
+                _fData.FormData220,
+                _fData.FormData221,
+                _fData.FormData222,
+                _fData.FormData223,
+                _fData.FormData224,
+                _fData.FormData225,
+                _fData.FormData226,
+                _fData.FormData227,
+                _fData.FormData228,
+                _fData.FormData229,
+                _fData.FormData230,
+                _fData.FormData231,
+                _fData.FormData232,
+                _fData.FormData233,
+                _fData.FormData234,
+                _fData.FormData235,
+                _fData.FormData236,
+                _fData.FormData237,
+                _fData.FormData238,
+                _fData.FormData239,
+                _fData.FormData240,
+                _fData.FormData241,
+                _fData.FormData242,
+                _fData.FormData243,
+                _fData.FormData244,
+                _fData.FormData245,
+                _fData.FormData246,
+                _fData.FormData247,
+                _fData.FormData248,
+                _fData.FormData249,
+                _fData.FormData250
+            };
+            ViewBag.Collection = stringArray;
+            return PartialView("_formPreview.cshtml");
+        }
         // GET: form
         public async Task<IActionResult> Index()
         {
@@ -164,7 +451,7 @@ namespace SWIMS.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,uuid,name,desc,form,dateModified,SW_identityId,is_linking,image,header")] SW_form sW_form, IFormFile image)
+        public async Task<IActionResult> Create([Bind("Id,uuid,name,desc,form,dateModified,SW_identityId,is_linking,image,header,approvalAmt")] SW_form sW_form, IFormFile image)
         {
             if (image == null || image.Length == 0)
             {
@@ -281,7 +568,7 @@ namespace SWIMS.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,uuid,name,desc,form,dateModified,SW_identityId,is_linking,image,header")] SW_form sW_form, IFormFile image)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,uuid,name,desc,form,dateModified,SW_identityId,is_linking,image,header,approvalAmt")] SW_form sW_form, IFormFile image)
         {
             if (id != sW_form.Id)
             {
