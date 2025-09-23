@@ -141,6 +141,7 @@ public class SsrsProxyController : ControllerBase
                 .Replace($"url({httpsAbs}", $"url({proxyBase}", StringComparison.OrdinalIgnoreCase)
                 .Replace($"url({schemeRel}", $"url({proxyBase}", StringComparison.OrdinalIgnoreCase);
 
+            Response.Headers["X-SWIMS-SSRS-Relay"] = "hit";
             // Return the rewritten HTML
             return Content(html, upstreamRes.Content.Headers.ContentType?.ToString() ?? "text/html; charset=utf-8");
         }
@@ -148,6 +149,7 @@ public class SsrsProxyController : ControllerBase
 
         // Stream everything else as-is (scripts, images, axd, PDFs, etc.)
         var contentType = upstreamRes.Content.Headers.ContentType?.ToString() ?? mediaType;
+        Response.Headers["X-SWIMS-SSRS-Relay"] = "hit";
         return new FileStreamResult(stream, contentType);
     }
 
