@@ -22,6 +22,7 @@ using SWIMS.Services;
 using SWIMS.Services.Auth;
 using SWIMS.Services.Diagnostics;
 using SWIMS.Services.Reporting;
+using System.Net;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -153,16 +154,19 @@ builder.Services.AddControllersWithViews(o =>
 //    options.Filters.Add(new AuthorizeFilter(policy));
 
 
-builder.Services.AddHttpClient("ssrs-proxy")
-    .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
-    {
-        UseDefaultCredentials = true,     
-        PreAuthenticate = true,
-        AllowAutoRedirect = false,
-        UseCookies = false,
-        UseProxy = false
-    });
-
+builder.Services.AddHttpClient("ssrs-proxy", c =>
+{
+    c.Timeout = TimeSpan.FromSeconds(180); // tolerate slow first renders
+})
+.ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+{
+    UseDefaultCredentials = true,
+    PreAuthenticate = true,
+    AllowAutoRedirect = false,
+    UseCookies = true,                              // <— important: SSRS may set cookies
+    CookieContainer = new CookieContainer(),
+    UseProxy = false
+});
 
 
 
