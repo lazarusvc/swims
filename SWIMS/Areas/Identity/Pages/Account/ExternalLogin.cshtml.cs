@@ -47,47 +47,25 @@ namespace SWIMS.Areas.Identity.Pages.Account
             _emails = emails;
         }
 
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         [BindProperty]
         public InputModel Input { get; set; }
 
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         public string ProviderDisplayName { get; set; }
-
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         public string ReturnUrl { get; set; }
 
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         [TempData]
         public string ErrorMessage { get; set; }
 
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         public class InputModel
         {
-            /// <summary>
-            ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-            ///     directly from your code. This API may change or be removed in future releases.
-            /// </summary>
             [Required]
             [EmailAddress]
             public string Email { get; set; }
+
+            // Optional first name for nicer email templates; prefilled from external claims when available
+            public string? FirstName { get; set; }
         }
-        
+
         public IActionResult OnGet() => RedirectToPage("./Login");
 
         public IActionResult OnPost(string provider, string returnUrl = null)
@@ -100,12 +78,13 @@ namespace SWIMS.Areas.Identity.Pages.Account
 
         public async Task<IActionResult> OnGetCallbackAsync(string returnUrl = null, string remoteError = null)
         {
-            returnUrl = returnUrl ?? Url.Content("~/");
+            returnUrl ??= Url.Content("~/");
             if (remoteError != null)
             {
                 ErrorMessage = $"Error from external provider: {remoteError}";
                 return RedirectToPage("./Login", new { ReturnUrl = returnUrl });
             }
+
             var info = await _signInManager.GetExternalLoginInfoAsync();
             if (info == null)
             {
@@ -113,36 +92,42 @@ namespace SWIMS.Areas.Identity.Pages.Account
                 return RedirectToPage("./Login", new { ReturnUrl = returnUrl });
             }
 
-            // Sign in the user with this external login provider if the user already has a login.
-            var result = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false, bypassTwoFactor: true);
+            // If the user already has a login, sign them in.
+            var result = await _signInManager.ExternalLoginSignInAsync(
+                info.LoginProvider, info.ProviderKey, isPersistent: false, bypassTwoFactor: true);
+
             if (result.Succeeded)
             {
-                _logger.LogInformation("{Name} logged in with {LoginProvider} provider.", info.Principal.Identity.Name, info.LoginProvider);
+                _logger.LogInformation("{Name} logged in with {LoginProvider} provider.",
+                    info.Principal?.Identity?.Name, info.LoginProvider);
                 return LocalRedirect(returnUrl);
             }
+
             if (result.IsLockedOut)
             {
                 return RedirectToPage("./Lockout");
             }
-            else
+
+            // If the user does not have an account, ask the user to create one.
+            ReturnUrl = returnUrl;
+            ProviderDisplayName = info.ProviderDisplayName;
+
+            string email = info.Principal.FindFirstValue(ClaimTypes.Email);
+            string firstName = GetFirstName(info.Principal);
+
+            Input = new InputModel
             {
-                // If the user does not have an account, then ask the user to create an account.
-                ReturnUrl = returnUrl;
-                ProviderDisplayName = info.ProviderDisplayName;
-                if (info.Principal.HasClaim(c => c.Type == ClaimTypes.Email))
-                {
-                    Input = new InputModel
-                    {
-                        Email = info.Principal.FindFirstValue(ClaimTypes.Email)
-                    };
-                }
-                return Page();
-            }
+                Email = email,
+                FirstName = firstName
+            };
+
+            return Page();
         }
 
         public async Task<IActionResult> OnPostConfirmationAsync(string returnUrl = null)
         {
-            returnUrl = returnUrl ?? Url.Content("~/");
+            returnUrl ??= Url.Content("~/");
+
             // Get the information about the user from the external login provider
             var info = await _signInManager.GetExternalLoginInfoAsync();
             if (info == null)
@@ -151,55 +136,88 @@ namespace SWIMS.Areas.Identity.Pages.Account
                 return RedirectToPage("./Login", new { ReturnUrl = returnUrl });
             }
 
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                var user = CreateUser();
+                ProviderDisplayName = info.ProviderDisplayName;
+                ReturnUrl = returnUrl;
+                return Page();
+            }
 
-                await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
-                await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
+            var user = CreateUser();
 
-                var result = await _userManager.CreateAsync(user);
+            await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
+            await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
+
+            // Try to hydrate FirstName on the user if your SwUser supports it
+            try
+            {
+                var claimFirst = GetFirstName(info.Principal);
+                var chosen = !string.IsNullOrWhiteSpace(Input?.FirstName) ? Input.FirstName : claimFirst;
+                // If SwUser has a FirstName property, set it (ignore if not)
+                var prop = typeof(SwUser).GetProperty("FirstName");
+                if (prop != null && prop.CanWrite)
+                    prop.SetValue(user, string.IsNullOrWhiteSpace(chosen) ? null : chosen);
+            }
+            catch { /* ignore: property may not exist; safe no-op */ }
+
+            var result = await _userManager.CreateAsync(user);
+            if (result.Succeeded)
+            {
+                result = await _userManager.AddLoginAsync(user, info);
                 if (result.Succeeded)
                 {
-                    result = await _userManager.AddLoginAsync(user, info);
-                    if (result.Succeeded)
-                    {
-                        _logger.LogInformation("User created an account using {Name} provider.", info.LoginProvider);
+                    _logger.LogInformation("User created an account using {Name} provider.", info.LoginProvider);
 
-                        var userId = await _userManager.GetUserIdAsync(user);
-                        var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                        code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
-                        var callbackUrl = Url.Page(
-                            "/Account/ConfirmEmail",
-                            pageHandler: null,
-                            values: new { area = "Identity", userId = userId, code = code },
-                            protocol: Request.Scheme);
+                    var userId = await _userManager.GetUserIdAsync(user);
+                    var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                    var codeEncoded = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+                    var callbackUrl = Url.Page(
+                        "/Account/ConfirmEmail",
+                        pageHandler: null,
+                        values: new { area = "Identity", userId, code = codeEncoded },
+                        protocol: Request.Scheme);
 
-                        await _emails.SendTemplateAsync(
-                            TemplateKeys.ConfirmEmail,
-                            new EmailAddress(Input.Email, Input.FirstName),
-                            new { ConfirmationLink = callbackUrl, FirstName = Input.FirstName });
-
-
-                        // If account confirmation is required, we need to show the link if we don't have a real email sender
-                        if (_userManager.Options.SignIn.RequireConfirmedAccount)
+                    // Send via SWIMS email templates with robust FirstName fallback
+                    await _emails.SendTemplateAsync(
+                        TemplateKeys.ConfirmEmail,
+                        new EmailAddress(Input.Email, Input?.FirstName),
+                        new
                         {
-                            return RedirectToPage("./RegisterConfirmation", new { Email = Input.Email });
-                        }
+                            ConfirmationLink = callbackUrl,
+                            FirstName = (string)(
+                                typeof(SwUser).GetProperty("FirstName")?.GetValue(user) as string
+                                ?? Input?.FirstName
+                                ?? string.Empty
+                            )
+                        });
 
-                        await _signInManager.SignInAsync(user, isPersistent: false, info.LoginProvider);
-                        return LocalRedirect(returnUrl);
+                    if (_userManager.Options.SignIn.RequireConfirmedAccount)
+                    {
+                        return RedirectToPage("./RegisterConfirmation", new { Email = Input.Email });
                     }
-                }
-                foreach (var error in result.Errors)
-                {
-                    ModelState.AddModelError(string.Empty, error.Description);
+
+                    await _signInManager.SignInAsync(user, isPersistent: false, info.LoginProvider);
+                    return LocalRedirect(returnUrl);
                 }
             }
+
+            foreach (var error in result.Errors)
+                ModelState.AddModelError(string.Empty, error.Description);
 
             ProviderDisplayName = info.ProviderDisplayName;
             ReturnUrl = returnUrl;
             return Page();
+        }
+
+        private static string GetFirstName(ClaimsPrincipal principal)
+        {
+            // Common claim names across providers
+            return principal.FindFirstValue(ClaimTypes.GivenName)
+                ?? principal.FindFirstValue("given_name")
+                ?? principal.FindFirstValue("givenname")
+                ?? principal.FindFirstValue("first_name")
+                ?? principal.FindFirstValue(ClaimTypes.Name)
+                ?? principal.FindFirstValue("name");
         }
 
         private SwUser CreateUser()
@@ -219,9 +237,8 @@ namespace SWIMS.Areas.Identity.Pages.Account
         private IUserEmailStore<SwUser> GetEmailStore()
         {
             if (!_userManager.SupportsUserEmail)
-            {
                 throw new NotSupportedException("The default UI requires a user store with email support.");
-            }
+
             return (IUserEmailStore<SwUser>)_userStore;
         }
     }
