@@ -76,7 +76,7 @@ builder.Services
         options.Password.RequireUppercase = true;
         options.Password.RequireLowercase = true;
         options.User.RequireUniqueEmail = true;
-        options.SignIn.RequireConfirmedAccount = true;
+        options.SignIn.RequireConfirmedAccount = false;
         options.Tokens.AuthenticatorTokenProvider = TokenOptions.DefaultAuthenticatorProvider;
     })
     .AddRoles<SwRole>()
