@@ -9,11 +9,12 @@ using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using SWIMS.Models;
+using SWIMS.Services.Email;
+using SWIMS.Models.Email;
 
 namespace SWIMS.Areas.Identity.Pages.Account
 {
@@ -21,12 +22,12 @@ namespace SWIMS.Areas.Identity.Pages.Account
     public class ResendEmailConfirmationModel : PageModel
     {
         private readonly UserManager<SwUser> _userManager;
-        private readonly IEmailSender _emailSender;
+        private readonly IEmailService _emails;
 
-        public ResendEmailConfirmationModel(UserManager<SwUser> userManager, IEmailSender emailSender)
+        public ResendEmailConfirmationModel(UserManager<SwUser> userManager, IEmailService emails)
         {
             _userManager = userManager;
-            _emailSender = emailSender;
+            _emails = emails;
         }
 
         /// <summary>
@@ -77,10 +78,10 @@ namespace SWIMS.Areas.Identity.Pages.Account
                 pageHandler: null,
                 values: new { userId = userId, code = code },
                 protocol: Request.Scheme);
-            await _emailSender.SendEmailAsync(
-                Input.Email,
-                "Confirm your email",
-                $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+            await _emails.SendTemplateAsync(
+                TemplateKeys.ConfirmEmail,
+                new EmailAddress(Input.Email),
+                new { ConfirmationLink = callbackUrl, FirstName = user?.FirstName });
 
             ModelState.AddModelError(string.Empty, "Verification email sent. Please check your email.");
             return Page();

@@ -11,7 +11,7 @@ using SWIMS.Data.Reports;
 namespace SWIMS.Migrations.Reporting
 {
     [DbContext(typeof(SwimsReportsDbContext))]
-    [Migration("20250907095331_Reporting_Init")]
+    [Migration("20251001183040_Reporting_Init")]
     partial class Reporting_Init
     {
         /// <inheritdoc />
@@ -19,7 +19,7 @@ namespace SWIMS.Migrations.Reporting
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.8")
+                .HasAnnotation("ProductVersion", "9.0.9")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
