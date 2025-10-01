@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
-using SWIMS.Models.Email;
 
 namespace SWIMS.Services.Email;
 
@@ -22,10 +22,15 @@ public static class EmailingServiceCollectionExtensions
 
         services.AddSingleton(provider =>
         {
-            var env = provider.GetRequiredService<IHostEnvironment>();
+            var env = provider.GetRequiredService<IHostEnvironment>(); // gives ContentRootPath
+            var logger = provider.GetRequiredService<Microsoft.Extensions.Logging.ILogger<EmailTemplateProvider>>();
             var cfg = provider.GetRequiredService<IOptions<SmtpConfiguration>>().Value;
-            // Use ContentRootPath so it points at the project folder (dev) or deployed content root (prod)
-            return new EmailTemplateProvider(env.ContentRootPath, cfg.TemplateDirectory);
+
+            // Use ContentRootPath so it points at the project folder in dev, deployed content root in prod
+            return new EmailTemplateProvider(
+                logger,
+                basePath: env.ContentRootPath,
+                physicalDirectory: cfg.TemplateDirectory);
         });
 
         services.AddSingleton<ITemplateRenderer, EmailTemplateRenderer>();

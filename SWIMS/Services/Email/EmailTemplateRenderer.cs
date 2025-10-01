@@ -22,7 +22,16 @@ public sealed class EmailTemplateRenderer : ITemplateRenderer
     public Task<EmailTemplate> RenderAsync(string templateKey, object model)
     {
         if (!_provider.TryGet(templateKey, out var tpl))
-            throw new InvalidOperationException($"Email template '{templateKey}' not found.");
+        {
+            var available = _provider.Keys;
+            var dir = _provider.DirectoryPath;
+            var list = available is { Count: > 0 } ? string.Join(", ", available) : "(none)";
+            throw new InvalidOperationException(
+                $"Email template '{templateKey}' not found. " +
+                $"Directory scanned: '{dir}'. " +
+                $"Available keys: {list}. " +
+                $"If you use a relative path, it's relative to the app ContentRoot (usually the project folder in dev).");
+        }
 
         var subject = ReplaceTokens(tpl.Subject, model);
         var html = ReplaceTokens(tpl.Html, model);

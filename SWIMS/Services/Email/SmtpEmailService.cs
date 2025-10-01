@@ -101,18 +101,25 @@ public sealed class SmtpEmailService : IEmailService
 
     private async Task SendCoreAsync(MailMessage message, CancellationToken ct)
     {
-        // Dev pickup mode: no network send
+        // Dev pickup mode: resolve to ABSOLUTE path before using SmtpClient
         if (!string.IsNullOrWhiteSpace(_cfg.DevPickupDirectory))
         {
-            Directory.CreateDirectory(_cfg.DevPickupDirectory!);
+            var pickupConfigured = _cfg.DevPickupDirectory!;
+            var pickupAbsolute = System.IO.Path.IsPathRooted(pickupConfigured)
+                ? pickupConfigured
+                : System.IO.Path.GetFullPath(System.IO.Path.Combine(System.AppContext.BaseDirectory, pickupConfigured));
+
+            System.IO.Directory.CreateDirectory(pickupAbsolute);
+
             using var client = new SmtpClient
             {
                 DeliveryMethod = SmtpDeliveryMethod.SpecifiedPickupDirectory,
-                PickupDirectoryLocation = _cfg.DevPickupDirectory!
+                PickupDirectoryLocation = pickupAbsolute
             };
+
             await client.SendMailAsync(message, ct);
             _logger.LogInformation("Email written to pickup dir: {Dir} | To: {To} | Subj: {Subject}",
-                _cfg.DevPickupDirectory, string.Join(",", message.To.Select(a => a.Address)), message.Subject);
+                pickupAbsolute, string.Join(",", message.To.Select(a => a.Address)), message.Subject);
             return;
         }
 
