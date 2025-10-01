@@ -3,12 +3,13 @@
 #nullable disable
 
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using SWIMS.Helpers;
 using SWIMS.Models;
+using SWIMS.Services.Email;
+using SWIMS.Models.Email;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
@@ -21,16 +22,16 @@ namespace SWIMS.Areas.Identity.Pages.Account.Manage
     {
         private readonly UserManager<SwUser> _userManager;
         private readonly SignInManager<SwUser> _signInManager;
-        private readonly IEmailSender _emailSender;
+        private readonly IEmailService _emails;
 
         public EmailModel(
             UserManager<SwUser> userManager,
             SignInManager<SwUser> signInManager,
-            IEmailSender emailSender)
+            IEmailService emails)
         {
             _userManager = userManager;
             _signInManager = signInManager;
-            _emailSender = emailSender;
+            _emails = emails;
         }
 
         /// <summary>
@@ -123,22 +124,23 @@ namespace SWIMS.Areas.Identity.Pages.Account.Manage
             }
 
             var email = await _userManager.GetEmailAsync(user);
-            if (Input.NewEmail != email)
+            if (Input.NewEmail != user.Email)
             {
                 var userId = await _userManager.GetUserIdAsync(user);
                 var code = await _userManager.GenerateChangeEmailTokenAsync(user, Input.NewEmail);
-                code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+                var codeEncoded = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
                 var callbackUrl = Url.Page(
                     "/Account/ConfirmEmailChange",
                     pageHandler: null,
-                    values: new { area = "Identity", userId = userId, email = Input.NewEmail, code = code },
+                    values: new { area = "Identity", userId, email = Input.NewEmail, code = codeEncoded },
                     protocol: Request.Scheme);
-                await _emailSender.SendEmailAsync(
-                    Input.NewEmail,
-                    "Confirm your email",
-                    $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
 
-                StatusMessage = "Confirmation link to change email sent. Please check your email.";
+                await _emails.SendTemplateAsync(
+                    TemplateKeys.ConfirmEmailChange, // you can create a dedicated TemplateKeys.ConfirmEmailChange later if you want
+                    new EmailAddress(Input.NewEmail),
+                    new { ConfirmationLink = callbackUrl, FirstName = user?.FirstName });
+
+                StatusMessage = "Confirmation link to change email sent. Please check the new email.";
                 return RedirectToPage();
             }
 
@@ -173,10 +175,10 @@ namespace SWIMS.Areas.Identity.Pages.Account.Manage
                 pageHandler: null,
                 values: new { area = "Identity", userId = userId, code = code },
                 protocol: Request.Scheme);
-            await _emailSender.SendEmailAsync(
-                email,
-                "Confirm your email",
-                $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+            await _emails.SendTemplateAsync(
+                TemplateKeys.ConfirmEmailChange,
+                new EmailAddress(email!, user?.FirstName),
+                new { ConfirmationLink = callbackUrl, FirstName = user?.FirstName });
 
             StatusMessage = "Verification email sent. Please check your email.";
             return RedirectToPage();

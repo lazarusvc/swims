@@ -13,12 +13,13 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using SWIMS.Models;
+using SWIMS.Services.Email;
+using SWIMS.Models.Email;
 
 namespace SWIMS.Areas.Identity.Pages.Account
 {
@@ -29,21 +30,21 @@ namespace SWIMS.Areas.Identity.Pages.Account
         private readonly IUserStore<SwUser> _userStore;
         private readonly IUserEmailStore<SwUser> _emailStore;
         private readonly ILogger<RegisterModel> _logger;
-        private readonly IEmailSender _emailSender;
+        private readonly IEmailService _emails;
 
         public RegisterModel(
             UserManager<SwUser> userManager,
             IUserStore<SwUser> userStore,
             SignInManager<SwUser> signInManager,
             ILogger<RegisterModel> logger,
-            IEmailSender emailSender)
+            IEmailService emails)
         {
             _userManager = userManager;
             _userStore = userStore;
             _emailStore = GetEmailStore();
             _signInManager = signInManager;
             _logger = logger;
-            _emailSender = emailSender;
+            _emails = emails;
         }
 
         /// <summary>
@@ -144,8 +145,10 @@ namespace SWIMS.Areas.Identity.Pages.Account
                         values: new { area = "Identity", userId = userId, code = code, returnUrl = returnUrl },
                         protocol: Request.Scheme);
 
-                    await _emailSender.SendEmailAsync(Input.Email, "Confirm your email",
-                        $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+                    await _emails.SendTemplateAsync(
+                        TemplateKeys.ConfirmEmail,
+                        new EmailAddress(Input.Email, Input.FirstName),
+                        new { ConfirmationLink = callbackUrl, FirstName = Input.FirstName });
 
                     if (_userManager.Options.SignIn.RequireConfirmedAccount)
                     {

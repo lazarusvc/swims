@@ -11,7 +11,7 @@ using SWIMS.Data;
 namespace SWIMS.Migrations.StoredProcs
 {
     [DbContext(typeof(SwimsStoredProcsDbContext))]
-    [Migration("20250907095306_StoredProcs_Init")]
+    [Migration("20251001183011_StoredProcs_Init")]
     partial class StoredProcs_Init
     {
         /// <inheritdoc />
@@ -20,7 +20,7 @@ namespace SWIMS.Migrations.StoredProcs
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("sp")
-                .HasAnnotation("ProductVersion", "9.0.8")
+                .HasAnnotation("ProductVersion", "9.0.9")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);

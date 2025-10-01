@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace SWIMS.Migrations.DbMore
+namespace SWIMS.Migrations
 {
     /// <inheritdoc />
     public partial class DbMore_Init : Migration

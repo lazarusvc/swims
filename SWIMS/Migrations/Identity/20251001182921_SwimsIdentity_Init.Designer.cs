@@ -12,7 +12,7 @@ using SWIMS.Data;
 namespace SWIMS.Migrations.Identity
 {
     [DbContext(typeof(SwimsIdentityDbContext))]
-    [Migration("20250907095244_SwimsIdentity_Init")]
+    [Migration("20251001182921_SwimsIdentity_Init")]
     partial class SwimsIdentity_Init
     {
         /// <inheritdoc />
@@ -21,7 +21,7 @@ namespace SWIMS.Migrations.Identity
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("auth")
-                .HasAnnotation("ProductVersion", "9.0.8")
+                .HasAnnotation("ProductVersion", "9.0.9")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);

@@ -12,12 +12,13 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using SWIMS.Models;
+using SWIMS.Services.Email;
+using SWIMS.Models.Email;
 
 namespace SWIMS.Areas.Identity.Pages.Account
 {
@@ -28,7 +29,7 @@ namespace SWIMS.Areas.Identity.Pages.Account
         private readonly UserManager<SwUser> _userManager;
         private readonly IUserStore<SwUser> _userStore;
         private readonly IUserEmailStore<SwUser> _emailStore;
-        private readonly IEmailSender _emailSender;
+        private readonly IEmailService _emails;
         private readonly ILogger<ExternalLoginModel> _logger;
 
         public ExternalLoginModel(
@@ -36,14 +37,14 @@ namespace SWIMS.Areas.Identity.Pages.Account
             UserManager<SwUser> userManager,
             IUserStore<SwUser> userStore,
             ILogger<ExternalLoginModel> logger,
-            IEmailSender emailSender)
+            IEmailService emails)
         {
             _signInManager = signInManager;
             _userManager = userManager;
             _userStore = userStore;
             _emailStore = GetEmailStore();
             _logger = logger;
-            _emailSender = emailSender;
+            _emails = emails;
         }
 
         /// <summary>
@@ -174,8 +175,11 @@ namespace SWIMS.Areas.Identity.Pages.Account
                             values: new { area = "Identity", userId = userId, code = code },
                             protocol: Request.Scheme);
 
-                        await _emailSender.SendEmailAsync(Input.Email, "Confirm your email",
-                            $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+                        await _emails.SendTemplateAsync(
+                            TemplateKeys.ConfirmEmail,
+                            new EmailAddress(Input.Email, Input.FirstName),
+                            new { ConfirmationLink = callbackUrl, FirstName = Input.FirstName });
+
 
                         // If account confirmation is required, we need to show the link if we don't have a real email sender
                         if (_userManager.Options.SignIn.RequireConfirmedAccount)

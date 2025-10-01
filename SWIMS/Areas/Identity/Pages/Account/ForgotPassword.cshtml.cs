@@ -9,23 +9,24 @@ using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using SWIMS.Models;
+using SWIMS.Services.Email;
+using SWIMS.Models.Email;
 
 namespace SWIMS.Areas.Identity.Pages.Account
 {
     public class ForgotPasswordModel : PageModel
     {
         private readonly UserManager<SwUser> _userManager;
-        private readonly IEmailSender _emailSender;
+        private readonly IEmailService _emails;
 
-        public ForgotPasswordModel(UserManager<SwUser> userManager, IEmailSender emailSender)
+        public ForgotPasswordModel(UserManager<SwUser> userManager, IEmailService emails)
         {
             _userManager = userManager;
-            _emailSender = emailSender;
+            _emails = emails;
         }
 
         /// <summary>
@@ -71,10 +72,10 @@ namespace SWIMS.Areas.Identity.Pages.Account
                     values: new { area = "Identity", code },
                     protocol: Request.Scheme);
 
-                await _emailSender.SendEmailAsync(
-                    Input.Email,
-                    "Reset Password",
-                    $"Please reset your password by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+                await _emails.SendTemplateAsync(
+                    TemplateKeys.ResetPassword,
+                    new EmailAddress(Input.Email),
+                    new { ResetLink = callbackUrl });
 
                 return RedirectToPage("./ForgotPasswordConfirmation");
             }
