@@ -21,6 +21,7 @@ using SWIMS.Models.StoredProcs;
 using SWIMS.Services;
 using SWIMS.Services.Auth;
 using SWIMS.Services.Diagnostics;
+using SWIMS.Services.Email;
 using SWIMS.Services.Reporting;
 using System.Net;
 
@@ -168,6 +169,11 @@ builder.Services.AddHttpClient("ssrs-proxy", c =>
     UseProxy = false
 });
 
+// Emailing (SMTP + templates)
+builder.Services.AddSwimsEmailing(builder.Configuration);
+
+// ASP.NET Identity email adapter
+builder.Services.AddTransient<IEmailSender<SwUser>, IdentityEmailSenderAdapter>();
 
 
 var app = builder.Build();
