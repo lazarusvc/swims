@@ -22,9 +22,10 @@ public static class EmailingServiceCollectionExtensions
 
         services.AddSingleton(provider =>
         {
-            var envBase = AppContext.BaseDirectory; // app root at runtime
+            var env = provider.GetRequiredService<IHostEnvironment>();
             var cfg = provider.GetRequiredService<IOptions<SmtpConfiguration>>().Value;
-            return new EmailTemplateProvider(envBase, cfg.TemplateDirectory);
+            // Use ContentRootPath so it points at the project folder (dev) or deployed content root (prod)
+            return new EmailTemplateProvider(env.ContentRootPath, cfg.TemplateDirectory);
         });
 
         services.AddSingleton<ITemplateRenderer, EmailTemplateRenderer>();
