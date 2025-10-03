@@ -11,6 +11,7 @@
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
@@ -76,7 +77,7 @@ builder.Services
         options.Password.RequireUppercase = true;
         options.Password.RequireLowercase = true;
         options.User.RequireUniqueEmail = true;
-        options.SignIn.RequireConfirmedAccount = false;
+        options.SignIn.RequireConfirmedAccount = true;
         options.Tokens.AuthenticatorTokenProvider = TokenOptions.DefaultAuthenticatorProvider;
     })
     .AddRoles<SwRole>()
@@ -173,28 +174,45 @@ builder.Services.AddHttpClient("ssrs-proxy", c =>
 builder.Services.AddSwimsEmailing(builder.Configuration);
 
 // ASP.NET Identity email adapter
+builder.Services.AddTransient<IEmailSender, IdentityEmailSender>();
 builder.Services.AddTransient<IEmailSender<SwUser>, IdentityEmailSenderAdapter>();
+
+// Register the one-time startup test in Development only
+// builder.Services.AddHostedService<SWIMS.Services.Email.StartupEmailSmokeTest>();
 
 
 var app = builder.Build();
 
 
-using var scope = app.Services.CreateScope();
-var services = scope.ServiceProvider;
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        // Run pending migrations (Identity DB)
+        var db_1 = services.GetRequiredService<SwimsIdentityDbContext>();
+        db_1.Database.Migrate();
+        //  re-enable for second DB:
+        // var db_2 = services.GetRequiredService<SwimsDb_moreContext>();
+        // db_2.Database.Migrate();
+        
+        // Seed roles  admin + policies
+        await SeedData.EnsureSeedDataAsync(services);
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "Seeding failed at startup.");
+        throw; // fail fast so we see the real error
+    }
+}
 
-// Run pending migrations and seed default data
-var db_1 = services.GetRequiredService<SwimsIdentityDbContext>();
-// var db_2 = services.GetRequiredService<SwimsDb_moreContext>();
-db_1.Database.Migrate();
-// db_2.Database.Migrate();
-await SeedData.EnsureSeedDataAsync(services);
 
 
-
-// ------------------------------------------------------
-// Configure HTTP request pipeline
-// ------------------------------------------------------
-if (!app.Environment.IsDevelopment())
+    // ------------------------------------------------------
+    // Configure HTTP request pipeline
+    // ------------------------------------------------------
+    if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
     // The default HSTS value is 30 days. You may want to change this for

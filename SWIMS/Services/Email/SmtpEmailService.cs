@@ -1,13 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Microsoft.Identity.Client.Platforms.Features.DesktopOs.Kerberos;
+using SWIMS.Models.Email;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Mail;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using SWIMS.Models.Email;
 
 namespace SWIMS.Services.Email;
 
@@ -126,16 +127,24 @@ public sealed class SmtpEmailService : IEmailService
         // Network send via SMTP
         using var smtp = new SmtpClient(_cfg.Host!, _cfg.Port)
         {
-            EnableSsl = _cfg.UseSsl,
+            // Required for BOTH STARTTLS (587) and implicit SSL (465)
+            EnableSsl = _cfg.UseSsl || _cfg.UseStartTls,
+            // Always use the explicit credentials we provide (never machine/Windows creds)
+            UseDefaultCredentials = false,
             Credentials = string.IsNullOrWhiteSpace(_cfg.Username)
-                ? CredentialCache.DefaultNetworkCredentials
-                : new NetworkCredential(_cfg.Username, _cfg.Password)
+                ? System.Net.CredentialCache.DefaultNetworkCredentials // still false path, but keep for completeness
+                : new System.Net.NetworkCredential(_cfg.Username, _cfg.Password)
         };
 
-        if (_cfg.UseStartTls) smtp.TargetName = "STARTTLS/" + _cfg.Host;
+        // STARTTLS TargetName is useful for Office 365 tenants; skip for consumer Outlook host
+        if (_cfg.UseStartTls && !_cfg.Host!.Equals("smtp-mail.outlook.com", StringComparison.OrdinalIgnoreCase))
+        {
+            smtp.TargetName = "STARTTLS/" + _cfg.Host;
+        }
 
         await smtp.SendMailAsync(message, ct);
         _logger.LogInformation("Email sent via {Host}:{Port} to {To} | Subject: {Subject}",
             _cfg.Host, _cfg.Port, string.Join(",", message.To.Select(a => a.Address)), message.Subject);
+
     }
 }

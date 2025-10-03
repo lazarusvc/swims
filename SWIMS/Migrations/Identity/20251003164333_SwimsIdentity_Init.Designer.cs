@@ -12,7 +12,7 @@ using SWIMS.Data;
 namespace SWIMS.Migrations.Identity
 {
     [DbContext(typeof(SwimsIdentityDbContext))]
-    [Migration("20251001182921_SwimsIdentity_Init")]
+    [Migration("20251003164333_SwimsIdentity_Init")]
     partial class SwimsIdentity_Init
     {
         /// <inheritdoc />

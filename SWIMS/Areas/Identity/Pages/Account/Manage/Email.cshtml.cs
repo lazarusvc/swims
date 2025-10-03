@@ -123,29 +123,49 @@ namespace SWIMS.Areas.Identity.Pages.Account.Manage
                 return Page();
             }
 
-            var email = await _userManager.GetEmailAsync(user);
-            if (Input.NewEmail != user.Email)
+            // Get current email from the store and normalize the proposed new value
+            var currentEmail = await _userManager.GetEmailAsync(user);
+            var newEmail = Input.NewEmail?.Trim();
+
+            // Only proceed if something actually changed (case-insensitive)
+            if (!string.Equals(newEmail, currentEmail, StringComparison.OrdinalIgnoreCase))
             {
                 var userId = await _userManager.GetUserIdAsync(user);
-                var code = await _userManager.GenerateChangeEmailTokenAsync(user, Input.NewEmail);
+
+                // Generate the change-email token for the *new* email
+                var code = await _userManager.GenerateChangeEmailTokenAsync(user, newEmail);
                 var codeEncoded = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+
+                // Build the confirmation callback with the *new* email
                 var callbackUrl = Url.Page(
                     "/Account/ConfirmEmailChange",
                     pageHandler: null,
-                    values: new { area = "Identity", userId, email = Input.NewEmail, code = codeEncoded },
+                    values: new { area = "Identity", userId, email = newEmail, code = codeEncoded },
                     protocol: Request.Scheme);
 
                 await _emails.SendTemplateAsync(
-                    TemplateKeys.ConfirmEmailChange, // you can create a dedicated TemplateKeys.ConfirmEmailChange later if you want
-                    new EmailAddress(Input.NewEmail),
-                    new { ConfirmationLink = callbackUrl, FirstName = user?.FirstName });
+                    TemplateKeys.ConfirmEmailChange,
+                    new EmailAddress(newEmail!, user?.FirstName),
+                    new
+                    {
+                        SubjectLine = "Confirm your new email address for SWIMS",
+                        BodyIntro = "We received a request to update the email address on your SWIMS account. Please confirm the new address to complete this change.",
+                        MainParagraph = "This confirmation link is time-limited and valid for one use. If you did not request this change, please ignore this email or contact the Information Systems Support Unit.",
+                        ShowCTA = true,
+                        ActionLabel = "Confirm New Email",
+                        ActionUrl = callbackUrl,
+                        SupportEmail = "support.apps@gov.dm",
+                        SupportPhone = "(767) 266-3310"
+                    });
 
                 StatusMessage = "Confirmation link to change email sent. Please check the new email.";
                 return RedirectToPage();
             }
 
+            // If we got here, nothing changed (same address after trimming/casing)
             StatusMessage = "Your email is unchanged.";
             return RedirectToPage();
+
         }
 
         public async Task<IActionResult> OnPostSendVerificationEmailAsync()
@@ -175,10 +195,25 @@ namespace SWIMS.Areas.Identity.Pages.Account.Manage
                 pageHandler: null,
                 values: new { area = "Identity", userId = userId, code = code },
                 protocol: Request.Scheme);
+
             await _emails.SendTemplateAsync(
-                TemplateKeys.ConfirmEmailChange,
-                new EmailAddress(email!, user?.FirstName),
-                new { ConfirmationLink = callbackUrl, FirstName = user?.FirstName });
+                TemplateKeys.ConfirmEmail, // use your key
+                new EmailAddress(user!.Email!, user.FirstName),
+                new
+                {
+                    SubjectLine = "Confirm your email for the Social Welfare Information Management System (SWIMS)",
+                    BodyIntro = "Welcome to the Social Welfare Information Management System (SWIMS). Please confirm your email address to complete your account setup.",
+                    MainParagraph = "For your security, this confirmation link is time-limited and valid for one use. If you did not initiate this request, you may safely ignore this message.",
+
+                    ShowCTA = true,
+                    ActionLabel = "Confirm Email",
+                    ActionUrl = callbackUrl,           // formerly ConfirmationLink
+
+                    SupportEmail = "support.apps@gov.dm", // set your real mailbox
+                    SupportPhone = "(767) 266-3310",      // set your real phone
+                    // ReferenceId = referenceId            // e.g., a short GUID/trace ID
+                });
+
 
             StatusMessage = "Verification email sent. Please check your email.";
             return RedirectToPage();

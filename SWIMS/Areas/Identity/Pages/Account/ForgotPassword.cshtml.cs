@@ -74,8 +74,22 @@ namespace SWIMS.Areas.Identity.Pages.Account
 
                 await _emails.SendTemplateAsync(
                     TemplateKeys.ResetPassword,
-                    new EmailAddress(Input.Email),
-                    new { ResetLink = callbackUrl });
+                    new EmailAddress(user!.Email!, user.FirstName),
+                    new
+                    {
+                        SubjectLine = "Reset your SWIMS password",
+                        BodyIntro = "A request was received to reset the password for your SWIMS account. If this was you, use the button below to continue.",
+                        MainParagraph = "For your protection, the reset link will expire after a short time and can be used only once. If you did not request a password reset, you may safely ignore this message and your password will remain unchanged.",
+
+                        ShowCTA = true,
+                        ActionLabel = "Reset Password",
+                        ActionUrl = callbackUrl,              // formerly ResetLink
+
+                        SupportEmail = "support.apps@gov.dm",
+                        SupportPhone = "(767) 266-3310",
+                        // ReferenceId = referenceId
+                    });
+
 
                 return RedirectToPage("./ForgotPasswordConfirmation");
             }
