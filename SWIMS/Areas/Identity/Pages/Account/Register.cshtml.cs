@@ -146,9 +146,22 @@ namespace SWIMS.Areas.Identity.Pages.Account
                         protocol: Request.Scheme);
 
                     await _emails.SendTemplateAsync(
-                        TemplateKeys.ConfirmEmail,
-                        new EmailAddress(Input.Email, Input.FirstName),
-                        new { ConfirmationLink = callbackUrl, FirstName = Input.FirstName });
+                        TemplateKeys.ConfirmEmail, // use your key
+                        new EmailAddress(user!.Email!, user.FirstName),
+                        new
+                        {
+                            SubjectLine = "Confirm your email for the Social Welfare Information Management System (SWIMS)",
+                            BodyIntro = "Welcome to the Social Welfare Information Management System (SWIMS). Please confirm your email address to complete your account setup.",
+                            MainParagraph = "For your security, this confirmation link is time-limited and valid for one use. If you did not initiate this request, you may safely ignore this message.",
+
+                            ShowCTA = true,
+                            ActionLabel = "Confirm Email",
+                            ActionUrl = callbackUrl,           // formerly ConfirmationLink
+
+                            SupportEmail = "support.apps@gov.dm", // set your real mailbox
+                            SupportPhone = "(767) 266-3310",      // set your real phone
+                            // ReferenceId = referenceId            // e.g., a short GUID/trace ID
+                        });
 
                     if (_userManager.Options.SignIn.RequireConfirmedAccount)
                     {

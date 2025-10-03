@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8">
+  <meta name="x-apple-disable-message-reformatting">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta name="color-scheme" content="light dark">
+  <title>{{SubjectLine}}</title>
+  <style>
+    /* Mobile tweaks */
+    @media screen and (max-width: 600px) {
+      .container { width: 100% !important; }
+      .stack { display: block !important; width: 100% !important; }
+      .p-sm { padding: 16px !important; }
+      .center-sm { text-align: center !important; }
+    }
+    /* Dark mode friendly colors */
+    @media (prefers-color-scheme: dark) {
+        body, .bg-body { background:#111111 !important; }
+        .card { background:#1b1b1b !important; }
+
+        /* text & links across all cards/tables */
+        .card, .card td, .card th, .card p, .card span, .text { color:#e6e6e6 !important; }
+        .muted { color:#b3b3b3 !important; }
+        .card a { color:#9ec4ff !important; }
+
+        .divider { border-color:#333 !important; }
+        .btn a { color:#ffffff !important; }
+
+        /* signature strip tweak */
+        .sig { background:#141414 !important; }
+
+        /* disclaimer strip dark background consistency */
+        .disclaimer { background:#1b1b1b !important; }
+    }
+  </style>
+</head>
+<body style="margin:0; padding:0; background:#f4f6f8;" class="bg-body">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+    <tr>
+      <td align="center" style="padding:24px;">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="680" class="container" style="width:680px; max-width:680px;">
+          <tr>
+            <td style="padding:0 0 16px 0;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff; border-radius:12px; overflow:hidden;" class="card">
+                <tr>
+                  <td class="p-sm" style="padding:20px;">
+                    <table role="presentation" width="100%">
+                      <tr>
+                        <td class="stack center-sm" valign="middle" style="width:180px;">
+                          <img src="cid:issu_logo" width="160" alt="I.S.S.U — Computer Centre" style="display:block; width:160px; max-width:100%; height:auto;">
+                        </td>
+                        <td class="stack" valign="middle" style="text-align:left; font-family:Segoe UI, Arial, sans-serif; color:#111; padding-left:16px;" >
+                          <div class="text" style="font-size:16px; line-height:1.45;">
+                            <strong>Ministry of Finance</strong><br>
+                            1st Floor, TREASURY Building,<br>
+                            Hillsborough Street, Roseau<br>
+                            Commonwealth of Dominica
+                          </div>
+                        </td>
+                        <td class="stack center-sm" valign="middle" style="text-align:right; font-family:Segoe UI, Arial, sans-serif; color:#111;">
+                          <div class="text" style="font-size:14px; line-height:1.6;">
+                            <strong>Tel:</strong> (767) 266 3310<br>
+                            <strong>Email:</strong> payroll.issu@gmail.com<br>
+                            <strong>Url:</strong> http://apps.gov.dm
+                          </div>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <tr>
+            <td>
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff; border-radius:12px;" class="card">
+                <tr>
+                  <td class="p-sm" style="padding:28px; font-family:Segoe UI, Arial, sans-serif; color:#111;">
+                    <p class="text" style="margin:0 0 16px 0; font-size:16px; line-height:1.6;">
+                      Dear Sir/Madam,
+                    </p>
+
+                    <p class="text" style="margin:0 0 16px 0; font-size:16px; line-height:1.7;">
+                      {{BodyIntro}}
+                    </p>
+
+                    <p class="text" style="margin:0 0 24px 0; font-size:16px; line-height:1.7;">
+                      {{MainParagraph}}
+                    </p>
+
+                    {{#if ShowCTA}}
+                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="left" class="btn" style="margin:4px 0 24px 0;">
+                      <tr>
+                        <td bgcolor="#0d6efd" style="border-radius:8px;">
+                          <a href="{{ActionUrl}}"
+                             style="display:inline-block; padding:12px 20px; font-family:Segoe UI, Arial, sans-serif; font-size:15px; text-decoration:none; color:#ffffff; border-radius:8px;">
+                             {{ActionLabel}}
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+                    <div style="clear:both;"></div>
+                    <p class="muted" style="font-size:12px; color:#6b7280; line-height:1.6; margin:0 0 24px 0;">
+                      If the button doesn’t work, copy and paste this URL into your browser:<br>
+                      <span style="word-break:break-all;">{{ActionUrl}}</span>
+                    </p>
+                    {{/if}}
+
+                    <!-- Universal support line (#3) -->
+                    <p class="text" style="margin:0 0 6px 0; font-size:16px; line-height:1.7;">
+                      Should you require assistance or verification, please contact the Information Systems Support Unit at <a href="mailto:{{SupportEmail}}" style="color:#0d6efd; text-decoration:none;">{{SupportEmail}}</a> or {{SupportPhone}}.
+                    </p>
+                    <!-- Reference / audit line -->
+                    <p class="muted" style="margin:0 0 12px 0; font-size:12px; line-height:1.6; color:#6b7280;">
+                      Please quote reference <strong>{{ReferenceId}}</strong> in your correspondence.
+                    </p>
+
+                    <p class="text" style="margin:0 0 16px 0; font-size:16px; line-height:1.6;">
+                      Best Regards,
+                    </p>
+                    <p class="muted" style="margin:0 0 8px 0; font-size:14px; line-height:1.7; color:#4b5563;">
+                      <strong>Information Systems Support Unit</strong><br>
+                      Ministry of Finance,<br>
+                      1st Floor Treasury Building,<br>
+                      Hillsborough St. Roseau,<br>
+                      Commonwealth of Dominica, W.I.
+                    </p>
+
+                  </td>
+                </tr>
+
+                <tr>
+                  <td class="card sig" style="background:#f9fafb; padding:20px;">
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <td class="stack center-sm" valign="middle" style="width:180px; padding-bottom:8px;">
+                          <img src="cid:issu_logo" width="140" alt="I.S.S.U" style="display:block; width:140px; max-width:100%; height:auto;">
+                        </td>
+                        <td class="stack" valign="middle" style="font-family:Segoe UI, Arial, sans-serif; color:#111;">
+                          <div class="text" style="font-size:14px; line-height:1.6;">
+                            <strong>Ministry of Finance</strong><br>
+                            1st Floor, TREASURY Building, Hillsborough Street, Roseau<br>
+                            Commonwealth of Dominica
+                          </div>
+                        </td>
+                        <td class="stack center-sm" valign="middle" style="text-align:right; font-family:Segoe UI, Arial, sans-serif; color:#111;">
+                          <div class="text" style="font-size:14px; line-height:1.6;">
+                            <strong>Tel:</strong> (767) 266 3310<br>
+                            <strong>Email:</strong> payroll.issu@gmail.com<br>
+                            <strong>Url:</strong> http://apps.gov.dm
+                          </div>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+
+              </table>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:16px 0 32px 0;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff; border-radius:12px;" class="card disclaimer">
+                <tr>
+                  <td class="p-sm" style="padding:18px 20px; font-family:Segoe UI, Arial, sans-serif;">
+                    <p style="margin:0 0 8px 0; font-size:12px; letter-spacing:0.08em; text-align:center; color:#6b7280;">
+                      *********************ATTENTION*********************
+                    </p>
+                    <p class="muted" style="margin:0; font-size:12px; line-height:1.6; color:#6b7280; text-align:justify;">
+                      This email and any files transmitted with it are confidential and intended solely for the use of the individual or entity to whom they are addressed. If you are not the named addressee you should not disseminate, distribute or copy this e-mail. Please notify the sender immediately via e-mail if you have received this e-mail by mistake and delete this e-mail from your system. If you are not the intended recipient you are notified that disclosing, copying, distributing or taking any action in reliance on the contents of this information is strictly prohibited.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

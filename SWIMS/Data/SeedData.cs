@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using NuGet.Common;
 using SWIMS.Models;
 using SWIMS.Models.Security;
 using System;
@@ -57,7 +58,6 @@ namespace SWIMS.Data
                 {
                     UserName = adminEmail,
                     Email = adminEmail,
-                    EmailConfirmed = true,
                     FirstName = "System",
                     LastName = "Admin"
                 };
@@ -67,12 +67,29 @@ namespace SWIMS.Data
                     throw new Exception("Failed to create initial admin user: " +
                         string.Join(", ", result.Errors.Select(e => $"{e.Code}:{e.Description}")));
 
+                // Explicitly confirm the email using Identity's token flow
+                var token = await userMgr.GenerateEmailConfirmationTokenAsync(admin);
+                var confirm = await userMgr.ConfirmEmailAsync(admin, token);
+                if (!confirm.Succeeded)
+                    throw new Exception("Failed to confirm admin email: " +
+                        string.Join(", ", confirm.Errors.Select(e => $"{e.Code}:{e.Description}")));
+
                 await userMgr.AddToRoleAsync(admin, "Admin");
             }
             else
             {
                 if (!await userMgr.IsInRoleAsync(admin, "Admin"))
                     await userMgr.AddToRoleAsync(admin, "Admin");
+
+                // Ensure existing admin is confirmed as well
+                if (!admin.EmailConfirmed)
+                {
+                    var token = await userMgr.GenerateEmailConfirmationTokenAsync(admin);
+                    var confirm = await userMgr.ConfirmEmailAsync(admin, token);
+                    if (!confirm.Succeeded)
+                        throw new Exception("Failed to confirm existing admin email: " +
+                            string.Join(", ", confirm.Errors.Select(e => $"{e.Code}:{e.Description}")));
+                }
             }
 
             // 3) Policies: upsert helper (supports IsSystem + Description)
