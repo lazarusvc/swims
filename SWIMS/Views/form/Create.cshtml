@@ -116,10 +116,14 @@
         var options = {
                 disabledActionButtons: ['data', 'save']
         };
+
+        // --------------------------------------- Form Builder - Save to SW_form Database table
         var formBuilder = $(fbEditor).formBuilder(options);
 
-            document.getElementById('sv_2FormInput').addEventListener('click', function() {
+        document.getElementById('sv_2FormInput').addEventListener('click', function() {
                 frm.value = formBuilder.formData;
+                frm.style.backgroundColor = '#59AC77';
+                frm.style.color = "white !important";
         });
     });
 

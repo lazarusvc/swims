@@ -47,21 +47,24 @@ namespace SWIMS.Services.Reporting
             if (_opt.UseReverseProxy)
             {
                 var proxyBase = string.IsNullOrWhiteSpace(_opt.ReverseProxyBasePath) ? "/ssrs" : _opt.ReverseProxyBasePath;
+                var rootAware = proxyBase.StartsWith("~") ? proxyBase : "~" + proxyBase;
+
                 try
                 {
-                    var u = new Uri(fullUrl, UriKind.Absolute);                 // http://host/ReportServer?%2F...
+                    var u = new Uri(fullUrl, UriKind.Absolute);
                     const string reportServerPrefix = "/ReportServer";
                     var remainder = u.PathAndQuery.StartsWith(reportServerPrefix, StringComparison.OrdinalIgnoreCase)
-                        ? u.PathAndQuery.Substring(reportServerPrefix.Length)   // -> "?%2F..."
+                        ? u.PathAndQuery.Substring(reportServerPrefix.Length)
                         : u.PathAndQuery;
-                    return $"{proxyBase.TrimEnd('/')}{remainder}";              // /ssrs?%2F...
+                    return $"{rootAware.TrimEnd('/')}{remainder}";
                 }
                 catch
                 {
                     var i = fullUrl.IndexOf("/ReportServer", StringComparison.OrdinalIgnoreCase);
-                    if (i >= 0) return proxyBase.TrimEnd('/') + fullUrl.Substring(i + "/ReportServer".Length);
+                    if (i >= 0) return rootAware.TrimEnd('/') + fullUrl.Substring(i + "/ReportServer".Length);
                 }
             }
+
 
             return fullUrl; // fallback: direct ReportServer
         }
