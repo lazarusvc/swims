@@ -64,9 +64,14 @@
                     </div>
 
                     <div class="row mb-24 gy-3 align-items-center">
+                        <div id="storedIMG">
+                            
+                        </div>
                         <label asp-for="image" class="form-label mb-0 col-sm-4">IMAGE:</label>
                         <div class="col-sm-10">
-                            <input asp-for="image" type="file" class="form-control" />
+                            <a asp-action="EditUpload" asp-route-id="@Model.Id" type="button" class="btn rounded-pill btn-outline-success-600 radius-8 px-20 py-11 d-flex align-items-center gap-2">
+                                Upload new image <iconify-icon icon="mingcute:square-arrow-right-line" class="text-xl"></iconify-icon>
+                            </a>
                             <span asp-validation-for="image" class="text-danger"></span>
                         </div>
                     </div>
@@ -82,7 +87,7 @@
                     <p>modified:</p>
                     <input asp-for="dateModified" type="hidden" type="datetime" value="@System.DateTime.Now" />
                     <span asp-validation-for="dateModified" class="text-danger"></span>
-                    <input type="submit" value="Edit" id="saveData" class="btn btn-primary" width="100" />
+                    <input type="submit" value="Submit" id="saveData" class="btn btn-primary" width="100" />
                 </form>
             </div>
         </div>
@@ -100,11 +105,14 @@
 <link href="~/lib/trumbowyg-editor/ui/trumbowyg.min.css" rel="stylesheet" />
 <script src="~/lib/trumbowyg-editor/trumbowyg.min.js"></script>
 <script type="text/javascript">
-    // --------------------------------------- Form Builder - Global Variables
+    // --------------------------------------- Form Builder - Global Variables & Image storing 
     var fbEditor = document.getElementById("fb-editor");
     var frm = document.getElementById("form");
+    document.getElementById("storedIMG").innerHTML =
+    "<img src='../../uploads/@ViewBag.img' width='50%' /><input type='hidden' name='image' id='image' value='@ViewBag.img' />";
 
-    jQuery(function ($) {
+
+    jQuery(function ($) { 
         // --------------------------------------- Form Builder - options
         var options = {
             disabledActionButtons: ['data', 'save'],
@@ -114,6 +122,8 @@
 
         document.getElementById('sv_2FormInput').addEventListener('click', function() {
                 frm.value = formBuilder.actions.getData('json');
+                frm.style.backgroundColor = '#59AC77';
+                frm.style.color = "white !important";
         });
     });
 

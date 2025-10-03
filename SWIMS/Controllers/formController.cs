@@ -11,6 +11,7 @@ using System.Linq;
 using System.Reflection.Metadata.Ecma335;
 using System.Text.Json;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using static System.Net.Mime.MediaTypeNames;
 
 namespace SWIMS.Controllers
@@ -33,9 +34,11 @@ namespace SWIMS.Controllers
         [HttpGet]
         public async Task<IActionResult> Program(string? uuid)
         {
-            // 0. Varibales 
+            // 0. Varibales
+            // 
             var f_Linq = _context.SW_forms.Where(m => m.uuid.Equals(uuid));
             int formId = Convert.ToInt32(f_Linq.Select(m => m.Id).FirstOrDefault());
+            ViewBag.uuid = uuid;
             ViewBag.formId = formId;
             ViewBag.form = f_Linq.Select(m => m.form).FirstOrDefault();
             ViewBag.formName = f_Linq.Select(m => m.name).FirstOrDefault();
@@ -58,7 +61,7 @@ namespace SWIMS.Controllers
                 c => c.SW_formsId == formId &&
                 c.isApproval_01 == 1 ||
                 c.isApproval_02 == 1 ||
-                c.isApproval_03 == 1).Count();
+                c.isApproval_03 == 1).Count();           
 
 
             // 1. Fetch form with JSON
@@ -108,6 +111,7 @@ namespace SWIMS.Controllers
                     {
                         var val = prop.GetValue(row)?.ToString() ?? string.Empty;
                         dict[col.ColumnName] = val;
+                        dict["IDS"] = Convert.ToString(row.Id);
                     }
                 }
                 rowList.Add(dict);
@@ -141,9 +145,11 @@ namespace SWIMS.Controllers
             return View();
         }
 
-        public IActionResult Preview(int? id, string? uuid)
+        public async Task<IActionResult> Preview(string? dataID, string? uuid)
         {
-            // ************** Varibales 
+            // ************** Varibales
+            //
+            int id = Convert.ToInt32(dataID);
             var f_Linq = _context.SW_forms.Where(m => m.uuid.Equals(uuid));
             int formId = Convert.ToInt32(f_Linq.Select(m => m.Id).FirstOrDefault());
             ViewBag.formId = formId;
@@ -153,8 +159,13 @@ namespace SWIMS.Controllers
             ViewBag.formDesc = f_Linq.Select(m => m.desc).FirstOrDefault();
             ViewBag.header = f_Linq.Select(x => x.header).FirstOrDefault();
 
-            // ************* FormData 
-            var _fData = _context.SW_formTableData.Where(x => x.Id == id).ToList().FirstOrDefault();
+            // ************* FormData
+            //
+            var _fData = await _context.SW_formTableData.FindAsync(id);
+            if (_fData == null)
+            {
+                return NotFound();
+            }            
             var stringArray = new string[250]
             {
                 _fData.FormData01,
@@ -409,7 +420,15 @@ namespace SWIMS.Controllers
                 _fData.FormData250
             };
             ViewBag.Collection = stringArray;
-            return PartialView("_formPreview.cshtml");
+
+            // ************* FormData Types
+            var _fDataType = _context.SW_formTableData_Types.Where(x=>x.SW_formsId == formId).ToList();
+            if (_fDataType == null)
+            {
+                return NotFound();
+            }
+            ViewBag.Collection2 = _fDataType;
+            return PartialView("Views/Shared/_formPreview.cshtml");
         }
         // GET: form
         public async Task<IActionResult> Index()
@@ -559,6 +578,7 @@ namespace SWIMS.Controllers
                 return NotFound();
             }
             ViewBag.frm = _context.SW_forms.Where(x => x.Id == id).Select(x => x.form).FirstOrDefault();
+            ViewBag.img = _context.SW_forms.Where(x => x.Id == id).Select(x => x.image).FirstOrDefault();
             ViewData["SW_identityId"] = new SelectList(_context.SW_identities, "Id", "name", sW_form.SW_identityId);
             return View(sW_form);
         }
@@ -568,7 +588,57 @@ namespace SWIMS.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,uuid,name,desc,form,dateModified,SW_identityId,is_linking,image,header,approvalAmt")] SW_form sW_form, IFormFile image)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,uuid,name,desc,form,dateModified,SW_identityId,is_linking,image,header,approvalAmt")] SW_form sW_form)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    _context.Update(sW_form);
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!SW_formExists(sW_form.Id))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+                return RedirectToAction(nameof(Index));
+            }
+            ViewData["SW_identityId"] = new SelectList(_context.SW_identities, "Id", "name", sW_form.SW_identityId);
+            return View(sW_form);
+     }
+
+        // GET: form/Edit/5
+        public async Task<IActionResult> EditUpload(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var sW_form = await _context.SW_forms.FindAsync(id);
+            if (sW_form == null)
+            {
+                return NotFound();
+            }
+            ViewBag.frm = _context.SW_forms.Where(x => x.Id == id).Select(x => x.form).FirstOrDefault();
+            ViewBag.img = _context.SW_forms.Where(x => x.Id == id).Select(x => x.image).FirstOrDefault();
+            ViewData["SW_identityId"] = new SelectList(_context.SW_identities, "Id", "name", sW_form.SW_identityId);
+            return View(sW_form);
+        }
+
+        // POST: form/Edit/5
+        // To protect from overposting attacks, enable the specific properties you want to bind to.
+        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditUpload(int id, [Bind("Id,uuid,name,desc,form,dateModified,SW_identityId,is_linking,image,header,approvalAmt")] SW_form sW_form, IFormFile image)
         {
             if (id != sW_form.Id)
             {

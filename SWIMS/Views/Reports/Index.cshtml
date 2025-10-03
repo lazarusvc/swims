@@ -36,6 +36,6 @@
 @if (!string.IsNullOrWhiteSpace(Model?.ViewerUrl))
 {
   <div class="ratio ratio-16x9 mt-3">
-    <iframe src="@Model.ViewerUrl" width="100%" height="100%" style="border:0;" loading="lazy" allowfullscreen></iframe>
-  </div>
+        <iframe src="@Url.Content(Model.ViewerUrl)" width="100%" height="100%" style="border:0;" loading="lazy" allowfullscreen></iframe>
+    </div>
 }

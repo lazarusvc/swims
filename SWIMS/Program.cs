@@ -22,6 +22,7 @@ using SWIMS.Services;
 using SWIMS.Services.Auth;
 using SWIMS.Services.Diagnostics;
 using SWIMS.Services.Reporting;
+using System.Net;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -155,15 +156,23 @@ builder.Services.AddControllersWithViews(o =>
 
 
 
-builder.Services.AddHttpClient("ssrs-proxy")
-    .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
-    {
-        UseCookies = false,
-        AllowAutoRedirect = false,
-        UseProxy = false,
-        // If SSRS uses Windows Integrated auth and the app pool identity is allowed:
-        UseDefaultCredentials = true
-    });
+builder.Services.AddHttpClient("ssrs-proxy", c =>
+{
+    c.Timeout = TimeSpan.FromSeconds(180); // tolerate slow first renders
+    c.DefaultRequestVersion = HttpVersion.Version11;
+    c.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionOrLower;
+})
+.ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+{
+    UseDefaultCredentials = true,
+    PreAuthenticate = true,
+    AllowAutoRedirect = false,
+    UseCookies = true,                              // <— important: SSRS may set cookies
+    CookieContainer = new CookieContainer(),
+    AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate | DecompressionMethods.Brotli,
+    UseProxy = false
+}).SetHandlerLifetime(TimeSpan.FromMinutes(10));
+
 
 // Add OpenAPI Support to project
 builder.Services.AddOpenApi();
@@ -217,7 +226,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapStaticAssets();
-
+app.MapControllers();
 app.MapControllerRoute(
     name: "areas",
     pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
