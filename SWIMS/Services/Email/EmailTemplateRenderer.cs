@@ -1,57 +1,81 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Reflection;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using HandlebarsDotNet;
 
 namespace SWIMS.Services.Email;
 
 /// <summary>
-/// Minimal {{Token}} replacement against public properties of the provided model.
-/// Swap this with Scriban/Razor later by re-implementing ITemplateRenderer.
+/// Handlebars-based renderer for email templates.
+/// - Compiles & caches the Subject and HTML from EmailTemplateProvider
+/// - Supports standard {{tokens}} and {{#if}} / {{#unless}} blocks
+/// - Adds helper: {{nl2br text}} and {{urlencode value}}
 /// </summary>
 public sealed class EmailTemplateRenderer : ITemplateRenderer
 {
-    private static readonly Regex Token = new(@"\{\{\s*(?<name>[A-Za-z0-9_.]+)\s*\}\}", RegexOptions.Compiled);
-    private static readonly ConcurrentDictionary<Type, PropertyInfo[]> Cache = new();
-
     private readonly EmailTemplateProvider _provider;
 
-    public EmailTemplateRenderer(EmailTemplateProvider provider) => _provider = provider;
+    // Cache compiled templates by key
+    private static readonly ConcurrentDictionary<string, (HandlebarsTemplate<object, object> Subject, HandlebarsTemplate<object, object> Html)> Cache
+        = new();
+
+    private static bool _helpersRegistered;
+
+    public EmailTemplateRenderer(EmailTemplateProvider provider)
+    {
+        _provider = provider ?? throw new ArgumentNullException(nameof(provider));
+        RegisterHelpersOnce();
+    }
 
     public Task<EmailTemplate> RenderAsync(string templateKey, object model)
     {
         if (!_provider.TryGet(templateKey, out var tpl))
         {
-            var available = _provider.Keys;
+            var available = string.Join(", ", _provider.Keys);
             var dir = _provider.DirectoryPath;
-            var list = available is { Count: > 0 } ? string.Join(", ", available) : "(none)";
             throw new InvalidOperationException(
-                $"Email template '{templateKey}' not found. " +
-                $"Directory scanned: '{dir}'. " +
-                $"Available keys: {list}. " +
-                $"If you use a relative path, it's relative to the app ContentRoot (usually the project folder in dev).");
+                $"Email template '{templateKey}' not found. Directory: '{dir}'. Available keys: {available}");
         }
 
-        var subject = ReplaceTokens(tpl.Subject, model);
-        var html = ReplaceTokens(tpl.Html, model);
-        return Task.FromResult(new EmailTemplate { Key = templateKey, Subject = subject, HtmlBody = html });
+        // Compile (once per key)
+        var compiled = Cache.GetOrAdd(templateKey, _ =>
+        {
+            var subj = Handlebars.Compile(tpl.Subject ?? string.Empty);
+            var html = Handlebars.Compile(tpl.Html ?? string.Empty);
+            return (subj, html);
+        });
+
+        // Render with the anonymous model you pass from your code
+        var subject = compiled.Subject(model);
+        var html = compiled.Html(model);
+
+        return Task.FromResult(new EmailTemplate
+        {
+            Key = templateKey,
+            Subject = subject,
+            HtmlBody = html
+        });
     }
 
-    private static string ReplaceTokens(string input, object model)
+    private static void RegisterHelpersOnce()
     {
-        if (model is null) return input;
-        var props = Cache.GetOrAdd(model.GetType(), t => t.GetProperties(BindingFlags.Instance | BindingFlags.Public));
+        if (_helpersRegistered) return;
 
-        return Token.Replace(input, m =>
+        // Converts newline characters to <br> with HTML-encoding first.
+        Handlebars.RegisterHelper("nl2br", (writer, context, parameters) =>
         {
-            var name = m.Groups["name"].Value;
-            foreach (var p in props)
-            {
-                if (string.Equals(p.Name, name, StringComparison.OrdinalIgnoreCase))
-                    return p.GetValue(model)?.ToString() ?? string.Empty;
-            }
-            return m.Value; // leave token if no match
+            var s = parameters.Length > 0 ? parameters[0]?.ToString() ?? "" : "";
+            s = System.Net.WebUtility.HtmlEncode(s).Replace("\r\n", "<br>").Replace("\n", "<br>");
+            writer.WriteSafeString(s);
         });
+
+        // URL-encode a string for use in query strings
+        Handlebars.RegisterHelper("urlencode", (writer, context, parameters) =>
+        {
+            var s = parameters.Length > 0 ? parameters[0]?.ToString() ?? "" : "";
+            writer.Write(System.Net.WebUtility.UrlEncode(s));
+        });
+
+        _helpersRegistered = true;
     }
 }
