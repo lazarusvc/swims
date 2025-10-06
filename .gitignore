@@ -370,3 +370,5 @@ SWIMS/wwwroot/docfx/api/
 SWIMS/wwwroot/docs/
 
 /SWIMS.zip
+
+SWIMS/appsettings.Development.json
