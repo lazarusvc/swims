@@ -1,174 +1,227 @@
 <!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <meta charset="utf-8">
-  <meta http-equiv="x-ua-compatible" content="ie=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{{SubjectLine}}</title>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{SubjectLine}}</title>
 </head>
 
 <body style="margin:0; padding:0; background:#f4f6f8;">
-  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse; mso-table-lspace:0pt; mso-table-rspace:0pt;">
-    <tr>
-      <td align="center" style="padding:24px;">
-        <!--[if mso]>
-        <table role="presentation" border="0" cellspacing="0" cellpadding="0" width="680" align="center">
-          <tr><td>
-        <![endif]-->
-        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; max-width:680px; border-collapse:collapse; mso-table-lspace:0pt; mso-table-rspace:0pt;">
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse; mso-table-lspace:0pt; mso-table-rspace:0pt;">
+        <tr>
+            <td align="center" style="padding:24px;">
+                <!--[if mso]>
+                <table role="presentation" border="0" cellspacing="0" cellpadding="0" width="680" align="center">
+                  <tr><td>
+                <![endif]-->
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; max-width:680px; border-collapse:collapse; mso-table-lspace:0pt; mso-table-rspace:0pt;">
 
-          <tr>
-            <td style="padding:0 0 16px 0;">
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
-                     style="background:#ffffff; border-radius:12px; overflow:hidden; border-collapse:collapse; mso-table-lspace:0pt; mso-table-rspace:0pt;">
-                <tr>
-                  <td style="padding:20px; font-family:Segoe UI, Arial, sans-serif;">
-                    <table role="presentation" width="100%" style="border-collapse:collapse; mso-table-lspace:0pt; mso-table-rspace:0pt;">
-                      <tr>
-                        <td valign="middle" style="width:180px;">
-                          <img src="cid:issu_logo" width="160" alt="I.S.S.U — Computer Centre"
-                               style="display:block; width:160px; max-width:100%; height:auto; border:0; line-height:100%; text-decoration:none; -ms-interpolation-mode:bicubic;">
+                    <tr>
+                        <td style="padding:0 0 16px 0;">
+                            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+                                   style="background:#ffffff; border-radius:12px; overflow:hidden; border-collapse:collapse; mso-table-lspace:0pt; mso-table-rspace:0pt;">
+                                <tr>
+                                    <td style="padding:20px; font-family:Segoe UI, Arial, sans-serif;">
+                                        <table role="presentation" width="100%" style="border-collapse:collapse; mso-table-lspace:0pt; mso-table-rspace:0pt;">
+                                            <tr>
+                                                <td valign="middle" style="width:180px;">
+                                                    <img src="cid:issu_logo" width="160" alt="I.S.S.U — Computer Centre"
+                                                         style="display:block; width:160px; max-width:100%; height:auto; border:0; line-height:100%; text-decoration:none; -ms-interpolation-mode:bicubic;">
+                                                </td>
+                                                <td valign="middle" style="text-align:left; padding-left:16px; font-family:Segoe UI, Arial, sans-serif; color:#111111;">
+                                                    <div style="font-size:16px; line-height:1.45;">
+                                                        <strong>Ministry of Finance</strong><br>
+                                                        1st Floor, TREASURY Building,<br>
+                                                        Hillsborough Street, Roseau<br>
+                                                        Commonwealth of Dominica
+                                                    </div>
+                                                </td>
+                                                <td valign="middle" style="text-align:right; font-family:Segoe UI, Arial, sans-serif; color:#111111;">
+                                                    <div style="font-size:14px; line-height:1.6;">
+                                                        <strong>Tel:</strong> (767) 266 3310<br>
+                                                        <strong>Email:</strong> payroll.issu@gmail.com<br>
+                                                        <strong>Url:</strong> http://apps.gov.dm
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
                         </td>
-                        <td valign="middle" style="text-align:left; padding-left:16px; font-family:Segoe UI, Arial, sans-serif; color:#111111;">
-                          <div style="font-size:16px; line-height:1.45;">
-                            <strong>Ministry of Finance</strong><br>
-                            1st Floor, TREASURY Building,<br>
-                            Hillsborough Street, Roseau<br>
-                            Commonwealth of Dominica
-                          </div>
+                    </tr>
+
+                    <tr>
+                        <td>
+                            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+                                   style="background:#ffffff; border-radius:12px; border-collapse:collapse; mso-table-lspace:0pt; mso-table-rspace:0pt;">
+                                <tr>
+                                    <td style="padding:28px; font-family:Segoe UI, Arial, sans-serif; color:#111111;">
+                                        <p style="margin:0 0 16px 0; font-size:16px; line-height:1.6;">
+                                            Dear Sir/Madam,
+                                        </p>
+
+                                        <p style="margin:0 0 16px 0; font-size:16px; line-height:1.7;">
+                                            {{BodyIntro}}
+                                        </p>
+
+                                        <p style="margin:0 0 24px 0; font-size:16px; line-height:1.7;">
+                                            {{MainParagraph}}
+                                        </p>
+
+                                        {{#if ShowCTA}}
+                                        <!-- ================= CTA ================= -->
+                                        <!-- Non-Outlook desktop/modern clients: KEEP your original exactly -->
+                                        <!--[if !mso]><!-- -->
+                                        <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="left"
+                                               style="margin:4px 0 24px 0; border-collapse:collapse; mso-table-lspace:0pt; mso-table-rspace:0pt;">
+                                            <tr>
+                                                <td style="background:#0d6efd; border-radius:8px;">
+                                                    <a href="{{ActionUrl}}"
+                                                       style="display:inline-block; padding:12px 20px; font-family:Segoe UI, Arial, sans-serif;
+                font-size:15px; text-decoration:none; color:#ffffff; border-radius:8px;">
+                                                        {{ActionLabel}}
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                        <!--<![endif]-->
+                                        <!-- Outlook desktop (MSO/Word): super-plain, fixed size, no margins -->
+                                        <!--[if mso]>
+                                        <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="left"
+                                               style="border-collapse:collapse; mso-table-lspace:0pt; mso-table-rspace:0pt; margin:4px 0 24px 0;">
+                                          <tr>
+                                            <td width="140" height="40" bgcolor="#0d6efd" align="center" valign="middle"
+                                                style="width:140px; height:40px; padding:0; mso-padding-alt:0;">
+                                              <a href="{{ActionUrl}}"
+                                                 style="display:block; width:140px; line-height:40px; mso-line-height-rule:exactly;
+                                                        font-family:Segoe UI, Arial, sans-serif; font-size:15px; color:#ffffff; text-decoration:none;">
+                                                {{ActionLabel}}
+                                              </a>
+                                            </td>
+                                          </tr>
+                                        </table>
+                                        <![endif]-->
+                                        <!-- Single spacer row (works in Outlook; replaces clear:both) -->
+                                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+                                            <tr><td style="height:0; line-height:0; font-size:0;">&nbsp;</td></tr>
+                                        </table>
+
+                                        <!-- Fallback URL (shared by both paths) -->
+                                        <!-- Non-Outlook desktop (keep your original) -->
+                                        <!--[if !mso]><!-- -->
+                                        <p style="font-size:12px; color:#6b7280; line-height:1.6; margin:0 0 24px 0;">
+                                            If the button doesn’t work, copy and paste this URL into your browser:<br>
+                                            <span style="word-break:break-all; overflow-wrap:anywhere;">{{ActionUrl}}</span>
+                                        </p>
+                                        <!--<![endif]-->
+                                        <!-- Outlook desktop (MSO/Word): boxed rows + fixed table layout -->
+                                        <!--[if mso]>
+                                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+                                          <tr>
+                                            <td style="font-size:12px; color:#6b7280; line-height:18px; mso-line-height-rule:exactly; padding:0;">
+                                              If the button doesn’t work, copy and paste this URL into your browser:
+                                            </td>
+                                          </tr>
+                                          <tr>
+                                            <td style="padding:6px 0 24px 0;">
+                                              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+                                                     style="border-collapse:collapse; table-layout:fixed; mso-table-lspace:0pt; mso-table-rspace:0pt;">
+                                                <tr>
+                                                  <td style="font-size:12px; line-height:16px; mso-line-height-rule:exactly;
+                                                             word-wrap:break-word; word-break:break-all; color:#6b7280;">
+                                                    {{ActionUrl}}
+                                                  </td>
+                                                </tr>
+                                              </table>
+                                            </td>
+                                          </tr>
+                                        </table>
+                                        <![endif]-->
+                                        <!-- =============== /CTA =============== -->
+                                        {{/if}}
+
+                                        <p style="margin:0 0 6px 0; font-size:16px; line-height:1.7; color:#111111;">
+                                            Should you require assistance or verification, please contact the Information Systems Support Unit at <a href="mailto:{{SupportEmail}}" style="color:#0d6efd; text-decoration:none;">{{SupportEmail}}</a> or {{SupportPhone}}.
+                                        </p>
+                                        <p style="margin:0 0 12px 0; font-size:12px; line-height:1.6; color:#6b7280;">
+                                            Please quote reference <strong>{{ReferenceId}}</strong> in your correspondence.
+                                        </p>
+
+                                        <p style="margin:0 0 16px 0; font-size:16px; line-height:1.6; color:#111111;">
+                                            Best Regards,
+                                        </p>
+                                        <p style="margin:0 0 8px 0; font-size:14px; line-height:1.7; color:#4b5563; font-family:Segoe UI, Arial, sans-serif;">
+                                            <strong>Information Systems Support Unit</strong><br>
+                                            Ministry of Finance,<br>
+                                            1st Floor Treasury Building,<br>
+                                            Hillsborough St. Roseau,<br>
+                                            Commonwealth of Dominica, W.I.
+                                        </p>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td style="background:#f9fafb; padding:20px;">
+                                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+                                               style="border-collapse:collapse; mso-table-lspace:0pt; mso-table-rspace:0pt;">
+                                            <tr>
+                                                <td valign="middle" style="width:180px; padding-bottom:8px;">
+                                                    <img src="cid:issu_logo" width="140" alt="I.S.S.U"
+                                                         style="display:block; width:140px; max-width:100%; height:auto; border:0; line-height:100%; text-decoration:none; -ms-interpolation-mode:bicubic;">
+                                                </td>
+                                                <td valign="middle" style="font-family:Segoe UI, Arial, sans-serif; color:#111111;">
+                                                    <div style="font-size:14px; line-height:1.6;">
+                                                        <strong>Ministry of Finance</strong><br>
+                                                        1st Floor, TREASURY Building, Hillsborough Street, Roseau<br>
+                                                        Commonwealth of Dominica
+                                                    </div>
+                                                </td>
+                                                <td valign="middle" style="text-align:right; font-family:Segoe UI, Arial, sans-serif; color:#111111;">
+                                                    <div style="font-size:14px; line-height:1.6;">
+                                                        <strong>Tel:</strong> (767) 266 3310<br>
+                                                        <strong>Email:</strong> payroll.issu@gmail.com<br>
+                                                        <strong>Url:</strong> http://apps.gov.dm
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
                         </td>
-                        <td valign="middle" style="text-align:right; font-family:Segoe UI, Arial, sans-serif; color:#111111;">
-                          <div style="font-size:14px; line-height:1.6;">
-                            <strong>Tel:</strong> (767) 266 3310<br>
-                            <strong>Email:</strong> payroll.issu@gmail.com<br>
-                            <strong>Url:</strong> http://apps.gov.dm
-                          </div>
+                    </tr>
+
+                    <tr>
+                        <td style="padding:16px 0 32px 0;">
+                            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+                                   style="background:#ffffff; border-radius:12px; border-collapse:collapse; mso-table-lspace:0pt; mso-table-rspace:0pt;">
+                                <tr>
+                                    <td style="padding:18px 20px; font-family:Segoe UI, Arial, sans-serif;">
+                                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+                                               style="border-collapse:collapse; mso-table-lspace:0pt; mso-table-rspace:0pt; margin:0 0 8px 0;">
+                                            <tr>
+                                                <td style="font-family:Segoe UI, Arial, sans-serif; font-size:12px; color:#6b7280; text-align:center; padding:0;">
+                                                    <span style="display:inline-block; padding:0 8px;">ATTENTION</span>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="height:1px; background:#e5e7eb;"></td>
+                                            </tr>
+                                        </table>
+                                        <p style="margin:0; font-size:12px; line-height:1.6; color:#6b7280; text-align:justify;">
+                                            This email and any files transmitted with it are confidential and intended solely for the use of the individual or entity to whom they are addressed. If you are not the named addressee you should not disseminate, distribute or copy this e-mail. Please notify the sender immediately via e-mail if you have received this e-mail by mistake and delete this e-mail from your system. If you are not the intended recipient you are notified that disclosing, copying, distributing or taking any action in reliance on the contents of this information is strictly prohibited.
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
                         </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-              </table>
+                    </tr>
+                </table>
+                <!--[if mso]></td></tr></table><![endif]-->
             </td>
-          </tr>
-
-          <tr>
-            <td>
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
-                     style="background:#ffffff; border-radius:12px; border-collapse:collapse; mso-table-lspace:0pt; mso-table-rspace:0pt;">
-                <tr>
-                  <td style="padding:28px; font-family:Segoe UI, Arial, sans-serif; color:#111111;">
-                    <p style="margin:0 0 16px 0; font-size:16px; line-height:1.6;">
-                      Dear Sir/Madam,
-                    </p>
-
-                    <p style="margin:0 0 16px 0; font-size:16px; line-height:1.7;">
-                      {{BodyIntro}}
-                    </p>
-
-                    <p style="margin:0 0 24px 0; font-size:16px; line-height:1.7;">
-                      {{MainParagraph}}
-                    </p>
-
-                    {{#if ShowCTA}}
-                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="left"
-                           style="margin:4px 0 24px 0; border-collapse:collapse; mso-table-lspace:0pt; mso-table-rspace:0pt;">
-                      <tr>
-                        <td bgcolor="#0d6efd" style="border-radius:8px;">
-                          <a href="{{ActionUrl}}"
-                             style="display:inline-block; padding:12px 20px; font-family:Segoe UI, Arial, sans-serif; font-size:15px; text-decoration:none; color:#ffffff; border-radius:8px;">
-                             {{ActionLabel}}
-                          </a>
-                        </td>
-                      </tr>
-                    </table>
-                    <div style="clear:both;"></div>
-                    <p style="font-size:12px; color:#6b7280; line-height:1.6; margin:0 0 24px 0;">
-                      If the button doesn’t work, copy and paste this URL into your browser:<br>
-                      <span style="word-break:break-all;">{{ActionUrl}}</span>
-                    </p>
-                    {{/if}}
-
-                    <p style="margin:0 0 6px 0; font-size:16px; line-height:1.7; color:#111111;">
-                      Should you require assistance or verification, please contact the Information Systems Support Unit at <a href="mailto:{{SupportEmail}}" style="color:#0d6efd; text-decoration:none;">{{SupportEmail}}</a> or {{SupportPhone}}.
-                    </p>
-                    <p style="margin:0 0 12px 0; font-size:12px; line-height:1.6; color:#6b7280;">
-                      Please quote reference <strong>{{ReferenceId}}</strong> in your correspondence.
-                    </p>
-
-                    <p style="margin:0 0 16px 0; font-size:16px; line-height:1.6; color:#111111;">
-                      Best Regards,
-                    </p>
-                    <p style="margin:0 0 8px 0; font-size:14px; line-height:1.7; color:#4b5563; font-family:Segoe UI, Arial, sans-serif;">
-                      <strong>Information Systems Support Unit</strong><br>
-                      Ministry of Finance,<br>
-                      1st Floor Treasury Building,<br>
-                      Hillsborough St. Roseau,<br>
-                      Commonwealth of Dominica, W.I.
-                    </p>
-                  </td>
-                </tr>
-
-                <tr>
-                  <td style="background:#f9fafb; padding:20px;">
-                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
-                           style="border-collapse:collapse; mso-table-lspace:0pt; mso-table-rspace:0pt;">
-                      <tr>
-                        <td valign="middle" style="width:180px; padding-bottom:8px;">
-                          <img src="cid:issu_logo" width="140" alt="I.S.S.U"
-                               style="display:block; width:140px; max-width:100%; height:auto; border:0; line-height:100%; text-decoration:none; -ms-interpolation-mode:bicubic;">
-                        </td>
-                        <td valign="middle" style="font-family:Segoe UI, Arial, sans-serif; color:#111111;">
-                          <div style="font-size:14px; line-height:1.6;">
-                            <strong>Ministry of Finance</strong><br>
-                            1st Floor, TREASURY Building, Hillsborough Street, Roseau<br>
-                            Commonwealth of Dominica
-                          </div>
-                        </td>
-                        <td valign="middle" style="text-align:right; font-family:Segoe UI, Arial, sans-serif; color:#111111;">
-                          <div style="font-size:14px; line-height:1.6;">
-                            <strong>Tel:</strong> (767) 266 3310<br>
-                            <strong>Email:</strong> payroll.issu@gmail.com<br>
-                            <strong>Url:</strong> http://apps.gov.dm
-                          </div>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-
-          <tr>
-            <td style="padding:16px 0 32px 0;">
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
-                     style="background:#ffffff; border-radius:12px; border-collapse:collapse; mso-table-lspace:0pt; mso-table-rspace:0pt;">
-                <tr>
-                  <td style="padding:18px 20px; font-family:Segoe UI, Arial, sans-serif;">
-                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
-                           style="border-collapse:collapse; mso-table-lspace:0pt; mso-table-rspace:0pt; margin:0 0 8px 0;">
-                      <tr>
-                        <td style="font-family:Segoe UI, Arial, sans-serif; font-size:12px; color:#6b7280; text-align:center; padding:0;">
-                          <span style="display:inline-block; padding:0 8px;">ATTENTION</span>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td style="height:1px; background:#e5e7eb;"></td>
-                      </tr>
-                    </table>
-                    <p style="margin:0; font-size:12px; line-height:1.6; color:#6b7280; text-align:justify;">
-                      This email and any files transmitted with it are confidential and intended solely for the use of the individual or entity to whom they are addressed. If you are not the named addressee you should not disseminate, distribute or copy this e-mail. Please notify the sender immediately via e-mail if you have received this e-mail by mistake and delete this e-mail from your system. If you are not the intended recipient you are notified that disclosing, copying, distributing or taking any action in reliance on the contents of this information is strictly prohibited.
-                    </p>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-        </table>
-        <!--[if mso]></td></tr></table><![endif]-->
-      </td>
-    </tr>
-  </table>
+        </tr>
+    </table>
 </body>
 </html>
