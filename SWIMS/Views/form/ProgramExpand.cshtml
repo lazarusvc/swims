@@ -1,7 +1,7 @@
 ﻿<!-- BACK BUTTON -->
 <div style="width: 110px;">
-    <a href="##" onClick="history.go(-1); return false;"
-       class="btn rounded-pill btn-outline-dark-1 radius-8 px-20 py-11 d-flex align-items-center gap-2">
+    <a href="##" onClick="history.go(-1); return false;" 
+     class="btn rounded-pill btn-outline-dark-1 radius-8 px-20 py-11 d-flex align-items-center gap-2">
         <iconify-icon icon="ion:return-up-back-sharp"></iconify-icon> Back
     </a>
     <br />
@@ -9,48 +9,30 @@
 </div>
 <!-- ----------------------------------------------- -->
 @{
-    ViewData["Title"] = "Complete & Publish";
+    ViewData["Title"] = "Program - " + @ViewBag.formName;
 }
 
-<hr />
-<br />
 <div class="row">
-    <div class="col-md-12">
-        <div class="card">
-            <div class="card-header">
-                @Html.Raw(@ViewBag.header)
-            </div>
-            <div class="card-body">
-                <div id="fb-rendered-form"></div>
+    <div class="col-sm-12">
+        <div class="card radius-12 h-100">
+            <div class="card-body py-16 px-24">
+                <form asp-action="Create" asp-controller="formTableData">
+                    @Html.Raw(@ViewBag.header)
+                    <div id="fb-rendered-form"></div>
+                    <input type="hidden" name="SW_formsId" value="@ViewBag.formId" />
+                    <button type="submit" class="btn btn-success">Submit</button>
+                </form>
+                
             </div>
         </div>
     </div>
-    <div class="col-md-12">
-        <br/>
-        <div class="btn-group" role="group" aria-label="Default button group">
-            <form asp-action="Complete">
-                <input type="hidden" name="formId" value="@ViewBag.id" />
-                <button type="submit" class="btn btn-success text-success-main px-20 py-13 radius-8 text-white d-flex" style="border-top-right-radius:0px; border-bottom-right-radius: 0px;">
-                    <iconify-icon icon="bitcoin-icons:share-filled" class="text-xl"></iconify-icon>
-                    Publish
-                </button> 
-            </form>
-            <a asp-action="Edit" asp-route-id="@ViewBag.id" type="button" class="btn btn-info text-info-main px-20 py-13 radius-8 text-white d-flex">
-                <iconify-icon icon="lucide:edit"></iconify-icon>
-                Edit
-            </a>
-            <a asp-action="Delete" asp-route-id="@ViewBag.id" type="button" class="btn btn-danger text-danger-main px-20 py-13 radius-8 text-white d-flex">
-                <iconify-icon icon="mingcute:delete-2-line"></iconify-icon>
-                Delete
-            </a>
-        </div>
-    </div>    
 </div>
 
 
 <link href="~/css/forms-stylesheet.css" rel="stylesheet" />
 <script src="~/lib/jquery/dist/jquery.min.js"></script>
 <script src="~/lib/formbuilder/form-render.min.js"></script>
+<script src="~/js/datatables.min.js"></script>
 <link href="~/lib/trumbowyg-editor/ui/trumbowyg.min.css" rel="stylesheet" />
 <script src="~/lib/trumbowyg-editor/trumbowyg.min.js"></script>
 <script type="text/javascript">
@@ -59,7 +41,7 @@
     // -----------------------------------------------------------------------------------------------------
     jQuery(function($) {
       var container = document.getElementById('fb-rendered-form');
-      var formData = '@Html.Raw(ViewBag.frm)';
+      var formData = '@Html.Raw(ViewBag.form)';
 
       var formRenderOpts = {
         container,
@@ -69,7 +51,10 @@
 
       $(container).formRender(formRenderOpts);
     });
-
+    // TABLE DATATABLE INIT
+    //
+    // -----------------------------------------------------------------------------------------------------
+    let table = new DataTable('#dataTable');
     // CUSTOM FORM FUNCTIONALITY
     //
     // -----------------------------------------------------------------------------------------------------
@@ -77,7 +62,7 @@
 
         function findFields($root) {
 
-            $root.find("input[name], select[name], textarea[name]").each(function () {
+            $root.find("input[name], select[name], textarea[name], input[radio-group]").each(function () {
                 var $field = $(this);
                 var fieldName = $field.attr("name");
 
@@ -158,14 +143,12 @@
                 }
             });
         }
-
         // Scope to only inside #fb-rendered-form
         var $formContainer = $("#fb-rendered-form");
         if ($formContainer.length) {
             findFields($formContainer);
         }
     });
-
     // ------------------------------------------- TINYMCE - WYSWYGET EDITOR
     jQuery(function ($) {
         $(".trumbowyg").trumbowyg({

@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.EntityFrameworkCore;
 using SWIMS.Models;
-
 namespace SWIMS.Models;
 
 public partial class SW_beneficiary
@@ -40,7 +39,7 @@ public partial class SW_beneficiary
 
 public static class SW_beneficiaryEndpoints
 {
-	public static void MapSW_beneficiaryEndpoints (this IEndpointRouteBuilder routes)
+    public static void MapSW_beneficiaryEndpoints (this IEndpointRouteBuilder routes)
     {
         var group = routes.MapGroup("/api/beneficiary").WithTags(nameof(SW_beneficiary));
 

@@ -84,6 +84,15 @@
                         </div>
                     </div>
 
+                    <div class="row mb-24 gy-3 align-items-center">
+                        <label asp-for="approvalAmt" class="form-label mb-0 col-sm-4">APPROVAL LEVELS:</label>
+                        <div class="col-sm-10">
+                            <input asp-for="approvalAmt" type="range" min="0" max="3" value="@ViewBag.appAmt">
+                            <p>Selected Volume: <span id="volumeValue">@ViewBag.appAmt</span></p>
+                            <span asp-validation-for="approvalAmt" class="text-danger"></span>
+                        </div>
+                    </div>
+
                     <p>modified:</p>
                     <input asp-for="dateModified" type="hidden" type="datetime" value="@System.DateTime.Now" />
                     <span asp-validation-for="dateModified" class="text-danger"></span>
@@ -100,6 +109,7 @@
     }
 }
 
+<link href="~/css/forms-stylesheet.css" rel="stylesheet" />
 <script src="~/lib/jquery/dist/jquery.min.js"></script>
 <script src="~/lib/formbuilder/form-builder.min.js"></script>
 <link href="~/lib/trumbowyg-editor/ui/trumbowyg.min.css" rel="stylesheet" />
@@ -110,6 +120,8 @@
     var frm = document.getElementById("form");
     document.getElementById("storedIMG").innerHTML =
     "<img src='../../uploads/@ViewBag.img' width='50%' /><input type='hidden' name='image' id='image' value='@ViewBag.img' />";
+    var volumeSlider = document.getElementById('approvalAmt');
+    var volumeValueDisplay = document.getElementById('volumeValue');
 
 
     jQuery(function ($) { 
@@ -146,5 +158,10 @@
             ],
             autogrow: true
         });
+    });
+
+    // ------------------------------------------- APPROVAL SLIDER
+    volumeSlider.addEventListener('input', function() {
+      volumeValueDisplay.textContent = this.value;
     });
 </script>
