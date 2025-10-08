@@ -24,7 +24,8 @@ public partial class SW_organization
 
 public static class SW_organizationEndpoints
 {
-	public static void MapSW_organizationEndpoints (this IEndpointRouteBuilder routes)
+
+    public static void MapSW_organizationEndpoints (this IEndpointRouteBuilder routes)
     {
         var group = routes.MapGroup("/api/organization").WithTags(nameof(SW_organization));
 

@@ -62,7 +62,8 @@ namespace SWIMS.Controllers
             {
                 _context.Add(sW_formTableDatum);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                string? uID = _context.SW_forms.Where(x => x.Id == sW_formTableDatum.SW_formsId).Select(x => x.uuid).FirstOrDefault();
+                return RedirectToAction("Program", "form", new { uuid = uID });
             }
             ViewData["SW_formsId"] = new SelectList(_context.SW_forms, "Id", "name", sW_formTableDatum.SW_formsId);
             return View(sW_formTableDatum);

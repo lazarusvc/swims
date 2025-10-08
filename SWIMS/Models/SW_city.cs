@@ -18,7 +18,7 @@ public partial class SW_city
 
 public static class SW_cityEndpoints
 {
-	public static void MapSW_cityEndpoints (this IEndpointRouteBuilder routes)
+    public static void MapSW_cityEndpoints (this IEndpointRouteBuilder routes)
     {
         var group = routes.MapGroup("/api/city").WithTags(nameof(SW_city));
 

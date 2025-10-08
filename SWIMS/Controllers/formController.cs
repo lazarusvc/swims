@@ -128,20 +128,115 @@ namespace SWIMS.Controllers
             return View(model);
         }
 
-
-        public IActionResult ApprovalList()
+        public async Task<IActionResult> ProgramExpand(string? uuid)
         {
-            //ViewBag.formData = _context.SW_formTableData.Where(x => x.SW_formsId == formId).ToList();
-            return View();
+            // 0. Varibales
+            // 
+            var f_Linq = _context.SW_forms.Where(m => m.uuid.Equals(uuid));
+            int formId = Convert.ToInt32(f_Linq.Select(m => m.Id).FirstOrDefault());
+            ViewBag.uuid = uuid;
+            ViewBag.formId = formId;
+            ViewBag.form = f_Linq.Select(m => m.form).FirstOrDefault();
+            ViewBag.formName = f_Linq.Select(m => m.name).FirstOrDefault();
+            ViewBag.formImage = f_Linq.Select(m => m.image).FirstOrDefault();
+            ViewBag.formDesc = f_Linq.Select(m => m.desc).FirstOrDefault();
+            ViewBag.header = f_Linq.Select(x => x.header).FirstOrDefault();
+
+            ViewBag.processes = _context.SW_formProcesses
+                .Where(c => c.SW_formsId == formId)
+                .Select(c => new SelectListItem() { Text = c.url, Value = c.url })
+                .ToList();
+
+            ViewBag.entries = _context.SW_formTableData.Where(c => c.SW_formsId == formId).Count();
+            ViewBag.entries_pending = _context.SW_formTableData.Where(
+                c => c.SW_formsId == formId &&
+                c.isApproval_01 == 0 ||
+                c.isApproval_02 == 0 ||
+                c.isApproval_03 == 0).Count();
+            ViewBag.entries_approved = _context.SW_formTableData.Where(
+                c => c.SW_formsId == formId &&
+                c.isApproval_01 == 1 ||
+                c.isApproval_02 == 1 ||
+                c.isApproval_03 == 1).Count();
+
+
+            // 1. Fetch form with JSON
+            var swForm = await _context.SW_forms.FindAsync(formId);
+            if (swForm == null) return NotFound("Form not found");
+
+            // 2. Deserialize JSON definition
+            var formDefinition = JsonSerializer.Deserialize<List<form_FieldAttributes>>(swForm.form);
+            if (formDefinition == null || !formDefinition.Any())
+                return BadRequest("Invalid or empty form definition");
+
+            // 3. Fetch mappings from SW_formTableName
+            var tableNameMappings = _context.SW_formTableNames
+                .Where(t => t.SW_formsId == formId)
+                .ToList();
+
+            // 4. Join JSON fields with SW_formTableName mappings
+            var columnMappings = formDefinition
+                .Join(tableNameMappings,
+                      def => def.name,     // JSON name
+                      map => map.field,     // DB mapping name
+                      (def, map) => new ColumnMap
+                      {
+                          ColumnName = map.field, // e.g. FormData01
+                          Label = def.label       // e.g. "Text Field"
+                      })
+                .ToList();
+
+            if (!columnMappings.Any())
+                return BadRequest("No matching columns found for this form");
+
+            // 5. Fetch actual data rows from SW_formTableDatum
+            var dataRows = await _context.SW_formTableData
+                .Where(d => d.SW_formsId == formId)
+                .ToListAsync();
+
+            // 6. Convert data into dictionary per row
+            var rowList = new List<Dictionary<string, string>>();
+            foreach (var row in dataRows)
+            {
+                var dict = new Dictionary<string, string>();
+                foreach (var col in columnMappings)
+                {
+                    // use reflection to get the property value dynamically
+                    var prop = typeof(SW_formTableDatum).GetProperty(col.ColumnName);
+                    if (prop != null)
+                    {
+                        var val = prop.GetValue(row)?.ToString() ?? string.Empty;
+                        dict[col.ColumnName] = val;
+                        dict["IDS"] = Convert.ToString(row.Id);
+                    }
+                }
+                rowList.Add(dict);
+            }
+
+            // 7. Build ViewModel
+            var model = new FormTableViewModel
+            {
+                FormName = swForm.name,
+                Columns = columnMappings,
+                Rows = rowList
+            };
+
+            return View(model);
         }
 
         [HttpGet]
         public IActionResult Approval(string? uuid)
         {
-            var f_Linq = _context.SW_forms.Where(m => m.uuid.Equals(uuid));
-            int formId = Convert.ToInt32(f_Linq.Select(m => m.Id).FirstOrDefault());
-            
+            var formId = Convert.ToInt32(_context.SW_forms.Where(m => m.uuid == uuid).Select(m => m.Id).FirstOrDefault());
 
+            ViewBag.uuid = uuid;
+            ViewBag.appAmt = Convert.ToInt32(_context.SW_forms.Where(m => m.uuid == uuid).Select(m => m.approvalAmt).FirstOrDefault());
+            ViewBag.appList = _context.SW_formTableData.Where(
+                x => x.isApproval_01 == 0 ||
+                x.isApproval_02 == 0 ||
+                x.isApproval_03 == 0 &&
+                x.SW_formsId == formId
+            ).ToList();
             return View();
         }
 
@@ -151,7 +246,7 @@ namespace SWIMS.Controllers
             //
             int id = Convert.ToInt32(dataID);
             var f_Linq = _context.SW_forms.Where(m => m.uuid.Equals(uuid));
-            int formId = Convert.ToInt32(f_Linq.Select(m => m.Id).FirstOrDefault());
+            int formId = f_Linq.Select(m => m.Id).FirstOrDefault();
             ViewBag.formId = formId;
             ViewBag.form = f_Linq.Select(m => m.form).FirstOrDefault();
             ViewBag.formName = f_Linq.Select(m => m.name).FirstOrDefault();
@@ -422,7 +517,7 @@ namespace SWIMS.Controllers
             ViewBag.Collection = stringArray;
 
             // ************* FormData Types
-            var _fDataType = _context.SW_formTableData_Types.Where(x=>x.SW_formsId == formId).ToList();
+            var _fDataType = _context.SW_formTableData_Types.Where(x => x.SW_formsId == formId).ToList();
             if (_fDataType == null)
             {
                 return NotFound();
@@ -579,6 +674,7 @@ namespace SWIMS.Controllers
             }
             ViewBag.frm = _context.SW_forms.Where(x => x.Id == id).Select(x => x.form).FirstOrDefault();
             ViewBag.img = _context.SW_forms.Where(x => x.Id == id).Select(x => x.image).FirstOrDefault();
+            ViewBag.appAmt = _context.SW_forms.Where(x => x.Id == id).Select(x => x.approvalAmt).FirstOrDefault();
             ViewData["SW_identityId"] = new SelectList(_context.SW_identities, "Id", "name", sW_form.SW_identityId);
             return View(sW_form);
         }
@@ -629,6 +725,7 @@ namespace SWIMS.Controllers
             }
             ViewBag.frm = _context.SW_forms.Where(x => x.Id == id).Select(x => x.form).FirstOrDefault();
             ViewBag.img = _context.SW_forms.Where(x => x.Id == id).Select(x => x.image).FirstOrDefault();
+            ViewBag.appAmt = _context.SW_forms.Where(x => x.Id == id).Select(x => x.approvalAmt).FirstOrDefault();
             ViewData["SW_identityId"] = new SelectList(_context.SW_identities, "Id", "name", sW_form.SW_identityId);
             return View(sW_form);
         }

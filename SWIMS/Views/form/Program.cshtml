@@ -1,4 +1,13 @@
-﻿<a asp-action="Index" asp-controller="Home"><< | back</a>
+﻿<!-- BACK BUTTON -->
+<div style="width: 110px;">
+    <a href="##" onClick="history.go(-1); return false;"
+       class="btn rounded-pill btn-outline-dark-1 radius-8 px-20 py-11 d-flex align-items-center gap-2">
+        <iconify-icon icon="ion:return-up-back-sharp"></iconify-icon> Back
+    </a>
+    <br />
+    <br />
+</div>
+<!-- ----------------------------------------------- -->
 @{
     ViewData["Title"] = "Program - " + @ViewBag.formName;
 }
@@ -66,6 +75,10 @@
                     </span>
                     Last 30 days
                 </p>
+                <br/>
+                <a asp-action="Approval" asp-route-uuid="@ViewBag.uuid" type="button" class="btn rounded-pill btn-outline-success-600 radius-8 px-20 py-11 d-flex align-items-center gap-2">
+                    <iconify-icon icon="tabler:copy-check-filled" class="text-xl"></iconify-icon> Approve 
+                </a>
             </div>
         </div><!-- card end -->
     </div>
@@ -75,6 +88,9 @@
     <div class="col-sm-8">
         <div class="card radius-12 h-100">
             <div class="card-body py-16 px-24" style="overflow-y: scroll; height:500px;">
+                <a asp-action="ProgramExpand" asp-route-uuid="@ViewBag.uuid" type="button" align="end">
+                    <iconify-icon icon="cuida:expand-outline" class="text-xl"></iconify-icon>
+                </a>
                 <form asp-action="Create" asp-controller="formTableData">
                     @Html.Raw(@ViewBag.header)
                     <div id="fb-rendered-form"></div>
@@ -174,12 +190,11 @@
     // CUSTOM FORM FUNCTIONALITY
     //
     // -----------------------------------------------------------------------------------------------------
-    $(document).ready(function () {
-
+    jQuery(function($) {
 
         function findFields($root) {
 
-            $root.find("input[name], select[name], textarea[name]").each(function () {
+            $root.find("input[name], select[name], textarea[name], input[radio-group]").each(function () {
                 var $field = $(this);
                 var fieldName = $field.attr("name");
 
@@ -247,9 +262,9 @@
                 // find all corresponding fields with classname as `is-skipping` 
                 // toggle between `yes` or `no` to display fields
                 //
-                if (fieldClasses[0] === "skipping-checker" && fieldIds[0] === "FormData03-0")  {
+                if (fieldClasses[0] === "skipping-checker")  {
                     $(".is-skipping").parent("div").hide();
-                    $(this).parent("div").change(function() {
+                    $(this).parent("div").on("change", function() {
                         if($(".skipping-checker:eq(0)").is(':checked')) {
                             $(".is-skipping").parent("div").show();
                         }

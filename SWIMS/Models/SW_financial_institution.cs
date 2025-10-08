@@ -20,7 +20,8 @@ public partial class SW_financial_institution
 
 public static class SW_financial_institutionEndpoints
 {
-	public static void MapSW_financial_institutionEndpoints (this IEndpointRouteBuilder routes)
+    private static readonly IConfiguration config;
+    public static void MapSW_financial_institutionEndpoints (this IEndpointRouteBuilder routes)
     {
         var group = routes.MapGroup("/api/financial_institution").WithTags(nameof(SW_financial_institution));
 
