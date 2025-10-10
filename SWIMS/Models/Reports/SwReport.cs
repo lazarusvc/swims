@@ -1,10 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using SWIMS.Models.Logging;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 
 namespace SWIMS.Models.Reports
 {
-    public class SwReport
+    public class SwReport : IAudited
     {
         public int Id { get; set; }
 

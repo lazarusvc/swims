@@ -1,8 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using SWIMS.Models.Logging;
+using System.Collections.Generic;
 
 namespace SWIMS.Models
 {
-    public class StoredProcess
+    public class StoredProcess : IAudited
     {
         public int Id { get; set; }
 
