@@ -85,6 +85,29 @@
 </div>
 <br />
 <div class="row">
+    <div class="col-md-3">
+        <a asp-action="Approval" asp-route-uuid="@ViewBag.uuid" type="button" class="btn rounded-pill btn-outline-dark-1 radius-8 px-20 py-11 d-flex align-items-center gap-2">
+            <iconify-icon icon="mdi:handshake" class="menu-icon"></iconify-icon> Add new
+        </a>
+    </div>
+    <div class="col-md-3">
+        <a asp-action="Approval" asp-route-uuid="@ViewBag.uuid" type="button" class="btn rounded-pill btn-outline-dark-1 radius-8 px-20 py-11 d-flex align-items-center gap-2">
+            <iconify-icon icon="tabler:building-skyscraper" class="menu-icon"></iconify-icon> Add new
+        </a>
+    </div>
+    <div class="col-md-3">
+        <a asp-action="Approval" asp-route-uuid="@ViewBag.uuid" type="button" class="btn rounded-pill btn-outline-dark-1 radius-8 px-20 py-11 d-flex align-items-center gap-2">
+            <iconify-icon icon="tabler:building-community" class="menu-icon"></iconify-icon> Add new
+        </a>
+    </div>
+    <div class="col-md-3">
+        <a asp-action="Approval" asp-route-uuid="@ViewBag.uuid" type="button" class="btn rounded-pill btn-outline-dark-1 radius-8 px-20 py-11 d-flex align-items-center gap-2">
+            <iconify-icon icon="tabler:building-bank" class="menu-icon"></iconify-icon> Add new
+        </a>
+    </div>
+</div>
+<br />
+<div class="row">
     <div class="col-sm-8">
         <div class="card radius-12 h-100">
             <div class="card-body py-16 px-24" style="overflow-y: scroll; height:500px;">
@@ -197,13 +220,20 @@
             $root.find("input[name], select[name], textarea[name], input[radio-group]").each(function () {
                 var $field = $(this);
                 var fieldName = $field.attr("name");
+                var fieldName_actual = "";
+
+                if (fieldName.indexOf("Form") >= 0) {
+                    // do nothing
+                } else {
+                    fieldName_actual = fieldName;
+                }
 
                 //  Grab classes into an array
                 var fieldClasses = ($field.attr("class")).split(/\s+/).filter(c => c.length > 0);
 
                 // Grab ids into an Array
                 var fieldIds = ($field.attr("id")).split(/\s+/).filter(c => c.length > 0);
-                console.log(fieldIds);
+                // console.log(fieldIds);
                 
                 // API LOGIC
                 //
@@ -212,7 +242,7 @@
                 // If there’s a match and the field is a <select>, populate it with options from the API response.
                 //
                 $.ajax({
-                    url: "/api/" + fieldName,
+                    url: "/api/" + fieldName_actual,
                     method: "GET",
                     dataType: "json",
                     success: function (data) {
@@ -222,7 +252,7 @@
                         if ($field.is("select")) {
                             $field.empty(); // Clear existing options
                             $.each(data, function (i, opt) {
-                                var $opt = $("<option>").val(opt.id).text(opt.name);
+                                var $opt = $("<option>").val(opt.id + "," + opt.uuid + "," + opt.name).text(opt.name);
                                 if (data.defaultValue && data.defaultValue == opt.value) {
                                     $opt.prop("selected", true);
                                 }
@@ -232,19 +262,19 @@
   
                         $("select[name="+ fieldName +"]").on("keyup change", function() {
 
-                            var select_list_classVAL = $(this).children("option:selected").text();
+                            var select_list_classVAL = $(this).children("option:selected").val().split(",");
 
                             if (fieldName === "beneficiary") {
-                                $("." + fieldName).val(select_list_classVAL);
+                                $("." + fieldName).val(parseStr(select_list_classVAL[1]));
                             }
                             if (fieldName === "city") {
-                                $("." + fieldName).val(select_list_classVAL);
+                                $("." + fieldName).val(select_list_classVAL[2]);
                             }
                             if (fieldName === "financial_institution") {
-                                $("." + fieldName).val(select_list_classVAL);
+                                $("." + fieldName).val(select_list_classVAL[2]);
                             }
                             if (fieldName === "organization") {
-                                $("." + fieldName).val(select_list_classVAL);
+                                $("." + fieldName).val(select_list_classVAL[2]);
                             }
                         });                      
 
