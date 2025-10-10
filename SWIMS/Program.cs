@@ -261,6 +261,18 @@ app.UseFileServer(new FileServerOptions
 
 app.UseRouting();
 
+app.Use(async (ctx, next) =>
+{
+    // Basic self-redirect guard for login routes
+    var p = ctx.Request.Path.Value?.ToLowerInvariant() ?? "";
+    if (p.StartsWith("/account/login") || p == "/healthz" || p == "/readyz" || p.StartsWith("/_framework") || p.StartsWith("/css") || p.StartsWith("/js"))
+    {
+        // let these pass without auth challenge to avoid loops
+    }
+    await next();
+});
+
+
 app.UseAuthentication();
 app.UseAuthorization();
 

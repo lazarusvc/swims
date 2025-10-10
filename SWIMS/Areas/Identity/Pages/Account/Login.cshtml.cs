@@ -21,6 +21,7 @@ using System.Threading.Tasks;
 
 namespace SWIMS.Areas.Identity.Pages.Account
 {
+    [AllowAnonymous]
     public class LoginModel : PageModel
     {
         private readonly SignInManager<SwUser> _signInManager;
