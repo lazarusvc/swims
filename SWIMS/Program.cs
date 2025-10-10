@@ -134,7 +134,7 @@ builder.Services.AddSingleton<IEndpointCatalog, EndpointCatalog>();
 
 
 // Use BCrypt for password hashing
-builder.Services.AddScoped<IPasswordHasher<SwUser>, BcryptPasswordHasher>();
+builder.Services.AddScoped<IPasswordHasher<SwUser>, CompatibleBcryptHasher>();
 
 // LDAP authentication service singleton
 builder.Services.AddSingleton<ILdapAuthService, LdapAuthService>();
