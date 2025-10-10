@@ -1,9 +1,10 @@
-﻿using System.Security.Claims;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using SWIMS.Data;
+using SWIMS.Services.Notifications;
+using System.Security.Claims;
 
 namespace SWIMS.Web.Endpoints;
 
@@ -69,6 +70,28 @@ public static class NotificationsEndpoints
             return Results.Ok(new { count });
         });
 
+        group.MapGet("/prefs", async (HttpContext http, INotificationPreferences svc) =>
+        {
+            if (!int.TryParse(http.User.FindFirstValue(ClaimTypes.NameIdentifier), out var uid))
+                return Results.Unauthorized();
+
+            var rows = await svc.ListAsync(uid);
+            return Results.Ok(rows.Select(x => new { type = x.type, inApp = x.inApp, email = x.email, digest = x.digest }));
+        });
+
+        group.MapPut("/prefs", async (HttpContext http, INotificationPreferences svc, PrefUpsert dto) =>
+        {
+            if (!int.TryParse(http.User.FindFirstValue(ClaimTypes.NameIdentifier), out var uid))
+                return Results.Unauthorized();
+
+            await svc.UpsertAsync(uid, dto.Type, dto.InApp, dto.Email, dto.Digest);
+            return Results.Ok(new { ok = true });
+        });
+
+
+
         return app;
     }
+
+    internal record PrefUpsert(string? Type, bool InApp, bool Email, bool Digest);
 }

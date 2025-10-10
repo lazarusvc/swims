@@ -6,6 +6,7 @@ namespace SWIMS.Data
     public partial class SwimsIdentityDbContext
     {
         public virtual DbSet<Notification> Notifications { get; set; } = default!;
+        public virtual DbSet<NotificationPreference> NotificationPreferences { get; set; } = default!;
 
         private void MapNotifications(ModelBuilder modelBuilder)
         {
@@ -20,6 +21,15 @@ namespace SWIMS.Data
 
                 b.HasIndex(x => new { x.UserId, x.Seen, x.CreatedUtc });
                 b.HasIndex(x => x.CreatedUtc);
+            });
+
+            modelBuilder.Entity<NotificationPreference>(b =>
+            {
+                b.ToTable("notification_prefs", schema: "notify");
+                b.HasKey(x => x.Id);
+
+                b.Property(x => x.Type).HasMaxLength(128);
+                b.HasIndex(x => new { x.UserId, x.Type }).IsUnique();
             });
         }
     }
