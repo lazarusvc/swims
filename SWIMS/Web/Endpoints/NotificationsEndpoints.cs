@@ -1,0 +1,62 @@
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.EntityFrameworkCore;
+using SWIMS.Data;
+
+namespace SWIMS.Web.Endpoints;
+
+public static class NotificationsEndpoints
+{
+    public static IEndpointRouteBuilder MapSwimsNotificationsEndpoints(this IEndpointRouteBuilder app)
+    {
+        var group = app.MapGroup("/me/notifications").RequireAuthorization();
+
+        // GET /me/notifications?unseenOnly=true&skip=0&take=20
+        group.MapGet("", async (HttpContext http, SwimsIdentityDbContext db, bool? unseenOnly, int? skip, int? take) =>
+        {
+            if (!int.TryParse(http.User.FindFirstValue(ClaimTypes.NameIdentifier), out var uid))
+                return Results.Unauthorized();
+
+            var q = db.Notifications.AsNoTracking().Where(n => n.UserId == uid);
+            if (unseenOnly == true) q = q.Where(n => !n.Seen);
+
+            var sk = Math.Max(0, skip ?? 0);
+            var tk = Math.Clamp(take ?? 20, 1, 100);
+
+            var total = await q.CountAsync();
+            var items = await q.OrderByDescending(n => n.CreatedUtc).Skip(sk).Take(tk).ToListAsync();
+
+            return Results.Ok(new { total, skip = sk, take = tk, items });
+        });
+
+        // POST /me/notifications/{id}/seen
+        group.MapPost("/{id:guid}/seen", async (HttpContext http, SwimsIdentityDbContext db, Guid id) =>
+        {
+            if (!int.TryParse(http.User.FindFirstValue(ClaimTypes.NameIdentifier), out var uid))
+                return Results.Unauthorized();
+
+            var row = await db.Notifications.FirstOrDefaultAsync(n => n.Id == id && n.UserId == uid);
+            if (row is null) return Results.NotFound();
+
+            row.Seen = true;
+            await db.SaveChangesAsync();
+            return Results.Ok(new { ok = true });
+        });
+
+        // POST /me/notifications/seen-all
+        group.MapPost("/seen-all", async (HttpContext http, SwimsIdentityDbContext db) =>
+        {
+            if (!int.TryParse(http.User.FindFirstValue(ClaimTypes.NameIdentifier), out var uid))
+                return Results.Unauthorized();
+
+            await db.Notifications.Where(n => n.UserId == uid && !n.Seen)
+                .ExecuteUpdateAsync(s => s.SetProperty(n => n.Seen, true));
+
+            return Results.Ok(new { ok = true });
+        });
+
+        return app;
+    }
+}
