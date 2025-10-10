@@ -31,3 +31,13 @@
 <!-- main js -->
 <script src="~/WowDash/js/app.js"></script>
 
+
+<script>
+    (function(){
+      const ping = () => fetch('/me/heartbeat', { method:'POST', headers: { 'X-Requested-With':'fetch' } }).catch(()=>{});
+      setInterval(ping, 5 * 60 * 1000);
+      // also ping shortly after page load
+      setTimeout(ping, 10 * 1000);
+    })();
+</script>
+

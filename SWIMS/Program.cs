@@ -25,9 +25,12 @@ using SWIMS.Services;
 using SWIMS.Services.Auth;
 using SWIMS.Services.Diagnostics;
 using SWIMS.Services.Diagnostics.Auditing;
+using SWIMS.Services.Diagnostics.Sessions;
 using SWIMS.Services.Email;
 using SWIMS.Services.Reporting;
+using SWIMS.Web.Endpoints;
 using System.Net;
+using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -73,6 +76,17 @@ builder.Services.AddDbContext<SwimsReportsDbContext>(options =>
         builder.Configuration.GetConnectionString("DefaultConnection"),
         sql => sql.MigrationsHistoryTable("__EFMigrationsHistory_Reports", "rpt")
     ));
+
+// DI
+builder.Services.AddScoped<ISessionLogger, SessionLogger>();
+builder.Services.AddScoped<SessionCookieEvents>();
+
+// Identity cookie events hookup (after AddIdentity / before app.Build())
+builder.Services.ConfigureApplicationCookie(opts =>
+{
+    opts.EventsType = typeof(SessionCookieEvents);
+    // keep your existing cookie settings if any
+});
 
 
 builder.Services.Configure<ReportingOptions>(builder.Configuration.GetSection("Reporting"));
@@ -283,9 +297,7 @@ app.Use(async (ctx, next) =>
 app.UseAuthentication();
 app.UseAuthorization();
 
-// Healthz/Readyz (anonymous)
-app.MapHealthChecks("/healthz").AllowAnonymous();
-app.MapGet("/readyz", () => Results.Ok(new { status = "ready" })).AllowAnonymous();
+app.MapSwimsCoreEndpoints();
 
 app.MapStaticAssets();
 

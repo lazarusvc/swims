@@ -6,6 +6,7 @@ namespace SWIMS.Data
     public partial class SwimsIdentityDbContext
     {
         public virtual DbSet<AuditLog> AuditLogs { get; set; } = default!;
+        public virtual DbSet<SessionLog> SessionLogs { get; set; } = default!;
 
         private void MapLogging(ModelBuilder modelBuilder)
         {
@@ -23,6 +24,21 @@ namespace SWIMS.Data
 
                 b.HasIndex(x => new { x.Entity, x.EntityId, x.Utc });
                 b.HasIndex(x => new { x.UserId, x.Utc });
+            });
+
+            modelBuilder.Entity<SessionLog>(b =>
+            {
+                b.ToTable("session_logs", schema: "log");
+                b.HasKey(x => x.Id);
+
+                b.Property(x => x.Username).HasMaxLength(256);
+                b.Property(x => x.SessionId).IsRequired().HasMaxLength(64);
+                b.Property(x => x.Ip).HasMaxLength(64);
+                b.Property(x => x.UserAgent).HasMaxLength(512);
+
+                b.HasIndex(x => new { x.UserId, x.LoginUtc });
+                b.HasIndex(x => new { x.UserId, x.SessionId }).IsUnique(false);
+                b.HasIndex(x => x.LastSeenUtc);
             });
         }
     }
