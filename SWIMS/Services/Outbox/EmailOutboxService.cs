@@ -1,9 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Hangfire;
+using Microsoft.EntityFrameworkCore;
 using Serilog;
 using SWIMS.Data;
 using SWIMS.Models.Email;
 using SWIMS.Models.Outbox;
 using SWIMS.Services.Email;
+using SWIMS.Services.Outbox.Jobs;
+using System.Threading;
 
 namespace SWIMS.Services.Outbox;
 
@@ -37,6 +40,10 @@ public sealed class EmailOutboxService : IEmailOutbox
 
         _db.EmailOutbox.Add(row);
         await _db.SaveChangesAsync();
+
+        // Kick the dispatcher to run ASAP (keeps outbox as the source of truth)
+        BackgroundJob.Enqueue<EmailOutboxJobs>(j => j.RunOnceAsync(20, null, CancellationToken.None));
+
         return row.Id;
     }
 
