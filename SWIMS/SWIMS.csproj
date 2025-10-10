@@ -58,6 +58,7 @@
 
 	<ItemGroup>
 	  <Folder Include="wwwroot\docs\" />
+	  <Folder Include="wwwroot\lib\signalr\" />
 	</ItemGroup>
 
 	<!-- Auto-generate DocFX site after each build -->
