@@ -17,6 +17,7 @@ namespace SWIMS.Data
             MapAccessControl(modelBuilder);    // defined in AccessControl partial (other file)
             MapLogging(modelBuilder);
             MapNotifications(modelBuilder);
+            MapOperations(modelBuilder);
         }
 
         // Local mapper for the policy tables

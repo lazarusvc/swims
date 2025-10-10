@@ -9,6 +9,8 @@
 //   - SWIMS.Services.BcryptPasswordHasher, LdapAuthService, SeedData
 // -------------------------------------------------------------------
 
+using Hangfire;
+using Hangfire.SqlServer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
@@ -28,9 +30,12 @@ using SWIMS.Services.Diagnostics.Auditing;
 using SWIMS.Services.Diagnostics.Sessions;
 using SWIMS.Services.Email;
 using SWIMS.Services.Notifications;
+using SWIMS.Services.Outbox;
+using SWIMS.Services.Outbox.Jobs;
 using SWIMS.Services.Reporting;
 using SWIMS.Web.Endpoints;
 using SWIMS.Web.Hubs;
+using SWIMS.Web.Ops;
 using System.Net;
 using System.Security.Claims;
 
@@ -92,6 +97,28 @@ builder.Services.ConfigureApplicationCookie(opts =>
 
 builder.Services.AddSignalR();
 builder.Services.AddScoped<INotifier, Notifier>();
+
+builder.Services.AddScoped<IEmailOutbox, EmailOutboxService>();
+builder.Services.AddScoped<EmailOutboxJobs>();
+
+builder.Services.AddHangfire(cfg =>
+{
+    cfg.SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+       .UseSimpleAssemblyNameTypeSerializer()
+       .UseRecommendedSerializerSettings()
+       .UseSqlServerStorage(builder.Configuration.GetConnectionString("DefaultConnection"), new SqlServerStorageOptions
+       {
+           SchemaName = "ops",
+           PrepareSchemaIfNecessary = true,
+           SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
+           QueuePollInterval = TimeSpan.FromSeconds(15),
+           CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
+           UseRecommendedIsolationLevel = true
+       });
+});
+
+// Hangfire Server
+builder.Services.AddHangfireServer();
 
 
 builder.Services.Configure<ReportingOptions>(builder.Configuration.GetSection("Reporting"));
@@ -304,6 +331,19 @@ app.UseAuthorization();
 
 app.MapSwimsCoreEndpoints();
 app.MapHub<NotifsHub>("/hubs/notifs");
+
+app.UseHangfireDashboard("/ops/hangfire", new DashboardOptions
+{
+    Authorization = new[] { new HangfireDashboardAuthFilter() },
+    IsReadOnlyFunc = _ => false
+});
+
+// schedule the recurring dispatcher when app starts
+using (var scope = app.Services.CreateScope())
+{
+    var recurring = scope.ServiceProvider.GetRequiredService<IRecurringJobManager>();
+    recurring.AddOrUpdate<EmailOutboxJobs>("email-outbox-dispatch", j => j.RunOnceAsync(50, default), Cron.Minutely);
+}
 
 app.MapStaticAssets();
 
