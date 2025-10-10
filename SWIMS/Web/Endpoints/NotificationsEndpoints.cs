@@ -88,6 +88,21 @@ public static class NotificationsEndpoints
             return Results.Ok(new { ok = true });
         });
 
+        group.MapGet("/types", async (HttpContext http, SwimsIdentityDbContext db) =>
+        {
+            if (!int.TryParse(http.User.FindFirstValue(ClaimTypes.NameIdentifier), out var uid))
+                return Results.Unauthorized();
+
+            var types = await db.Notifications.AsNoTracking()
+                .Where(n => n.UserId == uid)
+                .Select(n => n.Type)
+                .Distinct()
+                .OrderBy(t => t)
+                .Take(50)
+                .ToListAsync();
+
+            return Results.Ok(types);
+        });
 
 
         return app;
