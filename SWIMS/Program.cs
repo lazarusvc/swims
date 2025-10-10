@@ -24,6 +24,7 @@ using SWIMS.Models.StoredProcs;
 using SWIMS.Services;
 using SWIMS.Services.Auth;
 using SWIMS.Services.Diagnostics;
+using SWIMS.Services.Diagnostics.Auditing;
 using SWIMS.Services.Email;
 using SWIMS.Services.Reporting;
 using System.Net;
@@ -37,14 +38,20 @@ Log.Logger = new LoggerConfiguration()
     .CreateLogger();
 builder.Host.UseSerilog();
 
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<AuditSaveChangesInterceptor>();
+
 // ------------------------------------------------------
 // Configure database context and EF Core migrations
 // ------------------------------------------------------
-builder.Services.AddDbContext<SwimsIdentityDbContext>(options =>
+builder.Services.AddDbContext<SwimsIdentityDbContext>((sp, options) =>
+{
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection"),
         sql => sql.MigrationsHistoryTable("__EFMigrationsHistory_Identity", "auth")
-    ));
+    );
+    options.AddInterceptors(sp.GetRequiredService<AuditSaveChangesInterceptor>());
+});
 
 builder.Services.AddDbContext<SwimsDb_moreContext>(options =>
     options.UseSqlServer(
