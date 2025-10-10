@@ -10,6 +10,7 @@
 // -------------------------------------------------------------------
 
 using Hangfire;
+using Hangfire.Console;
 using Hangfire.SqlServer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -37,6 +38,7 @@ using SWIMS.Web.Endpoints;
 using SWIMS.Web.Hubs;
 using SWIMS.Web.Ops;
 using System.Net;
+using System.Threading;
 using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -118,7 +120,10 @@ builder.Services.AddHangfire(cfg =>
 });
 
 // Hangfire Server
-builder.Services.AddHangfireServer();
+builder.Services.AddHangfireServer(options =>
+{
+    options.Queues = new[] { "outbox", "default" }; // "outbox" first = higher priority
+});
 
 
 builder.Services.Configure<ReportingOptions>(builder.Configuration.GetSection("Reporting"));
@@ -245,6 +250,24 @@ builder.Services.AddTransient<IEmailSender<SwUser>, IdentityEmailSenderAdapter>(
 // Health endpoints (lightweight)
 builder.Services.AddHealthChecks();
 
+builder.Services.AddHangfire(cfg =>
+{
+    cfg.SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+       .UseSimpleAssemblyNameTypeSerializer()
+       .UseRecommendedSerializerSettings()
+       .UseConsole() // 👈 add this
+       .UseSqlServerStorage(builder.Configuration.GetConnectionString("DefaultConnection"), new SqlServerStorageOptions
+       {
+           SchemaName = "ops",
+           PrepareSchemaIfNecessary = true,
+           SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
+           QueuePollInterval = TimeSpan.FromSeconds(15),
+           CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
+           UseRecommendedIsolationLevel = true
+       });
+});
+
+
 
 var app = builder.Build();
 
@@ -342,7 +365,10 @@ app.UseHangfireDashboard("/ops/hangfire", new DashboardOptions
 using (var scope = app.Services.CreateScope())
 {
     var recurring = scope.ServiceProvider.GetRequiredService<IRecurringJobManager>();
-    recurring.AddOrUpdate<EmailOutboxJobs>("email-outbox-dispatch", j => j.RunOnceAsync(50, default), Cron.Minutely);
+    recurring.AddOrUpdate<EmailOutboxJobs>(
+    "email-outbox-dispatch",
+    j => j.RunOnceAsync(50, null, CancellationToken.None),
+    Cron.Minutely);
 }
 
 app.MapStaticAssets();
