@@ -267,6 +267,8 @@ builder.Services.AddHangfire(cfg =>
        });
 });
 
+builder.Services.AddScoped<INotificationPreferences, NotificationPreferences>();
+
 
 
 var app = builder.Build();
