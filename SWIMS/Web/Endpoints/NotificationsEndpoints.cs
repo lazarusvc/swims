@@ -57,6 +57,18 @@ public static class NotificationsEndpoints
             return Results.Ok(new { ok = true });
         });
 
+        group.MapGet("/count", async (HttpContext http, SwimsIdentityDbContext db) =>
+        {
+            if (!int.TryParse(http.User.FindFirstValue(ClaimTypes.NameIdentifier), out var uid))
+                return Results.Unauthorized();
+
+            var count = await db.Notifications.AsNoTracking()
+                .Where(n => n.UserId == uid && !n.Seen)
+                .CountAsync();
+
+            return Results.Ok(new { count });
+        });
+
         return app;
     }
 }
