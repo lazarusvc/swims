@@ -130,7 +130,11 @@ builder.Services.Configure<ReportingOptions>(builder.Configuration.GetSection("R
 builder.Services.AddScoped<ISsrsUrlBuilder, SsrsUrlBuilder>();
 
 // Configure Razor Pages
-builder.Services.AddRazorPages();
+builder.Services.AddRazorPages(options =>
+{
+    // Require auth for all Portal pages by default
+    options.Conventions.AuthorizeAreaFolder("Portal", "/");
+});
 
 // ------------------------------------------------------
 // Configure Identity and authentication services
