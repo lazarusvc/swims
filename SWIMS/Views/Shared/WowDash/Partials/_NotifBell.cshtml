@@ -1,0 +1,44 @@
+﻿@* WowDash-styled notifications bell + dropdown, wired for our JS *@
+<div id="notif-root" class="dropdown">
+    <button id="notif-bell"
+            class="has-indicator w-40-px h-40-px bg-neutral-200 rounded-circle d-flex justify-content-center align-items-center position-relative"
+            type="button"
+            data-bs-toggle="dropdown"
+            data-bs-auto-close="outside"
+            aria-expanded="false">
+        <iconify-icon icon="iconoir:bell" class="text-primary-light text-xl"></iconify-icon>
+
+        @* numeric badge (hidden when 0) *@
+        <span id="notif-badge"
+              class="d-none position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+            0
+        </span>
+    </button>
+
+    <div id="notif-dropdown" class="dropdown-menu to-top dropdown-menu-lg p-0">
+        <div class="m-16 py-12 px-16 radius-8 bg-primary-50 mb-16 d-flex align-items-center justify-content-between gap-2">
+            <div>
+                <h6 class="text-lg text-primary-light fw-semibold mb-0">Notifications</h6>
+            </div>
+
+            @* header count mirror (optional); we’ll update via JS if desired *@
+            <span id="notif-badge-header"
+                  class="text-primary-600 fw-semibold text-lg w-40-px h-40-px rounded-circle bg-base d-flex justify-content-center align-items-center">
+                0
+            </span>
+        </div>
+
+        <div class="max-h-400-px overflow-y-auto scroll-sm pe-4">
+            <ul id="notif-list" class="list-unstyled mb-0 px-16"></ul>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center gap-2 py-12 px-16 border-top">
+            <button id="notif-mark-all" class="btn btn-link p-0 text-primary-600 fw-semibold text-md">Mark all as read</button>
+            <button id="notif-load-more" class="btn btn-link p-0 text-secondary-light text-md">Load more</button>
+        </div>
+
+        <div class="text-center py-12 px-16 border-top">
+            <a href="javascript:void(0)" class="text-primary-600 fw-semibold text-md">See All Notification</a>
+        </div>
+    </div>
+</div>
