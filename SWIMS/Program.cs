@@ -103,6 +103,9 @@ builder.Services.AddScoped<INotifier, Notifier>();
 builder.Services.AddScoped<IEmailOutbox, EmailOutboxService>();
 builder.Services.AddScoped<EmailOutboxJobs>();
 
+builder.Services.AddScoped<INotificationEmailComposer, NotificationEmailComposer>();
+
+
 builder.Services.AddHangfire(cfg =>
 {
     cfg.SetDataCompatibilityLevel(CompatibilityLevel.Version_180)

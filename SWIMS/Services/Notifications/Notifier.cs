@@ -14,14 +14,17 @@ public sealed class Notifier : INotifier
     private readonly IHubContext<NotifsHub> _hub;
     private readonly INotificationPreferences _prefs;
     private readonly IEmailOutbox _outbox;
+    private readonly INotificationEmailComposer _composer;
 
     public Notifier(
         SwimsIdentityDbContext db,
         IHubContext<NotifsHub> hub,
         INotificationPreferences prefs,
-        IEmailOutbox outbox)
+        IEmailOutbox outbox,
+        INotificationEmailComposer composer)
     {
         _db = db; _hub = hub; _prefs = prefs; _outbox = outbox;
+        _composer = composer;
     }
 
     public async Task NotifyUserAsync(int userId, string username, string type, object payload)
@@ -51,23 +54,15 @@ public sealed class Notifier : INotifier
         // 2) Email hand-off (if enabled) — resolve actual email from Users table
         if (email)
         {
-            // Prefer Users.Email; if empty, fall back only if username LOOKS like an email
-            var userEmail = await _db.Users
-                .Where(u => u.Id == userId)
-                .Select(u => u.Email)
-                .FirstOrDefaultAsync();
-
-            string? to = !string.IsNullOrWhiteSpace(userEmail)
-                ? userEmail
-                : (LooksLikeEmail(username) ? username : null);
+            var userEmail = await _db.Users.Where(u => u.Id == userId).Select(u => u.Email).FirstOrDefaultAsync();
+            string? to = !string.IsNullOrWhiteSpace(userEmail) ? userEmail :
+                         (LooksLikeEmail(username) ? username : null);
 
             if (!string.IsNullOrWhiteSpace(to))
             {
-                var subject = $"SWIMS: {type}";
-                var body = json; // TODO: replace with templated body later
-                await _outbox.EnqueueAsync(to!, subject, html: $"<pre>{body}</pre>", text: body);
+                var (subject, html, text) = await _composer.ComposeAsync(userId, type, username, json);
+                await _outbox.EnqueueAsync(to!, subject, html: html, text: text);
             }
-            // else: no valid email available -> silently skip email channel
         }
     }
 
