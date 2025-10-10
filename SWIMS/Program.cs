@@ -15,6 +15,8 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
+using Serilog;
+using Serilog.Events;
 using SWIMS.Data;
 using SWIMS.Data.Reports;
 using SWIMS.Models;
@@ -27,6 +29,13 @@ using SWIMS.Services.Reporting;
 using System.Net;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Serilog bootstrap (read from config + dev-friendly console)
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .MinimumLevel.Override("Microsoft.Hosting.Lifetime", LogEventLevel.Information)
+    .CreateLogger();
+builder.Host.UseSerilog();
 
 // ------------------------------------------------------
 // Configure database context and EF Core migrations
@@ -180,32 +189,35 @@ builder.Services.AddTransient<IEmailSender<SwUser>, IdentityEmailSenderAdapter>(
 // Register the one-time startup test in Development only
 // builder.Services.AddHostedService<SWIMS.Services.Email.StartupEmailSmokeTest>();
 
+// Health endpoints (lightweight)
+builder.Services.AddHealthChecks();
+
 
 var app = builder.Build();
 
 
-using (var scope = app.Services.CreateScope())
-{
-    var services = scope.ServiceProvider;
-    try
-    {
-        // Run pending migrations (Identity DB)
-        var db_1 = services.GetRequiredService<SwimsIdentityDbContext>();
-        db_1.Database.Migrate();
-        //  re-enable for second DB:
-        // var db_2 = services.GetRequiredService<SwimsDb_moreContext>();
-        // db_2.Database.Migrate();
+//using (var scope = app.Services.CreateScope())
+//{
+//    var services = scope.ServiceProvider;
+//    try
+//    {
+//        // Run pending migrations (Identity DB)
+//        var db_1 = services.GetRequiredService<SwimsIdentityDbContext>();
+//        db_1.Database.Migrate();
+//        //  re-enable for second DB:
+//        // var db_2 = services.GetRequiredService<SwimsDb_moreContext>();
+//        // db_2.Database.Migrate();
         
-        // Seed roles  admin + policies
-        await SeedData.EnsureSeedDataAsync(services);
-    }
-    catch (Exception ex)
-    {
-        var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "Seeding failed at startup.");
-        throw; // fail fast so we see the real error
-    }
-}
+//        // Seed roles  admin + policies
+//        await SeedData.EnsureSeedDataAsync(services);
+//    }
+//    catch (Exception ex)
+//    {
+//        var logger = services.GetRequiredService<ILogger<Program>>();
+//        logger.LogError(ex, "Seeding failed at startup.");
+//        throw; // fail fast so we see the real error
+//    }
+//}
 
 
 
@@ -219,6 +231,16 @@ using (var scope = app.Services.CreateScope())
     // production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
+
+app.UseSerilogRequestLogging(opts =>
+{
+    opts.EnrichDiagnosticContext = (diag, http) =>
+    {
+        diag.Set("UserId", http.User?.Identity?.IsAuthenticated == true ? http.User.Identity!.Name : "anonymous");
+        diag.Set("ClientIP", http.Connection.RemoteIpAddress?.ToString());
+        diag.Set("RequestPath", http.Request.Path);
+    };
+});
 
 app.UseHttpsRedirection();
 
@@ -238,8 +260,13 @@ app.UseFileServer(new FileServerOptions
 
 
 app.UseRouting();
+
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Healthz/Readyz (anonymous)
+app.MapHealthChecks("/healthz").AllowAnonymous();
+app.MapGet("/readyz", () => Results.Ok(new { status = "ready" })).AllowAnonymous();
 
 app.MapStaticAssets();
 
