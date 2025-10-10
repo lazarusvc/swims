@@ -37,6 +37,6 @@ public static class CoreEndpoints
             return Results.Ok(new { ok = true });
         }).RequireAuthorization();
 
-        return app;
+        return app.MapSwimsNotificationsEndpoints();
     }
 }

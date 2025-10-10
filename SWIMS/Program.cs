@@ -27,8 +27,10 @@ using SWIMS.Services.Diagnostics;
 using SWIMS.Services.Diagnostics.Auditing;
 using SWIMS.Services.Diagnostics.Sessions;
 using SWIMS.Services.Email;
+using SWIMS.Services.Notifications;
 using SWIMS.Services.Reporting;
 using SWIMS.Web.Endpoints;
+using SWIMS.Web.Hubs;
 using System.Net;
 using System.Security.Claims;
 
@@ -87,6 +89,9 @@ builder.Services.ConfigureApplicationCookie(opts =>
     opts.EventsType = typeof(SessionCookieEvents);
     // keep your existing cookie settings if any
 });
+
+builder.Services.AddSignalR();
+builder.Services.AddScoped<INotifier, Notifier>();
 
 
 builder.Services.Configure<ReportingOptions>(builder.Configuration.GetSection("Reporting"));
@@ -298,6 +303,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapSwimsCoreEndpoints();
+app.MapHub<NotifsHub>("/hubs/notifs");
 
 app.MapStaticAssets();
 
