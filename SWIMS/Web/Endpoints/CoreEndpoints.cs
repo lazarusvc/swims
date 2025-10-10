@@ -65,6 +65,8 @@ public static class CoreEndpoints
             }).RequireAuthorization();
         }
 
-        return app.MapSwimsNotificationsEndpoints();
+        return app.MapSwimsNotificationsEndpoints()
+          .MapSwimsOperationsEndpoints();
+
     }
 }
