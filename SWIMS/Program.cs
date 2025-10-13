@@ -31,6 +31,7 @@ using SWIMS.Services.Diagnostics.Auditing;
 using SWIMS.Services.Diagnostics.Sessions;
 using SWIMS.Services.Email;
 using SWIMS.Services.Notifications;
+using SWIMS.Services.Notifications.Jobs;
 using SWIMS.Services.Outbox;
 using SWIMS.Services.Outbox.Jobs;
 using SWIMS.Services.Reporting;
@@ -38,8 +39,8 @@ using SWIMS.Web.Endpoints;
 using SWIMS.Web.Hubs;
 using SWIMS.Web.Ops;
 using System.Net;
-using System.Threading;
 using System.Security.Claims;
+using System.Threading;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -107,6 +108,8 @@ builder.Services.AddScoped<EmailOutboxJobs>();
 
 builder.Services.AddScoped<INotificationEmailComposer, NotificationEmailComposer>();
 
+builder.Services.AddScoped<NotificationDigestJobs>();
+
 
 builder.Services.AddHangfire(cfg =>
 {
@@ -130,6 +133,11 @@ builder.Services.AddHangfireServer(options =>
     options.Queues = new[] { "outbox", "default" }; // "outbox" first = higher priority
 });
 
+RecurringJob.AddOrUpdate<NotificationDigestJobs>(
+    "notification-digest-daily",
+    j => j.RunDailyAsync(null, CancellationToken.None),   // 👈 pass utcNow=null, ct=None
+    Hangfire.Cron.Daily(8)                                // 08:00 server time
+);
 
 builder.Services.Configure<ReportingOptions>(builder.Configuration.GetSection("Reporting"));
 builder.Services.AddScoped<ISsrsUrlBuilder, SsrsUrlBuilder>();
