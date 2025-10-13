@@ -1,0 +1,154 @@
+﻿@page "/Portal/Logs/Audit"
+@{
+    ViewData["Title"] = "Audit Log";
+}
+
+<div class="card">
+    <div class="card-header d-flex align-items-center flex-wrap gap-2">
+        <h5 class="mb-0 me-auto">Audit Log</h5>
+
+        <input id="flt-userId" class="form-control form-control-sm" placeholder="User ID" style="max-width:110px">
+        <input id="flt-username" class="form-control form-control-sm" placeholder="Username" style="max-width:180px">
+        <input id="flt-action" class="form-control form-control-sm" placeholder="Action" style="max-width:160px">
+        <input id="flt-entity" class="form-control form-control-sm" placeholder="Entity" style="max-width:160px">
+        <input id="flt-entityId" class="form-control form-control-sm" placeholder="Entity Id" style="max-width:160px">
+
+        <input id="flt-from" type="datetime-local" class="form-control form-control-sm" style="max-width:200px" title="From (UTC)">
+        <input id="flt-to" type="datetime-local" class="form-control form-control-sm" style="max-width:200px" title="To (UTC)">
+
+        <input id="flt-contains" class="form-control form-control-sm" placeholder="Text search…" style="max-width:220px">
+
+        <select id="flt-take" class="form-select form-select-sm" style="width:90px">
+            <option>25</option>
+            <option>50</option>
+            <option>100</option>
+        </select>
+
+        <button id="btn-apply" class="btn btn-sm btn-primary">Apply</button>
+        <button id="btn-reset" class="btn btn-sm btn-outline-secondary">Reset</button>
+        <a id="btn-csv" class="btn btn-sm btn-outline-primary" href="#">Export CSV</a>
+
+    </div>
+
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table align-middle" id="tbl-audit">
+                <thead>
+                    <tr>
+                        <th>When (UTC)</th>
+                        <th>User</th>
+                        <th>Action</th>
+                        <th>Entity</th>
+                        <th>EntityId</th>
+                        <th>IP</th>
+                        <th>Old→New</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <div class="d-flex align-items-center gap-3 mt-3">
+            <div id="page-info" class="text-secondary-light small"></div>
+            <div class="ms-auto d-flex gap-2">
+                <button id="au-prev" class="btn btn-outline-secondary btn-sm">Prev</button>
+                <button id="au-next" class="btn btn-outline-secondary btn-sm">Next</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function(){
+          const qS=sel=>document.querySelector(sel);
+          const tbody=qS('#tbl-audit tbody');
+          const info =qS('#page-info');
+
+          const els = {
+            userId:   qS('#flt-userId'),
+            username: qS('#flt-username'),
+            action:   qS('#flt-action'),
+            entity:   qS('#flt-entity'),
+            entityId: qS('#flt-entityId'),
+            from:     qS('#flt-from'),
+            to:       qS('#flt-to'),
+            contains: qS('#flt-contains'),
+            take:     qS('#flt-take')
+          };
+
+          let skip=0, take=25, total=0;
+          const dtLocalToIso = v => v ? new Date(v).toISOString() : '';
+
+          const buildQuery = () => {
+            const p = new URLSearchParams();
+            p.set('skip', skip);
+            p.set('take', take);
+            if (els.userId.value)   p.set('userId', els.userId.value);
+            if (els.username.value) p.set('username', els.username.value);
+            if (els.action.value)   p.set('action', els.action.value);
+            if (els.entity.value)   p.set('entity', els.entity.value);
+            if (els.entityId.value) p.set('entityId', els.entityId.value);
+            if (els.from.value)     p.set('from', dtLocalToIso(els.from.value));
+            if (els.to.value)       p.set('to', dtLocalToIso(els.to.value));
+            if (els.contains.value) p.set('contains', els.contains.value);
+            return p.toString();
+          };
+
+          const load = async() => {
+            const r = await fetch(`/ops/logs/audit?${buildQuery()}`, {credentials:'same-origin'});
+            const d = await r.json(); total = d.total || 0;
+
+            tbody.innerHTML = (d.items||[]).map(x=>`
+              <tr>
+                <td>${x.utc? new Date(x.utc).toLocaleString(): ''}</td>
+                <td>${x.username ?? x.userId ?? ''}</td>
+                <td>${x.action ?? ''}</td>
+                <td>${x.entity ?? ''}</td>
+                <td>${x.entityId ?? ''}</td>
+                <td>${x.ip ?? ''}</td>
+                <td>
+                    <details>
+                    <summary>details</summary>
+                    <pre class="mb-0 small js-json" data-old=""></pre>
+                    <pre class="mb-0 small js-json" data-new=""></pre>
+                    <pre class="mb-0 small js-json" data-extra=""></pre>
+                    </details>
+                </td>
+              </tr>`).join('');
+
+            const from = total===0 ? 0 : (skip+1);
+            const to   = Math.min(skip + (d.items?.length||0), total);
+            info.textContent = `Showing ${from}-${to} of ${total}`;
+
+            tbody.querySelectorAll('tr').forEach((tr, i) => {
+                const item = (d.items||[])[i];
+                const set = (sel, raw, label) => {
+                const el = tr.querySelector(sel);
+                if (!el) return;
+                let parsed = null;
+                try { parsed = raw ? JSON.parse(raw) : null; } catch {}
+                el.textContent = (label? label + ': ' : '')
+                                + (parsed ? JSON.stringify(parsed, null, 2) : (raw || ''));
+                };
+                set('.js-json[data-old]',  item?.oldValuesJson,  'Old');
+                set('.js-json[data-new]',  item?.newValuesJson,  'New');
+                set('.js-json[data-extra]',item?.extraJson,      'Extra');
+            });
+
+            // CSV link
+            const csvHref = () => `/ops/logs/audit.csv?${buildQuery()}`;
+            document.getElementById('btn-csv').onclick = (e) => { e.preventDefault(); window.location.href = csvHref(); };
+          };
+
+          qS('#btn-apply').onclick = () => { skip=0; take=parseInt(els.take.value||'25',10); load(); };
+          qS('#btn-reset').onclick = () => {
+            Object.values(els).forEach(el => { if (el.tagName==='SELECT') el.value='25'; else el.value=''; });
+            skip=0; take=25; load();
+          };
+          qS('#au-prev').onclick = () => { skip = Math.max(0, skip - take); load(); };
+          qS('#au-next').onclick = () => { if (skip + take < total) { skip += take; load(); }};
+
+          load();
+        })();
+    </script>
+}

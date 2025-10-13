@@ -6,6 +6,7 @@ using Microsoft.Extensions.Hosting;
 using SWIMS.Data;
 using SWIMS.Services.Notifications;
 using SWIMS.Services.Outbox;
+using System.Text;
 using System.Text.Json;
 
 namespace SWIMS.Web.Endpoints;
@@ -183,6 +184,145 @@ public static class OperationsEndpoints
 
             return Results.Ok(new { total, skip, take, items });
         });
+
+        // --- AUDIT CSV --------------------------------------------------------------
+        logs.MapGet("/audit.csv", async (
+            SwimsIdentityDbContext db,
+            int skip = 0,
+            int take = 1000,          // CSV: default bigger page
+            int? userId = null,
+            string? username = null,
+            string? action = null,
+            string? entity = null,
+            string? entityId = null,
+            DateTime? from = null,
+            DateTime? to = null,
+            string? contains = null) =>
+        {
+            take = Math.Clamp(take, 1, 5000);
+            var q = db.AuditLogs.AsNoTracking();
+
+            if (userId.HasValue) q = q.Where(x => x.UserId == userId.Value);
+            if (!string.IsNullOrWhiteSpace(username)) q = q.Where(x => x.Username == username);
+            if (!string.IsNullOrWhiteSpace(action)) q = q.Where(x => x.Action == action);
+            if (!string.IsNullOrWhiteSpace(entity)) q = q.Where(x => x.Entity == entity);
+            if (!string.IsNullOrWhiteSpace(entityId)) q = q.Where(x => x.EntityId == entityId);
+            if (from.HasValue) q = q.Where(x => x.Utc >= from.Value);
+            if (to.HasValue) q = q.Where(x => x.Utc <= to.Value);
+            if (!string.IsNullOrWhiteSpace(contains))
+            {
+                q = q.Where(x =>
+                    (x.Username != null && x.Username.Contains(contains)) ||
+                    (x.Action != null && x.Action.Contains(contains)) ||
+                    (x.Entity != null && x.Entity.Contains(contains)) ||
+                    (x.EntityId != null && x.EntityId.Contains(contains)) ||
+                    (x.OldValuesJson != null && x.OldValuesJson.Contains(contains)) ||
+                    (x.NewValuesJson != null && x.NewValuesJson.Contains(contains)) ||
+                    (x.ExtraJson != null && x.ExtraJson.Contains(contains)));
+            }
+
+            var rows = await q.OrderByDescending(x => x.Utc)
+                              .Skip(skip).Take(take)
+                              .Select(x => new {
+                                  x.Id,
+                                  x.Utc,
+                                  x.UserId,
+                                  x.Username,
+                                  x.Action,
+                                  x.Entity,
+                                  x.EntityId,
+                                  x.Ip,
+                                  x.OldValuesJson,
+                                  x.NewValuesJson,
+                                  x.ExtraJson
+                              })
+                              .ToListAsync();
+
+            string Esc(string? s)
+            {
+                if (string.IsNullOrEmpty(s)) return "";
+                var needs = s.Contains(',') || s.Contains('"') || s.Contains('\n') || s.Contains('\r');
+                return needs ? "\"" + s.Replace("\"", "\"\"") + "\"" : s;
+            }
+
+            var sb = new StringBuilder();
+            sb.AppendLine("Id,Utc,UserId,Username,Action,Entity,EntityId,Ip,OldValuesJson,NewValuesJson,ExtraJson");
+            foreach (var x in rows)
+            {
+                sb.AppendLine(string.Join(",",
+                    x.Id, x.Utc.ToString("o"), x.UserId, Esc(x.Username), Esc(x.Action),
+                    Esc(x.Entity), Esc(x.EntityId), Esc(x.Ip),
+                    Esc(x.OldValuesJson), Esc(x.NewValuesJson), Esc(x.ExtraJson)
+                ));
+            }
+
+            var bytes = Encoding.UTF8.GetBytes(sb.ToString());
+            return Results.File(bytes, "text/csv", $"audit_{DateTime.UtcNow:yyyyMMdd_HHmm}_utc.csv");
+        }).RequireAuthorization(policy => policy.RequireRole("Admin"));
+
+        // --- SESSIONS CSV -----------------------------------------------------------
+        logs.MapGet("/sessions.csv", async (
+            SwimsIdentityDbContext db,
+            int skip = 0,
+            int take = 5000,
+            int? userId = null,
+            string? username = null,
+            string? sessionId = null,
+            DateTime? from = null,
+            DateTime? to = null,
+            bool? activeOnly = null,
+            string? contains = null) =>
+        {
+            take = Math.Clamp(take, 1, 10000);
+            var q = db.SessionLogs.AsNoTracking();
+
+            if (userId.HasValue) q = q.Where(x => x.UserId == userId.Value);
+            if (!string.IsNullOrWhiteSpace(username)) q = q.Where(x => x.Username == username);
+            if (!string.IsNullOrWhiteSpace(sessionId)) q = q.Where(x => x.SessionId == sessionId);
+            if (from.HasValue) q = q.Where(x => x.LastSeenUtc >= from.Value);
+            if (to.HasValue) q = q.Where(x => x.LastSeenUtc <= to.Value);
+            if (activeOnly == true) q = q.Where(x => x.LogoutUtc == null);
+            if (!string.IsNullOrWhiteSpace(contains))
+                q = q.Where(x => (x.Ip != null && x.Ip.Contains(contains)) || (x.UserAgent != null && x.UserAgent.Contains(contains)));
+
+            var rows = await q.OrderByDescending(x => x.LastSeenUtc)
+                              .ThenByDescending(x => x.LoginUtc)
+                              .Skip(skip).Take(take)
+                              .Select(x => new {
+                                  x.Id,
+                                  x.UserId,
+                                  x.Username,
+                                  x.SessionId,
+                                  x.LoginUtc,
+                                  x.LastSeenUtc,
+                                  x.LogoutUtc,
+                                  x.Ip,
+                                  x.UserAgent
+                              })
+                              .ToListAsync();
+
+            string Esc(string? s)
+            {
+                if (string.IsNullOrEmpty(s)) return "";
+                var needs = s.Contains(',') || s.Contains('"') || s.Contains('\n') || s.Contains('\r');
+                return needs ? "\"" + s.Replace("\"", "\"\"") + "\"" : s;
+            }
+
+            var sb = new StringBuilder();
+            sb.AppendLine("Id,UserId,Username,SessionId,LoginUtc,LastSeenUtc,LogoutUtc,Ip,UserAgent");
+            foreach (var x in rows)
+            {
+                sb.AppendLine(string.Join(",",
+                    x.Id, x.UserId, Esc(x.Username), Esc(x.SessionId),
+                    x.LoginUtc.ToString("o"), x.LastSeenUtc.ToString("o"), x.LogoutUtc?.ToString("o"),
+                    Esc(x.Ip), Esc(x.UserAgent)
+                ));
+            }
+
+            var bytes = Encoding.UTF8.GetBytes(sb.ToString());
+            return Results.File(bytes, "text/csv", $"sessions_{DateTime.UtcNow:yyyyMMdd_HHmm}_utc.csv");
+        }).RequireAuthorization(policy => policy.RequireRole("Admin"));
+
 
 
 

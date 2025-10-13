@@ -1,0 +1,130 @@
+﻿@page "/Portal/Logs/Sessions"
+@{
+    ViewData["Title"] = "Session Logs";
+}
+
+<div class="card">
+    <div class="card-header d-flex align-items-center flex-wrap gap-2">
+        <h5 class="mb-0 me-auto">Session Logs</h5>
+
+        <input id="flt-username" class="form-control form-control-sm" placeholder="Username" style="max-width:180px">
+        <input id="flt-from" type="datetime-local" class="form-control form-control-sm" style="max-width:200px" title="From (UTC)">
+        <input id="flt-to" type="datetime-local" class="form-control form-control-sm" style="max-width:200px" title="To (UTC)">
+        <input id="flt-contains" class="form-control form-control-sm" placeholder="IP / UA contains…" style="max-width:220px">
+        <div class="form-check ms-2">
+            <input id="flt-active" class="form-check-input" type="checkbox">
+            <label class="form-check-label" for="flt-active">Active only</label>
+        </div>
+
+        <select id="flt-take" class="form-select form-select-sm" style="width:90px">
+            <option>25</option>
+            <option>50</option>
+            <option>100</option>
+        </select>
+
+        <button id="btn-apply" class="btn btn-sm btn-primary">Apply</button>
+        <button id="btn-reset" class="btn btn-sm btn-outline-secondary">Reset</button>
+        <a id="btn-csv" class="btn btn-sm btn-outline-primary" href="#">Export CSV</a>
+
+    </div>
+
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table align-middle" id="tbl-sessions">
+                <thead>
+                    <tr>
+                        <th>User ID</th>
+                        <th>Username</th>
+                        <th>Login</th>
+                        <th>Last Seen</th>
+                        <th>Logout</th>
+                        <th>IP</th>
+                        <th>UA</th>
+                        <th>SID</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <div class="d-flex align-items-center gap-3 mt-3">
+            <div id="page-info" class="text-secondary-light small"></div>
+            <div class="ms-auto d-flex gap-2">
+                <button id="sess-prev" class="btn btn-outline-secondary btn-sm">Prev</button>
+                <button id="sess-next" class="btn btn-outline-secondary btn-sm">Next</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function(){
+          const qS = sel => document.querySelector(sel);
+          const tbody = qS('#tbl-sessions tbody');
+          const info  = qS('#page-info');
+
+          const els = {
+            username: qS('#flt-username'),
+            from:     qS('#flt-from'),
+            to:       qS('#flt-to'),
+            contains: qS('#flt-contains'),
+            active:   qS('#flt-active'),
+            take:     qS('#flt-take')
+          };
+
+          let skip=0, take=25, total=0;
+
+          const dtLocalToIso = v => v ? new Date(v).toISOString() : '';
+
+          const buildQuery = () => {
+            const p = new URLSearchParams();
+            p.set('skip', skip);
+            p.set('take', take);
+            if (els.username.value) p.set('username', els.username.value);
+            if (els.from.value)     p.set('from', dtLocalToIso(els.from.value));
+            if (els.to.value)       p.set('to', dtLocalToIso(els.to.value));
+            if (els.contains.value) p.set('contains', els.contains.value);
+            if (els.active.checked) p.set('activeOnly', 'true');
+            return p.toString();
+          };
+
+            const csvHref = () => `/ops/logs/sessions.csv?${buildQuery()}`;
+                qS('#btn-csv').onclick = (e) => { e.preventDefault(); window.location.href = csvHref(); };
+
+
+          const load = async() => {
+            const r = await fetch(`/ops/logs/sessions?${buildQuery()}`, {credentials:'same-origin'});
+            const d = await r.json(); total = d.total || 0;
+
+            tbody.innerHTML = (d.items||[]).map(x=>`
+              <tr>
+                <td>${x.userId??''}</td>
+                <td>${x.username??''}</td>
+                <td>${x.loginUtc? new Date(x.loginUtc).toLocaleString(): ''}</td>
+                <td>${x.lastSeenUtc? new Date(x.lastSeenUtc).toLocaleString(): ''}</td>
+                <td>${x.logoutUtc? new Date(x.logoutUtc).toLocaleString(): ''}</td>
+                <td>${x.ip??''}</td>
+                <td title="${x.userAgent??''}">${(x.userAgent??'').slice(0,40)}${(x.userAgent||'').length>40?'…':''}</td>
+                <td><code>${(x.sessionId??'').slice(0,8)}</code></td>
+              </tr>`).join('');
+
+            const from = total===0 ? 0 : (skip+1);
+            const to   = Math.min(skip + (d.items?.length||0), total);
+            info.textContent = `Showing ${from}-${to} of ${total}`;
+          };
+
+          // events
+          qS('#btn-apply').onclick = () => { skip=0; take=parseInt(els.take.value||'25',10); load(); };
+          qS('#btn-reset').onclick = () => {
+            els.username.value = els.from.value = els.to.value = els.contains.value = '';
+            els.active.checked = false; els.take.value='25';
+            skip=0; take=25; load();
+          };
+          qS('#sess-prev').onclick = () => { skip = Math.max(0, skip - take); load(); };
+          qS('#sess-next').onclick = () => { if (skip + take < total) { skip += take; load(); }};
+
+          // initial
+          load();
+        })();
+    </script>
+}
