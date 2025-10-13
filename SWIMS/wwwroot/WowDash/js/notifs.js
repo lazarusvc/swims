@@ -35,26 +35,59 @@
             if (badgeH) badgeH.textContent = String(count || 0);
         };
 
+        
         const liHtml = (n) => {
             const payload = parseJSON(n.payloadJson);
-            const msg = payload.message || n.type;
             const seenClass = n.seen ? 'opacity-75' : 'bg-neutral-50';
+
+            // per-type renderer
+            let title = n.type;
+            let subtitle = fmtTime(n.createdUtc);
+            let href = null;
+            let icon = { bg: 'bg-info-subtle', fg: 'text-info-main', name: 'bitcoin-icons:verify-outline' };
+
+            switch (n.type) {
+                case 'NewMessage': {
+                    const fromName = payload.fromName || 'Someone';
+                    const snippet = payload.snippet || '';
+                    title = `New message from ${fromName}`;
+                    subtitle = snippet || fmtTime(n.createdUtc);
+                    href = payload.url || (payload.convoId ? `/portal/messages?convoId=${payload.convoId}` : null);
+                    icon = { bg: 'bg-primary-100', fg: 'text-primary-600', name: 'iconoir:chat-bubble' };
+                    break;
+                }
+                case 'DevTest': {
+                    title = payload.message || 'Dev Test';
+                    subtitle = fmtTime(n.createdUtc);
+                    icon = { bg: 'bg-success-subtle', fg: 'text-success-main', name: 'bitcoin-icons:verify-outline' };
+                    break;
+                }
+                // add more cases as you introduce new types…
+                default: {
+                    // generic: show payload.message if present
+                    title = payload.message || title;
+                    subtitle = fmtTime(n.createdUtc);
+                }
+            }
+
+            // clickable li: store href for the click handler
             return `
-        <li data-id="${n.id}">
-          <a href="javascript:void(0)"
-             class="px-24 py-12 d-flex align-items-start gap-3 mb-2 justify-content-between ${seenClass}">
-            <div class="text-black hover-bg-transparent hover-text-primary d-flex align-items-center gap-3">
-              <span class="w-44-px h-44-px bg-info-subtle text-info-main rounded-circle d-flex justify-content-center align-items-center flex-shrink-0">
-                <iconify-icon icon="bitcoin-icons:verify-outline" class="icon text-xxl"></iconify-icon>
-              </span>
-              <div>
-                <h6 class="text-md fw-semibold mb-4 mb-1">${msg}</h6>
-                <p class="mb-0 text-sm text-secondary-light text-w-200-px">${fmtTime(n.createdUtc)}</p>
-              </div>
-            </div>
-          </a>
-        </li>`;
+<li data-id="${n.id}" ${href ? `data-href="${href}"` : ''}>
+  <a href="javascript:void(0)"
+     class="px-24 py-12 d-flex align-items-start gap-3 mb-2 justify-content-between ${seenClass}">
+    <div class="text-black hover-bg-transparent hover-text-primary d-flex align-items-center gap-3">
+      <span class="w-44-px h-44-px ${icon.bg} ${icon.fg} rounded-circle d-flex justify-content-center align-items-center flex-shrink-0">
+        <iconify-icon icon="${icon.name}" class="icon text-xxl"></iconify-icon>
+      </span>
+      <div>
+        <h6 class="text-md fw-semibold mb-4 mb-1">${title}</h6>
+        <p class="mb-0 text-sm text-secondary-light text-w-200-px">${subtitle}</p>
+      </div>
+    </div>
+  </a>
+</li>`;
         };
+
 
         const render = () => {
             list.innerHTML = items.map(liHtml).join('');
@@ -127,6 +160,8 @@
             const li = e.target.closest('li[data-id]');
             if (!li) return;
             const id = li.getAttribute('data-id');
+            const href = li.getAttribute('data-href');
+
             try {
                 await fetch(`/me/notifications/${id}/seen`, { method: 'POST', credentials: 'same-origin' });
                 const idx = items.findIndex(n => String(n.id) === String(id));
@@ -134,9 +169,11 @@
                 li.querySelector('a')?.classList.remove('bg-neutral-50');
                 li.querySelector('a')?.classList.add('opacity-75');
                 await refreshCount();
-            } catch (e2) {
-                console.warn('[notifs] mark-one failed:', e2);
+            } catch (err) {
+                console.warn('[notifs] mark-one failed:', err);
             }
+
+            if (href) window.location.href = href;
         });
 
         // --- SignalR live updates ---

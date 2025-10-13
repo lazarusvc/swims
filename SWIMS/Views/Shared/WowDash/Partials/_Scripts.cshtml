@@ -33,6 +33,11 @@
 <!-- main js -->
 <script src="~/WowDash/js/app.js"></script>
 
+<script src="~/lib/signalr/signalr.min.js"></script>
+
+<script src="~/WowDash/js/notifs.js" asp-append-version="true"></script>
+
+<script src="~/WowDash/js/chat.js"></script>
 
 <script>
     (function () {
@@ -59,9 +64,6 @@
     })();
 </script>
 
-<script src="~/lib/signalr/signalr.min.js"></script>
-<script src="~/WowDash/js/notifs.js" asp-append-version="true"></script>
-
 <script>
     (function () {
       const conn = new signalR.HubConnectionBuilder()
@@ -73,6 +75,7 @@
       conn.start().catch(console.error);
     })();
 </script>
+
 
 
 
