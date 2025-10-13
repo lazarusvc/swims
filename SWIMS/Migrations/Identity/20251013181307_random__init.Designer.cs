@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SWIMS.Data;
 
@@ -11,9 +12,11 @@ using SWIMS.Data;
 namespace SWIMS.Migrations.Identity
 {
     [DbContext(typeof(SwimsIdentityDbContext))]
-    partial class SwimsIdentityDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251013181307_random__init")]
+    partial class random__init
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -136,8 +139,8 @@ namespace SWIMS.Migrations.Identity
 
                     b.Property<string>("Action")
                         .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("nvarchar(64)");
+                        .HasMaxLength(16)
+                        .HasColumnType("nvarchar(16)");
 
                     b.Property<string>("Entity")
                         .IsRequired()

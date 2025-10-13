@@ -30,6 +30,7 @@ using SWIMS.Services.Diagnostics;
 using SWIMS.Services.Diagnostics.Auditing;
 using SWIMS.Services.Diagnostics.Sessions;
 using SWIMS.Services.Email;
+using SWIMS.Services.Messaging;
 using SWIMS.Services.Notifications;
 using SWIMS.Services.Notifications.Jobs;
 using SWIMS.Services.Outbox;
@@ -132,12 +133,6 @@ builder.Services.AddHangfireServer(options =>
 {
     options.Queues = new[] { "outbox", "default" }; // "outbox" first = higher priority
 });
-
-RecurringJob.AddOrUpdate<NotificationDigestJobs>(
-    "notification-digest-daily",
-    j => j.RunDailyAsync(null, CancellationToken.None),   // 👈 pass utcNow=null, ct=None
-    Hangfire.Cron.Daily(8)                                // 08:00 server time
-);
 
 builder.Services.Configure<ReportingOptions>(builder.Configuration.GetSection("Reporting"));
 builder.Services.AddScoped<ISsrsUrlBuilder, SsrsUrlBuilder>();
@@ -269,22 +264,26 @@ builder.Services.AddHealthChecks();
 
 builder.Services.AddHangfire(cfg =>
 {
-    cfg.SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+    cfg.SetDataCompatibilityLevel(Hangfire.CompatibilityLevel.Version_180)
        .UseSimpleAssemblyNameTypeSerializer()
        .UseRecommendedSerializerSettings()
-       .UseConsole() // 👈 add this
-       .UseSqlServerStorage(builder.Configuration.GetConnectionString("DefaultConnection"), new SqlServerStorageOptions
-       {
-           SchemaName = "ops",
-           PrepareSchemaIfNecessary = true,
-           SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
-           QueuePollInterval = TimeSpan.FromSeconds(15),
-           CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
-           UseRecommendedIsolationLevel = true
-       });
+       .UseConsole() // keep if you want console logs in dashboard
+       .UseSqlServerStorage(
+           builder.Configuration.GetConnectionString("DefaultConnection"),
+           new Hangfire.SqlServer.SqlServerStorageOptions
+           {
+               SchemaName = "ops",
+               PrepareSchemaIfNecessary = true,
+               SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
+               QueuePollInterval = TimeSpan.FromSeconds(15),
+               CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
+               UseRecommendedIsolationLevel = true
+           });
 });
 
 builder.Services.AddScoped<INotificationPreferences, NotificationPreferences>();
+
+builder.Services.AddSingleton<IChatPresence, InMemoryChatPresence>();
 
 
 
@@ -302,7 +301,7 @@ var app = builder.Build();
 //        //  re-enable for second DB:
 //        // var db_2 = services.GetRequiredService<SwimsDb_moreContext>();
 //        // db_2.Database.Migrate();
-        
+
 //        // Seed roles  admin + policies
 //        await SeedData.EnsureSeedDataAsync(services);
 //    }
@@ -314,12 +313,34 @@ var app = builder.Build();
 //    }
 //}
 
+using (var scope = app.Services.CreateScope())
+{
+    var cfg = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+    var jobs = scope.ServiceProvider.GetRequiredService<Hangfire.IRecurringJobManager>();
+
+    // Toggle via appsettings: { "Hangfire": { "ScheduleOnStartup": true } }
+    var schedule = cfg.GetValue<bool?>("Hangfire:ScheduleOnStartup") ?? true;
+    if (schedule)
+    {
+        // 1) Email outbox dispatcher (minutely)
+        jobs.AddOrUpdate<SWIMS.Services.Outbox.Jobs.EmailOutboxJobs>(
+            "email-outbox-dispatch",
+            j => j.RunOnceAsync(50, null, CancellationToken.None),
+            Hangfire.Cron.Minutely);
+
+        // 2) Daily digest (08:00 server time)
+        jobs.AddOrUpdate<SWIMS.Services.Notifications.Jobs.NotificationDigestJobs>(
+            "notification-digest-daily",
+            j => j.RunDailyAsync(null, CancellationToken.None),
+            Hangfire.Cron.Daily(8));
+    }
+}
 
 
-    // ------------------------------------------------------
-    // Configure HTTP request pipeline
-    // ------------------------------------------------------
-    if (!app.Environment.IsDevelopment())
+// ------------------------------------------------------
+// Configure HTTP request pipeline
+// ------------------------------------------------------
+if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
     // The default HSTS value is 30 days. You may want to change this for
@@ -373,22 +394,13 @@ app.UseAuthorization();
 
 app.MapSwimsCoreEndpoints();
 app.MapHub<NotifsHub>("/hubs/notifs");
+app.MapHub<ChatsHub>("/hubs/chats");
 
 app.UseHangfireDashboard("/ops/hangfire", new DashboardOptions
 {
     Authorization = new[] { new HangfireDashboardAuthFilter() },
     IsReadOnlyFunc = _ => false
 });
-
-// schedule the recurring dispatcher when app starts
-using (var scope = app.Services.CreateScope())
-{
-    var recurring = scope.ServiceProvider.GetRequiredService<IRecurringJobManager>();
-    recurring.AddOrUpdate<EmailOutboxJobs>(
-    "email-outbox-dispatch",
-    j => j.RunOnceAsync(50, null, CancellationToken.None),
-    Cron.Minutely);
-}
 
 app.MapStaticAssets();
 

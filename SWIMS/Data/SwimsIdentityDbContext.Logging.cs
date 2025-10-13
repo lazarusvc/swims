@@ -14,7 +14,7 @@ namespace SWIMS.Data
             {
                 b.ToTable("audit_logs", schema: "log");
                 b.HasKey(x => x.Id);
-                b.Property(x => x.Action).IsRequired().HasMaxLength(16);
+                b.Property(x => x.Action).IsRequired().HasMaxLength(64);
                 b.Property(x => x.Entity).IsRequired().HasMaxLength(256);
                 b.Property(x => x.EntityId).HasMaxLength(256);
                 b.Property(x => x.Username).HasMaxLength(256);

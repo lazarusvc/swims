@@ -1,0 +1,186 @@
+﻿@page "/Portal/Messenger/Chat"
+@model SWIMS.Areas.Portal.Pages.Messages.ChatModel
+@{
+    ViewData["Title"] = "Messenger";
+}
+
+<!-- Expose current user id for JS (used to style inbound/outbound bubbles) -->
+<meta name="swims-user-id" content="@Model.MeUserId" />
+<!-- Optional deep-links: if you come with ?userId= or ?convoId=, we pass them to JS -->
+@if (Model.StartUserId.HasValue)
+{
+    <script>window.__chatStartUserId = @Model.StartUserId.Value;</script>
+}
+@if (Model.OpenConversationId.HasValue)
+{
+    <script>window.__chatOpenConvoId = "@Model.OpenConversationId.Value";</script>
+}
+
+<style>
+    .chat-wrap {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .chat-side {
+        width: 32%;
+        min-width: 280px;
+    }
+
+    .chat-main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Fixed-height chat area: the thread scrolls internally, not the whole page */
+    .chat-panel {
+        display: flex;
+        flex-direction: column;
+        height: 70vh;
+    }
+    /* adjust 70vh as you like */
+
+    #chat-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 12px;
+        border: 1px solid #eee;
+        border-radius: 8px;
+        background: #fafafa;
+        margin-bottom: 8px;
+    }
+
+        #chat-header .title {
+            font-weight: 600;
+        }
+
+        #chat-header .sub {
+            font-size: .9rem;
+            color: #667085;
+        }
+
+    #chat-thread {
+        flex: 1;
+        overflow-y: auto;
+        border: 1px solid #eee;
+        border-radius: 8px;
+        padding: 12px;
+        background: #fff;
+    }
+
+    #chat-convos {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        max-height: 70vh;
+        overflow: auto;
+    }
+
+        #chat-convos .chat-convo {
+            cursor: pointer;
+            padding: 10px 12px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            border: 1px solid transparent;
+        }
+
+            #chat-convos .chat-convo:hover {
+                background: #f8f9fa;
+                border-color: #eee;
+            }
+
+        #chat-convos .name {
+            font-weight: 600;
+        }
+
+        #chat-convos .sub {
+            font-size: .85rem;
+            color: #6c757d;
+        }
+
+        #chat-convos .badge {
+            margin-left: auto;
+        }
+
+    .chat-msg {
+        margin: 8px 0;
+        display: flex;
+    }
+
+        .chat-msg.me {
+            justify-content: flex-end;
+        }
+
+        .chat-msg .bubble {
+            max-width: 70%;
+            padding: 8px 12px;
+            border-radius: 14px;
+            background: #f1f5ff;
+        }
+
+        .chat-msg.me .bubble {
+            background: #e7f6ea;
+        }
+
+        .chat-msg .meta {
+            font-size: 12px;
+            color: #667085;
+            margin-top: 4px;
+        }
+
+    .chat-compose {
+        display: flex;
+        gap: .5rem;
+        margin-top: .75rem;
+    }
+</style>
+
+<div class="card">
+    <div class="card-header d-flex align-items-center justify-content-between">
+        <h5 class="mb-0">Messages</h5>
+        <div class="d-flex align-items-center gap-2">
+            <input id="chat-start-login" class="form-control form-control-sm" style="width:220px" placeholder="Start with username or email">
+            <input id="chat-start-user" type="hidden">
+            <button id="chat-start" class="btn btn-sm btn-outline-primary">Start</button>
+        </div>
+    </div>
+
+    <div class="card-body">
+        <div class="chat-wrap">
+
+            <!-- LEFT: Conversations list -->
+            <div class="chat-side">
+                <ul id="chat-convos"></ul>
+            </div>
+
+            <!-- RIGHT: Chat panel (fixed height) -->
+            <div class="chat-main">
+                <div class="chat-panel">
+
+                    <!-- Header: name + email of peer -->
+                    <div id="chat-header">
+                        <div>
+                            <div id="chat-peer-name" class="title">Select a conversation</div>
+                            <div id="chat-peer-sub" class="sub"></div>
+                        </div>
+                    </div>
+
+                    <!-- Thread (scrolls internally) -->
+                    <div id="chat-thread" aria-live="polite"></div>
+
+                    <!-- Composer -->
+                    <div class="chat-compose">
+                        <textarea id="chat-input" class="form-control" rows="2" placeholder="Type a message…"></textarea>
+                        <button id="chat-send" class="btn btn-primary">Send</button>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

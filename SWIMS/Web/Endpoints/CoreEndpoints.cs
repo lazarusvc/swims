@@ -66,7 +66,8 @@ public static class CoreEndpoints
         }
 
         return app.MapSwimsNotificationsEndpoints()
-          .MapSwimsOperationsEndpoints();
+          .MapSwimsOperationsEndpoints()
+          .MapSwimsMessagingEndpoints();
 
     }
 }
