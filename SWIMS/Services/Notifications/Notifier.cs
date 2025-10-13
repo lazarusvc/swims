@@ -1,10 +1,11 @@
-﻿using System.Text.Json;
-using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using SWIMS.Data;
 using SWIMS.Models.Notifications;
+using SWIMS.Services.Diagnostics.Auditing;
 using SWIMS.Services.Outbox;
 using SWIMS.Web.Hubs;
+using System.Text.Json;
 
 namespace SWIMS.Services.Notifications;
 
@@ -15,16 +16,18 @@ public sealed class Notifier : INotifier
     private readonly INotificationPreferences _prefs;
     private readonly IEmailOutbox _outbox;
     private readonly INotificationEmailComposer _composer;
+    private readonly IAuditLogger _audit;
 
     public Notifier(
         SwimsIdentityDbContext db,
         IHubContext<NotifsHub> hub,
         INotificationPreferences prefs,
         IEmailOutbox outbox,
-        INotificationEmailComposer composer)
+        INotificationEmailComposer composer,
+        IAuditLogger audit)
     {
         _db = db; _hub = hub; _prefs = prefs; _outbox = outbox;
-        _composer = composer;
+        _composer = composer; _audit = audit;
     }
 
     public async Task NotifyUserAsync(int userId, string username, string type, object payload)
@@ -64,6 +67,16 @@ public sealed class Notifier : INotifier
                 await _outbox.EnqueueAsync(to!, subject, html: html, text: text);
             }
         }
+
+        await _audit.LogAsync(
+            action: "Notify",
+            entity: "Notification",
+            entityId: type,
+            userId: userId,
+            username: username,
+            oldObj: null,
+            newObj: new { type, channels = new { inApp, email } }
+        );
     }
 
     private static bool LooksLikeEmail(string? s)

@@ -53,6 +53,8 @@ builder.Host.UseSerilog();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<AuditSaveChangesInterceptor>();
 
+builder.Services.AddScoped<IAuditLogger, AuditLogger>();
+
 // ------------------------------------------------------
 // Configure database context and EF Core migrations
 // ------------------------------------------------------

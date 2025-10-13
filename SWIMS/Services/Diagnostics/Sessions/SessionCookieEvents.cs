@@ -1,41 +1,42 @@
-﻿using System.Security.Claims;
-using Microsoft.AspNetCore.Authentication.Cookies;
+﻿using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
+using SWIMS.Services.Diagnostics.Auditing;
 using SWIMS.Services.Diagnostics.Sessions;
+using System.Security.Claims;
 
 namespace SWIMS.Services.Diagnostics.Sessions;
 
 public sealed class SessionCookieEvents : CookieAuthenticationEvents
 {
     private readonly ISessionLogger _logger;
+    private readonly IAuditLogger _audit; // 👈 add
     private const string SidCookieName = "sid";
 
-    public SessionCookieEvents(ISessionLogger logger) => _logger = logger;
+    public SessionCookieEvents(ISessionLogger logger, IAuditLogger audit) // 👈 inject
+    {
+        _logger = logger;
+        _audit = audit;
+    }
 
     public override async Task SignedIn(CookieSignedInContext context)
     {
-        var http = context.HttpContext;
-        var user = http.User;
+        // ... your existing session log code (creates sid, calls _logger.OnSignedInAsync, etc.)
 
-        if (user?.Identity?.IsAuthenticated == true &&
-            int.TryParse(user.FindFirstValue(ClaimTypes.NameIdentifier), out var uid))
+        var uidStr = context.Principal?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (int.TryParse(uidStr, out var uid))
         {
-            var username = user.Identity!.Name ?? $"user:{uid}";
-            // Generate a new session id at sign-in
-            var sid = Guid.NewGuid().ToString("N");
+            var uname = context.Principal?.Identity?.Name ?? "unknown";
+            var sid = context.HttpContext.Request.Cookies[SidCookieName];
+            var ua = context.HttpContext.Request.Headers["User-Agent"].ToString();
 
-            http.Response.Cookies.Append(SidCookieName, sid, new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = true,
-                IsEssential = true,
-                SameSite = SameSiteMode.Strict
-            });
-
-            var ip = http.Connection.RemoteIpAddress?.ToString();
-            var ua = http.Request.Headers.UserAgent.ToString();
-
-            await _logger.OnSignedInAsync(uid, username, sid, ip, ua);
+            await _audit.LogAsync(
+                action: "Login",
+                entity: "Auth",
+                entityId: sid,
+                userId: uid,
+                username: uname,
+                extra: new { userAgent = ua }
+            );
         }
 
         await base.SignedIn(context);
@@ -43,28 +44,26 @@ public sealed class SessionCookieEvents : CookieAuthenticationEvents
 
     public override async Task SigningOut(CookieSigningOutContext context)
     {
-        var http = context.HttpContext;
-        var user = http.User;
+        // ... your existing session log code (marks logout + clears sid cookie)
 
-        if (user?.Identity?.IsAuthenticated == true &&
-            int.TryParse(user.FindFirstValue(ClaimTypes.NameIdentifier), out var uid))
+        var uidStr = context.HttpContext.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (int.TryParse(uidStr, out var uid))
         {
-            var sid = http.Request.Cookies[SidCookieName];
-            if (!string.IsNullOrWhiteSpace(sid))
-            {
-                await _logger.OnSignedOutAsync(uid, sid!);
+            var uname = context.HttpContext.User?.Identity?.Name ?? "unknown";
+            var sid = context.HttpContext.Request.Cookies[SidCookieName];
+            var ua = context.HttpContext.Request.Headers["User-Agent"].ToString();
 
-                // expire cookie
-                http.Response.Cookies.Delete(SidCookieName, new CookieOptions
-                {
-                    HttpOnly = true,
-                    Secure = true,
-                    IsEssential = true,
-                    SameSite = SameSiteMode.Strict
-                });
-            }
+            await _audit.LogAsync(
+                action: "Logout",
+                entity: "Auth",
+                entityId: sid,
+                userId: uid,
+                username: uname,
+                extra: new { userAgent = ua }
+            );
         }
 
         await base.SigningOut(context);
     }
 }
+

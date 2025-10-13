@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using SWIMS.Data;
+using SWIMS.Services.Diagnostics.Auditing;
 using SWIMS.Services.Notifications;
 using System.Security.Claims;
 
@@ -79,14 +80,41 @@ public static class NotificationsEndpoints
             return Results.Ok(rows.Select(x => new { type = x.type, inApp = x.inApp, email = x.email, digest = x.digest }));
         });
 
-        group.MapPut("/prefs", async (HttpContext http, INotificationPreferences svc, PrefUpsert dto) =>
+        group.MapPut("/prefs", async (
+            HttpContext http,
+            INotificationPreferences svc,
+            IAuditLogger audit,
+            PrefUpsert dto) =>
         {
             if (!int.TryParse(http.User.FindFirstValue(ClaimTypes.NameIdentifier), out var uid))
                 return Results.Unauthorized();
 
+            var username = http.User.Identity?.Name ?? "unknown";
+
+            // snapshot old
+            var oldRows = await svc.ListAsync(uid);
+            var oldOne = oldRows.FirstOrDefault(x => x.type == dto.Type);
+
+            // apply change
             await svc.UpsertAsync(uid, dto.Type, dto.InApp, dto.Email, dto.Digest);
+
+            // snapshot new
+            var newRows = await svc.ListAsync(uid);
+            var newOne = newRows.FirstOrDefault(x => x.type == dto.Type);
+
+            await audit.LogAsync(
+                action: "PrefsUpsert",
+                entity: "NotificationPreference",
+                entityId: dto.Type ?? "(global)",
+                userId: uid,
+                username: username,
+                oldObj: oldOne,
+                newObj: newOne
+            );
+
             return Results.Ok(new { ok = true });
         });
+
 
         group.MapGet("/types", async (HttpContext http, SwimsIdentityDbContext db) =>
         {
