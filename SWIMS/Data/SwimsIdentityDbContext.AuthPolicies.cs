@@ -19,6 +19,7 @@ namespace SWIMS.Data
             MapNotifications(modelBuilder);
             MapOperations(modelBuilder);
             MapMessaging(modelBuilder); ;
+            MapPush(modelBuilder);
         }
 
         // Local mapper for the policy tables

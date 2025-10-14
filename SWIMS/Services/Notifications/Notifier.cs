@@ -1,11 +1,10 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using System.Text.Json;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using SWIMS.Data;
 using SWIMS.Models.Notifications;
-using SWIMS.Services.Diagnostics.Auditing;
-using SWIMS.Services.Outbox;
+using SWIMS.Services.Outbox;                // IEmailOutbox
 using SWIMS.Web.Hubs;
-using System.Text.Json;
 
 namespace SWIMS.Services.Notifications;
 
@@ -13,72 +12,178 @@ public sealed class Notifier : INotifier
 {
     private readonly SwimsIdentityDbContext _db;
     private readonly IHubContext<NotifsHub> _hub;
-    private readonly INotificationPreferences _prefs;
-    private readonly IEmailOutbox _outbox;
-    private readonly INotificationEmailComposer _composer;
-    private readonly IAuditLogger _audit;
+    private readonly IWebPushSender _webPush;
+    private readonly INotificationPreferences _prefs;           // <- your prefs interface
+    private readonly INotificationEmailComposer _composer;      // <- your email composer
+    private readonly IEmailOutbox _outbox;                      // <- your outbox
+
+    private static readonly JsonSerializerOptions _json = new(JsonSerializerDefaults.Web);
 
     public Notifier(
         SwimsIdentityDbContext db,
         IHubContext<NotifsHub> hub,
+        IWebPushSender webPush,
         INotificationPreferences prefs,
-        IEmailOutbox outbox,
         INotificationEmailComposer composer,
-        IAuditLogger audit)
+        IEmailOutbox outbox)
     {
-        _db = db; _hub = hub; _prefs = prefs; _outbox = outbox;
-        _composer = composer; _audit = audit;
+        _db = db;
+        _hub = hub;
+        _webPush = webPush;
+        _prefs = prefs;
+        _composer = composer;
+        _outbox = outbox;
     }
 
     public async Task NotifyUserAsync(int userId, string username, string type, object payload)
     {
-        var (inApp, email, _) = await _prefs.GetEffectiveAsync(userId, type);
-        var json = JsonSerializer.Serialize(payload);
+        // Persist in-app notification
+        var json = payload is string s ? s : JsonSerializer.Serialize(payload, _json);
 
-        // 1) In-app notification (if enabled)
-        Guid? notifId = null;
-        if (inApp)
+        var row = new Notification
         {
-            var row = new Notification
-            {
-                UserId = userId,
-                Username = username,   // display name/alias is fine here
-                Type = type,
-                PayloadJson = json
-            };
-            _db.Notifications.Add(row);
-            await _db.SaveChangesAsync();
-            notifId = row.Id;
+            UserId = userId,
+            Username = username,
+            Type = type,
+            PayloadJson = json
+        };
 
-            await _hub.Clients.Group($"u:{userId}")
-                .SendAsync("notif", new { row.Id, row.Type, row.PayloadJson, row.CreatedUtc });
+        _db.Notifications.Add(row);
+        await _db.SaveChangesAsync();
+
+        // SignalR - live update to user's group
+        await _hub.Clients.Group($"u:{userId}")
+            .SendAsync("notif", new { row.Id, row.Type, row.PayloadJson, row.CreatedUtc });
+
+        // Web Push (best-effort, never breaks flow)
+        try
+        {
+            var pushPayload = BuildPushPayload(type, payload);
+            await _webPush.SendToUserAsync(userId, pushPayload);
+        }
+        catch
+        {
+            // swallow push errors
         }
 
-        // 2) Email hand-off (if enabled) — resolve actual email from Users table
-        if (email)
-        {
-            var userEmail = await _db.Users.Where(u => u.Id == userId).Select(u => u.Email).FirstOrDefaultAsync();
-            string? to = !string.IsNullOrWhiteSpace(userEmail) ? userEmail :
-                         (LooksLikeEmail(username) ? username : null);
-
-            if (!string.IsNullOrWhiteSpace(to))
-            {
-                var (subject, html, text) = await _composer.ComposeAsync(userId, type, username, json);
-                await _outbox.EnqueueAsync(to!, subject, html: html, text: text);
-            }
-        }
-
-        await _audit.LogAsync(
-            action: "Notify",
-            entity: "Notification",
-            entityId: type,
-            userId: userId,
-            username: username,
-            oldObj: null,
-            newObj: new { type, channels = new { inApp, email } }
-        );
+        // Email via Outbox — honors per-type prefs; uses NotificationEmailComposer
+        await SendEmailIfEnabledAsync(userId, type, username, json);
     }
 
-    private static bool LooksLikeEmail(string? s)
-        => !string.IsNullOrWhiteSpace(s) && s.Contains('@') && s.Contains('.');
+    private async Task SendEmailIfEnabledAsync(int userId, string type, string usernameOrEmail, string payloadJson)
+    {
+        try
+        {
+            // 1) Check effective prefs for this type
+            var eff = await _prefs.GetEffectiveAsync(userId, type);
+            if (!(eff.email)) return;
+
+            // 2) Resolve recipient email
+            var email = await _db.Users
+                .Where(u => u.Id == userId)
+                .Select(u => u.Email)
+                .FirstOrDefaultAsync();
+
+            if (string.IsNullOrWhiteSpace(email))
+                return;
+
+            // 3) Compose via your existing templating engine
+            var (subject, html, text) = await _composer.ComposeAsync(
+                userId: userId,
+                type: type,
+                usernameOrEmail: usernameOrEmail,
+                payloadJson: payloadJson
+            );
+
+            // 4) Enqueue (Hangfire processes dispatch)
+            await _outbox.EnqueueAsync(
+                to: email,
+                subject: subject,
+                html: html,
+                text: text
+            );
+        }
+        catch
+        {
+            // email is best-effort; never block or throw
+        }
+    }
+
+    private static object BuildPushPayload(string type, object payloadObj)
+    {
+        try
+        {
+            JsonElement root;
+            if (payloadObj is string s)
+            {
+                using var doc = JsonDocument.Parse(s);
+                root = doc.RootElement.Clone();
+            }
+            else
+            {
+                using var doc = JsonDocument.Parse(JsonSerializer.Serialize(payloadObj, _json));
+                root = doc.RootElement.Clone();
+            }
+
+            // url (avoid short variable names which can shadow in some scopes)
+            string? url = null;
+            if (root.ValueKind == JsonValueKind.Object &&
+                root.TryGetProperty("url", out var urlEl))
+            {
+                url = urlEl.GetString();
+            }
+
+            if (string.Equals(type, "NewMessage", StringComparison.OrdinalIgnoreCase))
+            {
+                // fromName
+                var fromName = "Someone";
+                if (root.TryGetProperty("fromName", out var fromNameEl))
+                {
+                    fromName = fromNameEl.GetString() ?? "Someone";
+                }
+
+                // snippet
+                var snippet = "";
+                if (root.TryGetProperty("snippet", out var snippetEl))
+                {
+                    snippet = snippetEl.GetString() ?? "";
+                }
+
+                // unique tag per message (or fallback)
+                var tag = $"msg:{Guid.NewGuid()}";
+                if (root.TryGetProperty("messageId", out var msgIdEl))
+                {
+                    tag = $"msg:{(msgIdEl.ValueKind == JsonValueKind.String ? msgIdEl.GetString() : msgIdEl.ToString())}";
+                }
+
+                return new
+                {
+                    title = $"New message from {fromName}",
+                    body = snippet,
+                    url,
+                    tag,
+                    renotify = true
+                };
+            }
+
+            // generic
+            string? message = null;
+            if (root.TryGetProperty("message", out var messageEl))
+            {
+                message = messageEl.GetString();
+            }
+
+            return new
+            {
+                title = "SWIMS",
+                body = string.IsNullOrWhiteSpace(message) ? type : message!,
+                url,
+                tag = $"notif:{type}"
+            };
+        }
+        catch
+        {
+            return new { title = "SWIMS", body = type, tag = $"notif:{type}" };
+        }
+    }
 }
