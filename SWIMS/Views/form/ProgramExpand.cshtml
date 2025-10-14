@@ -20,6 +20,24 @@
                     @Html.Raw(@ViewBag.header)
                     <div id="fb-rendered-form"></div>
                     <input type="hidden" name="SW_formsId" value="@ViewBag.formId" />
+                    <br />
+                    <br />
+                    @if (ViewBag.LK == 1)
+                    {
+                        <div class="alert alert-primary bg-primary-50 text-primary-600 border-primary-600 border-start-width-4-px border-top-0 border-end-0 border-bottom-0 px-24 py-13 mb-0 fw-semibold text-lg radius-4 d-flex align-items-center justify-content-between" role="alert">
+                            <div class="d-flex align-items-center gap-2">
+                                <iconify-icon icon="mdi:form-dropdown" class="icon text-xl"></iconify-icon>
+                                Link to form:
+                            </div><br />
+                            <select name="isLinkingForm" class="form-control">
+                                @foreach (var inx in ViewBag.formLINK)
+                                {
+                                    <option value="@inx.Id">FORM ID:- @inx.uuid.Substring(0, 5) - @inx.name</option>
+                                }
+                            </select>
+                        </div>
+                    }
+                    <br />
                     <button type="submit" class="btn btn-success">Submit</button>
                 </form>
                 
