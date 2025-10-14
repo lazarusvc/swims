@@ -1,7 +1,7 @@
 ﻿using System.Text.Json;
-using System.Text.Json.Nodes;
 using Microsoft.Extensions.Configuration;
-using SWIMS.Services.Email; // ITemplateRenderer + TemplateKeys
+using Microsoft.AspNetCore.Http;
+using SWIMS.Services.Email; // ITemplateRenderer, EmailTemplate
 
 namespace SWIMS.Services.Notifications;
 
@@ -9,55 +9,102 @@ public sealed class NotificationEmailComposer : INotificationEmailComposer
 {
     private readonly IConfiguration _cfg;
     private readonly ITemplateRenderer _renderer;
+    private readonly IHttpContextAccessor _http;
 
-    public NotificationEmailComposer(IConfiguration cfg, ITemplateRenderer renderer)
+    public NotificationEmailComposer(IConfiguration cfg, ITemplateRenderer renderer, IHttpContextAccessor http)
     {
         _cfg = cfg;
         _renderer = renderer;
+        _http = http;
     }
 
     public async Task<(string subject, string html, string text)> ComposeAsync(
-        int userId, string type, string usernameOrEmail, string payloadJson, CancellationToken ct = default)
+        int userId,
+        string type,
+        string usernameOrEmail,
+        string payloadJson,
+        CancellationToken ct = default) // kept for interface parity; not used by renderer
     {
-        var o = string.IsNullOrWhiteSpace(payloadJson)
-            ? new JsonObject()
-            : (JsonNode.Parse(payloadJson) as JsonObject) ?? new JsonObject();
+        using var doc = JsonDocument.Parse(payloadJson);
+        var root = doc.RootElement;
 
-        // Basic fields (safe defaults)
-        string subject = o?["subject"]?.ToString() ?? $"SWIMS: {type}";
-        string message = o?["message"]?.ToString() ?? type;
-        string? actionUrl = o?["url"]?.ToString() ?? o?["actionUrl"]?.ToString();
-        string actionLabel = o?["actionLabel"]?.ToString() ?? "Open in SWIMS";
-        string referenceId = o?["ref"]?.ToString() ?? Guid.NewGuid().ToString("N");
+        string? fromName = root.TryGetProperty("fromName", out var fn) ? fn.GetString() : null;
+        string? url = root.TryGetProperty("url", out var ue) ? ue.GetString() : null;
+        string? snippet = root.TryGetProperty("snippet", out var se) ? se.GetString() : null;
 
-        // Tokens per your templates (SubjectLine et al.) — see Email Templates v2 docs.
+        // Absolutize relative URLs using the current request (like Url.Page(..., protocol: Request.Scheme))
+        string ToAbs(string? u)
+        {
+            if (string.IsNullOrWhiteSpace(u)) return "/";
+            if (u.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+                u.StartsWith("https://", StringComparison.OrdinalIgnoreCase)) return u;
+
+            var http = _http.HttpContext;
+            if (http is null) return u; // background jobs without HttpContext — leave as-is
+            var scheme = http.Request.Scheme;
+            var host = http.Request.Host.Value;
+            var path = u.StartsWith("/") ? u : "/" + u;
+            return $"{scheme}://{host}{path}";
+        }
+
+        var actionUrl = ToAbs(url);
+
+        // Prefer explicit actionLabel from payload; else we pick a good default
+        var actionLabel = root.TryGetProperty("actionLabel", out var al) ? (al.GetString() ?? "") : "";
+
+        // Subject + body intro + main text
+        string subject;
+        string bodyIntro = "You have a new notification in SWIMS.";
+        string main = snippet ?? "";
+
+        switch (type)
+        {
+            case "NewMessage":
+                subject = !string.IsNullOrWhiteSpace(fromName)
+                    ? $"New message from {fromName} — SWIMS"
+                    : "New SWIMS chat";
+                if (string.IsNullOrWhiteSpace(actionLabel)) actionLabel = "Open chat";
+                if (string.IsNullOrWhiteSpace(main)) main = "You’ve received a new message.";
+                break;
+
+            default:
+                subject = "New SWIMS notification";
+                if (string.IsNullOrWhiteSpace(actionLabel)) actionLabel = "Open in SWIMS";
+                if (string.IsNullOrWhiteSpace(main)) main = type;
+                break;
+        }
+
+        // Optional small footer (if your template includes these tokens)
+        var prefsUrl = ToAbs("/Portal/Notifications/Prefs");
+
+        // Support info (from config, with safe defaults)
+        var supportEmail = _cfg["Support:Email"] ?? "support@yourdomain.com";
+        var supportPhone = _cfg["Support:Phone"] ?? "";
+
+        // Tokens expected by your template engine
         var tokens = new
         {
             SubjectLine = subject,
-            BodyIntro = "You have a new notification in SWIMS.",
-            MainParagraph = message,
-            ShowCTA = !string.IsNullOrWhiteSpace(actionUrl),
-            ActionUrl = actionUrl,
-            ActionLabel = actionLabel,
-            SupportEmail = _cfg["Support:Email"] ?? "support@dominica.gov.dm",
-            SupportPhone = _cfg["Support:Phone"] ?? "(767) 266-3310",
-            ReferenceId = referenceId
+            BodyIntro = bodyIntro,
+            MainParagraph = main,
+            ShowCTA = true,
+            ActionLabel = actionLabel,  // short button text
+            ActionUrl = actionUrl,    // absolute URL
+            SupportEmail = supportEmail,
+            SupportPhone = supportPhone,
+            ReferenceId = Guid.NewGuid().ToString("N"),
+
+            // Optional footer tokens (if you added them in the template)
+            TypeName = type,
+            PrefsUrl = prefsUrl
         };
 
-        // Pick template: with contacts if payload contains an array "contacts" (optional).
-        var withContacts = o?["contacts"] is JsonArray arr && arr.Count > 0;
-        var key = withContacts
-            ? TemplateKeys.Notifications_GenericWithContacts
-            : TemplateKeys.Notifications_Generic;
+        // Render using your 2-arg renderer; it returns EmailTemplate (Subject + HtmlBody)
+        var rendered = await _renderer.RenderAsync("Notifications_Generic", tokens);
 
-        // Render via your engine to get Subject + HtmlBody (module supports this).
-        var rendered = await _renderer.RenderAsync(key, tokens); // returns { Subject, HtmlBody }
-        // (Examples in docs show this pattern, then SendAsync(rendered.Subject, rendered.HtmlBody).) :contentReference[oaicite:7]{index=7}
-
-        // Simple text alternative
-        var text = $"{subject}\n\n{tokens.BodyIntro}\n\n{tokens.MainParagraph}"
-                 + (actionUrl is null ? "" : $"\n\n{actionUrl}");
-
-        return (rendered.Subject ?? subject, rendered.HtmlBody, text.Trim());
+        // Use the subject we computed (template may also set it via <!-- Subject: {{SubjectLine}} -->)
+        var html = rendered.HtmlBody;
+        var text = $"{bodyIntro}\n\n{main}\n\n{actionUrl}";
+        return (subject, html, text);
     }
 }

@@ -12,6 +12,7 @@
 using Hangfire;
 using Hangfire.Console;
 using Hangfire.SqlServer;
+using Lib.Net.Http.WebPush.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
@@ -283,6 +284,21 @@ builder.Services.AddHangfire(cfg =>
 });
 
 builder.Services.AddScoped<INotificationPreferences, NotificationPreferences>();
+
+builder.Services.AddMemoryVapidTokenCache();
+
+// Push client with VAPID defaults from config
+builder.Services.AddPushServiceClient(options =>
+{
+    options.Subject = builder.Configuration["WebPush:Subject"];
+    options.PublicKey = builder.Configuration["WebPush:PublicKey"];
+    options.PrivateKey = builder.Configuration["WebPush:PrivateKey"];
+});
+
+// Our abstraction
+builder.Services.Configure<WebPushSender.Options>(
+    builder.Configuration.GetSection("WebPush"));
+builder.Services.AddScoped<IWebPushSender, WebPushSender>();
 
 builder.Services.AddSingleton<IChatPresence, InMemoryChatPresence>();
 

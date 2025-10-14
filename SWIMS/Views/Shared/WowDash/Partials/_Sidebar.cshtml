@@ -42,7 +42,7 @@
                 </ul>
             </li>
 
-            @if (SignInManager.IsSignedIn(User) && User.IsInRole("Admin"))
+            @if (SignInManager.IsSignedIn(User))
             {
                 <li>
                     <a asp-area="Portal" asp-page="/Messenger/Chat">
@@ -50,7 +50,11 @@
                         <span>Messenger</span>
                     </a>
                 </li>
+            }
 
+
+            @if (SignInManager.IsSignedIn(User) && User.IsInRole("Admin"))
+            {
                 <!-- USERS ----------------------------------------------------------- -->
                 <li class="dropdown">
                     <a href="javascript:void(0)">

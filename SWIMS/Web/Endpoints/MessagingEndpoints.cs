@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.Routing;      // ← added for LinkGenerator
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using SWIMS.Data;
 using SWIMS.Models.Messaging;
@@ -213,13 +214,11 @@ public static class MessagingEndpoints
         });
 
         // ---- inbox list -----------------------------------------------------
-        // ---- inbox list (with peer details) ----------------------------------------
         grp.MapGet("", async (HttpContext http, SwimsIdentityDbContext db, int skip = 0, int take = 20) =>
         {
             var me = CurrentUserId(http.User);
             take = Math.Clamp(take, 1, 100);
 
-            // My membership rows -> join conversation -> join "other member" (not me) -> join Users
             var q = from mine in db.ConversationMembers.AsNoTracking()
                     where mine.UserId == me
                     join c in db.Conversations.AsNoTracking() on mine.ConversationId equals c.Id
@@ -239,8 +238,6 @@ public static class MessagingEndpoints
                 {
                     id = x.c.Id,
                     type = x.c.Type,
-
-                    // Peer details (Identity columns: FirstName / LastName / UserName / Email)
                     other = new
                     {
                         userId = x.otherUser.Id,
@@ -248,7 +245,6 @@ public static class MessagingEndpoints
                         email = x.otherUser.Email,
                         firstName = EF.Property<string>(x.otherUser, "FirstName"),
                         lastName = EF.Property<string>(x.otherUser, "LastName"),
-                        // Display Name (fallbacks if names are null)
                         displayName =
                             ((EF.Property<string>(x.otherUser, "FirstName") ?? "")
                              + (EF.Property<string>(x.otherUser, "FirstName") != null
@@ -256,13 +252,11 @@ public static class MessagingEndpoints
                              + (EF.Property<string>(x.otherUser, "LastName")
                                 ?? (x.otherUser.UserName ?? x.otherUser.Email)))
                     },
-
                     lastMessage = db.Messages
                         .Where(mm => mm.ConversationId == x.c.Id)
                         .OrderByDescending(mm => mm.CreatedUtc)
                         .Select(mm => new { mm.Id, mm.SenderUserId, mm.Body, mm.CreatedUtc })
                         .FirstOrDefault(),
-
                     unread = db.Messages
                         .Where(mm => mm.ConversationId == x.c.Id && mm.SenderUserId != me &&
                                      (x.mine.LastReadUtc == null || mm.CreatedUtc > x.mine.LastReadUtc))
@@ -272,7 +266,6 @@ public static class MessagingEndpoints
 
             return Results.Ok(new { total, skip, take, items });
         });
-
 
         // ---- thread (paged by before/after messageId) ----------------------
         grp.MapGet("/{id:guid}/messages", async (HttpContext http, SwimsIdentityDbContext db, Guid id, Guid? before, Guid? after, int take = 50) =>
@@ -307,10 +300,12 @@ public static class MessagingEndpoints
         });
 
         // ---- send message ---------------------------------------------------
-        grp.MapPost("/{id:guid}/messages", async (HttpContext http, SwimsIdentityDbContext db,
-    IHubContext<ChatsHub> hub, IAuditLogger audit,
-    IChatPresence presence, INotifier notifier,
-    Guid id, MessagePost body) =>
+        grp.MapPost("/{id:guid}/messages", async (
+            HttpContext http, SwimsIdentityDbContext db,
+            IHubContext<ChatsHub> hub, IAuditLogger audit,
+            IChatPresence presence, INotifier notifier,
+            LinkGenerator link,                     // ← added
+            Guid id, MessagePost body) =>
         {
             var me = CurrentUserId(http.User);
             var member = await db.ConversationMembers.FirstOrDefaultAsync(x => x.ConversationId == id && x.UserId == me);
@@ -365,16 +360,24 @@ public static class MessagingEndpoints
 
                 var snippet = text.Length > 120 ? text[..120] + "…" : text;
 
+                // Build absolute link like Url.Page(..., protocol: Request.Scheme)
+                var path = link.GetPathByPage(http, page: "/Messenger/Chat", handler: null,
+                                              values: new { area = "Portal", convoId = id });
+                var chatUrl = $"{http.Request.Scheme}://{http.Request.Host}{path}";
+
                 await notifier.NotifyUserAsync(
                     other.Id,
                     other.UserName ?? other.Email ?? $"user:{other.Id}",
                     "NewMessage",
-                    new {
+                    new
+                    {
+                        messageId = msg.Id,
                         fromUserId = me,
                         fromName,
                         convoId = id,
                         snippet,
-                        url = $"/Portal/Messenger/Chat?convoId={id}"
+                        url = chatUrl,            // ← absolute
+                        actionLabel = "Open chat" // ← short button text for email template
                     }
                 );
             }

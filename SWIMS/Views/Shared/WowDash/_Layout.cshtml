@@ -45,6 +45,12 @@
         }
     </script>
 
+    @if (User?.Identity?.IsAuthenticated ?? false)
+    {
+        <script src="~/WowDash/js/pwa-push.js" asp-append-version="true"></script>
+    }
+
+
 </body>
 
 </html>
