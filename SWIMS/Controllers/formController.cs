@@ -45,6 +45,12 @@ namespace SWIMS.Controllers
             ViewBag.formImage = f_Linq.Select(m => m.image).FirstOrDefault();
             ViewBag.formDesc = f_Linq.Select(m => m.desc).FirstOrDefault();
             ViewBag.header = f_Linq.Select(x => x.header).FirstOrDefault();
+            var linking = f_Linq.Select(x => x.is_linking).FirstOrDefault();
+            if (linking == true)
+            {
+                ViewBag.formLINK = _context.SW_forms.Where(x => x.is_linking == true).ToList();
+                ViewBag.LK = 1;
+            }
 
             ViewBag.processes = _context.SW_formProcesses
                 .Where(c => c.SW_formsId == formId)
@@ -141,6 +147,12 @@ namespace SWIMS.Controllers
             ViewBag.formImage = f_Linq.Select(m => m.image).FirstOrDefault();
             ViewBag.formDesc = f_Linq.Select(m => m.desc).FirstOrDefault();
             ViewBag.header = f_Linq.Select(x => x.header).FirstOrDefault();
+            var linking = f_Linq.Select(x => x.is_linking).FirstOrDefault();
+            if (linking == true)
+            {
+                ViewBag.formLINK = _context.SW_forms.Where(x => x.is_linking == true).ToList();
+                ViewBag.LK = 1;
+            }
 
             ViewBag.processes = _context.SW_formProcesses
                 .Where(c => c.SW_formsId == formId)
