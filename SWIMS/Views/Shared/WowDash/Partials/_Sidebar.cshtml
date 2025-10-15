@@ -19,8 +19,8 @@
     </button>
     <div>
         <a asp-area="" asp-controller="Home" asp-action="Index" class="sidebar-logo">
-            <img src="~/WowDash/images/logo.png" alt="site logo" class="light-logo">
-            <img src="~/WowDash/images/logo-light.png" alt="site logo" class="dark-logo">
+            <img src="~/WowDash/images/logo.svg" alt="site logo" class="light-logo">
+            <img src="~/WowDash/images/logo-light.svg" alt="site logo" class="dark-logo">
             <img src="~/WowDash/images/logo-icon.png" alt="site logo" class="logo-icon">
         </a>
     </div>
@@ -37,6 +37,14 @@
                     <li>
                         <a asp-area="" asp-controller="Home" asp-action="Index">
                             <iconify-icon icon="tabler:home" class="menu-icon"></iconify-icon> Home
+                            <iconify-icon icon="tabler:home" class="menu-icon"></iconify-icon> 
+                            Home
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Reports" asp-action="Index">
+                            <iconify-icon icon="mdi:file-chart-outline" class="menu-icon"></iconify-icon>
+                            Reports
                         </a>
                     </li>
                 </ul>
@@ -88,9 +96,7 @@
                             </a>
                         </li>
                         <li>
-                            <a asp-area="" asp-controller="Roles" asp-action="Create">
-                                <iconify-icon icon="tabler:shield-plus" class="menu-icon"></iconify-icon> Add Role
-                            </a>
+                            <a asp-area="" asp-controller="roles" asp-action="Create"><i class="ri-circle-fill circle-icon text-warning-main w-auto"></i> Add Role</a>
                         </li>
                     </ul>
                 </li>
@@ -128,7 +134,6 @@
                     </li>
 
                 </ul>
-
             <!-- PROCESSSES ----------------------------------------------------------- -->
             <li class="dropdown">
                 <a href="javascript:void(0)">
@@ -195,7 +200,7 @@
                     <li>
                         <a asp-area="Admin" asp-controller="ReportsAdmin" asp-action="Index">
                             <iconify-icon icon="mdi:file-chart-outline" class="menu-icon"></iconify-icon>
-                            <span>Reporting</span>
+                            <span>Report Management</span>
                         </a>
                     </li>
                 </ul>
@@ -226,21 +231,8 @@
                 </ul>
             </li>
 
-
-            @*@if ((await Authz.AuthorizeAsync(User, "ReportsView")).Succeeded)
-            {
-                
-            }*@
-            <!-- REPORTING --------------------------------------------------------- -->
-            <li class="sidebar-menu-group-title">Reports</li>
-            <li>
-                <a asp-area="" asp-controller="Reports" asp-action="Index">
-                    <iconify-icon icon="mdi:file-chart-outline" class="menu-icon"></iconify-icon>
-                    <span>Reports</span>
-                </a>
-            </li>
-
-
+            
+            
             @if (SignInManager.IsSignedIn(User))
             {
                 <li>

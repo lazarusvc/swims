@@ -1,6 +1,16 @@
-﻿<a asp-action="Index" asp-controller="Home"><< | back</a>
+﻿<!-- BACK BUTTON -->
+<div style="width: 110px;">
+    <a href="##" onClick="history.go(-1); return false;"
+       class="btn rounded-pill btn-outline-dark-1 radius-8 px-20 py-11 d-flex align-items-center gap-2">
+        <iconify-icon icon="ion:return-up-back-sharp"></iconify-icon> Back
+    </a>
+    <br />
+    <br />
+</div>
+<!-- ----------------------------------------------- -->
 @{
     ViewData["Title"] = "Program - " + @ViewBag.formName;
+    ViewData["UID"] = @ViewBag.uuid;
 }
 @model FormTableViewModel
 
@@ -67,8 +77,47 @@
                     </span>
                     Last 30 days
                 </p>
+                <br/>
+                <a asp-action="Approval" asp-route-uuid="@ViewBag.uuid" type="button" class="btn rounded-pill btn-outline-success-600 radius-8 px-20 py-11 d-flex align-items-center gap-2">
+                    <iconify-icon icon="tabler:copy-check-filled" class="text-xl"></iconify-icon> Approve 
+                </a>
             </div>
         </div><!-- card end -->
+    </div>
+</div>
+<br />
+<div class="row">
+    <div class="col-md-3">
+        <div id="ex1" class="modal">
+            <partial name="~/Views/Shared/_CreateBeneficiary.cshtml" view-data="ViewData" />
+        </div>
+        <a href="#ex1" rel="modal:open" type="button" class="btn rounded-pill btn-outline-success-600 radius-8 px-20 py-11 d-flex align-items-center gap-2">
+            <iconify-icon icon="mdi:handshake" class="menu-icon"></iconify-icon> Beneficiary
+        </a>
+    </div>
+    <div class="col-md-3">
+        <div id="ex2" class="modal">
+            <partial name="~/Views/Shared/_CreateCity.cshtml" view-data="ViewData" />
+        </div>
+        <a href="#ex2" rel="modal:open" type="button" class="btn rounded-pill btn-outline-success-600  radius-8 px-20 py-11 d-flex align-items-center gap-2">
+            <iconify-icon icon="tabler:building-skyscraper" class="menu-icon"></iconify-icon> City
+        </a>
+    </div>
+    <div class="col-md-3">
+        <div id="ex3" class="modal">
+            <partial name="~/Views/Shared/_CreateOrganization.cshtml" view-data="ViewData" />
+        </div>
+        <a href="#ex3" rel="modal:open" type="button" class="btn rounded-pill btn-outline-success-600  radius-8 px-20 py-11 d-flex align-items-center gap-2">
+            <iconify-icon icon="tabler:building-community" class="menu-icon"></iconify-icon> Organization
+        </a>
+    </div>
+    <div class="col-md-3">
+        <div id="ex4" class="modal">
+            <partial name="~/Views/Shared/_CreateFinancialInstitution.cshtml" view-data="ViewData" />
+        </div>
+        <a href="#ex4" rel="modal:open" type="button" class="btn rounded-pill btn-outline-success-600  radius-8 px-20 py-11 d-flex align-items-center gap-2">
+            <iconify-icon icon="tabler:building-bank" class="menu-icon"></iconify-icon> Financial Institution
+        </a>
     </div>
 </div>
 <br />
@@ -76,9 +125,31 @@
     <div class="col-sm-8">
         <div class="card radius-12 h-100">
             <div class="card-body py-16 px-24" style="overflow-y: scroll; height:500px;">
+                <a asp-action="ProgramExpand" asp-route-uuid="@ViewBag.uuid" type="button" align="end">
+                    <iconify-icon icon="cuida:expand-outline" class="text-xl"></iconify-icon>
+                </a>
                 <form asp-action="Create" asp-controller="formTableData">
+                    @Html.Raw(@ViewBag.header)
                     <div id="fb-rendered-form"></div>
                     <input type="hidden" name="SW_formsId" value="@ViewBag.formId" />
+                    <br />
+                    <br /> 
+                    @if (ViewBag.LK == 1)
+                    {
+                        <div class="alert alert-primary bg-primary-50 text-primary-600 border-primary-600 border-start-width-4-px border-top-0 border-end-0 border-bottom-0 px-24 py-13 mb-0 fw-semibold text-lg radius-4 d-flex align-items-center justify-content-between" role="alert">
+                            <div class="d-flex align-items-center gap-2">
+                                <iconify-icon icon="mdi:form-dropdown" class="icon text-xl"></iconify-icon>
+                                Link to form:
+                            </div><br/>
+                            <select name="isLinkingForm" class="form-control">
+                                @foreach (var inx in ViewBag.formLINK)
+                                {
+                                    <option value="@inx.Id">FORM ID:- @inx.uuid.Substring(0, 5) - @inx.name</option>
+                                }
+                            </select>
+                        </div>
+                    }
+                    <br />
                     <button type="submit" class="btn btn-success">Submit</button>
                 </form>
                 
@@ -120,9 +191,10 @@
                 <table class="table bordered-table mb-0" id="dataTable" data-page-length='10'>
                     <thead>
                         <tr>
+                            <th>View</th>
                             @foreach (var col in Model.Columns)
                             {
-                                <th>@col.Label (@col.ColumnName)</th>
+                                <th>@col.Label <br/><span style="font-size:12px;">(@col.ColumnName)</span></th>
                             }
                         </tr>
                     </thead>
@@ -130,6 +202,10 @@
                         @foreach (var row in Model.Rows)
                         {
                             <tr>
+                                <td>
+                                    
+                                    <a asp-action="Preview" asp-route-dataID="@row["IDS"]" asp-route-uuid="@ViewBag.uuid" class="w-32-px h-32-px bg-primary-light text-primary-600 rounded-circle d-inline-flex align-items-center justify-content-center"><iconify-icon icon="iconamoon:eye-light"></iconify-icon></a>
+                                </td>
                                 @foreach (var col in Model.Columns)
                                 {
                                     <td>@row[col.ColumnName]</td>
@@ -143,11 +219,18 @@
     </div>
 </div>
 
-
+<link href="~/css/forms-stylesheet.css" rel="stylesheet" />
 <script src="~/lib/jquery/dist/jquery.min.js"></script>
 <script src="~/lib/formbuilder/form-render.min.js"></script>
 <script src="~/js/datatables.min.js"></script>
+<link href="~/lib/trumbowyg-editor/ui/trumbowyg.min.css" rel="stylesheet" />
+<script src="~/lib/trumbowyg-editor/trumbowyg.min.js"></script>
+<script src="~/lib/jquery-modal/jquery.modal.min.js"></script>
+<link href="~/lib/jquery-modal/jquery.modal.min.css" rel="stylesheet" />
 <script type="text/javascript">
+    // RENDER FORM
+    //
+    // -----------------------------------------------------------------------------------------------------
     jQuery(function($) {
       var container = document.getElementById('fb-rendered-form');
       var formData = '@Html.Raw(ViewBag.form)';
@@ -161,5 +244,131 @@
       $(container).formRender(formRenderOpts);
     });
 
+    // CUSTOM FORM FUNCTIONALITY
+    //
+    // -----------------------------------------------------------------------------------------------------
+    jQuery(function($) {
+
+        function findFields($root) {
+
+            $root.find("input[name], select[name], textarea[name], input[radio-group]").each(function () {
+                var $field = $(this);
+                var fieldName = $field.attr("name");
+                var fieldName_actual = "";
+
+                if (fieldName.indexOf("Form") >= 0) {
+                    // do nothing
+                } else {
+                    fieldName_actual = fieldName;
+                }
+
+                //  Grab classes into an array
+                var fieldClasses = ($field.attr("class")).split(/\s+/).filter(c => c.length > 0);
+
+                // Grab ids into an Array
+                var fieldIds = ($field.attr("id")).split(/\s+/).filter(c => c.length > 0);
+                // console.log(fieldIds);
+                
+                // API LOGIC
+                //
+                // Traverse all <select> fields (recursively).
+                // For each field, check if its name attribute matches a database model (served from an API endpoint).
+                // If there’s a match and the field is a <select>, populate it with options from the API response.
+                //
+                $.ajax({
+                    url: "/api/" + fieldName_actual,
+                    method: "GET",
+                    dataType: "json",
+                    success: function (data) {
+                        if (!data) return;                        
+
+                        // Case 1: Populate select dropdowns
+                        if ($field.is("select")) {
+                            $field.empty(); // Clear existing options
+                            $.each(data, function (i, opt) {
+                                var $opt = $("<option>").val(opt.id + "," + opt.uuid + "," + opt.name).text(opt.name);
+                                if (data.defaultValue && data.defaultValue == opt.value) {
+                                    $opt.prop("selected", true);
+                                }
+                                $field.append($opt);                                
+                            });
+                        }
+  
+                        $("select[name="+ fieldName +"]").on("keyup change", function() {
+
+                            var select_list_classVAL = $(this).children("option:selected").val().split(",");
+
+                            if (fieldName === "beneficiary") {
+                                $("." + fieldName).val(select_list_classVAL[1]);
+                            }
+                            if (fieldName === "city") {
+                                $("." + fieldName).val(select_list_classVAL[2]);
+                            }
+                            if (fieldName === "financial_institution") {
+                                $("." + fieldName).val(select_list_classVAL[2]);
+                            }
+                            if (fieldName === "organization") {
+                                $("." + fieldName).val(select_list_classVAL[2]);
+                            }
+                        });                      
+
+
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Error loading data for " + fieldName + ":", error);
+                    }
+                });
+
+
+                // SKIP LOGIC 
+                // 
+                // Look for radio button(s) with it's first classname as `skipping-checker`
+                // find all corresponding fields with classname as `is-skipping` 
+                // toggle between `yes` or `no` to display fields
+                //
+                if (fieldClasses[0] === "skipping-checker")  {
+                    $(".is-skipping").parent("div").hide();
+                    $(this).parent("div").on("change", function() {
+                        if($(".skipping-checker:eq(0)").is(':checked')) {
+                            $(".is-skipping").parent("div").show();
+                        }
+                        if ($(".skipping-checker:eq(1)").is(':checked')) {
+                            $(".is-skipping").parent("div").hide();
+                        }
+                    });                    
+                }
+            });
+        }
+
+        // Scope to only inside #fb-rendered-form
+        var $formContainer = $("#fb-rendered-form");
+        if ($formContainer.length) {
+            findFields($formContainer);
+        }
+    });
+    // TABLE DATATABLE INIT
+    //
+    // -----------------------------------------------------------------------------------------------------
     let table = new DataTable('#dataTable');
+
+    // ------------------------------------------- TINYMCE - WYSWYGET EDITOR
+    jQuery(function ($) {
+        $(".trumbowyg").trumbowyg({
+            btns: [
+                ['viewHTML'],
+                ['undo', 'redo'], // Only supported in Blink browsers
+                ['formatting'],
+                ['strong', 'em', 'del'],
+                ['superscript', 'subscript'],
+                ['link'],
+                ['insertImage'],
+                ['justifyLeft', 'justifyCenter', 'justifyRight', 'justifyFull'],
+                ['unorderedList', 'orderedList'],
+                ['horizontalRule'],
+                ['removeformat'],
+                ['fullscreen']
+            ],
+            autogrow: true
+        });
+    });
 </script>

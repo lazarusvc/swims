@@ -304,6 +304,12 @@ builder.Services.AddSingleton<IChatPresence, InMemoryChatPresence>();
 
 
 
+
+
+// Add OpenAPI Support to project
+builder.Services.AddOpenApi();
+builder.Services.AddEndpointsApiExplorer();
+
 var app = builder.Build();
 
 
@@ -440,4 +446,11 @@ app.MapControllerRoute(
     .WithStaticAssets();
 
 app.MapRazorPages();
+
+app.MapOpenApi();
+app.MapSW_beneficiaryEndpoints();
+app.MapSW_cityEndpoints();
+app.MapSW_financial_institutionEndpoints();
+app.MapSW_organizationEndpoints();
+
 app.Run();

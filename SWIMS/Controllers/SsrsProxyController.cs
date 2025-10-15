@@ -7,19 +7,19 @@ using SWIMS.Services.Reporting;
 
 namespace SWIMS.Controllers;
 
-[ApiController]
+    [ApiController]
 [AllowAnonymous]
 [Route("ssrs")]
 public class SsrsProxyController : ControllerBase
-{
+    {
     private readonly HttpClient _http;
     private readonly ReportingOptions _opt;
 
     public SsrsProxyController(IHttpClientFactory httpFactory, IOptions<ReportingOptions> opt)
-    {
+        {
         _http = httpFactory.CreateClient("ssrs-proxy");
         _opt = opt.Value;
-    }
+        }
 
     // 1) Query-style: /ssrs?%2FVCAS_Report%2FReportName&...
     [HttpGet]
@@ -32,7 +32,7 @@ public class SsrsProxyController : ControllerBase
         ProxyToReportServerAsync(remainder);
 
     private async Task<IActionResult> ProxyToReportServerAsync(string? remainder)
-    {
+        {
         if (string.IsNullOrWhiteSpace(_opt.ReportServerUrl))
             return StatusCode(500, "ReportServerUrl is not configured.");
 
@@ -57,11 +57,11 @@ public class SsrsProxyController : ControllerBase
 
         // Rewrite Location header on redirects to stay under /ssrs
         if (upstreamRes.Headers.Location is Uri loc)
-        {
+            {
             var rewritten = RewriteLocation(loc);
             if (rewritten is not null)
                 Response.Headers["Location"] = rewritten;
-        }
+            }
 
         // Copy headers (after potential Location rewrite)
         foreach (var h in upstreamRes.Headers)
@@ -71,7 +71,9 @@ public class SsrsProxyController : ControllerBase
             Response.Headers[h.Key] = h.Value.ToArray();
 
         // 🔒 prevent browser auth popups from our origin
-        Response.Headers.Remove("WWW-Authenticate");
+                Response.Headers.Remove("WWW-Authenticate");
+                return Content(html, contentTypeHeader);
+            }
 
         // (optional) turn upstream 401 into a clean server-side failure
         if (upstreamRes.StatusCode == HttpStatusCode.Unauthorized)
@@ -146,15 +148,31 @@ public class SsrsProxyController : ControllerBase
             return Content(html, upstreamRes.Content.Headers.ContentType?.ToString() ?? "text/html; charset=utf-8");
         }
 
+        private string RewriteAssetUrls(string html)
+        {
+            if (string.IsNullOrEmpty(html)) return html;
+
+            var attrRx = new Regex("(?:\\s(?:src|href))\\s*=\\s*\"([^\"]+)\"",
+                                   RegexOptions.IgnoreCase | RegexOptions.Compiled);
+            var cssUrlRx = new Regex("url\\((['\"]?)([^)'\"]+)\\1\\)",
+                                     RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+            string Rewriter(string url)
+            {
+                var decoded = WebUtility.HtmlDecode(url);
+                var looksLikeSsrs =
+                    decoded.Contains("ReportServer", StringComparison.OrdinalIgnoreCase) ||
+                    decoded.Contains("rs:ImageID=", StringComparison.OrdinalIgnoreCase) ||
+                    decoded.Contains("ResourceStream", StringComparison.OrdinalIgnoreCase);
 
         // Stream everything else as-is (scripts, images, axd, PDFs, etc.)
         var contentType = upstreamRes.Content.Headers.ContentType?.ToString() ?? mediaType;
         Response.Headers["X-SWIMS-SSRS-Relay"] = "hit";
         return new FileStreamResult(stream, contentType);
-    }
+            }
 
     private string? RewriteLocation(Uri loc)
-    {
+            {
         // If SSRS redirects to http://gocdssr2/ReportServer/..., rewrite to /{pathbase}/ssrs/...
         var proxyBase = GetProxyBasePath(); // e.g. "/SWIMS/ssrs" or "/ssrs"
         // Absolute to same-host SSRS
@@ -166,10 +184,10 @@ public class SsrsProxyController : ControllerBase
             return proxyBase + loc.OriginalString.Substring("/ReportServer".Length);
 
         return null;
-    }
+        }
 
     private string GetProxyBasePath()
-    {
+            {
         // Respect app PathBase and ReverseProxyBasePath ("~/ssrs" or "/ssrs")
         var basePath = HttpContext.Request.PathBase.HasValue ? HttpContext.Request.PathBase.Value!.TrimEnd('/') : string.Empty;
         var configured = _opt.ReverseProxyBasePath?.Trim() ?? "/ssrs";

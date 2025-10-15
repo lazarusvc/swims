@@ -1,0 +1,46 @@
+﻿
+<div class="row">
+<div class="col-md-12">
+<div class="card">
+            <div class="card-header" style="background: #16a34a; color: white;">
+    New Organization
+</div>
+<div class="card-body">
+        <form asp-action="Create" asp-controller="organization">
+            <div class="row mb-24 gy-3 align-items-center">
+                <label class="form-label mb-0 col-sm-4">Vendor ID:</label>
+                <div class="col-sm-10">
+                <input name="vendor_id" class="form-control" placeholder="VID0000"/>
+                </div>
+            </div>
+            <div class="row mb-24 gy-3 align-items-center">
+                <label class="form-label mb-0 col-sm-4">Name:</label>
+                <div class="col-sm-10">
+                <input name="name" class="form-control" placeholder="e.g. Your Org"/>
+                </div>
+            </div>
+            <div class="row mb-24 gy-3 align-items-center">
+                <label class="form-label mb-0 col-sm-4">Type:</label>
+                <div class="col-sm-10">
+                <input name="type" class="form-control" placeholder="e.g. Bank"/>
+                </div>
+            </div>
+            <div class="row mb-24 gy-3 align-items-center">
+                <label class="form-label mb-0 col-sm-4">Active:</label>
+                <div class="col-sm-10">
+                <select name="active">
+                    <option value="true">True</option>
+                    <option value="false">False</option>
+                </select>
+                </div>
+            </div>
+
+            <input type="hidden" name="partialCheck" id="partialCheck" value="@ViewData["UID"]" />
+            <input type="submit" value="Create" class="btn rounded-pill btn-success-600" />
+        </form>
+        </div>
+    </div>
+</div>
+</div>
+
+
