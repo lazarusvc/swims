@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
 using SWIMS.Models;
 using SWIMS.Models.ViewModels;
@@ -61,19 +62,18 @@ namespace SWIMS.Controllers
         // GET: users
         public async Task<IActionResult> Index()
         {
-            var list = new List<UserWithRolesViewModel>();
-            foreach (var u in _userManager.Users)
+            var users = await _userManager.Users.ToListAsync();
+            var tasks = users.Select(async u => new UserWithRolesViewModel
             {
-                var roles = await _userManager.GetRolesAsync(u);
-                list.Add(new UserWithRolesViewModel {
-                    Id        = u.Id,
-                    FirstName = u.FirstName,
-                    LastName  = u.LastName,
-                    UserName  = u.UserName,
-                    Email     = u.Email,
-                    Roles     = roles
-                });
-            }
+                Id = u.Id,
+                FirstName = u.FirstName,
+                LastName = u.LastName,
+                UserName = u.UserName,
+                Email = u.Email,
+                Roles = await _userManager.GetRolesAsync(u)
+            });
+
+            var list = await Task.WhenAll(tasks);
             return View(list);
         }
 

@@ -53,13 +53,24 @@ namespace SWIMS.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,name,email")] SW_financial_institution sW_financial_institution)
+        public async Task<IActionResult> Create([Bind("Id,name,email")] SW_financial_institution sW_financial_institution, IFormCollection frm)
         {
             if (ModelState.IsValid)
             {
                 _context.Add(sW_financial_institution);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+
+                // Redirect logic for /form/Program quick access buttons
+                // ---------------------------------------------------------
+                string partialCheck = frm["partialCheck"].ToString();
+                if (partialCheck != null)
+                {
+                    return RedirectToAction("Program", "form", new { uuid = partialCheck });
+                }
+                else
+                {
+                    return RedirectToAction(nameof(Index));
+                }
             }
             return View(sW_financial_institution);
         }

@@ -8,11 +8,14 @@ namespace SWIMS.Models.Reports
     {
         public int Id { get; set; }
 
+
         [Required, MaxLength(128)]
         public string ParamKey { get; set; } = default!; // must match SSRS parameter
 
+
         [Required, MaxLength(1024)]
         public string ParamValue { get; set; } = default!;
+
 
         [MaxLength(32)]
         public string? ParamDataType { get; set; } // String, Integer, DateTime, etc.
@@ -22,5 +25,7 @@ namespace SWIMS.Models.Reports
         [BindNever]        // <-- do not bind from the form
         [ValidateNever]    // <-- do not validate; FK is what matters
         public SwReport SwReport { get; set; } = default!;
+
+
     }
 }

@@ -1,7 +1,9 @@
 ﻿@model SWIMS.Models.Reports.SwReportParam
+
 @{
     ViewData["Title"] = "Create New Report Parameters";
 }
+
 @if (TempData["Ok"] is string ok && !string.IsNullOrWhiteSpace(ok))
 {
     <div class="alert alert-success">@ok</div>

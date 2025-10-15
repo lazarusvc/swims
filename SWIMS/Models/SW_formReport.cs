@@ -5,11 +5,22 @@ using System.Collections.Generic;
 
 namespace SWIMS.Models;
 
+<<<<<<<< HEAD:SWIMS/Models/SW_formReport.cs
 public partial class SW_formReport
+========
+public partial class SW_formProcess
+>>>>>>>> int/merge-dev-2025-10:SWIMS/Models/SW_formProcess.cs
 {
     public int Id { get; set; }
 
     public string url { get; set; }
+
+<<<<<<<< HEAD:SWIMS/Models/SW_formReport.cs
+    public int SW_formsId { get; set; }
+
+    public virtual SW_form SW_forms { get; set; }
+========
+    public string name { get; set; }
 
     public int SW_formsId { get; set; }
 
