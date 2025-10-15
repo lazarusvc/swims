@@ -22,7 +22,7 @@ namespace SWIMS.Controllers
 
         public formController(SwimsDb_moreContext context)
         {
-            _context = context;            
+            _context = context;
         }
 
         public string GenerateNewUuidAsString()
@@ -59,7 +59,7 @@ namespace SWIMS.Controllers
 
             ViewBag.entries = _context.SW_formTableData.Where(c => c.SW_formsId == formId).Count();
             ViewBag.entries_pending = _context.SW_formTableData.Where(
-                c => c.SW_formsId == formId && 
+                c => c.SW_formsId == formId &&
                 c.isApproval_01 == 0 ||
                 c.isApproval_02 == 0 ||
                 c.isApproval_03 == 0).Count();
@@ -67,7 +67,7 @@ namespace SWIMS.Controllers
                 c => c.SW_formsId == formId &&
                 c.isApproval_01 == 1 ||
                 c.isApproval_02 == 1 ||
-                c.isApproval_03 == 1).Count();           
+                c.isApproval_03 == 1).Count();
 
 
             // 1. Fetch form with JSON
@@ -272,7 +272,7 @@ namespace SWIMS.Controllers
             if (_fData == null)
             {
                 return NotFound();
-            }            
+            }
             var stringArray = new string[250]
             {
                 _fData.FormData01,
@@ -603,8 +603,8 @@ namespace SWIMS.Controllers
 
             if (ModelState.IsValid)
             {
-                _context.Add(new SW_form 
-                { 
+                _context.Add(new SW_form
+                {
                     uuid = sW_form.uuid,
                     name = sW_form.name,
                     desc = sW_form.desc,
@@ -616,7 +616,7 @@ namespace SWIMS.Controllers
                     header = sW_form.header
                 });
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index), new { id = sW_form.Id});
+                return RedirectToAction(nameof(Index), new { id = sW_form.Id });
             }
             ViewData["SW_identityId"] = new SelectList(_context.SW_identities, "Id", "name", sW_form.SW_identityId);
             return View(sW_form);
@@ -720,7 +720,7 @@ namespace SWIMS.Controllers
             }
             ViewData["SW_identityId"] = new SelectList(_context.SW_identities, "Id", "name", sW_form.SW_identityId);
             return View(sW_form);
-     }
+        }
 
         // GET: form/Edit/5
         public async Task<IActionResult> EditUpload(int? id)
@@ -855,11 +855,6 @@ namespace SWIMS.Controllers
             if (sW_form != null)
             {
                 _context.SW_forms.Remove(sW_form);
-                _context.SW_formTableData.Remove(formData);
-                _context.SW_formTableData_Types.Remove(formDataType);
-                _context.SW_formTableNames.Remove(formDataName);
-                _context.SW_formProcesses.Remove(formProcess);
-                _context.SW_formReports.Remove(formReport);
             }
 
             await _context.SaveChangesAsync();
