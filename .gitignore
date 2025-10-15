@@ -373,3 +373,4 @@ SWIMS/wwwroot/docs/
 
 SWIMS/appsettings.Development.json
 
+/SWIMS/appsettings.Development.local.json
