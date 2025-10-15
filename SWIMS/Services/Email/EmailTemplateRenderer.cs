@@ -7,9 +7,9 @@ namespace SWIMS.Services.Email;
 
 /// <summary>
 /// Handlebars-based renderer for email templates.
-/// - Compiles & caches the Subject and HTML from EmailTemplateProvider
-/// - Supports standard {{tokens}} and {{#if}} / {{#unless}} blocks
-/// - Adds helper: {{nl2br text}} and {{urlencode value}}
+/// <para>- Compiles &amp; caches the Subject and HTML from <see cref="EmailTemplateProvider" />.</para>
+/// <para>- Supports standard {{tokens}} and {{#if}} / {{#unless}} blocks.</para>
+/// <para>- Adds helpers: <c>{{nl2br text}}</c> and <c>{{urlencode value}}</c>.</para>
 /// </summary>
 public sealed class EmailTemplateRenderer : ITemplateRenderer
 {
