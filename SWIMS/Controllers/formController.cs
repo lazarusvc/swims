@@ -13,6 +13,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using static System.Net.Mime.MediaTypeNames;
+using System.Text.RegularExpressions;
 
 namespace SWIMS.Controllers
 {
@@ -633,7 +634,41 @@ namespace SWIMS.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Complete(IFormCollection frm)
         {
-            int fID = Convert.ToInt32(frm["formId"]);
+            // Resolve formId robustly (avoid FormatException when the field is missing/empty)
+            int fID;
+            var formIdRaw = frm["formId"].FirstOrDefault();
+            if (!int.TryParse(formIdRaw, out fID))
+            {
+                // try alternate keys or route values
+                var idRaw = frm["id"].FirstOrDefault();
+                if (int.TryParse(idRaw, out var altId))
+                {
+                    fID = altId;
+                }
+                else if (int.TryParse(HttpContext.Request.RouteValues["id"]?.ToString(), out var routeId))
+                {
+                    fID = routeId;
+                }
+                else
+                {
+                    var uuid = frm["uuid"].FirstOrDefault();
+                    if (!string.IsNullOrWhiteSpace(uuid))
+                    {
+                        fID = await _context.SW_forms
+                            .Where(x => x.uuid == uuid)
+                            .Select(x => x.Id)
+                            .FirstOrDefaultAsync();
+                    }
+                    else
+                    {
+                        return BadRequest("Missing form identifier (formId or uuid).");
+                    }
+                }
+            }
+            if (fID <= 0)
+            {
+                return BadRequest("Form not found for provided identifier.");
+            }
 
             // fetch form JSON from DB
             var swForm = await _context.SW_forms.FindAsync(fID);
@@ -642,33 +677,150 @@ namespace SWIMS.Controllers
             // deserialize into a collection
             var formDefinition = JsonSerializer.Deserialize<List<form_FieldAttributes>>(swForm.form);
 
+            // --- STATIC field counters seeded from what's already saved for this form ---
+            var staticFields = _context.SW_formTableNames
+                .Where(n => n.SW_formsId == fID && n.field != null && n.field.StartsWith("STATIC_"))
+                .Select(n => n.field!)
+                .AsEnumerable(); // switch to LINQ-to-Objects before regex work
+
+            int nextH = staticFields
+                .Where(f => f.StartsWith("STATIC_H_", StringComparison.Ordinal))
+                .Select(f => {
+                    var m = StaticKeyRx.Match(f);
+                    return m.Success ? int.Parse(m.Groups[1].Value) : 0;
+                })
+                .DefaultIfEmpty(0)
+                .Max() + 1;
+
+            int nextP = staticFields
+                .Where(f => f.StartsWith("STATIC_P_", StringComparison.Ordinal))
+                .Select(f => {
+                    var m = StaticKeyRx.Match(f);
+                    return m.Success ? int.Parse(m.Groups[1].Value) : 0;
+                })
+                .DefaultIfEmpty(0)
+                .Max() + 1;
+
+
+            // Normalize static blocks (header/paragraph) so they get valid keys
+            var perTypeCounter = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var def in formDefinition)
+            {
+                var t = def.type?.ToLowerInvariant();
+                if (t == "header" || t == "paragraph")
+                {
+                    perTypeCounter.TryGetValue(t, out var idx);
+                    idx++; perTypeCounter[t] = idx;
+
+                    // 1) Give a display name if the builder omitted it
+                    var prefix = t == "header" ? "Header" : "Paragraph";
+                    def.label = EnsureName(def.name, def.label, prefix, idx);
+
+                    // 2) Give a synthetic field key if missing (never collides with FormData##)
+                    //    STATIC_H_### for headers, STATIC_P_### for paragraphs
+                    if (string.IsNullOrWhiteSpace(def.name))
+                    {
+                        def.name = t == "header"
+                            ? $"STATIC_H_{nextH++:D3}"
+                            : $"STATIC_P_{nextP++:D3}";
+                    }
+
+                }
+            }
+
             if (formDefinition == null || !formDefinition.Any())
                 return BadRequest("Form definition empty or invalid JSON");
 
-            // SW_formTableName
-            // map json data {label, name} to DB context name
-            var fieldEntities__names = formDefinition.Select(def => new SW_formTableName
+            // ---------------------------
+            // UPSERT instead of AddRange
+            // ---------------------------
+            var incoming = formDefinition.Select(d => new
             {
-                name = def.label,
-                field = def.name,
-                SW_formsId = fID
+                Field = d.name!.Trim(),                                // e.g., FormData07 or STATIC_H_001
+                DisplayName = (d.label ?? d.name)!.Trim(),             // human-friendly name in SW_formTableName
+                Type = d.type?.Trim().ToLowerInvariant() ?? "text"     // stored in SW_formTableData_Types
             }).ToList();
 
-            // SW_formTableData_Type
-            // map json data {type, name} to DB context name
-            var fieldEntities__types = formDefinition.Select(def => new SW_formTableData_Type
+            var existingNames = await _context.SW_formTableNames
+                .Where(n => n.SW_formsId == fID)
+                .ToDictionaryAsync(n => n.field!, StringComparer.OrdinalIgnoreCase);
+
+            var existingTypes = await _context.SW_formTableData_Types
+                .Where(t => t.SW_formsId == fID)
+                .ToDictionaryAsync(t => t.field!, StringComparer.OrdinalIgnoreCase);
+
+            var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var x in incoming)
             {
-                type = def.type,
-                field = def.name,
-                SW_formsId = fID
-            }).ToList();
+                seen.Add(x.Field);
 
-            // save to DB table(s)
-            await _context.SW_formTableNames.AddRangeAsync(fieldEntities__names);
-            await _context.SW_formTableData_Types.AddRangeAsync(fieldEntities__types);
-            await _context.SaveChangesAsync();
+                // Names: update-or-insert
+                if (existingNames.TryGetValue(x.Field, out var nRow))
+                {
+                    nRow.name = x.DisplayName;
+                }
+                else
+                {
+                    _context.SW_formTableNames.Add(new SW_formTableName
+                    {
+                        SW_formsId = fID,
+                        name = x.DisplayName,
+                        field = x.Field
+                    });
+                }
 
-            return View();
+                // Types: update-or-insert
+                if (existingTypes.TryGetValue(x.Field, out var tRow))
+                {
+                    tRow.type = x.Type;
+                }
+                else
+                {
+                    _context.SW_formTableData_Types.Add(new SW_formTableData_Type
+                    {
+                        SW_formsId = fID,
+                        field = x.Field,
+                        type = x.Type
+                    });
+                }
+            }
+
+            // OPTIONAL: prune rows removed from the builder (keeps DB in sync with current form)
+            var prune = true; // set false if you prefer to retain old mappings
+            if (prune)
+            {
+                var staleTypeIds = existingTypes.Values
+                    .Where(t => !seen.Contains(t.field!))
+                    .Select(t => t.Id)
+                    .ToList();
+
+                if (staleTypeIds.Count > 0)
+                    await _context.SW_formTableData_Types
+                        .Where(t => staleTypeIds.Contains(t.Id))
+                        .ExecuteDeleteAsync();
+
+                var staleNameIds = existingNames.Values
+                    .Where(n => !seen.Contains(n.field!))
+                    .Select(n => n.Id)
+                    .ToList();
+
+                if (staleNameIds.Count > 0)
+                    await _context.SW_formTableNames
+                        .Where(n => staleNameIds.Contains(n.Id))
+                        .ExecuteDeleteAsync();
+            }
+
+            // Save atomically
+            using (var tx = await _context.Database.BeginTransactionAsync())
+            {
+                await _context.SaveChangesAsync();
+                await tx.CommitAsync();
+            }
+
+            // After successful publish, go to the Program page for this form
+            return RedirectToAction(nameof(Program), new { uuid = swForm.uuid });
         }
 
         // GET: form/Edit/5
@@ -865,5 +1017,17 @@ namespace SWIMS.Controllers
         {
             return _context.SW_forms.Any(e => e.Id == id);
         }
+
+
+        private static readonly Regex StaticKeyRx = new(@"^STATIC_[HP]_(\d{3})$", RegexOptions.Compiled);
+
+        private static string EnsureName(string? nameFromBuilder, string? label, string fallbackPrefix, int indexWithinType)
+        {
+            var name = (nameFromBuilder ?? label)?.Trim();
+            if (string.IsNullOrEmpty(name))
+                name = $"{fallbackPrefix} {indexWithinType:D3}";
+            return name;
+        }
+
     }
 }
