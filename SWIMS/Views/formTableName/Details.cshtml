@@ -1,0 +1,36 @@
+﻿@model SWIMS.Models.SW_formTableName
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<br />
+<div class="card basic-data-table">
+    <div class="card-header">
+        <a asp-action="Index" class="bg-primary-light text-primary-600 d-inline-flex align-items-center justify-content-center" style="padding: 10px;"> SW_formTableName listings</a>
+    </div>
+    <div class="card-body" style="overflow-y:scroll; max-height: 250px;">
+     <dl class="row">
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.name).ToUpper():
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.name)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.field).ToUpper():
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.field)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.SW_forms).ToUpper():
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.SW_forms.name)
+        </dd>
+    </dl>
+
+    </div>
+</div>
+

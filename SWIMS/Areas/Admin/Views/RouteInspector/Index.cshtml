@@ -1,0 +1,210 @@
+﻿@using SWIMS.Services.Diagnostics
+@using System.Text.Json
+@using System.Text.Encodings.Web
+@inject IEndpointCatalog Catalog
+
+@{
+    ViewData["Title"] = "Route Inspector";
+
+    var actions = Catalog.GetControllerActions();
+    var pages = Catalog.GetRazorPages();
+    var areas = actions.Select(a => a.Area).Concat(pages.Select(p => p.Area))
+                       .Distinct(StringComparer.OrdinalIgnoreCase)
+                       .OrderBy(a => a ?? "(root)").ToList();
+
+    string AreaLabel(string? a) => string.IsNullOrEmpty(a) ? "(root)" : a!;
+    var inspectUrl = Url.Action("Inspect", "RouteInspector", new { area = "Admin" })!;
+    var createPresetCA = Url.Action("CreatePresetControllerAction", "PublicEndpoints", new { area = "Admin" })!;
+    var createPresetPg = Url.Action("CreatePresetPage", "PublicEndpoints", new { area = "Admin" })!;
+    var assignPreset = Url.Action("CreatePreset", "EndpointPolicies", new { area = "Admin" })!;
+}
+
+<h2>Route Inspector</h2>
+<p class="text-muted">Preview <strong>Public?</strong> and <strong>Policies</strong> enforced by DB rules for a chosen target.</p>
+
+<form id="inspectForm" method="post" action="@inspectUrl">
+    @Html.AntiForgeryToken()
+
+    <div class="row g-2 mt-2">
+        <div class="col-md-3">
+            <label class="form-label">Match Type</label>
+            <select name="matchType" id="ri-type" class="form-select">
+                <option value="ControllerAction">Controller Action</option>
+                <option value="Controller">Controller</option>
+                <option value="RazorPage">Razor Page</option>
+                <option value="Path">Path</option>
+                <option value="Regex">Regex</option>
+            </select>
+        </div>
+
+        <div class="col-md-3 ri-area">
+            <label class="form-label">Area</label>
+            <select name="area" id="ri-area" class="form-select">
+                @foreach (var a in areas)
+                {
+                    <option value="@(a ?? "")">@AreaLabel(a)</option>
+                }
+            </select>
+        </div>
+
+        <div class="col-md-3 ri-controller">
+            <label class="form-label">Controller</label>
+            <select name="controller" id="ri-controller" class="form-select"></select>
+        </div>
+
+        <div class="col-md-3 ri-action">
+            <label class="form-label">Action</label>
+            <select name="action" id="ri-action" class="form-select"></select>
+        </div>
+
+        <div class="col-md-6 ri-page d-none">
+            <label class="form-label">Razor Page</label>
+            <select name="page" id="ri-page" class="form-select"></select>
+        </div>
+
+        <div class="col-md-6 ri-path d-none">
+            <label class="form-label">Path</label>
+            <input name="path" id="ri-path" class="form-control" placeholder="/docs or /api/items?id=1" />
+        </div>
+    </div>
+
+    <div class="mt-3 d-flex gap-2">
+        <button class="btn btn-primary" type="submit">Inspect</button>
+        <!--
+            <button class="btn btn-outline-secondary" type="button" id="ri-make-public" disabled title="Temporarily disabled">
+                Make public…
+            </button>
+            <button class="btn btn-outline-primary" type="button" id="ri-assign-policy" disabled title="Temporarily disabled">
+                Assign policy…
+            </button>
+        -->
+    </div>
+</form>
+
+<hr />
+<pre id="result" class="p-3 bg-dark border rounded small">Pick a target and click Inspect.</pre>
+<div id="error" class="text-danger mt-2"></div>
+
+@section Scripts {
+    <script>
+        (function(){
+          // Robust JSON (camelCase + relaxed encoder)
+          const actions = @Html.Raw(JsonSerializer.Serialize(
+                        Catalog.GetControllerActions(),
+                        new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping }));
+
+      const pages = @Html.Raw(JsonSerializer.Serialize(
+                    Catalog.GetRazorPages(),
+                    new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping }));
+
+      const tSel = document.getElementById('ri-type');
+      const aSel = document.getElementById('ri-area');
+      const cSel = document.getElementById('ri-controller');
+      const xSel = document.getElementById('ri-action');
+      const pSel = document.getElementById('ri-page');
+      const path = document.getElementById('ri-path');
+      const form = document.getElementById('inspectForm');
+      const out  = document.getElementById('result');
+      const err  = document.getElementById('error');
+
+          function show(el, yes){ el.classList.toggle('d-none', !yes); }
+
+          function refreshControllers(){
+            const area = aSel.value || null;
+            const ctrls = [...new Set(actions.filter(a => (a.area ?? null) === (area ?? null)).map(a => a.controller))].sort();
+            cSel.innerHTML = ctrls.map(c => `<option value="${c}">${c}</option>`).join("");
+            refreshActions();
+          }
+
+          function refreshActions(){
+            const area = aSel.value || null;
+            const ctrl = cSel.value || null;
+            const acts = actions.filter(a => (a.area ?? null) === (area ?? null) && a.controller === ctrl).map(a => a.action).sort();
+            xSel.innerHTML = acts.map(a => `<option value="${a}">${a}</option>`).join("");
+          }
+
+          function refreshPages(){
+            const area = aSel.value || null;
+            const list = pages.filter(p => (p.area ?? null) === (area ?? null)).map(p => p.pageRoute).sort();
+            pSel.innerHTML = list.map(p => `<option value="${p}">${p}</option>`).join("");
+          }
+
+          function refreshByType(){
+            const t = tSel.value;
+            show(document.querySelector('.ri-controller'), t === 'Controller' || t === 'ControllerAction');
+            show(document.querySelector('.ri-action'),     t === 'ControllerAction');
+            show(document.querySelector('.ri-page'),       t === 'RazorPage');
+            show(document.querySelector('.ri-path'),       t === 'Path' || t === 'Regex');
+
+            if (t === 'RazorPage')      refreshPages();
+            else if (t === 'Controller' || t === 'ControllerAction') refreshControllers();
+          }
+
+          aSel.addEventListener('change', refreshByType);
+          tSel.addEventListener('change', refreshByType);
+          cSel.addEventListener('change', refreshActions);
+
+          // initial load
+          refreshByType();
+
+          form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            err.textContent = '';
+            out.textContent = 'Loading…';
+            try {
+              const data  = new FormData(form);
+              const token = form.querySelector('input[name="__RequestVerificationToken"]').value;
+                const resp = await fetch(form.getAttribute('action'), {
+                method: 'POST',
+                body: data,
+                credentials: 'same-origin',
+                headers: { 'RequestVerificationToken': token }
+              });
+              if (!resp.ok) {
+                const txt = await resp.text();
+                err.textContent = `Error ${resp.status}: ${txt.substring(0, 400)}`;
+                out.textContent = '';
+                return;
+              }
+              const json = await resp.json();
+              out.textContent = JSON.stringify(json, null, 2);
+            } catch(ex) {
+              err.textContent = ex?.message ?? String(ex);
+              out.textContent = '';
+            }
+          });
+
+          // Quick actions
+          document.getElementById('ri-make-public').addEventListener('click', () => {
+            const t = tSel.value;
+            const area = aSel.value || "";
+            if (t === 'ControllerAction') {
+              window.location.href = "@createPresetCA" + `?area=${encodeURIComponent(area)}&controller=${encodeURIComponent(cSel.value||'')}&action=${encodeURIComponent(xSel.value||'')}`;
+            } else if (t === 'Controller') {
+              window.location.href = "/Admin/PublicEndpoints/Create"
+                + `?MatchType=Controller&Area=${encodeURIComponent(area)}&Controller=${encodeURIComponent(cSel.value||'')}&IsEnabled=true&Priority=100`;
+            } else if (t === 'RazorPage') {
+              window.location.href = "@createPresetPg" + `?area=${encodeURIComponent(area)}&page=${encodeURIComponent(pSel.value||'')}`;
+            } else {
+              window.location.href = "/Admin/PublicEndpoints/Create"
+                + `?MatchType=${encodeURIComponent(t)}&Path=${encodeURIComponent(path.value||'')}&IsEnabled=true&Priority=100`;
+            }
+          });
+
+          document.getElementById('ri-assign-policy').addEventListener('click', () => {
+            const t = tSel.value;
+            const area = aSel.value || "";
+            const base = "@assignPreset" + `?matchType=${encodeURIComponent(t)}&area=${encodeURIComponent(area)}`;
+            if (t === 'ControllerAction') {
+              window.location.href = base + `&controller=${encodeURIComponent(cSel.value||'')}&action=${encodeURIComponent(xSel.value||'')}`;
+            } else if (t === 'Controller') {
+              window.location.href = base + `&controller=${encodeURIComponent(cSel.value||'')}`;
+            } else if (t === 'RazorPage') {
+              window.location.href = base + `&page=${encodeURIComponent(pSel.value||'')}`;
+            } else {
+              window.location.href = base + `&path=${encodeURIComponent(path.value||'')}`;
+            }
+          });
+        })();
+    </script>
+}

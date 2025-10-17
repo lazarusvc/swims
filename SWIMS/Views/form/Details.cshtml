@@ -1,0 +1,51 @@
+﻿@model SWIMS.Models.SW_form
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<br />
+<div class="card basic-data-table">
+    <div class="card-header">
+        <a asp-action="Index" class="bg-primary-light text-primary-600 d-inline-flex align-items-center justify-content-center" style="padding: 10px;"> SW_form listings</a>
+    </div>
+    <div class="card-body">
+        <div>
+            <dl class="row">
+                <dt class="col-sm-2">
+                    UUID:
+                </dt>
+                <dd class="col-sm-10">
+                    @Html.DisplayFor(model => model.uuid)
+                </dd>
+                <dt class="col-sm-2">
+                    NAME:
+                </dt>
+                <dd class="col-sm-10">
+                    @Html.DisplayFor(model => model.name)
+                </dd>
+                <dt class="col-sm-2">
+                    DESC:
+                </dt>
+                <dd class="col-sm-10">
+                    @Html.DisplayFor(model => model.desc)
+                </dd>
+                <dt class="col-sm-2">
+                    DATEMODIFIED:
+                </dt>
+                <dd class="col-sm-10">
+                    @Html.DisplayFor(model => model.dateModified)
+                </dd>
+                <dt class="col-sm-2">
+                    SITE LOCATION:
+                </dt>
+                <dd class="col-sm-10">
+                    @Html.DisplayFor(model => model.SW_identity.name)
+                </dd>
+            </dl>
+        </div>
+    </div>
+</div>
+
+
+

@@ -1,0 +1,47 @@
+﻿@{
+    if (ViewData.TryGetValue("ParentLayout", out var parentLayout) && parentLayout !=  null)
+    {
+        Layout = parentLayout.ToString();
+    }
+    else
+    {
+        Layout = "/Areas/Identity/Pages/_Layout.cshtml";
+    }
+}
+
+
+
+
+<partial name="~/Views/Shared/WowDash/Partials/_Sidebar.cshtml" />
+
+<main class="dashboard-main">
+    <partial name="~/Views/Shared/WowDash/Partials/_Navbar.cshtml" />
+
+    <div class="dashboard-main-body">
+        @{
+            string BreadcrumbTitle = ViewData.ContainsKey("title") ? ViewData["title"] as string ?? "" : "";
+            string BreadcrumbSubTitle = ViewData.ContainsKey("subTitle") ? ViewData["subTitle"] as string ?? "" : "";
+        }
+        <partial name="~/Views/Shared/WowDash/Partials/_Breadcrumb.cshtml" view-data='new ViewDataDictionary(ViewData) { { "BreadcrumbTitle", BreadcrumbTitle }, { "BreadcrumbSubTitle", BreadcrumbSubTitle } }' />
+
+        <div class="col-xxl-6">
+            <div class="card p-0 overflow-hidden position-relative radius-12 h-100">
+                <div class="card-header pt-16 pb-0 px-24 bg-base border border-end-0 border-start-0 border-top-0 d-flex align-items-center flex-wrap justify-content-between">
+                    <h6 class="text-lg mb-0">Manage your account</h6>
+                    <partial name="_ManageNav" />
+                    
+                </div>
+                <div class="card-body p-24 pt-10">
+                    @RenderBody()
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <partial name="~/Views/Shared/WowDash/Partials/_Footer.cshtml" />
+</main>
+
+@section Scripts {
+    @RenderSection("Scripts", required: false)
+}

@@ -1,0 +1,38 @@
+﻿@model SWIMS.Models.SW_formReport
+
+@{
+    ViewData["Title"] = "SW_formReport | NEW";
+}
+<hr />
+<div class="row">
+<div class="col-md-12">
+<div class="card">
+<div class="card-header">
+<a asp-action="Create" class="btn btn-success">Create New</a>
+</div>
+<div class="card-body" style="overflow-y:scroll; max-height: 250px;">
+        <form asp-action="Create">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="url" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <input asp-for="url" class="form-control" placeholder="..."/>
+                <span asp-validation-for="url" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="row mb-24 gy-3 align-items-center">
+                <label asp-for="SW_formsId" class="form-label mb-0 col-sm-4"></label>
+                <div class="col-sm-10">
+                <select asp-for="SW_formsId" class ="form-control" asp-items="ViewBag.SW_formsId"></select>
+                </div>
+            </div>
+                <input type="submit" value="Create" class="btn btn-primary" />
+        </form>
+        </div>
+    </div>
+</div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

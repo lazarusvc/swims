@@ -1,0 +1,21 @@
+﻿@page
+@model AccessDeniedModel
+@{
+    ViewData["title"] = "Access denied";
+}
+
+<section class="auth forgot-password-page bg-base d-flex flex-wrap">
+    <div class="auth-left d-lg-block d-none">
+        <div class="d-flex align-items-center flex-column h-100 justify-content-center">
+            <img src="~/WowDash/images/auth/forgot-pass-img.png" alt="">
+        </div>
+    </div>
+    <div class="auth-right py-32 px-24 d-flex flex-column justify-content-center">
+        <div class="max-w-464-px mx-auto w-100">
+            <div>
+                <h4 class="mb-12 text-danger">@ViewData["title"]</h4>
+                <p class="mb-32 text-danger text-lg">You do not have access to this resource.</p>
+            </div>
+        </div>
+    </div>
+</section>

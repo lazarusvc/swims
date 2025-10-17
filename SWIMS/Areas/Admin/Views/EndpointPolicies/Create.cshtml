@@ -1,0 +1,21 @@
+﻿@model EndpointPolicyEditViewModel
+@{
+    ViewData["Title"] = "Assign Policy to Endpoint(s)";
+}
+<h2>@ViewData["Title"]</h2>
+
+<form asp-action="Create" method="post">
+    @Html.AntiForgeryToken()
+
+    <div class="mb-3">
+        <label class="form-label">Policy</label>
+        <select asp-for="PolicyName" class="form-select" asp-items="Model.Policies"></select>
+    </div>
+
+    @await Html.PartialAsync("~/Areas/Admin/Views/Shared/_MatchTypeFields.cshtml", Model)
+
+    <div class="mt-3">
+        <button class="btn btn-primary">Create</button>
+        <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+    </div>
+</form>

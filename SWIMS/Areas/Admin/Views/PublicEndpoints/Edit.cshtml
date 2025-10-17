@@ -1,0 +1,12 @@
+﻿@model PublicEndpointEditViewModel
+@{
+    ViewData["Title"] = "Edit Public Endpoint";
+}
+<h2>Edit Public Endpoint</h2>
+<form asp-action="Edit" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+    @await Html.PartialAsync("../Shared/_MatchTypeFields", Model)
+    <button class="btn btn-primary">Save</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>

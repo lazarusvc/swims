@@ -1,0 +1,20 @@
+﻿@model SWIMS.Models.StoredProcess
+@{
+    ViewData["Title"] = "Delete Stored Process";
+}
+<h2>Delete Stored Process</h2>
+<div class="alert alert-warning">This will also delete all parameters for this process.</div>
+<dl class="row">
+    <dt class="col-sm-3">Name</dt>
+    <dd class="col-sm-9">@Model.Name</dd>
+    <dt class="col-sm-3">Description</dt>
+    <dd class="col-sm-9">@Model.Description</dd>
+    <dt class="col-sm-3">Connection</dt>
+    <dd class="col-sm-9">@(string.IsNullOrWhiteSpace(Model.ConnectionKey) ? $"{Model.DataSource}/{Model.Database}" : Model.ConnectionKey)</dd>
+</dl>
+<form asp-action="Delete" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="id" value="@Model.Id" />
+    <button type="submit" class="btn btn-danger">Confirm Delete</button>
+    <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+</form>

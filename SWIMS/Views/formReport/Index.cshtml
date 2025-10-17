@@ -1,0 +1,46 @@
+﻿@model IEnumerable<SWIMS.Models.SW_formReport>
+
+@{
+    ViewData["Title"] = "Index";
+}
+<br />
+<div class="card basic-data-table">
+<div class="card-header">
+<a asp-action="Create" class="btn btn-success">Create New</a>
+</div>
+<div class="card-body" style="overflow-x:scroll;">
+<table class="table bordered-table mb-0" id="dataTable" data-page-length='10'>
+    <thead>
+        <tr>
+            <th scope="col">
+                @Html.DisplayNameFor(model => model.url)
+            </th>
+            <th scope="col">
+                @Html.DisplayNameFor(model => model.SW_forms)
+            </th>
+            <th scope="col">Manage</th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.url)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.SW_forms.name)
+            </td>
+            <td>
+                <a asp-action="Details" asp-route-id="@item.Id" class="w-32-px h-32-px bg-primary-light text-primary-600 rounded-circle d-inline-flex align-items-center justify-content-center"><iconify-icon icon="iconamoon:eye-light"></iconify-icon></a>
+                <a asp-action="Edit" asp-route-id="@item.Id" class="w-32-px h-32-px bg-success-focus text-success-main rounded-circle d-inline-flex align-items-center justify-content-center"><iconify-icon icon="lucide:edit"></iconify-icon></a>
+                <a asp-action="Delete" asp-route-id="@item.Id" class="w-32-px h-32-px bg-danger-focus text-danger-main rounded-circle d-inline-flex align-items-center justify-content-center"><iconify-icon icon="mingcute:delete-2-line"></iconify-icon></a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>
+</div>
+</div>
+<script src="~/lib/jquery/dist/jquery.js"></script>
+<script src="~/js/datatables.min.js"></script>
+<script type="text/javascript"> let table = new DataTable('#dataTable');</script>
