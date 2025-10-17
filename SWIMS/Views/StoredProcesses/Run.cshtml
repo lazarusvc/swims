@@ -1,0 +1,31 @@
+﻿@model SWIMS.Models.ViewModels.RunStoredProcessViewModel
+@{
+    ViewData["Title"] = $"Run {Model.Name}";
+}
+<h2>Run: @Model.Name</h2>
+<p class="text-muted">@Model.Description</p>
+@if (!string.IsNullOrWhiteSpace(Model.ConnectionDisplay))
+{
+    <p><code>@Model.ConnectionDisplay</code></p>
+}
+
+<form asp-action="Run" method="post">
+    @Html.AntiForgeryToken()
+
+    <table class="table table-sm">
+        <thead><tr><th>Parameter</th><th>Type</th><th>Value</th></tr></thead>
+        <tbody>
+            @for (var i = 0; i < Model.Params.Count; i++)
+            {
+                <tr>
+                    <td>@Model.Params[i].Key<input type="hidden" name="Params[@i].Id" value="@Model.Params[i].Id" /></td>
+                    <td>@Model.Params[i].DataType<input type="hidden" name="Params[@i].DataType" value="@Model.Params[i].DataType" /></td>
+                    <td><input class="form-control form-control-sm" name="Params[@i].Value" value="@Model.Params[i].Value" /></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <button type="submit" class="btn btn-success">Execute</button>
+    <a class="btn btn-outline-secondary" asp-action="Index">Back</a>
+</form>

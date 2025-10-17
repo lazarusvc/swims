@@ -1,0 +1,189 @@
+﻿<!-- BACK BUTTON -->
+<div style="width: 110px;">
+    <a href="##" onClick="history.go(-1); return false;"
+       class="btn rounded-pill btn-outline-dark-1 radius-8 px-20 py-11 d-flex align-items-center gap-2">
+        <iconify-icon icon="ion:return-up-back-sharp"></iconify-icon> Back
+    </a>
+    <br />
+    <br />
+</div>
+<!-- ----------------------------------------------- -->
+@{
+    ViewData["Title"] = "Complete & Publish";
+}
+
+<hr />
+<br />
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                @Html.Raw(@ViewBag.header)
+            </div>
+            <div class="card-body">
+                <div id="fb-rendered-form"></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-12">
+        <br/>
+        <div class="btn-group" role="group" aria-label="Default button group">
+            <form asp-action="Complete">
+                <input type="hidden" name="formId" value="@ViewBag.id" />
+                <button type="submit" class="btn btn-success text-success-main px-20 py-13 radius-8 text-white d-flex" style="border-top-right-radius:0px; border-bottom-right-radius: 0px;">
+                    <iconify-icon icon="bitcoin-icons:share-filled" class="text-xl"></iconify-icon>
+                    Publish
+                </button> 
+            </form>
+            <a asp-action="Edit" asp-route-id="@ViewBag.id" type="button" class="btn btn-info text-info-main px-20 py-13 radius-8 text-white d-flex">
+                <iconify-icon icon="lucide:edit"></iconify-icon>
+                Edit
+            </a>
+            <a asp-action="Delete" asp-route-id="@ViewBag.id" type="button" class="btn btn-danger text-danger-main px-20 py-13 radius-8 text-white d-flex">
+                <iconify-icon icon="mingcute:delete-2-line"></iconify-icon>
+                Delete
+            </a>
+        </div>
+    </div>    
+</div>
+
+
+<link href="~/css/forms-stylesheet.css" rel="stylesheet" />
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/lib/formbuilder/form-render.min.js"></script>
+<link href="~/lib/trumbowyg-editor/ui/trumbowyg.min.css" rel="stylesheet" />
+<script src="~/lib/trumbowyg-editor/trumbowyg.min.js"></script>
+<script type="text/javascript">
+    // RENDER FORM
+    //
+    // -----------------------------------------------------------------------------------------------------
+    jQuery(function($) {
+      var container = document.getElementById('fb-rendered-form');
+      var formData = '@Html.Raw(ViewBag.frm)';
+
+      var formRenderOpts = {
+        container,
+        formData,
+        dataType: 'json'
+      };
+
+      $(container).formRender(formRenderOpts);
+    });
+
+    // CUSTOM FORM FUNCTIONALITY
+    //
+    // -----------------------------------------------------------------------------------------------------
+    jQuery(function($) {
+
+        function findFields($root) {
+
+            $root.find("input[name], select[name], textarea[name]").each(function () {
+                var $field = $(this);
+                var fieldName = $field.attr("name");
+
+                //  Grab classes into an array
+                var fieldClasses = ($field.attr("class")).split(/\s+/).filter(c => c.length > 0);
+
+                // Grab ids into an Array
+                var fieldIds = ($field.attr("id")).split(/\s+/).filter(c => c.length > 0);
+                console.log(fieldIds);
+
+                // API LOGIC
+                //
+                // Traverse all <select> fields (recursively).
+                // For each field, check if its name attribute matches a database model (served from an API endpoint).
+                // If there’s a match and the field is a <select>, populate it with options from the API response.
+                //
+                $.ajax({
+                    url: "/api/" + fieldName,
+                    method: "GET",
+                    dataType: "json",
+                    success: function (data) {
+                        if (!data) return;
+
+                        // Case 1: Populate select dropdowns
+                        if ($field.is("select")) {
+                            $field.empty(); // Clear existing options
+                            $.each(data, function (i, opt) {
+                                var $opt = $("<option>").val(opt.id).text(opt.name);
+                                if (data.defaultValue && data.defaultValue == opt.value) {
+                                    $opt.prop("selected", true);
+                                }
+                                $field.append($opt);
+                            });
+                        }
+
+                        $("select[name="+ fieldName +"]").on("keyup change", function() {
+
+                            var select_list_classVAL = $(this).children("option:selected").text();
+
+                            if (fieldName === "beneficiary") {
+                                $("." + fieldName).val(select_list_classVAL);
+                            }
+                            if (fieldName === "city") {
+                                $("." + fieldName).val(select_list_classVAL);
+                            }
+                            if (fieldName === "financial_institution") {
+                                $("." + fieldName).val(select_list_classVAL);
+                            }
+                            if (fieldName === "organization") {
+                                $("." + fieldName).val(select_list_classVAL);
+                            }
+                        });
+
+
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Error loading data for " + fieldName + ":", error);
+                    }
+                });
+
+
+                // SKIP LOGIC
+                //
+                // Look for radio button(s) with it's first classname as `skipping-checker`
+                // find all corresponding fields with classname as `is-skipping`
+                // toggle between `yes` or `no` to display fields
+                //
+                if (fieldClasses[0] === "skipping-checker")  {
+                    $(".is-skipping").parent("div").hide();
+                    $(this).parent("div").on("change", function() {
+                        if($(".skipping-checker:eq(0)").is(':checked')) {
+                            $(".is-skipping").parent("div").show();
+                        }
+                        if ($(".skipping-checker:eq(1)").is(':checked')) {
+                            $(".is-skipping").parent("div").hide();
+                        }
+                    });
+                }
+            });
+        }
+
+        // Scope to only inside #fb-rendered-form
+        var $formContainer = $("#fb-rendered-form");
+        if ($formContainer.length) {
+            findFields($formContainer);
+        }
+    });
+
+    // ------------------------------------------- TINYMCE - WYSWYGET EDITOR
+    jQuery(function ($) {
+        $(".trumbowyg").trumbowyg({
+            btns: [
+                ['viewHTML'],
+                ['undo', 'redo'], // Only supported in Blink browsers
+                ['formatting'],
+                ['strong', 'em', 'del'],
+                ['superscript', 'subscript'],
+                ['link'],
+                ['insertImage'],
+                ['justifyLeft', 'justifyCenter', 'justifyRight', 'justifyFull'],
+                ['unorderedList', 'orderedList'],
+                ['horizontalRule'],
+                ['removeformat'],
+                ['fullscreen']
+            ],
+            autogrow: true
+        });
+    });
+</script>

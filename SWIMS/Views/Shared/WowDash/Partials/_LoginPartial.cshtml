@@ -1,0 +1,76 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using SWIMS.Models
+
+@inject SignInManager<SwUser> SignInManager
+@inject UserManager<SwUser> UserManager
+
+<ul class="navbar-nav">
+@if (SignInManager.IsSignedIn(User))
+{
+        <div class="dropdown">
+            <button class="d-flex justify-content-center align-items-center rounded-circle" type="button" data-bs-toggle="dropdown">
+                <img src="~/WowDash/images/user.png" alt="image" class="w-40-px h-40-px object-fit-cover rounded-circle">
+            </button>
+            <div class="dropdown-menu to-top dropdown-menu-sm">
+                <div class="py-12 px-16 radius-8 bg-primary-50 mb-16 d-flex align-items-center justify-content-between gap-2">
+                    <div>
+                        <h6 class="text-lg text-primary-light fw-semibold mb-2">@UserManager.GetUserName(User)!</h6>
+                        <span class="text-secondary-light fw-medium text-sm">*ROLE PLACEHOLDER*</span>
+                    </div>
+                    <button type="button" class="hover-text-danger">
+                        <iconify-icon icon="radix-icons:cross-1" class="icon text-xl"></iconify-icon>
+                    </button>
+                </div>
+                <ul class="to-top-list">
+                    <li>
+                        <a id="manage" class="dropdown-item text-black px-0 py-8 hover-bg-transparent hover-text-primary d-flex align-items-center gap-3" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">
+                            <iconify-icon icon="solar:user-linear" class="icon text-xl"></iconify-icon> My Profile
+                        </a>
+                    </li>
+                    <li>
+                        <form id="logoutForm" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
+                            <button id="logout" type="submit" class="dropdown-item text-black px-0 py-8 hover-bg-transparent hover-text-danger d-flex align-items-center gap-3">
+                                <iconify-icon icon="lucide:power" class="icon text-xl"></iconify-icon> Log Out
+                            </button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    
+        <!-- Profile dropdown end -->
+}
+else
+{
+        <div class="dropdown">
+            <button class="d-flex justify-content-center align-items-center rounded-circle" type="button" data-bs-toggle="dropdown">
+                <img src="~/WowDash/images/user.png" alt="image" class="w-40-px h-40-px object-fit-cover rounded-circle">
+            </button>
+            <div class="dropdown-menu to-top dropdown-menu-sm">
+                <div class="py-12 px-16 radius-8 bg-primary-50 mb-16 d-flex align-items-center justify-content-between gap-2">
+                    <div>
+                        <h6 class="text-lg text-primary-light fw-semibold mb-2">Guest User</h6>
+                        <span class="text-secondary-light fw-medium text-sm">"UNAUTHENTICATED</span>
+                    </div>
+                    <button type="button" class="hover-text-danger">
+                        <iconify-icon icon="radix-icons:cross-1" class="icon text-xl"></iconify-icon>
+                    </button>
+                </div>
+                <ul class="to-top-list">
+                    <li class="nav-item">
+                        <a id="register" class="dropdown-item text-black px-0 py-8 hover-bg-transparent hover-text-primary d-flex align-items-center gap-3" asp-area="Identity" asp-page="/Account/Register">
+                            <iconify-icon icon="lucide:log-in" class="icon text-xl"></iconify-icon> Register
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a id="login" class="dropdown-item text-black px-0 py-8 hover-bg-transparent hover-text-primary d-flex align-items-center gap-3" asp-area="Identity" asp-page="/Account/Login">
+                            <iconify-icon icon="lucide:user-plus" class="icon text-xl"></iconify-icon> Login
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Profile dropdown end -->
+}
+</ul>

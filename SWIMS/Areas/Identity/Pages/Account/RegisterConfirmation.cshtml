@@ -1,0 +1,39 @@
+﻿@page
+@model RegisterConfirmationModel
+@{
+    ViewData["title"] = "Register confirmation";
+}
+
+<section class="auth forgot-password-page bg-base d-flex flex-wrap">
+    <div class="auth-left d-lg-block d-none">
+        <div class="d-flex align-items-center flex-column h-100 justify-content-center">
+            <img src="~/WowDash/images/auth/forgot-pass-img.png" alt="">
+        </div>
+    </div>
+    <div class="auth-right py-32 px-24 d-flex flex-column justify-content-center">
+        <div class="max-w-464-px mx-auto w-100">
+            <div>
+                <h4 class="mb-12">@ViewData["title"]</h4>
+                @{
+                    if (@Model.DisplayConfirmAccountLink)
+                    {
+                        <p class="mb-32 text-secondary-light text-lg">
+                            This app does not currently have a real email sender registered, see <a href="https://aka.ms/aspaccountconf">these docs</a> for how to configure a real email sender.
+                            Normally this would be emailed: <a id="confirm-link" href="@Model.EmailConfirmationUrl">Click here to confirm your account</a>
+                        </p>
+                    }
+                    else
+                    {
+                        <p class="mb-32 text-secondary-light text-lg">
+                            Please check your email to confirm your account.
+                        </p>
+                    }
+                }
+            </div>
+            <div class="text-center">
+                <a asp-page="./Login" class="text-primary-600 fw-bold mt-24">Back to Sign In</a>
+            </div>
+        </div>
+    </div>
+</section>
+

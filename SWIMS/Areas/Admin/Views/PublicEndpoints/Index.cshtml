@@ -1,0 +1,203 @@
+﻿@model List<PublicEndpointListItemViewModel>
+@using System.Text.Json
+@using System.Text.Encodings.Web
+@{
+    ViewData["Title"] = "Public Endpoints";
+}
+<h2>Public Endpoints</h2>
+
+<div class="card card-body mb-3">
+    <strong>Quick-add from catalog</strong>
+    <div class="row g-2 mt-2">
+        <div class="col">
+            <a class="btn btn-sm btn-outline-secondary" asp-area="Admin" asp-controller="EndpointPolicies" asp-action="Index">Go to Endpoint Policies</a>
+        </div>
+    </div>
+</div>
+
+@{
+    var areas = (IReadOnlyList<string?>)ViewBag.CatalogAreas;
+    var actions = (IReadOnlyList<SWIMS.Services.Diagnostics.ControllerActionInfo>)ViewBag.CatalogActions;
+    var pages = (IReadOnlyList<SWIMS.Services.Diagnostics.RazorPageInfo>)ViewBag.CatalogPages;
+
+    string ToAreaLabel(string? a) => string.IsNullOrEmpty(a) ? "(root)" : a!;
+}
+<div class="card card-body mb-3">
+    <strong>Quick-add public endpoint</strong>
+    <div class="row g-2 align-items-end mt-2">
+        <div class="col-md-3">
+            <label class="form-label">Type</label>
+            <select id="qa-type" class="form-select">
+                <option value="ControllerAction">Controller Action</option>
+                <option value="RazorPage">Razor Page</option>
+            </select>
+        </div>
+
+        <div class="col-md-3 qa-area">
+            <label class="form-label">Area</label>
+            <select id="qa-area" class="form-select">
+                @foreach (var a in areas)
+                {
+                    <option value="@(a ?? "")">@ToAreaLabel(a)</option>
+                }
+            </select>
+        </div>
+
+        <div class="col-md-3 qa-controller">
+            <label class="form-label">Controller</label>
+            <select id="qa-controller" class="form-select"></select>
+        </div>
+
+        <div class="col-md-3 qa-action">
+            <label class="form-label">Action</label>
+            <select id="qa-action" class="form-select"></select>
+        </div>
+
+        <div class="col-md-6 qa-page d-none">
+            <label class="form-label">Razor Page</label>
+            <select id="qa-page" class="form-select"></select>
+        </div>
+
+        <div class="col-auto">
+            <a id="qa-go" class="btn btn-primary">Quick-add</a>
+            <a class="btn btn-outline-secondary" asp-area="Admin" asp-controller="EndpointPolicies" asp-action="Index">Manage Endpoint Policies</a>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function(){
+          // Robust JSON: camelCase + relaxed encoder
+          const actions = @Html.Raw(JsonSerializer.Serialize(
+                            (IReadOnlyList<SWIMS.Services.Diagnostics.ControllerActionInfo>)ViewBag.CatalogActions,
+                            new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping }));
+
+      const pages = @Html.Raw(JsonSerializer.Serialize(
+                        (IReadOnlyList<SWIMS.Services.Diagnostics.RazorPageInfo>)ViewBag.CatalogPages,
+                        new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping }));
+
+      const areas = @Html.Raw(JsonSerializer.Serialize(
+                        (IReadOnlyList<string?>)ViewBag.CatalogAreas,
+                        new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping }));
+
+      const typeSel = document.getElementById("qa-type");
+      const areaSel = document.getElementById("qa-area");
+      const ctrlSel = document.getElementById("qa-controller");
+      const actnSel = document.getElementById("qa-action");
+      const pageSel = document.getElementById("qa-page");
+      const goBtn   = document.getElementById("qa-go");
+
+          function setVisible(el, show){ el.classList.toggle("d-none", !show); }
+
+          function refreshControllerList(){
+            const area = areaSel.value || null;
+            const ctrls = [...new Set(actions.filter(a => (a.area ?? null) === (area ?? null)).map(a => a.controller))].sort();
+            ctrlSel.innerHTML = ctrls.map(c => `<option value="${c}">${c}</option>`).join("");
+            refreshActionList();
+          }
+
+          function refreshActionList(){
+            const area = areaSel.value || null;
+            const ctrl = ctrlSel.value || null;
+            const acts = actions.filter(a => (a.area ?? null) === (area ?? null) && a.controller === ctrl).map(a => a.action).sort();
+            actnSel.innerHTML = acts.map(a => `<option value="${a}">${a}</option>`).join("");
+          }
+
+          function refreshPageList(){
+            const area = areaSel.value || null;
+            const pgs = pages.filter(p => (p.area ?? null) === (area ?? null)).map(p => p.pageRoute).sort();
+            pageSel.innerHTML = pgs.map(p => `<option value="${p}">${p}</option>`).join("");
+          }
+
+          function refreshByType(){
+            const t = typeSel.value;
+            const showCAA = t === "ControllerAction";
+            setVisible(document.querySelector(".qa-controller"), showCAA);
+            setVisible(document.querySelector(".qa-action"),     showCAA);
+            setVisible(document.querySelector(".qa-page"),      !showCAA);
+
+            if (showCAA) { refreshControllerList(); }
+            else { refreshPageList(); }
+          }
+
+          areaSel.addEventListener("change", () => { refreshByType(); });
+          typeSel.addEventListener("change", () => { refreshByType(); });
+          ctrlSel.addEventListener("change", () => { refreshActionList(); });
+
+          // initial
+          refreshByType();
+
+          // Build clean base URLs from MVC (no string replace hack)
+          const urlCreatePresetCA = '@Url.Action("CreatePresetControllerAction", "PublicEndpoints", new { area = "Admin" })';
+          const urlCreatePresetPg = '@Url.Action("CreatePresetPage", "PublicEndpoints", new { area = "Admin" })';
+
+          // navigate to preset Create with query params
+          goBtn.addEventListener("click", () => {
+            const area = areaSel.value || "";
+            if (typeSel.value === "ControllerAction") {
+              const ctrl = ctrlSel.value || "";
+              const act  = actnSel.value || "";
+              const url = `${urlCreatePresetCA}?area=${encodeURIComponent(area)}&controller=${encodeURIComponent(ctrl)}&action=${encodeURIComponent(act)}`;
+              window.location.href = url;
+            } else {
+              const page = pageSel.value || "";
+              const url = `${urlCreatePresetPg}?area=${encodeURIComponent(area)}&page=${encodeURIComponent(page)}`;
+              window.location.href = url;
+            }
+          });
+        })();
+    </script>
+}
+
+@if (TempData["Ok"] is string ok)
+{
+    <div class="alert alert-success">@ok</div>
+}
+
+<p><a asp-action="Create" class="btn btn-primary">Add Public Endpoint</a></p>
+
+<table class="table table-sm table-striped align-middle">
+    <thead>
+        <tr><th>Type</th><th>Target</th><th>Enabled</th><th>Priority</th><th>Updated</th><th></th></tr>
+    </thead>
+    <tbody>
+        @foreach (var x in Model)
+        {
+            var target =
+            x.MatchType switch
+            {
+                "ControllerAction" => $"{x.Area ?? "(root)"} / {x.Controller}:{x.Action}",
+                "Controller" => $"{x.Area ?? "(root)"} / {x.Controller}",
+                "RazorPage" => $"{x.Area ?? "(root)"} {x.Page}",
+                "Path" => x.Path,
+                "Regex" => x.Regex,
+                _ => ""
+            };
+            <tr>
+                <td>@x.MatchType</td>
+                <td>
+                    @target
+                    @if (!string.IsNullOrEmpty(x.Notes))
+                    {
+                        <div class="text-muted small">@x.Notes</div>
+                    }
+                </td>
+                <td>@(x.IsEnabled ? "Yes" : "No")</td>
+                <td>@x.Priority</td>
+                <td>@x.UpdatedAt.LocalDateTime</td>
+                <td class="text-end">
+                    <a asp-action="Edit" asp-route-id="@x.Id" class="btn btn-sm btn-outline-primary">Edit</a>
+                    <form asp-action="Toggle" asp-route-id="@x.Id" method="post" class="d-inline">
+                        @Html.AntiForgeryToken()
+                        <button class="btn btn-sm btn-outline-warning">@(x.IsEnabled ? "Disable" : "Enable")</button>
+                    </form>
+                    <form asp-action="Delete" asp-route-id="@x.Id" method="post" class="d-inline" onsubmit="return confirm('Delete this?');">
+                        @Html.AntiForgeryToken()
+                        <button class="btn btn-sm btn-outline-danger">Delete</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
