@@ -2,6 +2,7 @@
 #nullable disable
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SWIMS.Models;
 
@@ -511,11 +512,10 @@ public partial class SW_formTableDatum
 
     public int SW_formsId { get; set; }
 
-    public byte? isApproval_01 { get; set; }
+    [Column(TypeName = "tinyint")] public byte? isApproval_01 { get; set; }
+    [Column(TypeName = "tinyint")] public byte? isApproval_02 { get; set; }
+    [Column(TypeName = "tinyint")] public byte? isApproval_03 { get; set; }
 
-    public byte? isApproval_02 { get; set; }
-
-    public byte? isApproval_03 { get; set; }
 
     public string isAppComment_01 { get; set; }
 

@@ -1,13 +1,16 @@
-﻿@model SWIMS.Models.SW_form
+﻿@using System.Text.Json
+@model SWIMS.Models.SW_form
 
 @{
     ViewData["Title"] = "Form Development | EDIT";
 }
 
+
 <hr />
 <br />
 <div class="row gy-4">
     <div class="col-md-8">
+        <div id="logic-toolbar" class="mb-2"></div>
         <div id="fb-editor"></div>
         <button type="button" class="btn btn-warning-100 text-warning-600 radius-8 px-14 py-6 text-sm" id="sv_2FormInput" style="float: right;">
             Save
@@ -112,33 +115,121 @@
 <link href="~/css/forms-stylesheet.css" rel="stylesheet" />
 <script src="~/lib/jquery/dist/jquery.min.js"></script>
 <script src="~/lib/formbuilder/form-builder.min.js"></script>
+<script src="~/lib/fb-logic/formbuilder-conditional-logic.umd.js"></script>
 <link href="~/lib/trumbowyg-editor/ui/trumbowyg.min.css" rel="stylesheet" />
 <script src="~/lib/trumbowyg-editor/trumbowyg.min.js"></script>
+
 <script type="text/javascript">
-    // --------------------------------------- Form Builder - Global Variables & Image storing 
+  jQuery(function ($) {
+    // ---- DOM
     var fbEditor = document.getElementById("fb-editor");
-    var frm = document.getElementById("form");
-    document.getElementById("storedIMG").innerHTML =
-    "<img src='../../uploads/@ViewBag.img' width='50%' /><input type='hidden' name='image' id='image' value='@ViewBag.img' />";
-    var volumeSlider = document.getElementById('approvalAmt');
-    var volumeValueDisplay = document.getElementById('volumeValue');
+    var frm      = document.getElementById("form");
+    var formEl   = document.querySelector('form');
+    var saveBtn  = document.getElementById('sv_2FormInput');
+    var formBuilder;
+
+    // ---- Make these GLOBAL + null-safe to avoid ReferenceError
+    window.volumeSlider       = document.getElementById('approvalAmt') || null;
+    window.volumeValueDisplay = document.getElementById('volumeValue') || null;
+
+    // ---- Your custom image block (kept)
+    var storedImgHost = document.getElementById("storedIMG");
+    if (storedImgHost) {
+      storedImgHost.innerHTML =
+        "<img src='../../uploads/@ViewBag.img' width='50%' />" +
+        "<input type='hidden' name='image' id='image' value='@ViewBag.img' />";
+    }
+
+    // ---- Load saved JSON from the MODEL on Edit
+    const __rawServerValue = @Html.Raw(JsonSerializer.Serialize(Model?.form ?? "[]"));
+    function normalizeFormData(raw) {
+      if (raw == null) return [];
+      try {
+        if (typeof raw === 'string') {
+          const once = JSON.parse(raw);
+          return (typeof once === 'string') ? JSON.parse(once) : once;
+        }
+        return raw;
+      } catch (e) { console.error('Edit: form JSON parse failed:', e, raw); return []; }
+    }
+    const initialFormData = normalizeFormData(__rawServerValue);
+
+    if (!fbEditor) { console.error('Edit: missing #fb-editor'); return; }
+    if (!$.fn.formBuilder) { console.error('Edit: $.fn.formBuilder undefined'); return; }
+
+    function getAvailableFields() {
+      try {
+        var raw = (formBuilder && formBuilder.actions) ? formBuilder.actions.getData('json') : '[]';
+        var arr = (typeof raw === 'string') ? JSON.parse(raw) : (Array.isArray(raw) ? raw : []);
+        return arr.map(function (f, i) {
+          var name  = f && f.name  ? String(f.name)  : '';
+          var label = f && f.label ? String(f.label) : name || ('Field ' + (i + 1));
+          var type  = f && f.type  ? String(f.type)  : 'text';
+          var values = Array.isArray(f.values)
+            ? f.values.filter(function(v){return v && (v.value!=null || v.label!=null);})
+                      .map(function(v){return {label:String(v.label||v.value), value:String(v.value!=null?v.value:v.label)};})
+            : undefined;
+          return { name, type, label, values };
+        }).filter(function (f) { return f.name && f.name.trim().length; });
+      } catch { return []; }
+    }
+
+    var baseOptions = {
+      disabledActionButtons: ['data', 'save'],
+      formData: JSON.stringify(initialFormData)
+    };
+
+    var pluginOptions = (window.FBConditionalLogic && FBConditionalLogic.builder)
+      ? FBConditionalLogic.builder.withConditionalLogic({
+          panelTitle: 'Conditional Logic',
+          enableVisualEditor: true,
+          getAvailableFields: getAvailableFields
+        })
+      : {};
+
+    var options = Object.assign({}, pluginOptions, baseOptions);
+
+    formBuilder = $(fbEditor).formBuilder(options);
+
+    // Optional Logic Groups toolbar (only if you have a mount)
+    var host = document.getElementById('logic-toolbar');
+    if (host && window.FBConditionalLogic) {
+      FBConditionalLogic.builder.attachLogicGroupsManager(host, { getAvailableFields: getAvailableFields });
+    }
+
+    // Save → write JSON; also ensure it posts
+    if (saveBtn && frm) {
+      saveBtn.addEventListener('click', function () {
+        try {
+          frm.value = formBuilder.formData;
+          frm.style.backgroundColor = '#59AC77';
+          frm.style.color = 'white';
+        } catch (e) { console.error('Edit: set JSON failed', e); }
+      });
+    }
+    wireSaveToHiddenJson(formEl, saveBtn, function(){ return formBuilder.formData; });
+
+    function wireSaveToHiddenJson(formEl, triggerEl, getter) {
+      if (!formEl || !getter) return;
+      var jsonInput = formEl.querySelector('[name="form"]');
+      if (!jsonInput) {
+        jsonInput = document.createElement('input');
+        jsonInput.type = 'hidden';
+        jsonInput.name = 'form';
+        jsonInput.id   = 'form';
+        formEl.appendChild(jsonInput);
+      } else if (jsonInput.disabled) {
+        jsonInput.disabled = false;
+      }
+      function pushJson(){ try { jsonInput.value = getter() || '[]'; } catch(e){ console.error('Edit: set JSON failed', e); } }
+      if (triggerEl) triggerEl.addEventListener('click', pushJson);
+      formEl.addEventListener('submit', pushJson);
+    }
+  });
+</script>
 
 
-    jQuery(function ($) { 
-        // --------------------------------------- Form Builder - options
-        var options = {
-            disabledActionButtons: ['data', 'save'],
-            formData: '@Html.Raw(@ViewBag.frm)'
-        };
-        var formBuilder = $(fbEditor).formBuilder(options);
-
-        document.getElementById('sv_2FormInput').addEventListener('click', function() {
-                frm.value = formBuilder.actions.getData('json');
-                frm.style.backgroundColor = '#59AC77';
-                frm.style.color = "white !important";
-        });
-    });
-
+<Script type="text/javascript">
     // ------------------------------------------- TINYMCE - WYSWYGET EDITOR
     jQuery(function ($) {
         $("#trumbowyg").trumbowyg({
@@ -161,7 +252,17 @@
     });
 
     // ------------------------------------------- APPROVAL SLIDER
-    volumeSlider.addEventListener('input', function() {
-      volumeValueDisplay.textContent = this.value;
-    });
+    // ------------------------------------------- APPROVAL SLIDER (safe & idempotent)
+    (function () {
+      var s = document.getElementById('approvalAmt');
+      var v = document.getElementById('volumeValue');
+      if (!s || !v) return;            // element(s) not on this page => do nothing
+      v.textContent = String(s.value); // initialize display
+      if (!s.__approvalHooked) {
+        s.addEventListener('input', function () {
+          v.textContent = String(this.value);
+        });
+        s.__approvalHooked = true;     // prevent double-binding if other scripts run
+      }
+    })();
 </script>
