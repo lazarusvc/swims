@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SWIMS.Models;
 
@@ -11,13 +12,15 @@ using SWIMS.Models;
 namespace SWIMS.Migrations.DbMore
 {
     [DbContext(typeof(SwimsDb_moreContext))]
-    partial class SwimsDb_moreContextModelSnapshot : ModelSnapshot
+    [Migration("20251020193922_BaselineExisting")]
+    partial class BaselineExisting
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.8")
+                .HasAnnotation("ProductVersion", "9.0.10")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -52,6 +55,9 @@ namespace SWIMS.Migrations.DbMore
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("middle_name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("name")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("status")
@@ -115,6 +121,9 @@ namespace SWIMS.Migrations.DbMore
                     b.Property<int>("SW_identityId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("approvalAmt")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("dateModified")
                         .HasColumnType("datetime");
 
@@ -158,6 +167,9 @@ namespace SWIMS.Migrations.DbMore
                     b.Property<int>("SW_formsId")
                         .HasColumnType("int");
 
+                    b.Property<string>("name")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("url")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -177,6 +189,9 @@ namespace SWIMS.Migrations.DbMore
 
                     b.Property<int>("SW_formsId")
                         .HasColumnType("int");
+
+                    b.Property<string>("name")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("url")
                         .IsRequired()
@@ -974,6 +989,15 @@ namespace SWIMS.Migrations.DbMore
                     b.Property<int>("SW_formsId")
                         .HasColumnType("int");
 
+                    b.Property<string>("isAppComment_01")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("isAppComment_02")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("isAppComment_03")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<byte?>("isApproval_01")
                         .HasColumnType("tinyint");
 
@@ -982,6 +1006,18 @@ namespace SWIMS.Migrations.DbMore
 
                     b.Property<byte?>("isApproval_03")
                         .HasColumnType("tinyint");
+
+                    b.Property<string>("isApprover_01")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("isApprover_02")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("isApprover_03")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("isLinkingForm")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 

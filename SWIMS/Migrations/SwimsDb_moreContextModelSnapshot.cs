@@ -17,7 +17,7 @@ namespace SWIMS.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.9")
+                .HasAnnotation("ProductVersion", "9.0.10")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -52,6 +52,9 @@ namespace SWIMS.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("middle_name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("name")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("status")
@@ -115,6 +118,9 @@ namespace SWIMS.Migrations
                     b.Property<int>("SW_identityId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("approvalAmt")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("dateModified")
                         .HasColumnType("datetime");
 
@@ -158,6 +164,9 @@ namespace SWIMS.Migrations
                     b.Property<int>("SW_formsId")
                         .HasColumnType("int");
 
+                    b.Property<string>("name")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("url")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -177,6 +186,9 @@ namespace SWIMS.Migrations
 
                     b.Property<int>("SW_formsId")
                         .HasColumnType("int");
+
+                    b.Property<string>("name")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("url")
                         .IsRequired()
@@ -974,6 +986,15 @@ namespace SWIMS.Migrations
                     b.Property<int>("SW_formsId")
                         .HasColumnType("int");
 
+                    b.Property<string>("isAppComment_01")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("isAppComment_02")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("isAppComment_03")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<byte?>("isApproval_01")
                         .HasColumnType("tinyint");
 
@@ -982,6 +1003,18 @@ namespace SWIMS.Migrations
 
                     b.Property<byte?>("isApproval_03")
                         .HasColumnType("tinyint");
+
+                    b.Property<string>("isApprover_01")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("isApprover_02")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("isApprover_03")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("isLinkingForm")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 

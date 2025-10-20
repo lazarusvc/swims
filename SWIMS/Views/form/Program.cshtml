@@ -1,4 +1,7 @@
-﻿<!-- BACK BUTTON -->
+﻿@using System.Text.Json
+
+
+<!-- BACK BUTTON -->
 <div style="width: 110px;">
     <a href="##" onClick="history.go(-1); return false;"
        class="btn rounded-pill btn-outline-dark-1 radius-8 px-20 py-11 d-flex align-items-center gap-2">
@@ -222,6 +225,8 @@
 <link href="~/css/forms-stylesheet.css" rel="stylesheet" />
 <script src="~/lib/jquery/dist/jquery.min.js"></script>
 <script src="~/lib/formbuilder/form-render.min.js"></script>
+<script src="~/lib/fb-logic/formbuilder-conditional-logic.umd.js"></script>
+
 <script src="~/js/datatables.min.js"></script>
 <link href="~/lib/trumbowyg-editor/ui/trumbowyg.min.css" rel="stylesheet" />
 <script src="~/lib/trumbowyg-editor/trumbowyg.min.js"></script>
@@ -232,16 +237,35 @@
     //
     // -----------------------------------------------------------------------------------------------------
     jQuery(function($) {
-      var container = document.getElementById('fb-rendered-form');
-      var formData = '@Html.Raw(ViewBag.form)';
+          var container = document.getElementById('fb-rendered-form');
 
-      var formRenderOpts = {
-        container,
-        formData,
-        dataType: 'json'
-      };
+    // Safely emit the server value as a JS string
+    const __rawServerValue = @Html.Raw(JsonSerializer.Serialize(ViewBag.form ?? "[]"));
 
-      $(container).formRender(formRenderOpts);
+    // Normalize to an Array the renderer expects (handles double-encoded JSON too)
+    function normalizeFormData(raw) {
+      if (raw == null) return [];
+      try {
+        if (typeof raw === 'string') {
+          const once = JSON.parse(raw);
+          return (typeof once === 'string') ? JSON.parse(once) : once;
+        }
+        return raw;
+      } catch (e) {
+        console.error('Form JSON parse failed:', e, raw);
+        return [];
+      }
+    }
+
+    const formData = normalizeFormData(__rawServerValue);
+
+    // Render and hydrate logic
+    $(container).formRender({ formData: formData, dataType: 'json' });
+
+    if (window.FBConditionalLogic) {
+      FBConditionalLogic.setup(container, formData);
+    }
+
     });
 
     // CUSTOM FORM FUNCTIONALITY
@@ -319,24 +343,6 @@
                     }
                 });
 
-
-                // SKIP LOGIC 
-                // 
-                // Look for radio button(s) with it's first classname as `skipping-checker`
-                // find all corresponding fields with classname as `is-skipping` 
-                // toggle between `yes` or `no` to display fields
-                //
-                if (fieldClasses[0] === "skipping-checker")  {
-                    $(".is-skipping").parent("div").hide();
-                    $(this).parent("div").on("change", function() {
-                        if($(".skipping-checker:eq(0)").is(':checked')) {
-                            $(".is-skipping").parent("div").show();
-                        }
-                        if ($(".skipping-checker:eq(1)").is(':checked')) {
-                            $(".is-skipping").parent("div").hide();
-                        }
-                    });                    
-                }
             });
         }
 

@@ -1,23 +1,42 @@
-﻿<div id="fb-rendered-form"></div>
+﻿@using System.Text.Json
+
+
+<div id="fb-rendered-form"></div>
 
 <link href="~/css/forms-stylesheet.css" rel="stylesheet" />
 <script src="~/lib/jquery/dist/jquery.min.js"></script>
 <script src="~/lib/formbuilder/form-render.min.js"></script>
+<script src="~/lib/fb-logic/formbuilder-conditional-logic.umd.js"></script>
+
 <script type="text/javascript">
     // RENDER FORM
     //
     // -----------------------------------------------------------------------------------------------------
     jQuery(function($) {
-      var container = document.getElementById('fb-rendered-form');
-      var formData = '@Html.Raw(ViewBag.form)';
+          var container = document.getElementById('fb-rendered-form');
+    const __rawServerValue = @Html.Raw(JsonSerializer.Serialize(ViewBag.form ?? "[]"));
 
-      var formRenderOpts = {
-        container,
-        formData,
-        dataType: 'json'
-      };
+    function normalizeFormData(raw) {
+      if (raw == null) return [];
+      try {
+        if (typeof raw === 'string') {
+          const once = JSON.parse(raw);
+          return (typeof once === 'string') ? JSON.parse(once) : once;
+        }
+        return raw;
+      } catch (e) {
+        console.error('Form JSON parse failed:', e, raw);
+        return [];
+      }
+    }
 
-      $(container).formRender(formRenderOpts);
+    const formData = normalizeFormData(__rawServerValue);
+    $(container).formRender({ formData: formData, dataType: 'json' });
+
+    if (window.FBConditionalLogic) {
+      FBConditionalLogic.setup(container, formData);
+    }
+
     });
 </script>
 

@@ -8,6 +8,7 @@
 <br />
 <div class="row gy-4">
     <div class="col-md-8">
+        <div id="logic-toolbar" class="mb-2"></div>
         <div id="fb-editor"></div>
         <button type="button" class="btn btn-warning-100 text-warning-600 radius-8 px-14 py-6 text-sm" id="sv_2FormInput" style="float: right;">
             Save
@@ -77,6 +78,16 @@
                             </div>
                         </div>
 
+                        <div class="row mb-24 gy-3 align-items-center">
+                        <label asp-for="approvalAmt" class="form-label mb-0 col-sm-4">APPROVAL LEVELS:</label>
+                        <div class="col-sm-10">
+                            <input asp-for="approvalAmt" type="range" min="0" max="3" value="@ViewBag.appAmt">
+                            <p>Selected Volume: <span id="volumeValue">@ViewBag.appAmt</span></p>
+                            <span asp-validation-for="approvalAmt" class="text-danger"></span>
+                        </div>
+                    </div>
+
+
 @*                         <div class="row mb-24 gy-3 align-items-center">
                             <label asp-for="is_linking" class="form-label mb-0 col-sm-4">Is form Linking:</label>
                             <div class="col-sm-10">
@@ -102,31 +113,114 @@
     }
 }
 
+<link href="~/css/forms-stylesheet.css" rel="stylesheet" />
 <script src="~/lib/jquery/dist/jquery.min.js"></script>
 <script src="~/lib/formbuilder/form-builder.min.js"></script>
+<script src="~/lib/fb-logic/formbuilder-conditional-logic.umd.js"></script>
 <link href="~/lib/trumbowyg-editor/ui/trumbowyg.min.css" rel="stylesheet" />
 <script src="~/lib/trumbowyg-editor/trumbowyg.min.js"></script>
-<script type="text/javascript"> 
-    // --------------------------------------- Form Builder - Global Variables
-    var fbEditor = document.getElementById("fb-editor");
-    var frm = document.getElementById("form");
 
-    jQuery(function ($) {
-        // --------------------------------------- Form Builder - options
-        var options = {
-                disabledActionButtons: ['data', 'save']
-        };
+<script type="text/javascript">
+  jQuery(function ($) {
+    // ---- DOM
+    var fbEditor = document.getElementById('fb-editor');   // MUST exist in your markup
+    var formEl   = document.querySelector('form');
+    var saveBtn  = document.getElementById('sv_2FormInput');
+    var formBuilder;
 
-        // --------------------------------------- Form Builder - Save to SW_form Database table
-        var formBuilder = $(fbEditor).formBuilder(options);
+    // ---- Make these GLOBAL + null-safe (consistent with Edit)
+    window.volumeSlider       = document.getElementById('approvalAmt') || null;
+    window.volumeValueDisplay = document.getElementById('volumeValue') || null;
 
-        document.getElementById('sv_2FormInput').addEventListener('click', function() {
-                frm.value = formBuilder.formData;
-                frm.style.backgroundColor = '#59AC77';
-                frm.style.color = "white !important";
-        });
-    });
+    // ---- Your custom image block (kept)
+    var storedImgHost = document.getElementById("storedIMG");
+    if (storedImgHost) {
+      storedImgHost.innerHTML =
+        "<img src='../../uploads/@ViewBag.img' width='50%' />" +
+        "<input type='hidden' name='image' id='image' value='@ViewBag.img' />";
+    }
 
+    // ---- Sanity checks with explicit logs (so it can’t fail silently)
+    if (!fbEditor) {
+      console.error('Create: missing <div id="fb-editor"></div> container in the markup.');
+      return;
+    }
+    if (!$.fn || !$.fn.formBuilder) {
+      console.error('Create: $.fn.formBuilder is undefined. Check script order: jquery → form-builder.min.js → plugin UMD → this block.');
+      return;
+    }
+
+    function getAvailableFields() {
+      try {
+        var raw = (formBuilder && formBuilder.actions) ? formBuilder.actions.getData('json') : '[]';
+        var arr = (typeof raw === 'string') ? JSON.parse(raw) : (Array.isArray(raw) ? raw : []);
+        return arr.map(function (f, i) {
+          var name  = f && f.name  ? String(f.name)  : '';
+          var label = f && f.label ? String(f.label) : name || ('Field ' + (i + 1));
+          var type  = f && f.type  ? String(f.type)  : 'text';
+          var values = Array.isArray(f.values)
+            ? f.values.filter(function(v){return v && (v.value!=null || v.label!=null);})
+                      .map(function(v){return {label:String(v.label||v.value), value:String(v.value!=null?v.value:v.label)};})
+            : undefined;
+          return { name, type, label, values };
+        }).filter(function (f) { return f.name && f.name.trim().length; });
+      } catch { return []; }
+    }
+
+    var baseOptions = { disabledActionButtons: ['data', 'save'] };
+
+    var pluginOptions = (window.FBConditionalLogic && FBConditionalLogic.builder)
+      ? FBConditionalLogic.builder.withConditionalLogic({
+          panelTitle: 'Conditional Logic',
+          enableVisualEditor: true,
+          getAvailableFields: getAvailableFields
+        })
+      : {};
+
+    var options = Object.assign({}, pluginOptions, baseOptions);
+
+    console.log('Create: building formBuilder…');
+    formBuilder = $(fbEditor).formBuilder(options);
+
+    // Optional Logic Groups toolbar
+    var host = document.getElementById('logic-toolbar');
+    if (host && window.FBConditionalLogic) {
+      FBConditionalLogic.builder.attachLogicGroupsManager(host, { getAvailableFields: getAvailableFields });
+    }
+
+    // Ensure JSON always posts (Save click AND submit)
+    wireSaveToHiddenJson(formEl, saveBtn, function(){ return formBuilder.formData; });
+
+    // Approval slider hookup (guarded)
+    if (window.volumeSlider && window.volumeValueDisplay) {
+      window.volumeSlider.addEventListener('input', function(){
+        window.volumeValueDisplay.textContent = this.value;
+      });
+    }
+
+    function wireSaveToHiddenJson(formEl, triggerEl, getter) {
+      if (!formEl || !getter) return;
+      var jsonInput = formEl.querySelector('[name="form"]');
+      if (!jsonInput) {
+        jsonInput = document.createElement('input');
+        jsonInput.type = 'hidden';
+        jsonInput.name = 'form';
+        jsonInput.id   = 'form';
+        formEl.appendChild(jsonInput);
+      } else if (jsonInput.disabled) {
+        jsonInput.disabled = false;
+      }
+      function pushJson(){ try { jsonInput.value = getter() || '[]'; } catch(e){ console.error('Create: set JSON failed', e); } }
+      if (triggerEl) triggerEl.addEventListener('click', pushJson);
+      formEl.addEventListener('submit', pushJson);
+    }
+  });
+</script>
+
+
+
+
+<Script type="text/javascript">
     // ------------------------------------------- TINYMCE - WYSWYGET EDITOR
     jQuery(function ($) {
         $("#trumbowyg").trumbowyg({
