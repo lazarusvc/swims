@@ -14,6 +14,7 @@ using Hangfire.Console;
 using Hangfire.SqlServer;
 using Lib.Net.Http.WebPush.Authentication;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc.Authorization;
@@ -113,21 +114,23 @@ builder.Services.AddScoped<INotificationEmailComposer, NotificationEmailComposer
 
 builder.Services.AddScoped<NotificationDigestJobs>();
 
-
 builder.Services.AddHangfire(cfg =>
 {
-    cfg.SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+    cfg.SetDataCompatibilityLevel(Hangfire.CompatibilityLevel.Version_180)
        .UseSimpleAssemblyNameTypeSerializer()
        .UseRecommendedSerializerSettings()
-       .UseSqlServerStorage(builder.Configuration.GetConnectionString("DefaultConnection"), new SqlServerStorageOptions
-       {
-           SchemaName = "ops",
-           PrepareSchemaIfNecessary = true,
-           SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
-           QueuePollInterval = TimeSpan.FromSeconds(15),
-           CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
-           UseRecommendedIsolationLevel = true
-       });
+       .UseConsole()
+       .UseSqlServerStorage(
+           builder.Configuration.GetConnectionString("DefaultConnection"),
+           new Hangfire.SqlServer.SqlServerStorageOptions
+           {
+               SchemaName = "ops",
+               PrepareSchemaIfNecessary = true,
+               SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
+               QueuePollInterval = TimeSpan.FromSeconds(15),
+               CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
+               UseRecommendedIsolationLevel = true
+           });
 });
 
 // Hangfire Server
@@ -164,13 +167,6 @@ builder.Services
     .AddRoles<SwRole>()
     .AddEntityFrameworkStores<SwimsIdentityDbContext>()
     .AddDefaultTokenProviders();
-
-
-builder.Services.AddAuthorization(options =>
-{
-    options.AddPolicy("AdminOnly", p => p.RequireRole("Admin"));
-    options.AddPolicy("ProgramManager", p => p.RequireRole("Admin", "ProgramManager"));
-});
 
 builder.Services.AddMemoryCache();
 builder.Services.AddScoped<IPolicyStore, EfPolicyStore>();
@@ -264,25 +260,6 @@ builder.Services.AddTransient<IEmailSender<SwUser>, IdentityEmailSenderAdapter>(
 // Health endpoints (lightweight)
 builder.Services.AddHealthChecks();
 
-builder.Services.AddHangfire(cfg =>
-{
-    cfg.SetDataCompatibilityLevel(Hangfire.CompatibilityLevel.Version_180)
-       .UseSimpleAssemblyNameTypeSerializer()
-       .UseRecommendedSerializerSettings()
-       .UseConsole() // keep if you want console logs in dashboard
-       .UseSqlServerStorage(
-           builder.Configuration.GetConnectionString("DefaultConnection"),
-           new Hangfire.SqlServer.SqlServerStorageOptions
-           {
-               SchemaName = "ops",
-               PrepareSchemaIfNecessary = true,
-               SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
-               QueuePollInterval = TimeSpan.FromSeconds(15),
-               CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
-               UseRecommendedIsolationLevel = true
-           });
-});
-
 builder.Services.AddScoped<INotificationPreferences, NotificationPreferences>();
 
 builder.Services.AddMemoryVapidTokenCache();
@@ -337,15 +314,42 @@ var app = builder.Build();
 //}
 
 
-// --- PathBase support for sub-directory hosting (e.g., /swims)
-var configuredPathBase =
-    builder.Configuration["App:PathBase"]
-    ?? Environment.GetEnvironmentVariable("ASPNETCORE_PATHBASE");
+// --- PathBase / reverse-proxy support
+var env = app.Environment;
 
-if (!string.IsNullOrWhiteSpace(configuredPathBase))
+// Prefer config in Production; otherwise honor ASPNETCORE_PATHBASE if set
+var configuredPathBase = builder.Configuration["App:PathBase"];
+var envPathBase = Environment.GetEnvironmentVariable("ASPNETCORE_PATHBASE");
+
+var pathBaseToUse = env.IsProduction() && !string.IsNullOrWhiteSpace(configuredPathBase)
+    ? configuredPathBase
+    : (!string.IsNullOrWhiteSpace(envPathBase) ? envPathBase : null);
+
+if (!string.IsNullOrWhiteSpace(pathBaseToUse))
 {
-    app.UsePathBase(configuredPathBase);
+    app.UsePathBase(pathBaseToUse);
 }
+
+// Honor common reverse-proxy headers (scheme/host/client IP)
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+});
+
+// Honor X-Forwarded-Prefix if your proxy sets it (e.g., /swims)
+app.Use((ctx, next) =>
+{
+    if (!ctx.Request.PathBase.HasValue &&
+        ctx.Request.Headers.TryGetValue("X-Forwarded-Prefix", out var prefix) &&
+        !string.IsNullOrWhiteSpace(prefix))
+    {
+        ctx.Request.PathBase = new PathString(prefix.ToString());
+    }
+    return next();
+});
+
+
+
 
 using (var scope = app.Services.CreateScope())
 {
@@ -415,20 +419,7 @@ app.UseFileServer(new FileServerOptions
     EnableDirectoryBrowsing = false
 });
 
-
 app.UseRouting();
-
-app.Use(async (ctx, next) =>
-{
-    // Basic self-redirect guard for login routes
-    var p = ctx.Request.Path.Value?.ToLowerInvariant() ?? "";
-    if (p.StartsWith("/account/login") || p == "/healthz" || p == "/readyz" || p.StartsWith("/_framework") || p.StartsWith("/css") || p.StartsWith("/js"))
-    {
-        // let these pass without auth challenge to avoid loops
-    }
-    await next();
-});
-
 
 app.UseAuthentication();
 app.UseAuthorization();

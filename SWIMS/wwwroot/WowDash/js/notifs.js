@@ -5,6 +5,9 @@
         else fn();
     };
 
+    const api = (p) => (window.__appBasePath || '') + (p.startsWith('/') ? p : '/' + p);
+
+
     onReady(() => {
         // Elements
         const bell = document.getElementById('notif-bell');
@@ -99,7 +102,7 @@
             loading = true;
             try {
                 if (!more) { skip = 0; items = []; total = 0; }
-                const r = await fetch(`/me/notifications?unseenOnly=false&skip=${skip}&take=${take}`, { credentials: 'same-origin' });
+                const r = await fetch(api(`/api/v1/me/notifications?unseenOnly=false&skip=${skip}&take=${take}`), { credentials: 'same-origin' });
                 if (!r.ok) throw new Error('Failed to load notifications');
                 const data = await r.json();
                 total = data.total || 0;
@@ -117,7 +120,7 @@
 
         const refreshCount = async () => {
             try {
-                const r = await fetch('/me/notifications/count', { credentials: 'same-origin' });
+                const r = await fetch(api('/api/v1/me/notifications/count'), { credentials: 'same-origin' });
                 if (!r.ok) throw 0;
                 const data = await r.json();
                 setBadge(Number(data.count || 0));
@@ -143,7 +146,7 @@
         // Mark all as read
         btnAll && btnAll.addEventListener('click', async () => {
             try {
-                await fetch('/me/notifications/seen-all', { method: 'POST', credentials: 'same-origin' });
+                await fetch(api('/api/v1/me/notifications/seen-all'), { method: 'POST', credentials: 'same-origin' });
                 items = items.map(n => ({ ...n, seen: true }));
                 render();
                 setBadge(0);
@@ -163,7 +166,7 @@
             const href = li.getAttribute('data-href');
 
             try {
-                await fetch(`/me/notifications/${id}/seen`, { method: 'POST', credentials: 'same-origin' });
+                await fetch(api(`/api/v1/me/notifications/${id}/seen`), { method: 'POST', credentials: 'same-origin' });
                 const idx = items.findIndex(n => String(n.id) === String(id));
                 if (idx >= 0) items[idx].seen = true;
                 li.querySelector('a')?.classList.remove('bg-neutral-50');
@@ -179,7 +182,7 @@
         // --- SignalR live updates ---
         if (window.signalR) {
             const conn = new signalR.HubConnectionBuilder()
-                .withUrl('/hubs/notifs', { withCredentials: true })
+                .withUrl(api('/hubs/notifs'), { withCredentials: true })
                 .withAutomaticReconnect()
                 .build();
 

@@ -1,0 +1,285 @@
+﻿@{
+    ViewData["Title"] = "API Dashboard";
+    Layout = "~/Views/Shared/WowDash/_Layout.cshtml"; // adjust if your Areas layout differs
+}
+
+<div class="container-fluid">
+
+    <div class="row mb-4">
+        <div class="col-12 d-flex align-items-center justify-content-between">
+            <div>
+                <h3 class="mb-1">API Dashboard</h3>
+                <p class="text-muted mb-0">Live view of mapped /api/v1 endpoints</p>
+            </div>
+            <div class="d-flex gap-2">
+                <button id="btn-refresh" class="btn btn-primary">
+                    <iconify-icon icon="mdi:refresh" class="me-1"></iconify-icon>Refresh
+                </button>
+                <button id="btn-check" class="btn btn-outline-secondary">
+                    <iconify-icon icon="mdi:stethoscope" class="me-1"></iconify-icon>Check visible
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-3">
+                            <label class="form-label">Method</label>
+                            <select id="filter-method" class="form-select">
+                                <option value="">All</option>
+                                <option>GET</option>
+                                <option>POST</option>
+                                <option>PUT</option>
+                                <option>DELETE</option>
+                                <option>PATCH</option>
+                                <option>HEAD</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Tag</label>
+                            <select id="filter-tag" class="form-select">
+                                <option value="">All</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Auth</label>
+                            <select id="filter-auth" class="form-select">
+                                <option value="">All</option>
+                                <option value="protected">Protected</option>
+                                <option value="anonymous">Allow Anonymous</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Search</label>
+                            <input id="filter-search" class="form-control" placeholder="Path or name..." />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-3" id="summary-cards"></div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table align-middle" id="api-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 140px;">Method</th>
+                                    <th>Path</th>
+                                    <th>Tags</th>
+                                    <th style="width: 120px;">Auth</th>
+                                    <th style="width: 240px;">Name</th>
+                                    <th style="width: 120px;">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="api-tbody"></tbody>
+                        </table>
+                    </div>
+                    <div class="text-muted small mt-2" id="api-count"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function(){
+        const base = (window.__appBasePath || '');
+        const apiUrl = (p) => base + (p.startsWith('/') ? p : '/' + p);
+        const $ = (q) => document.querySelector(q);
+
+        const state = { raw: [], filtered: [] };
+
+        function fetchEndpoints(){
+            const url = apiUrl('/api/v1/meta/endpoints');
+            return fetch(url, { credentials: 'same-origin' }).then(r => {
+                if(!r.ok) throw new Error('meta endpoints http ' + r.status);
+                return r.json();
+            }).then(arr => {
+                // Normalize camelCase/PascalCase from API → JS
+                return (Array.isArray(arr) ? arr : []).map(x => ({
+                    pattern:        x.pattern        ?? x.Pattern        ?? '',
+                    methods:        x.methods        ?? x.Methods        ?? [],
+                    displayName:    x.displayName    ?? x.DisplayName    ?? '',
+                    tags:           x.tags           ?? x.Tags           ?? [],
+                    requiresAuth:   x.requiresAuth   ?? x.RequiresAuth   ?? false,
+                    allowAnonymous: x.allowAnonymous ?? x.AllowAnonymous ?? false,
+                    isApi:          x.isApi          ?? x.IsApi          ?? false,
+                    isV1:           x.isV1           ?? x.IsV1           ?? false,
+                }));
+            });
+        }
+
+        function badge(text, cls){ return `<span class="badge ${cls} me-1 mb-1">${text}</span>`; }
+        function methodBadge(m){
+            const map = { GET:'bg-success', POST:'bg-primary', PUT:'bg-warning text-dark',
+                          DELETE:'bg-danger', PATCH:'bg-info text-dark', HEAD:'bg-secondary' };
+            return badge(m, map[m] || 'bg-secondary');
+        }
+        function authBadge(e){
+            if (e.allowAnonymous) return badge('Anonymous', 'bg-secondary');
+            if (e.requiresAuth)  return badge('Protected', 'bg-dark');
+            return badge('—', 'bg-light text-dark');
+        }
+        const uniq = arr => Array.from(new Set(arr)).sort((a,b)=>a.localeCompare(b));
+
+        function renderFilters(){
+            const tags = uniq(state.raw.flatMap(e => e.tags || []));
+            const sel = $('#filter-tag'); const cur = sel.value || '';
+            sel.innerHTML = '<option value="">All</option>' + tags.map(t => `<option ${t===cur?'selected':''}>${t}</option>`).join('');
+        }
+
+        function renderSummary(){
+            const total = state.filtered.length;
+            const v1 = state.filtered.filter(e => e.isV1).length;
+            const methods = {};
+            state.filtered.forEach(e => e.methods.forEach(m => methods[m]=(methods[m]||0)+1));
+            $('#summary-cards').innerHTML = `
+                <div class="col-md-3"><div class="card"><div class="card-body">
+                    <div class="text-muted">Total endpoints</div><div class="fs-4 fw-bold">${total}</div>
+                </div></div></div>
+                <div class="col-md-3"><div class="card"><div class="card-body">
+                    <div class="text-muted">/api/v1</div><div class="fs-4 fw-bold">${v1}</div>
+                </div></div></div>
+                <div class="col-md-6"><div class="card"><div class="card-body">
+                    <div class="text-muted mb-1">By method</div>
+                    ${Object.keys(methods).sort().map(m => badge(`${m}: ${methods[m]}`, 'bg-light text-dark')).join(' ')}
+                </div></div></div>`;
+        }
+
+        function applyFilters(){
+            const m = $('#filter-method').value.trim();
+            const tag = $('#filter-tag').value.trim();
+            const auth = $('#filter-auth').value.trim();
+            const q = $('#filter-search').value.trim().toLowerCase();
+
+            state.filtered = state.raw.filter(e => {
+                if (!e.isApi) return false;
+                if (!e.isV1) return false;
+                if (m && !(e.methods || []).includes(m)) return false;
+                if (tag && !(e.tags || []).includes(tag)) return false;
+                if (auth === 'protected' && !e.requiresAuth) return false;
+                if (auth === 'anonymous' && !e.allowAnonymous) return false;
+                if (q) {
+                    const hay = (e.pattern + ' ' + (e.displayName || '') + ' ' + (e.tags||[]).join(' ')).toLowerCase();
+                    if (!hay.includes(q)) return false;
+                }
+                return true;
+            });
+        }
+
+            function renderTable(){
+              const body = $('#api-tbody');
+              body.innerHTML = state.filtered.map((e,i) => {
+                const methods = (e.methods || []).map(methodBadge).join('');
+                const tags = (e.tags || []).map(t => badge(t, 'bg-light text-dark')).join('');
+                const needsParams = e.pattern.includes("{");
+                const allowsGetOrHead = (e.methods || []).some(x => x === 'GET' || x === 'HEAD');
+                let probeCell = '—';
+                if (!needsParams && allowsGetOrHead) {
+                  probeCell = `<button class="btn btn-sm btn-outline-secondary" data-row="${i}" data-path="${e.pattern}">Check</button>`;
+                } else if (needsParams) {
+                  probeCell = `<span class="text-muted">params</span>`;
+                }
+                return `
+                  <tr>
+                    <td>${methods}</td>
+                    <td><code>${e.pattern}</code></td>
+                    <td>${tags || '—'}</td>
+                    <td>${authBadge(e)}</td>
+                    <td>${e.displayName || '—'}</td>
+                    <td class="status-cell" data-row="${i}">${probeCell}</td>
+                  </tr>`;
+              }).join('');
+              $('#api-count').textContent = `${state.filtered.length} shown`;
+            }
+
+
+        async function probe(path){
+            const url = apiUrl(path);
+            try {
+                let r = await fetch(url, { method:'HEAD', credentials: 'same-origin' });
+                if (r.ok) return `${r.status}`;
+                r = await fetch(url, { method:'GET', credentials: 'same-origin' });
+                return `${r.status}`;
+            } catch { return 'ERR'; }
+        }
+
+        async function probeVisible(){
+            const buttons = Array.from(document.querySelectorAll('td.status-cell button[data-path]'));
+            if (!buttons.length) return;
+
+            // Disable while running
+            const btnCheck = document.getElementById('btn-check');
+            btnCheck.disabled = true;
+
+            try {
+            // Throttle to avoid overwhelming the server (8 at a time)
+            const batchSize = 8;
+            for (let i = 0; i < buttons.length; i += batchSize) {
+                const slice = buttons.slice(i, i + batchSize);
+                await Promise.all(slice.map(async btn => {
+                const row = btn.getAttribute('data-row');
+                const cell = document.querySelector(`td.status-cell[data-row="${row}"]`);
+                cell.innerHTML = `<span class="spinner-border spinner-border-sm"></span>`;
+                let status = 'ERR';
+                try { status = await probe(btn.getAttribute('data-path')); } catch {}
+                const cls = (status.startsWith('2') || status.startsWith('3')) ? 'bg-success'
+                            : (status === 'ERR' ? 'bg-danger' : 'bg-warning text-dark');
+                cell.innerHTML = badge(status, cls);
+                }));
+            }
+            } finally {
+            btnCheck.disabled = false;
+            }
+        }
+
+
+        function wireEvents(){
+            document.getElementById('btn-refresh').addEventListener('click', refresh);
+            document.getElementById('btn-check').addEventListener('click', probeVisible);
+            ['#filter-method', '#filter-tag', '#filter-auth', '#filter-search'].forEach(sel => {
+                document.querySelector(sel).addEventListener('input', ()=>{ applyFilters(); renderSummary(); renderTable(); });
+            });
+            document.getElementById('api-tbody').addEventListener('click', async (e)=>{
+                const btn = e.target.closest('button[data-path]');
+                if(!btn) return;
+                const row = btn.getAttribute('data-row');
+                const cell = document.querySelector(`td.status-cell[data-row="${row}"]`);
+                cell.innerHTML = `<span class="spinner-border spinner-border-sm"></span>`;
+                const status = await probe(btn.getAttribute('data-path'));
+                const cls = (status.startsWith('2') || status.startsWith('3')) ? 'bg-success' :
+                            (status === 'ERR' ? 'bg-danger' : 'bg-warning text-dark');
+                cell.innerHTML = badge(status, cls);
+            });
+        }
+
+        function refresh(){
+            fetchEndpoints()
+              .then(data => {
+                  state.raw = data;
+                  renderFilters();
+                  applyFilters();
+                  renderSummary();
+                  renderTable();
+              })
+              .catch(err => {
+                  console.error(err);
+                  alert('Failed to load /api/v1/meta/endpoints. Check that v1.MapMetaEndpoints() is wired and that you are signed in.');
+              });
+        }
+
+        wireEvents();
+        refresh();
+    })();
+</script>
+

@@ -2,6 +2,9 @@
     const onReady = (fn) => (document.readyState === 'loading')
         ? document.addEventListener('DOMContentLoaded', fn) : fn();
 
+    const api = (p) => (window.__appBasePath || '') + (p.startsWith('/') ? p : '/' + p);
+
+
     onReady(async () => {
         const rowsEl = document.getElementById('pref-rows');
         const gIn = document.getElementById('pref-global-inapp');
@@ -24,8 +27,9 @@
 
         // Load data
         const [types, prefs] = await Promise.all([
-            jget('/me/notifications/types'),
-            jget('/me/notifications/prefs')
+            jget(api('/api/v1/me/notifications/types')),
+            jget(api('/api/v1/me/notifications/prefs'))
+
         ]);
 
         // Build a map of prefs (type->flags) plus global
@@ -42,7 +46,7 @@
         gDi.checked = !!global.digest;
 
         const saveGlobal = async () => {
-            await jput('/me/notifications/prefs', { type: null, inApp: gIn.checked, email: gEm.checked, digest: gDi.checked });
+            await jput(api('/api/v1/me/notifications/prefs'), { type: null, inApp: gIn.checked, email: gEm.checked, digest: gDi.checked });
         };
         gIn.addEventListener('change', saveGlobal);
         gEm.addEventListener('change', saveGlobal);
@@ -72,7 +76,7 @@
             const inputs = tr.querySelectorAll('input.form-check-input');
             const [inapp, email, digest] = [...inputs].map(i => i.checked);
             try {
-                await jput('/me/notifications/prefs', { type, inApp: inapp, email, digest });
+                await jput(api('/api/v1/me/notifications/prefs'), { type, inApp: inapp, email, digest });
             } catch (err) {
                 console.warn('save failed', err);
             }

@@ -1,6 +1,9 @@
 ﻿(async () => {
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
 
+    const api = (p) => (window.__appBasePath || '') + (p.startsWith('/') ? p : '/' + p);
+
+
     try {
         const reg = await navigator.serviceWorker.getRegistration();
         if (!reg) return; // service worker not registered yet
@@ -8,7 +11,7 @@
         const perm = await Notification.requestPermission();
         if (perm !== 'granted') return;
 
-        const r = await fetch('/me/push/vapid', { credentials: 'same-origin' });
+        const r = await fetch(api('/api/v1/me/push/vapid'), { credentials: 'same-origin' });
         if (!r.ok) return;
         const { publicKey } = await r.json();
         if (!publicKey) return;
@@ -17,7 +20,7 @@
         const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: key });
         const json = sub.toJSON(); // { endpoint, keys:{ p256dh, auth } }
 
-        await fetch('/me/push/subscribe', {
+        await fetch(api('/api/v1/me/push/subscribe'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'same-origin',

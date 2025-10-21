@@ -14,6 +14,9 @@ public static class ApiEndpoints
         var api = app.MapGroup("/api");
         var v1 = api.MapGroup("/v1");
 
+        // Meta (feeds the dashboard)
+        v1.MapMetaEndpoints();
+
         // Core app APIs
         v1.MapSwimsCoreEndpoints();
         v1.MapSwimsMessagingEndpoints();

@@ -300,7 +300,7 @@
                 // If there’s a match and the field is a <select>, populate it with options from the API response.
                 //
                 $.ajax({
-                    url: "/api/" + fieldName_actual,
+                    url: window.apiUrl('/api/v1/' + fieldName_actual),
                     method: "GET",
                     dataType: "json",
                     success: function (data) {

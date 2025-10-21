@@ -2,6 +2,9 @@
     const $ = (s, r = document) => r.querySelector(s);
     const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
 
+    const api = (p) => (window.__appBasePath || '') + (p.startsWith('/') ? p : '/' + p);
+
+
     const state = { me: null, convoId: null, messages: [], hub: null, peers: {} };
 
     async function fetchJson(url, opts = {}) {
@@ -71,7 +74,7 @@
 
     // ---------- data ----------
     async function loadConvos() {
-        const d = await fetchJson('/me/chats?skip=0&take=50');
+        const d = await fetchJson(api('/api/v1/me/chats?skip=0&take=50'));
         renderConvos(d);
         return d;
     }
@@ -82,14 +85,14 @@
 
         await ensureHub();
         try { await state.hub.invoke('Join', id); } catch { }
-        const d = await fetchJson(`/me/chats/${id}/messages?take=50`);
+        const d = await fetchJson(api(`/api/v1/me/chats/${id}/messages?take=50`));
         state.messages = d.items || [];
         renderMessages(state.messages);
         await updateRead();
     }
 
     async function startWithLogin(login) {
-        const data = await fetchJson(`/me/chats/start/login?login=${encodeURIComponent(login)}`, { method: 'POST' });
+        const data = await fetchJson(api(`/api/v1/me/chats/start/login?login=${encodeURIComponent(login)}`), { method: 'POST' });
         await openConvo(data.id);
         // refresh list to populate peers map (in case it was a brand new convo)
         await loadConvos();
@@ -100,7 +103,7 @@
         const box = $('#chat-input'); if (!box || !state.convoId) return;
         const body = (box.value || '').trim();
         if (!body) return;
-        await fetchJson(`/me/chats/${state.convoId}/messages`, {
+        await fetchJson(api(`/api/v1/me/chats/${state.convoId}/messages`), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ body })
@@ -111,7 +114,7 @@
     async function updateRead() {
         if (!state.convoId || !state.messages.length) return;
         const last = state.messages[state.messages.length - 1];
-        await fetchJson(`/me/chats/${state.convoId}/read`, {
+        await fetchJson(api(`/api/v1/me/chats/${state.convoId}/read`), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ lastReadMessageId: last.id })
@@ -126,7 +129,7 @@
             return;
         }
         state.hub = new signalR.HubConnectionBuilder()
-            .withUrl('/hubs/chats')
+            .withUrl(api('/hubs/chats'))
             .withAutomaticReconnect()
             .build();
 
@@ -176,7 +179,7 @@
             q = (q || '').trim();
             if (!q) { hide(); return; }
             let d;
-            try { d = await fetchJson(`/me/chats/users/search?q=${encodeURIComponent(q)}&take=8`); }
+            try { d = await fetchJson(api(`/api/v1/me/chats/users/search?q=${encodeURIComponent(q)}&take=8`)); }
             catch { hide(); return; }
             const items = d.items || [];
             if (!items.length) { hide(); return; }
@@ -240,7 +243,7 @@
         if (window.__chatOpenConvoId) {
             await openConvo(window.__chatOpenConvoId);
         } else if (window.__chatStartUserId) {
-            const data = await fetchJson(`/me/chats/start?userId=${encodeURIComponent(window.__chatStartUserId)}`, { method: 'POST' });
+            const data = await fetchJson(api(`/api/v1/me/chats/start?userId=${encodeURIComponent(window.__chatStartUserId)}`), { method: 'POST' });
             await openConvo(data.id);
             await loadConvos();
             setHeader(data.id);

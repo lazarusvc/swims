@@ -181,12 +181,12 @@
             if (t === 'ControllerAction') {
               window.location.href = "@createPresetCA" + `?area=${encodeURIComponent(area)}&controller=${encodeURIComponent(cSel.value||'')}&action=${encodeURIComponent(xSel.value||'')}`;
             } else if (t === 'Controller') {
-              window.location.href = "/Admin/PublicEndpoints/Create"
+                window.location.href = "@Url.Content("~/Admin/PublicEndpoints/Create")"
                 + `?MatchType=Controller&Area=${encodeURIComponent(area)}&Controller=${encodeURIComponent(cSel.value||'')}&IsEnabled=true&Priority=100`;
             } else if (t === 'RazorPage') {
               window.location.href = "@createPresetPg" + `?area=${encodeURIComponent(area)}&page=${encodeURIComponent(pSel.value||'')}`;
             } else {
-              window.location.href = "/Admin/PublicEndpoints/Create"
+                window.location.href = "@Url.Content("~/Admin/PublicEndpoints/Create")"
                 + `?MatchType=${encodeURIComponent(t)}&Path=${encodeURIComponent(path.value||'')}&IsEnabled=true&Priority=100`;
             }
           });
