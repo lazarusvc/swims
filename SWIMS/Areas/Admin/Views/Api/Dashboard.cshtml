@@ -182,7 +182,7 @@
               body.innerHTML = state.filtered.map((e,i) => {
                 const methods = (e.methods || []).map(methodBadge).join('');
                 const tags = (e.tags || []).map(t => badge(t, 'bg-light text-dark')).join('');
-                const needsParams = e.pattern.includes("{");
+                const needsParams = e.pattern.includes("{") || /\/search\b/i.test(e.pattern);
                 const allowsGetOrHead = (e.methods || []).some(x => x === 'GET' || x === 'HEAD');
                 let probeCell = '—';
                 if (!needsParams && allowsGetOrHead) {

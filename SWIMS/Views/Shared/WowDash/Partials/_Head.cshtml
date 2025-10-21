@@ -1,6 +1,4 @@
-﻿@*
-    WowDash - ASP.Net Core 8 & Bootstrap Admin Dashboard Multipurpose Template design by Parv Infotech
-*@
+﻿@using System.Security.Claims
 
 
 <head>
@@ -46,11 +44,12 @@
     <!-- custom css -->
     <link rel="stylesheet" href="~/WowDash/css/custom.css">
 
+    <meta name="swims-user-id" content="@(User?.FindFirstValue(ClaimTypes.NameIdentifier) ?? "")" />
+
     <base href="@(Context?.Request?.PathBase.Value ?? "/")" />
     <script>
         window.__appBasePath = '@(Context?.Request?.PathBase.Value ?? "")';
         window.apiUrl = p => (window.__appBasePath || '') + (p.startsWith('/') ? p : '/' + p);
     </script>
-
 
 </head>
