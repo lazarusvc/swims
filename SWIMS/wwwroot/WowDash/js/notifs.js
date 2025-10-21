@@ -55,7 +55,7 @@
                     const snippet = payload.snippet || '';
                     title = `New message from ${fromName}`;
                     subtitle = snippet || fmtTime(n.createdUtc);
-                    href = payload.url || (payload.convoId ? `/portal/messages?convoId=${payload.convoId}` : null);
+                    href = payload.url || (payload.convoId ? api(`/portal/messages?convoId=${payload.convoId}`) : null);
                     icon = { bg: 'bg-primary-100', fg: 'text-primary-600', name: 'iconoir:chat-bubble' };
                     break;
                 }

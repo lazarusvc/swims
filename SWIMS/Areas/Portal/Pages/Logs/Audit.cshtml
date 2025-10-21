@@ -95,7 +95,7 @@
           };
 
           const load = async() => {
-            const r = await fetch(`/ops/logs/audit?${buildQuery()}`, {credentials:'same-origin'});
+            const r = await fetch(window.apiUrl(`/api/v1/ops/logs/audit?${buildQuery()}`), {credentials:'same-origin'});
             const d = await r.json(); total = d.total || 0;
 
             tbody.innerHTML = (d.items||[]).map(x=>`
@@ -136,7 +136,7 @@
             });
 
             // CSV link
-            const csvHref = () => `/ops/logs/audit.csv?${buildQuery()}`;
+            const csvHref = () => window.apiUrl(`/api/v1/ops/logs/audit.csv?${buildQuery()}`);
             document.getElementById('btn-csv').onclick = (e) => { e.preventDefault(); window.location.href = csvHref(); };
           };
 

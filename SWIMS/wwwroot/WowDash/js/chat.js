@@ -5,6 +5,16 @@
     const api = (p) => (window.__appBasePath || '') + (p.startsWith('/') ? p : '/' + p);
 
 
+    const qsAny = (selectors) => {
+        for (const s of selectors.split(',')) {
+            const el = document.querySelector(s.trim());
+            if (el) return el;
+        }
+        return null;
+    };
+
+
+
     const state = { me: null, convoId: null, messages: [], hub: null, peers: {} };
 
     async function fetchJson(url, opts = {}) {
@@ -148,27 +158,20 @@
 
     // ---------- typeahead ----------
     function attachTypeahead() {
-        const input = $('#chat-start-login') || $('#chat-start-user');
-        const btn = $('#chat-start');
-        if (!input || !btn) return;
+        const input = qsAny('#chat-start-login,#chat-start-user,#chat-start-email,[data-chat-start-input]');
+        if (!input) return; // no start box on this page layout
 
         const menu = document.createElement('div');
+        menu.id = 'chat-people-menu';
+        menu.className = 'dropdown-menu show';
         menu.style.position = 'absolute';
-        menu.style.minWidth = '240px';
-        menu.style.maxHeight = '240px';
-        menu.style.overflowY = 'auto';
-        menu.style.background = '#fff';
-        menu.style.border = '1px solid rgba(0,0,0,.15)';
-        menu.style.borderRadius = '0.5rem';
-        menu.style.boxShadow = '0 .5rem 1rem rgba(0,0,0,.15)';
-        menu.style.zIndex = 1055;
         menu.style.display = 'none';
         document.body.appendChild(menu);
 
         const posMenu = () => {
             const r = input.getBoundingClientRect();
             menu.style.left = (window.scrollX + r.left) + 'px';
-            menu.style.top = (window.scrollY + r.bottom + 4) + 'px';
+            menu.style.top = (window.scrollY + r.bottom + 2) + 'px';
             menu.style.width = r.width + 'px';
         };
 
@@ -179,20 +182,24 @@
             q = (q || '').trim();
             if (!q) { hide(); return; }
             let d;
-            try { d = await fetchJson(api(`/api/v1/me/chats/users/search?q=${encodeURIComponent(q)}&take=8`)); }
-            catch { hide(); return; }
+            try {
+                d = await fetchJson(api(`/api/v1/me/chats/users/search?q=${encodeURIComponent(q)}&take=8`));
+            } catch { hide(); return; }
             const items = d.items || [];
             if (!items.length) { hide(); return; }
             const html = items.map(u => `
-        <button type="button" class="dropdown-item w-100 text-start" data-login="${esc(u.email || u.username)}">
-          <div class="fw-semibold">${esc(u.firstName && u.lastName ? (u.firstName + ' ' + u.lastName) : (u.username || '(no username)'))}</div>
-          <div class="small text-muted">${esc(u.email || '')}</div>
-        </button>`).join('');
+      <button type="button" class="dropdown-item w-100 text-start" data-login="${esc(u.email || u.username)}">
+        <div class="fw-semibold">${esc(u.firstName && u.lastName ? (u.firstName + ' ' + u.lastName) : (u.username || '(no username)'))}</div>
+        <div class="small text-muted">${esc(u.email || '')}</div>
+      </button>`).join('');
             show(html);
-            $$('button.dropdown-item', menu).forEach(b => b.onclick = async () => {
-                input.value = b.dataset.login || '';
-                hide();
-                btn.click();
+            $$('button.dropdown-item', menu).forEach(b => {
+                b.onclick = async () => {
+                    input.value = b.dataset.login || '';
+                    hide();
+                    const btnStart = qsAny('#chat-start,[data-chat-start]');
+                    if (btnStart) btnStart.click();
+                };
             });
         }, 200);
 
@@ -206,6 +213,7 @@
         });
     }
 
+
     // ---------- boot ----------
     function initMe() {
         const me = document.querySelector('meta[name="swims-user-id"]')?.content;
@@ -213,15 +221,18 @@
     }
 
     function wireUi() {
-        const btnSend = $('#chat-send');
-        const inputNew = $('#chat-start-login') || $('#chat-start-user');
-        const btnStart = $('#chat-start');
+        const btnSend = qsAny('#chat-send,[data-chat-send]');
+        const inputNew = qsAny('#chat-start-login,#chat-start-user,#chat-start-email,[data-chat-start-input]');
+        const btnStart = qsAny('#chat-start,[data-chat-start]');
+        const box = qsAny('#chat-input,[data-chat-input]');
 
-        if (btnSend) btnSend.onclick = sendMessage;
-        const box = $('#chat-input');
-        if (box) box.onkeydown = (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
-        };
+        if (btnSend && box) {
+            btnSend.onclick = sendMessage;
+            box.onkeydown = (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+            };
+        }
+
         if (btnStart && inputNew) {
             btnStart.onclick = async () => {
                 const v = (inputNew.value || '').trim();
@@ -232,6 +243,7 @@
             inputNew.onkeydown = (e) => { if (e.key === 'Enter') { e.preventDefault(); btnStart.click(); } };
         }
     }
+
 
     async function main() {
         initMe();
