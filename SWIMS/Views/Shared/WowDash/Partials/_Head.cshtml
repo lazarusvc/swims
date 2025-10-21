@@ -45,4 +45,12 @@
 
     <!-- custom css -->
     <link rel="stylesheet" href="~/WowDash/css/custom.css">
+
+    <base href="@(Context?.Request?.PathBase.Value ?? "/")" />
+    <script>
+        window.__appBasePath = '@(Context?.Request?.PathBase.Value ?? "")';
+        window.apiUrl = p => (window.__appBasePath || '') + (p.startsWith('/') ? p : '/' + p);
+    </script>
+
+
 </head>
