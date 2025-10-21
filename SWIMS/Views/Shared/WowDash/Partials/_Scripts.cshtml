@@ -41,7 +41,7 @@
 
 <script>
     (function () {
-      const ping = () => fetch('/me/heartbeat', {
+      const ping = () => fetch(window.apiUrl('/api/v1/me/heartbeat'), {
         method: 'POST',
         headers: { 'X-Requested-With': 'fetch' },
         credentials: 'same-origin',
@@ -67,7 +67,7 @@
 <script>
     (function () {
       const conn = new signalR.HubConnectionBuilder()
-        .withUrl("/hubs/notifs", { withCredentials: true })
+        .withUrl(window.apiUrl('/hubs/notifs'), { withCredentials: true })
         .withAutomaticReconnect()
         .build();
 
