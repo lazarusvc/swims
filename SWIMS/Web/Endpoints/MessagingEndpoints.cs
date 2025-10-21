@@ -15,7 +15,7 @@ public static class MessagingEndpoints
 {
     public static IEndpointRouteBuilder MapSwimsMessagingEndpoints(this IEndpointRouteBuilder app)
     {
-        var grp = app.MapGroup("/me/chats").RequireAuthorization();
+        var grp = app.MapGroup("me/chats").RequireAuthorization();
 
         // ---- helpers --------------------------------------------------------
         static int CurrentUserId(ClaimsPrincipal u)
@@ -24,7 +24,7 @@ public static class MessagingEndpoints
         static string Norm(string s) => s.Trim().ToUpperInvariant();
 
         // ---- start by numeric userId (dev-friendly) ------------------------
-        grp.MapPost("/start", async (HttpContext http, SwimsIdentityDbContext db, IAuditLogger audit, int userId) =>
+        grp.MapPost("start", async (HttpContext http, SwimsIdentityDbContext db, IAuditLogger audit, int userId) =>
         {
             var me = CurrentUserId(http.User);
             if (userId == me) return Results.BadRequest(new { error = "cannot chat with yourself" });
@@ -60,7 +60,7 @@ public static class MessagingEndpoints
         });
 
         // ---- start by USERNAME ---------------------------------------------
-        grp.MapPost("/start/username", async (HttpContext http, SwimsIdentityDbContext db, IAuditLogger audit, string username) =>
+        grp.MapPost("start/username", async (HttpContext http, SwimsIdentityDbContext db, IAuditLogger audit, string username) =>
         {
             var me = CurrentUserId(http.User);
             if (string.IsNullOrWhiteSpace(username)) return Results.BadRequest(new { error = "username required" });
@@ -104,7 +104,7 @@ public static class MessagingEndpoints
         });
 
         // ---- start by EMAIL -------------------------------------------------
-        grp.MapPost("/start/email", async (HttpContext http, SwimsIdentityDbContext db, IAuditLogger audit, string email) =>
+        grp.MapPost("start/email", async (HttpContext http, SwimsIdentityDbContext db, IAuditLogger audit, string email) =>
         {
             var me = CurrentUserId(http.User);
             if (string.IsNullOrWhiteSpace(email)) return Results.BadRequest(new { error = "email required" });
@@ -148,7 +148,7 @@ public static class MessagingEndpoints
         });
 
         // ---- start by LOGIN (username OR email) ----------------------------
-        grp.MapPost("/start/login", async (HttpContext http, SwimsIdentityDbContext db, IAuditLogger audit, string login) =>
+        grp.MapPost("start/login", async (HttpContext http, SwimsIdentityDbContext db, IAuditLogger audit, string login) =>
         {
             var me = CurrentUserId(http.User);
             if (string.IsNullOrWhiteSpace(login)) return Results.BadRequest(new { error = "login (username/email) required" });
@@ -192,7 +192,7 @@ public static class MessagingEndpoints
         });
 
         // ---- search users (typeahead) --------------------------------------
-        grp.MapGet("/users/search", async (SwimsIdentityDbContext db, string q, int take = 10) =>
+        grp.MapGet("users/search", async (SwimsIdentityDbContext db, string q, int take = 10) =>
         {
             if (string.IsNullOrWhiteSpace(q)) return Results.Ok(new { items = Array.Empty<object>() });
             take = Math.Clamp(take, 1, 25);
@@ -268,7 +268,7 @@ public static class MessagingEndpoints
         });
 
         // ---- thread (paged by before/after messageId) ----------------------
-        grp.MapGet("/{id:guid}/messages", async (HttpContext http, SwimsIdentityDbContext db, Guid id, Guid? before, Guid? after, int take = 50) =>
+        grp.MapGet("{id:guid}/messages", async (HttpContext http, SwimsIdentityDbContext db, Guid id, Guid? before, Guid? after, int take = 50) =>
         {
             var me = CurrentUserId(http.User);
             take = Math.Clamp(take, 1, 200);
@@ -300,7 +300,7 @@ public static class MessagingEndpoints
         });
 
         // ---- send message ---------------------------------------------------
-        grp.MapPost("/{id:guid}/messages", async (
+        grp.MapPost("{id:guid}/messages", async (
             HttpContext http, SwimsIdentityDbContext db,
             IHubContext<ChatsHub> hub, IAuditLogger audit,
             IChatPresence presence, INotifier notifier,
@@ -386,7 +386,7 @@ public static class MessagingEndpoints
         });
 
         // ---- mark read ------------------------------------------------------
-        grp.MapPost("/{id:guid}/read", async (HttpContext http, SwimsIdentityDbContext db,
+        grp.MapPost("{id:guid}/read", async (HttpContext http, SwimsIdentityDbContext db,
                                               IHubContext<ChatsHub> hub, Guid id, MarkReadPost body) =>
         {
             var me = CurrentUserId(http.User);

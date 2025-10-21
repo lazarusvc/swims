@@ -1,0 +1,66 @@
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.OpenApi;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Configuration;
+using SWIMS.Models;
+
+namespace SWIMS.Web.Endpoints.Data;
+
+public static class FinancialInstitutionEndpoints
+{
+    // Preserved from original (even though unused) to avoid surprises
+    private static readonly IConfiguration config;
+
+    public static IEndpointRouteBuilder MapFinancialInstitutionEndpoints(this IEndpointRouteBuilder routes)
+    {
+        var group = routes.MapGroup("financial_institution").WithTags(nameof(SW_financial_institution));
+
+        group.MapGet("/", async (SwimsDb_moreContext db) =>
+            await db.SW_financial_institutions.ToListAsync())
+        .WithName("GetAllSW_financial_institutions")
+        .WithOpenApi();
+
+        group.MapGet("/{id}", async Task<Results<Ok<SW_financial_institution>, NotFound>> (int id, SwimsDb_moreContext db) =>
+            await db.SW_financial_institutions.AsNoTracking().FirstOrDefaultAsync(model => model.Id == id)
+                is SW_financial_institution model ? TypedResults.Ok(model) : TypedResults.NotFound())
+        .WithName("GetSW_financial_institutionById")
+        .WithOpenApi();
+
+        group.MapPut("/{id}", async Task<Results<Ok, NotFound>> (int id, SW_financial_institution sW_financial_institution, SwimsDb_moreContext db) =>
+        {
+            var affected = await db.SW_financial_institutions
+                .Where(model => model.Id == id)
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(m => m.Id, sW_financial_institution.Id)
+                    .SetProperty(m => m.name, sW_financial_institution.name)
+                    .SetProperty(m => m.email, sW_financial_institution.email)
+                );
+            return affected == 1 ? TypedResults.Ok() : TypedResults.NotFound();
+        })
+        .WithName("UpdateSW_financial_institution")
+        .WithOpenApi();
+
+        group.MapPost("/", async (SW_financial_institution sW_financial_institution, SwimsDb_moreContext db) =>
+        {
+            db.SW_financial_institutions.Add(sW_financial_institution);
+            await db.SaveChangesAsync();
+            return TypedResults.Created($"/api/v1/financial_institution/{sW_financial_institution.Id}", sW_financial_institution);
+        })
+        .WithName("CreateSW_financial_institution")
+        .WithOpenApi();
+
+        group.MapDelete("/{id}", async Task<Results<Ok, NotFound>> (int id, SwimsDb_moreContext db) =>
+        {
+            var affected = await db.SW_financial_institutions
+                .Where(model => model.Id == id)
+                .ExecuteDeleteAsync();
+            return affected == 1 ? TypedResults.Ok() : TypedResults.NotFound();
+        })
+        .WithName("DeleteSW_financial_institution")
+        .WithOpenApi();
+
+        return routes;
+    }
+}

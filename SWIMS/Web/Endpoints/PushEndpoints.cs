@@ -10,17 +10,17 @@ public static class PushEndpoints
 {
     public static IEndpointRouteBuilder MapSwimsPushEndpoints(this IEndpointRouteBuilder app)
     {
-        var grp = app.MapGroup("/me/push").RequireAuthorization();
+        var grp = app.MapGroup("me/push").RequireAuthorization();
 
         static int Me(ClaimsPrincipal u) => int.Parse(u.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
-        grp.MapGet("/vapid", (IConfiguration cfg) =>
+        grp.MapGet("vapid", (IConfiguration cfg) =>
         {
             var pub = cfg["WebPush:PublicKey"] ?? "";
             return Results.Ok(new { publicKey = pub });
         });
 
-        grp.MapPost("/subscribe", async (HttpContext http, SwimsIdentityDbContext db, PushSubscribeDto body) =>
+        grp.MapPost("subscribe", async (HttpContext http, SwimsIdentityDbContext db, PushSubscribeDto body) =>
         {
             var me = Me(http.User);
             if (string.IsNullOrWhiteSpace(body.endpoint) ||
@@ -58,7 +58,7 @@ public static class PushEndpoints
             return Results.Ok(new { ok = true });
         });
 
-        grp.MapPost("/unsubscribe", async (SwimsIdentityDbContext db, PushUnsubDto body) =>
+        grp.MapPost("unsubscribe", async (SwimsIdentityDbContext db, PushUnsubDto body) =>
         {
             if (string.IsNullOrWhiteSpace(body.endpoint)) return Results.BadRequest();
             var s = await db.PushSubscriptions.FirstOrDefaultAsync(x => x.Endpoint == body.endpoint);
@@ -66,7 +66,7 @@ public static class PushEndpoints
             return Results.Ok(new { ok = true });
         });
 
-        grp.MapPost("/test", async (HttpContext http, IWebPushSender push) =>
+        grp.MapPost("test", async (HttpContext http, IWebPushSender push) =>
         {
             var me = Me(http.User);
             await push.SendToUserAsync(me, new

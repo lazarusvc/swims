@@ -16,13 +16,13 @@ public static class CoreEndpoints
     public static IEndpointRouteBuilder MapSwimsCoreEndpoints(this IEndpointRouteBuilder app)
     {
         // Health + readiness (anonymous)
-        app.MapHealthChecks("/healthz").AllowAnonymous();
+        app.MapHealthChecks("healthz").AllowAnonymous();
 
-        app.MapGet("/readyz", () => Results.Ok(new { status = "ready" }))
+        app.MapGet("readyz", () => Results.Ok(new { status = "ready" }))
            .AllowAnonymous();
 
         // Authenticated heartbeat for session last-seen
-        app.MapPost("/me/heartbeat", async (HttpContext http, ISessionLogger logger) =>
+        app.MapPost("me/heartbeat", async (HttpContext http, ISessionLogger logger) =>
         {
             if (!(http.User?.Identity?.IsAuthenticated ?? false)) return Results.Unauthorized();
             if (!int.TryParse(http.User.FindFirstValue(ClaimTypes.NameIdentifier), out var uid)) return Results.Unauthorized();
@@ -54,7 +54,7 @@ public static class CoreEndpoints
         var env = app.ServiceProvider.GetRequiredService<IHostEnvironment>();
         if (env.IsDevelopment())
         {
-            app.MapPost("/__dev__/notify-me", async (HttpContext http, INotifier notifier) =>
+            app.MapPost("__dev__/notify-me", async (HttpContext http, INotifier notifier) =>
             {
                 if (!int.TryParse(http.User.FindFirstValue(ClaimTypes.NameIdentifier), out var uid))
                     return Results.Unauthorized();
@@ -65,10 +65,6 @@ public static class CoreEndpoints
             }).RequireAuthorization();
         }
 
-        return app.MapSwimsNotificationsEndpoints()
-          .MapSwimsOperationsEndpoints()
-          .MapSwimsMessagingEndpoints()
-          .MapSwimsPushEndpoints();
-
+        return app;
     }
 }
