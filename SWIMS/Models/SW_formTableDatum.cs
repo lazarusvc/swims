@@ -512,9 +512,13 @@ public partial class SW_formTableDatum
 
     public int SW_formsId { get; set; }
 
-    [Column(TypeName = "tinyint")] public byte? isApproval_01 { get; set; }
-    [Column(TypeName = "tinyint")] public byte? isApproval_02 { get; set; }
-    [Column(TypeName = "tinyint")] public byte? isApproval_03 { get; set; }
+    //[Column(TypeName = "tinyint")] public byte? isApproval_01 { get; set; }
+    //[Column(TypeName = "tinyint")] public byte? isApproval_02 { get; set; }
+    //[Column(TypeName = "tinyint")] public byte? isApproval_03 { get; set; }
+
+    public int? isApproval_01 { get; set; }
+    public int? isApproval_02 { get; set; }
+    public int? isApproval_03 { get; set; }
 
 
     public string isAppComment_01 { get; set; }

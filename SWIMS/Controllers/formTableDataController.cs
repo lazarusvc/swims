@@ -56,13 +56,65 @@ namespace SWIMS.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,FormData01,FormData02,FormData03,FormData04,FormData05,FormData06,FormData07,FormData08,FormData09,FormData10,FormData11,FormData12,FormData13,FormData14,FormData15,FormData16,FormData17,FormData18,FormData19,FormData20,FormData21,FormData22,FormData23,FormData24,FormData25,FormData26,FormData27,FormData28,FormData29,FormData30,FormData31,FormData32,FormData33,FormData34,FormData35,FormData36,FormData37,FormData38,FormData39,FormData40,FormData41,FormData42,FormData43,FormData44,FormData45,FormData46,FormData47,FormData48,FormData49,FormData50,FormData51,FormData52,FormData53,FormData54,FormData55,FormData56,FormData57,FormData58,FormData59,FormData60,FormData61,FormData62,FormData63,FormData64,FormData65,FormData66,FormData67,FormData68,FormData69,FormData70,FormData71,FormData72,FormData73,FormData74,FormData75,FormData76,FormData77,FormData78,FormData79,FormData80,FormData81,FormData82,FormData83,FormData84,FormData85,FormData86,FormData87,FormData88,FormData89,FormData90,FormData91,FormData92,FormData93,FormData94,FormData95,FormData96,FormData97,FormData98,FormData99,FormData100,FormData101,FormData102,FormData103,FormData104,FormData105,FormData106,FormData107,FormData108,FormData109,FormData110,FormData111,FormData112,FormData113,FormData114,FormData115,FormData116,FormData117,FormData118,FormData119,FormData120,FormData121,FormData122,FormData123,FormData124,FormData125,FormData126,FormData127,FormData128,FormData129,FormData130,FormData131,FormData132,FormData133,FormData134,FormData135,FormData136,FormData137,FormData138,FormData139,FormData140,FormData141,FormData142,FormData143,FormData144,FormData145,FormData146,FormData147,FormData148,FormData149,FormData150,FormData151,FormData152,FormData153,FormData154,FormData155,FormData156,FormData157,FormData158,FormData159,FormData160,FormData161,FormData162,FormData163,FormData164,FormData165,FormData166,FormData167,FormData168,FormData169,FormData170,FormData171,FormData172,FormData173,FormData174,FormData175,FormData176,FormData177,FormData178,FormData179,FormData180,FormData181,FormData182,FormData183,FormData184,FormData185,FormData186,FormData187,FormData188,FormData189,FormData190,FormData191,FormData192,FormData193,FormData194,FormData195,FormData196,FormData197,FormData198,FormData199,FormData200,FormData201,FormData202,FormData203,FormData204,FormData205,FormData206,FormData207,FormData208,FormData209,FormData210,FormData211,FormData212,FormData213,FormData214,FormData215,FormData216,FormData217,FormData218,FormData219,FormData220,FormData221,FormData222,FormData223,FormData224,FormData225,FormData226,FormData227,FormData228,FormData229,FormData230,FormData231,FormData232,FormData233,FormData234,FormData235,FormData236,FormData237,FormData238,FormData239,FormData240,FormData241,FormData242,FormData243,FormData244,FormData245,FormData246,FormData247,FormData248,FormData249,FormData250,SW_formsId,isApproval_01,isApproval_02,isApproval_03,isAppComment_01,isAppComment_02,isAppComment_03,isApprover_01,isApprover_02,isApprover_03,isLinkingForm")] SW_formTableDatum sW_formTableDatum)
+        public async Task<IActionResult> Create([Bind("Id,FormData01,FormData02,FormData03,FormData04,FormData05,FormData06,FormData07,FormData08,FormData09,FormData10,FormData11,FormData12,FormData13,FormData14,FormData15,FormData16,FormData17,FormData18,FormData19,FormData20,FormData21,FormData22,FormData23,FormData24,FormData25,FormData26,FormData27,FormData28,FormData29,FormData30,FormData31,FormData32,FormData33,FormData34,FormData35,FormData36,FormData37,FormData38,FormData39,FormData40,FormData41,FormData42,FormData43,FormData44,FormData45,FormData46,FormData47,FormData48,FormData49,FormData50,FormData51,FormData52,FormData53,FormData54,FormData55,FormData56,FormData57,FormData58,FormData59,FormData60,FormData61,FormData62,FormData63,FormData64,FormData65,FormData66,FormData67,FormData68,FormData69,FormData70,FormData71,FormData72,FormData73,FormData74,FormData75,FormData76,FormData77,FormData78,FormData79,FormData80,FormData81,FormData82,FormData83,FormData84,FormData85,FormData86,FormData87,FormData88,FormData89,FormData90,FormData91,FormData92,FormData93,FormData94,FormData95,FormData96,FormData97,FormData98,FormData99,FormData100,FormData101,FormData102,FormData103,FormData104,FormData105,FormData106,FormData107,FormData108,FormData109,FormData110,FormData111,FormData112,FormData113,FormData114,FormData115,FormData116,FormData117,FormData118,FormData119,FormData120,FormData121,FormData122,FormData123,FormData124,FormData125,FormData126,FormData127,FormData128,FormData129,FormData130,FormData131,FormData132,FormData133,FormData134,FormData135,FormData136,FormData137,FormData138,FormData139,FormData140,FormData141,FormData142,FormData143,FormData144,FormData145,FormData146,FormData147,FormData148,FormData149,FormData150,FormData151,FormData152,FormData153,FormData154,FormData155,FormData156,FormData157,FormData158,FormData159,FormData160,FormData161,FormData162,FormData163,FormData164,FormData165,FormData166,FormData167,FormData168,FormData169,FormData170,FormData171,FormData172,FormData173,FormData174,FormData175,FormData176,FormData177,FormData178,FormData179,FormData180,FormData181,FormData182,FormData183,FormData184,FormData185,FormData186,FormData187,FormData188,FormData189,FormData190,FormData191,FormData192,FormData193,FormData194,FormData195,FormData196,FormData197,FormData198,FormData199,FormData200,FormData201,FormData202,FormData203,FormData204,FormData205,FormData206,FormData207,FormData208,FormData209,FormData210,FormData211,FormData212,FormData213,FormData214,FormData215,FormData216,FormData217,FormData218,FormData219,FormData220,FormData221,FormData222,FormData223,FormData224,FormData225,FormData226,FormData227,FormData228,FormData229,FormData230,FormData231,FormData232,FormData233,FormData234,FormData235,FormData236,FormData237,FormData238,FormData239,FormData240,FormData241,FormData242,FormData243,FormData244,FormData245,FormData246,FormData247,FormData248,FormData249,FormData250,SW_formsId,isApproval_01,isApproval_02,isApproval_03,isAppComment_01,isAppComment_02,isAppComment_03,isApprover_01,isApprover_02,isApprover_03,isLinkingForm")] SW_formTableDatum sW_formTableDatum, IFormFile FormData01)
         {
+            if (FormData01 == null || FormData01.Length == 0)
+            {
+                return BadRequest("No file uploaded.");
+            }
+
+            // Define a path to save the file (e.g., in wwwroot/uploads)
+            var uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+            if (!Directory.Exists(uploadPath))
+            {
+                Directory.CreateDirectory(uploadPath);
+            }
+
+            // Create a unique file name to avoid conflicts
+            var uniqueFileName = Guid.NewGuid().ToString() + "_" + FormData01.FileName;
+            var filePath = Path.Combine(uploadPath, uniqueFileName);
+
+            // Save the file to the server
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await FormData01.CopyToAsync(stream);
+            }
+
             if (ModelState.IsValid)
             {
+                var formVar = _context.SW_forms.Where(x => x.Id == sW_formTableDatum.SW_formsId);
+
+                // save new data to database
                 _context.Add(sW_formTableDatum);
                 await _context.SaveChangesAsync();
-                string? uID = _context.SW_forms.Where(x => x.Id == sW_formTableDatum.SW_formsId).Select(x => x.uuid).FirstOrDefault();
+
+                // update form data table row to look for fields with type: file from html form
+                // then append the uploaded file to founded column
+                // e.g. html form field - FormData25 is type: file
+                // logic finds FormData25 and sets it's value 
+                // consequently updating it's DB row record
+                int? fID = formVar.Select(x => x.Id).FirstOrDefault();
+                string? formField_w_File = _context.SW_formTableData_Types.Where(x => x.SW_formsId == fID && x.type == "file").Select(x => x.field).FirstOrDefault();
+                //_context.SW_formTableData.ExecuteSql(
+                //    @"UPDATE dbo.SW_formTableData " +
+                //    "SET {0} = {1} " +
+                //    "WHERE Id = {2}",
+                //    formField_w_File, uniqueFileName, sW_formTableDatum.Id);
+
+                //_context.Database.ExecuteSqlInterpolated(
+                //    $@"UPDATE dbo.SW_formTableData
+                //SET [{formField_w_File}] = '{uniqueFileName}'
+                //WHERE [Id] = {sW_formTableDatum.Id};"
+                //);
+
+                await _context.SW_formTableData
+                .Where(r => r.Id == sW_formTableDatum.Id)
+                .ExecuteUpdateAsync(set => set
+                    .SetProperty(r => EF.Property<string>(r, formField_w_File), _ => uniqueFileName)
+                );
+
+
+                string? uID = formVar.Select(x => x.uuid).FirstOrDefault();
                 return RedirectToAction("Program", "form", new { uuid = uID });
             }
             ViewData["SW_formsId"] = new SelectList(_context.SW_forms, "Id", "name", sW_formTableDatum.SW_formsId);
