@@ -19,15 +19,15 @@ public static class OperationsEndpoints
 
         if (env.IsDevelopment())
         {
-            var group = app.MapGroup("/__dev__/ops").RequireAuthorization();
+            var group = app.MapGroup("__dev__/ops").RequireAuthorization();
 
-            group.MapPost("/email-test", async (IEmailOutbox outbox, string to) =>
+            group.MapPost("email-test", async (IEmailOutbox outbox, string to) =>
             {
                 var id = await outbox.EnqueueAsync(to, "SWIMS test email", "<p>Hello from SWIMS outbox!</p>", "Hello from SWIMS outbox!");
                 return Results.Ok(new { id });
             });
 
-            group.MapGet("/notif-template/preview", async (INotificationEmailComposer composer) =>
+            group.MapGet("notif-template/preview", async (INotificationEmailComposer composer) =>
             {
                 var payload = new
                 {
@@ -52,12 +52,12 @@ public static class OperationsEndpoints
         }
 
         // secured ops/logs group (Admin role; swap for your claims policy if you prefer)
-        var logs = app.MapGroup("/ops/logs")
+        var logs = app.MapGroup("ops/logs")
             .RequireAuthorization(policy => policy.RequireRole("Admin"));
 
         // --- AUDIT LOG -----------------------------------------------------------
         // GET /ops/logs/audit?skip=&take=&userId=&username=&action=&entity=&entityId=&from=&to=&contains=
-        logs.MapGet("/audit", async (
+        logs.MapGet("audit", async (
             SwimsIdentityDbContext db,
             int skip = 0,
             int take = 25,
@@ -125,7 +125,7 @@ public static class OperationsEndpoints
 
         // --- SESSION LOG ---------------------------------------------------------
         // GET /ops/logs/sessions?skip=&take=&userId=&username=&sessionId=&from=&to=&activeOnly=&contains=
-        logs.MapGet("/sessions", async (
+        logs.MapGet("sessions", async (
             SwimsIdentityDbContext db,
             int skip = 0,
             int take = 25,
@@ -186,7 +186,7 @@ public static class OperationsEndpoints
         });
 
         // --- AUDIT CSV --------------------------------------------------------------
-        logs.MapGet("/audit.csv", async (
+        logs.MapGet("audit.csv", async (
             SwimsIdentityDbContext db,
             int skip = 0,
             int take = 1000,          // CSV: default bigger page
@@ -261,7 +261,7 @@ public static class OperationsEndpoints
         }).RequireAuthorization(policy => policy.RequireRole("Admin"));
 
         // --- SESSIONS CSV -----------------------------------------------------------
-        logs.MapGet("/sessions.csv", async (
+        logs.MapGet("sessions.csv", async (
             SwimsIdentityDbContext db,
             int skip = 0,
             int take = 5000,

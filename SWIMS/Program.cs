@@ -347,24 +347,6 @@ if (!string.IsNullOrWhiteSpace(configuredPathBase))
     app.UsePathBase(configuredPathBase);
 }
 
-// --- Compat redirect: /api/*  ->  /api/v1/* (permanent) while we migrate callers
-app.Use(async (ctx, next) =>
-{
-    var path = ctx.Request.Path.Value ?? string.Empty;
-    // If request starts with /api but not yet /api/vX, redirect to v1
-    if (path.StartsWith("/api/", StringComparison.OrdinalIgnoreCase) &&
-        !path.StartsWith("/api/v", StringComparison.OrdinalIgnoreCase))
-    {
-        var remainder = path.Substring("/api".Length); // e.g. "/cities"
-        var target = (ctx.Request.PathBase.Value ?? "") + "/api/v1" + remainder + ctx.Request.QueryString;
-        ctx.Response.Redirect(target, permanent: true);
-        return;
-    }
-    await next();
-});
-
-
-
 using (var scope = app.Services.CreateScope())
 {
     var cfg = scope.ServiceProvider.GetRequiredService<IConfiguration>();
@@ -451,8 +433,10 @@ app.Use(async (ctx, next) =>
 app.UseAuthentication();
 app.UseAuthorization();
 
+// --- Single API registration (aggregator) ---
 app.MapSwimsApi();
 
+// OpenAPI/Swagger/endpoint explorer
 app.MapOpenApi();
 
 app.MapHub<NotifsHub>("/hubs/notifs");

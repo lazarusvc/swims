@@ -13,7 +13,7 @@ public static class NotificationsEndpoints
 {
     public static IEndpointRouteBuilder MapSwimsNotificationsEndpoints(this IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/me/notifications").RequireAuthorization();
+        var group = app.MapGroup("me/notifications").RequireAuthorization();
 
         // GET /me/notifications?unseenOnly=true&skip=0&take=20
         group.MapGet("", async (HttpContext http, SwimsIdentityDbContext db, bool? unseenOnly, int? skip, int? take) =>
@@ -34,7 +34,7 @@ public static class NotificationsEndpoints
         });
 
         // POST /me/notifications/{id}/seen
-        group.MapPost("/{id:guid}/seen", async (HttpContext http, SwimsIdentityDbContext db, Guid id) =>
+        group.MapPost("{id:guid}/seen", async (HttpContext http, SwimsIdentityDbContext db, Guid id) =>
         {
             if (!int.TryParse(http.User.FindFirstValue(ClaimTypes.NameIdentifier), out var uid))
                 return Results.Unauthorized();
@@ -48,7 +48,7 @@ public static class NotificationsEndpoints
         });
 
         // POST /me/notifications/seen-all
-        group.MapPost("/seen-all", async (HttpContext http, SwimsIdentityDbContext db) =>
+        group.MapPost("seen-all", async (HttpContext http, SwimsIdentityDbContext db) =>
         {
             if (!int.TryParse(http.User.FindFirstValue(ClaimTypes.NameIdentifier), out var uid))
                 return Results.Unauthorized();
@@ -59,7 +59,7 @@ public static class NotificationsEndpoints
             return Results.Ok(new { ok = true });
         });
 
-        group.MapGet("/count", async (HttpContext http, SwimsIdentityDbContext db) =>
+        group.MapGet("count", async (HttpContext http, SwimsIdentityDbContext db) =>
         {
             if (!int.TryParse(http.User.FindFirstValue(ClaimTypes.NameIdentifier), out var uid))
                 return Results.Unauthorized();
@@ -71,7 +71,7 @@ public static class NotificationsEndpoints
             return Results.Ok(new { count });
         });
 
-        group.MapGet("/prefs", async (HttpContext http, INotificationPreferences svc) =>
+        group.MapGet("prefs", async (HttpContext http, INotificationPreferences svc) =>
         {
             if (!int.TryParse(http.User.FindFirstValue(ClaimTypes.NameIdentifier), out var uid))
                 return Results.Unauthorized();
@@ -80,7 +80,7 @@ public static class NotificationsEndpoints
             return Results.Ok(rows.Select(x => new { type = x.type, inApp = x.inApp, email = x.email, digest = x.digest }));
         });
 
-        group.MapPut("/prefs", async (
+        group.MapPut("prefs", async (
             HttpContext http,
             INotificationPreferences svc,
             IAuditLogger audit,
@@ -116,7 +116,7 @@ public static class NotificationsEndpoints
         });
 
 
-        group.MapGet("/types", async (HttpContext http, SwimsIdentityDbContext db) =>
+        group.MapGet("types", async (HttpContext http, SwimsIdentityDbContext db) =>
         {
             if (!int.TryParse(http.User.FindFirstValue(ClaimTypes.NameIdentifier), out var uid))
                 return Results.Unauthorized();
