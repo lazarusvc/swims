@@ -243,13 +243,11 @@ namespace SWIMS.Controllers
             var formId = Convert.ToInt32(_context.SW_forms.Where(m => m.uuid == uuid).Select(m => m.Id).FirstOrDefault());
 
             ViewBag.uuid = uuid;
+            ViewBag.formId = formId;
             ViewBag.appAmt = Convert.ToInt32(_context.SW_forms.Where(m => m.uuid == uuid).Select(m => m.approvalAmt).FirstOrDefault());
-            ViewBag.appList = _context.SW_formTableData.Where(
-                x => x.isApproval_01 == 0 ||
-                x.isApproval_02 == 0 ||
-                x.isApproval_03 == 0 &&
-                x.SW_formsId == formId
-            ).ToList();
+            ViewBag.appList01 = _context.SW_formTableData.Where(x => x.isApproval_01 == 0 && x.SW_formsId == formId).ToList();
+            ViewBag.appList02 = _context.SW_formTableData.Where(x => x.isApproval_02 == 0 && x.SW_formsId == formId).ToList();
+            ViewBag.appList03 = _context.SW_formTableData.Where(x => x.isApproval_03 == 0 && x.SW_formsId == formId).ToList();
             return View();
         }
 

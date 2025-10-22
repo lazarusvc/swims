@@ -82,9 +82,9 @@
                         </div>
                         <br />
                         <br />
-                        <select id="appList" style="width: 100%;">
+                        <select id="appList01" style="width: 100%;">
                             <option>-- Select Form --</option>
-                            @foreach (var item in ViewBag.appList)
+                            @foreach (var item in ViewBag.appList01)
                             {
                                 <option value="@item.Id">
                                     FORM DATA ID:- @item.Id
@@ -95,23 +95,23 @@
                         <form asp-action="Edit" asp-controller="formTableData">
 
                             <input type="hidden" name="Id" id="Id" />
-                            <div id="appListPreview"></div>
+                            <div id="appListPreview01"></div>
                             <textarea id="trumbowyg1" name="isAppComment_01" placeholder="your comment ..."></textarea>
 
                             @if (ViewBag.appAmt == 1)
                             {
-                                <input type="hidden" name="isApproval_01" id="isApproval_01" value="1" />
+                                <input type="hidden" name="isApproval_01" id="isApproval_01" value=1 />
                             }
                             else if (ViewBag.appAmt == 2)
                             {
-                                <input type="hidden" name="isApproval_01" id="isApproval_01" value="1" />
-                                <input type="hidden" name="isApproval_02" id="isApproval_02" value="0" />
+                                <input type="hidden" name="isApproval_01" id="isApproval_01" value=1 />
+                                <input type="hidden" name="isApproval_02" id="isApproval_02" value=0 />
                             }
                             else if (ViewBag.appAmt == 3)
                             {
-                                <input type="hidden" name="isApproval_01" id="isApproval_01" value="1" />
-                                <input type="hidden" name="isApproval_02" id="isApproval_02" value="1" />
-                                <input type="hidden" name="isApproval_03" id="isApproval_03" value="1" />
+                                <input type="hidden" name="isApproval_01" id="isApproval_01" value=1 />
+                                <input type="hidden" name="isApproval_02" id="isApproval_02" value=0 />
+                                <input type="hidden" name="isApproval_03" id="isApproval_03" value=0 />
                             }
 
                             <input type="hidden" name="SW_formsId" id="SW_formsID" value="@ViewBag.formId" />
@@ -136,9 +136,9 @@
 
                         <br />
                         <br />
-                        <select id="appList" style="width: 100%;">
+                        <select id="appList02" style="width: 100%;">
                             <option>-- Select Form --</option>
-                            @foreach (var item in ViewBag.appList)
+                            @foreach (var item in ViewBag.appList02)
                             {
                                 <option value="@item.Id">
                                     FORM DATA ID:- @item.Id
@@ -149,7 +149,7 @@
                         <form asp-action="Edit" asp-controller="formTableData">
 
                             <input type="hidden" name="Id" id="Id" />
-                            <div id="appListPreview"></div>
+                            <div id="appListPreview02"></div>
                             <textarea id="trumbowyg2" name="isAppComment_02" placeholder="your comment ..."></textarea>
 
                             @if (ViewBag.appAmt == 1)
@@ -191,9 +191,9 @@
 
                         <br />
                         <br />
-                        <select id="appList" style="width: 100%;">
+                        <select id="appList03" style="width: 100%;">
                             <option>-- Select Form --</option>
-                            @foreach (var item in ViewBag.appList)
+                            @foreach (var item in ViewBag.appList03)
                             {
                                 <option value="@item.Id">
                                     FORM DATA ID:- @item.Id
@@ -204,7 +204,7 @@
                         <form asp-action="Edit" asp-controller="formTableData">
 
                             <input type="hidden" name="Id" id="Id" />
-                            <div id="appListPreview"></div>
+                            <div id="appListPreview03"></div>
                             <textarea id="trumbowyg3" name="isAppComment_03" placeholder="your comment ..."></textarea>
 
                             @if (ViewBag.appAmt == 1)
@@ -409,13 +409,16 @@
 
         // ------------------------------------------- SELECT2 Dropdown
         jQuery(function ($) {
-            $("#appList").select2();
+            $("#appList01").select2();
+            $("#appList02").select2();
+            $("#appList03").select2();
         });
 
         // ------------------------------------------- Approval dropdown logic & auto-fill Edit hidden Id
         jQuery(function ($) {
             var uuid = "@ViewBag.uuid"
-            $("#appList").on('keyup change', function() {
+
+            $("#appList01").on('keyup change', function() {
                 var selID = $(this).val().trim();
                 $("#Id").val(selID);
 
@@ -423,9 +426,33 @@
                     url: '@Url.Action("Preview", "form")?&dataId=' + selID + '&uuid=' + uuid.trim() + '',
                     type: "GET",
                     success: function (result) {
-                        $("#appListPreview").html(result);
+                        $("#appListPreview01").html(result);
                     }
                 });
-        });
+            });
+            $("#appList02").on('keyup change', function() {
+                var selID = $(this).val().trim();
+                $("#Id").val(selID);
+
+                $.ajax({
+                    url: '@Url.Action("Preview", "form")?&dataId=' + selID + '&uuid=' + uuid.trim() + '',
+                    type: "GET",
+                    success: function (result) {
+                        $("#appListPreview02").html(result);
+                    }
+                });
+            });            
+            $("#appList03").on('keyup change', function() {
+                var selID = $(this).val().trim();
+                $("#Id").val(selID);
+
+                $.ajax({
+                    url: '@Url.Action("Preview", "form")?&dataId=' + selID + '&uuid=' + uuid.trim() + '',
+                    type: "GET",
+                    success: function (result) {
+                        $("#appListPreview03").html(result);
+                    }
+                });
+            });
     });
 </script>

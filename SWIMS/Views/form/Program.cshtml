@@ -128,7 +128,7 @@
                 <a asp-action="ProgramExpand" asp-route-uuid="@ViewBag.uuid" type="button" align="end">
                     <iconify-icon icon="cuida:expand-outline" class="text-xl"></iconify-icon>
                 </a>
-                <form asp-action="Create" asp-controller="formTableData">
+                <form asp-action="Create" asp-controller="formTableData" method="post" enctype="multipart/form-data">
                     @Html.Raw(@ViewBag.header)
                     <div id="fb-rendered-form"></div>
                     <input type="hidden" name="SW_formsId" value="@ViewBag.formId" />
