@@ -21,90 +21,94 @@
             </div>
             <div class="card-body">
                 <form asp-action="Create" method="post" enctype="multipart/form-data">
-                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-                        <div class="row mb-24 gy-3 align-items-center">
-                            <label asp-for="name" class="form-label mb-0 col-sm-4">NAME:<span style="color:red;">*</span></label>
-                            <div class="col-sm-10">
-                                <input asp-for="name" class="form-control" placeholder="Enter form Name..." required />
-                                <span asp-validation-for="name" class="text-danger"></span>
-                            </div>
+                    <div class="row mb-24 gy-3 align-items-center">
+                        <label asp-for="name" class="form-label mb-0 col-sm-4">NAME:<span style="color:red;">*</span></label>
+                        <div class="col-sm-10">
+                            <input asp-for="name" class="form-control" placeholder="Enter form Name..." required />
+                            <span asp-validation-for="name" class="text-danger"></span>
                         </div>
+                    </div>
 
-                        <div class="row mb-24 gy-3 align-items-center">
-                            <label asp-for="desc" class="form-label mb-0 col-sm-4">DESC:</label>
-                            <div class="col-sm-10">
-                                <textarea asp-for="desc" class="form-control" rows="4" cols="50" placeholder="Enter form description..."></textarea>
-                                <span asp-validation-for="desc" class="text-danger"></span>
-                            </div>
+                    <div class="row mb-24 gy-3 align-items-center">
+                        <label asp-for="desc" class="form-label mb-0 col-sm-4">DESC:</label>
+                        <div class="col-sm-10">
+                            <textarea asp-for="desc" class="form-control" rows="4" cols="50" placeholder="Enter form description..."></textarea>
+                            <span asp-validation-for="desc" class="text-danger"></span>
                         </div>
+                    </div>
 
-                        <div class="row mb-24 gy-3 align-items-center">
-                            <label asp-for="uuid" class="form-label mb-0 col-sm-4">UUID:</label>
-                            <div class="col-sm-10">
+                    <div class="row mb-24 gy-3 align-items-center">
+                        <label asp-for="uuid" class="form-label mb-0 col-sm-4">UUID:</label>
+                        <div class="col-sm-10">
                             <input asp-for="uuid" class="form-control" readonly placeholder="******" value="@ViewBag.UUID" />
-                                <span asp-validation-for="uuid" class="text-danger"></span>
-                            </div>
+                            <span asp-validation-for="uuid" class="text-danger"></span>
                         </div>
+                    </div>
 
-                        <div class="row mb-24 gy-3 align-items-center">
+                    <div class="row mb-24 gy-3 align-items-center">
                         <label asp-for="form" class="form-label mb-0 col-sm-4">DATA:<span style="color:red;">*</span></label>
-                            <div class="col-sm-10">
-                                <input asp-for="form" class="form-control" readonly placeholder="******" required />
-                                <span asp-validation-for="form" class="text-danger"></span>
-                            </div>
+                        <div class="col-sm-10">
+                            <input asp-for="form" class="form-control" readonly placeholder="******" required />
+                            <span asp-validation-for="form" class="text-danger"></span>
                         </div>
+                    </div>
 
-                        <div class="row mb-24 gy-3 align-items-center">
-                            <label asp-for="SW_identityId" class="form-label mb-0 col-sm-4">LOCATION:</label>
-                            <div class="col-sm-10">
-                                <select asp-for="SW_identityId" class="form-control" asp-items="ViewBag.SW_identityId" readonly></select>
-                            </div>                            
+                    <div class="row mb-24 gy-3 align-items-center">
+                        <label asp-for="SW_identityId" class="form-label mb-0 col-sm-4">LOCATION:</label>
+                        <div class="col-sm-10">
+                            <select asp-for="SW_identityId" class="form-control" asp-items="ViewBag.SW_identityId" readonly></select>
                         </div>
+                    </div>
 
-                        <div class="row mb-24 gy-3 align-items-center">
+                    <div class="row mb-24 gy-3 align-items-center">
                         <label asp-for="image" class="form-label mb-0 col-sm-4">IMAGE:<span style="color:red;">*</span></label>
-                            <div class="col-sm-10">
+                        <div class="col-sm-10">
                             <input asp-for="image" type="file" class="form-control" required />
                             <span asp-validation-for="image" class="text-danger"></span>
-                            </div>
                         </div>
+                    </div>
 
-                        <div class="row mb-24 gy-3 align-items-center">
-                            <label asp-for="header" class="form-label mb-0 col-sm-4">HEADER:</label>
-                            <div class="col-sm-10">
-                                <textarea asp-for="header" id="trumbowyg"></textarea>
-                                <span asp-validation-for="header" class="text-danger"></span>
-                            </div>
+                    <div class="row mb-24 gy-3 align-items-center">
+                        <label asp-for="header" class="form-label mb-0 col-sm-4">HEADER:</label>
+                        <div class="col-sm-10">
+                            <textarea asp-for="header" id="trumbowyg"></textarea>
+                            <span asp-validation-for="header" class="text-danger"></span>
                         </div>
+                    </div>
 
-                        <div class="row mb-24 gy-3 align-items-center">
+                    <div class="row mb-24 gy-3 align-items-center">
+                        <label class="form-label mb-0 col-sm-4">IS FORM LINKING:</label>
+                        <div class="col-sm-10">                           
+                            
+                            <input type="radio" id="is_linking" name="is_linking" value="true">
+                            <label for="is_linking">Yes</label><br />
+
+                            <input type="radio" id="is_linking" name="is_linking" value="false">
+                            <label for="is_linking">No</label><br />
+                            <span asp-validation-for="is_linking" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row mb-24 gy-3 align-items-center">
                         <label asp-for="approvalAmt" class="form-label mb-0 col-sm-4">APPROVAL LEVELS:</label>
                         <div class="col-sm-10">
                             <input asp-for="approvalAmt" type="range" min="0" max="3" value="@ViewBag.appAmt">
-                            <p>Selected Volume: <span id="volumeValue">@ViewBag.appAmt</span></p>
+                            <p>Selected Volume: <span id="volumeValue">0</span></p>
                             <span asp-validation-for="approvalAmt" class="text-danger"></span>
                         </div>
                     </div>
 
 
-@*                         <div class="row mb-24 gy-3 align-items-center">
-                            <label asp-for="is_linking" class="form-label mb-0 col-sm-4">Is form Linking:</label>
-                            <div class="col-sm-10">
-                                <input type="checkbox" asp-for="is_linking" />
-                                <span asp-validation-for="is_linking" class="text-danger"></span>
-                            </div>
-                        </div> *@
-                    
-
-                        <p>created:</p>
-                        <input asp-for="dateModified" type="hidden" type="datetime" value="@ViewBag.datetime" />
-                        <span asp-validation-for="dateModified" class="text-danger"></span>
-                        <input type="submit" value="Submit" id="saveData" class="btn btn-primary" width="100" />
+                    <p>created:</p>
+                    <input asp-for="dateModified" type="hidden" type="datetime" value="@ViewBag.datetime" />
+                    <span asp-validation-for="dateModified" class="text-danger"></span>
+                    <input type="submit" value="Submit" id="saveData" class="btn btn-primary" width="100" />
                 </form>
             </div>
         </div>
-</div>
+    </div>
 </div>
 
 @section Scripts {
@@ -195,7 +199,7 @@
     if (window.volumeSlider && window.volumeValueDisplay) {
       window.volumeSlider.addEventListener('input', function(){
         window.volumeValueDisplay.textContent = this.value;
-      });
+        });
     }
 
     function wireSaveToHiddenJson(formEl, triggerEl, getter) {
@@ -214,7 +218,7 @@
       if (triggerEl) triggerEl.addEventListener('click', pushJson);
       formEl.addEventListener('submit', pushJson);
     }
-  });
+    });
 </script>
 
 

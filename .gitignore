@@ -371,6 +371,8 @@ SWIMS/wwwroot/docs/
 
 /SWIMS.zip
 
+SWIMS/appsettings.json
+
 SWIMS/appsettings.Development.json
 
 /SWIMS/appsettings.Development.local.json

@@ -65,7 +65,8 @@ namespace SWIMS.Controllers
             if (ModelState.IsValid)
             {
                 _context.Add(sW_beneficiary);
-                sW_beneficiary.uuid = GenerateNewUuidAsString();
+                sW_beneficiary.uuid = GenerateNewUuidAsString().Substring(0, 5);
+                sW_beneficiary.name = sW_beneficiary.first_name + " " + sW_beneficiary.last_name;
                 await _context.SaveChangesAsync();
 
                 // Redirect logic for /form/Program quick access buttons
@@ -80,7 +81,7 @@ namespace SWIMS.Controllers
                     return RedirectToAction(nameof(Index));
                 }
             }
-                return View(sW_beneficiary);
+            return View(sW_beneficiary);
         }
 
         // GET: beneficiary/Edit/5

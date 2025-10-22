@@ -63,7 +63,7 @@
     //
     // -----------------------------------------------------------------------------------------------------
     jQuery(function($) {
-             var container = document.getElementById('fb-rendered-form');
+      var container = document.getElementById('fb-rendered-form');
     const __rawServerValue = @Html.Raw(JsonSerializer.Serialize(ViewBag.form ?? "[]"));
 
     function normalizeFormData(raw) {
