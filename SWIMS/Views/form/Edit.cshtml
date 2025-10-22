@@ -175,9 +175,9 @@
     }
 
     var baseOptions = {
-      disabledActionButtons: ['data', 'save'],
+            disabledActionButtons: ['data', 'save'],
       formData: JSON.stringify(initialFormData)
-    };
+        };
 
     var pluginOptions = (window.FBConditionalLogic && FBConditionalLogic.builder)
       ? FBConditionalLogic.builder.withConditionalLogic({
@@ -202,10 +202,10 @@
       saveBtn.addEventListener('click', function () {
         try {
           frm.value = formBuilder.formData;
-          frm.style.backgroundColor = '#59AC77';
+                frm.style.backgroundColor = '#59AC77';
           frm.style.color = 'white';
         } catch (e) { console.error('Edit: set JSON failed', e); }
-      });
+        });
     }
     wireSaveToHiddenJson(formEl, saveBtn, function(){ return formBuilder.formData; });
 
@@ -225,7 +225,7 @@
       if (triggerEl) triggerEl.addEventListener('click', pushJson);
       formEl.addEventListener('submit', pushJson);
     }
-  });
+    });
 </script>
 
 
@@ -261,7 +261,7 @@
       if (!s.__approvalHooked) {
         s.addEventListener('input', function () {
           v.textContent = String(this.value);
-        });
+    });
         s.__approvalHooked = true;     // prevent double-binding if other scripts run
       }
     })();

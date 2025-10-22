@@ -165,6 +165,14 @@
         menu.id = 'chat-people-menu';
         menu.className = 'dropdown-menu show';
         menu.style.position = 'absolute';
+        menu.style.minWidth = '240px';
+        menu.style.maxHeight = '240px';
+        menu.style.overflowY = 'auto';
+        menu.style.background = '#fff';
+        menu.style.border = '1px solid rgba(0,0,0,.15)';
+        menu.style.borderRadius = '0.5rem';
+        menu.style.boxShadow = '0 .5rem 1rem rgba(0,0,0,.15)';
+        menu.style.zIndex = 1055;
         menu.style.display = 'none';
         document.body.appendChild(menu);
 
@@ -188,15 +196,15 @@
             const items = d.items || [];
             if (!items.length) { hide(); return; }
             const html = items.map(u => `
-      <button type="button" class="dropdown-item w-100 text-start" data-login="${esc(u.email || u.username)}">
-        <div class="fw-semibold">${esc(u.firstName && u.lastName ? (u.firstName + ' ' + u.lastName) : (u.username || '(no username)'))}</div>
-        <div class="small text-muted">${esc(u.email || '')}</div>
-      </button>`).join('');
+        <button type="button" class="dropdown-item w-100 text-start" data-login="${esc(u.email || u.username)}">
+          <div class="fw-semibold">${esc(u.firstName && u.lastName ? (u.firstName + ' ' + u.lastName) : (u.username || '(no username)'))}</div>
+          <div class="small text-muted">${esc(u.email || '')}</div>
+        </button>`).join('');
             show(html);
             $$('button.dropdown-item', menu).forEach(b => {
                 b.onclick = async () => {
-                    input.value = b.dataset.login || '';
-                    hide();
+                input.value = b.dataset.login || '';
+                hide();
                     const btnStart = qsAny('#chat-start,[data-chat-start]');
                     if (btnStart) btnStart.click();
                 };
@@ -229,8 +237,8 @@
         if (btnSend && box) {
             btnSend.onclick = sendMessage;
             box.onkeydown = (e) => {
-                if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
-            };
+            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+        };
         }
 
         if (btnStart && inputNew) {

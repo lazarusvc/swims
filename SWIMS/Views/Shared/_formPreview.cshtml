@@ -12,11 +12,11 @@
             if (@inx.field == selector)
             {
                 // form input field = text
-                // 
-                if (@inx.type == "text") 
+                //
+                if (@inx.type == "text")
                 {
                     htmlScript += "$('input[name=" + selector + "]').val('" + collection + "').attr('readonly', 'true');";
-                } 
+                }
 
                 // form select field
                 //
@@ -28,7 +28,7 @@
 
                 // form checkbox field
                 //
-                else if (@inx.type == "radio-group") 
+                else if (@inx.type == "radio-group")
                 {
                     htmlScript += "$('input[name=" + selector + "]').prop('checked', " + collection + ");";
                     // default field
@@ -38,7 +38,7 @@
                     htmlScript += "$('input[name=" + selector + "]').val('" + collection + "').attr('readonly', 'true');";
                 }
 
-            }                        
+            }
         }
     }
 }

@@ -520,7 +520,6 @@ public partial class SW_formTableDatum
     public int? isApproval_02 { get; set; }
     public int? isApproval_03 { get; set; }
 
-
     public string isAppComment_01 { get; set; }
 
     public string isAppComment_02 { get; set; }
