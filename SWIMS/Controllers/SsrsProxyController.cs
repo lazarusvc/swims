@@ -9,7 +9,7 @@ using SWIMS.Services.Reporting;
 namespace SWIMS.Controllers
 {
     [ApiController]
-    [AllowAnonymous]
+    [Authorize(Policy = "ReportsView")]
     [Route("ssrs")]
     public class SsrsProxyController : ControllerBase
     {
