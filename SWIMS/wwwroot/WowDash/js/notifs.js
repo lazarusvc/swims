@@ -4,11 +4,16 @@
         if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fn);
         else fn();
     };
-
     const api = (p) => (window.__appBasePath || '') + (p.startsWith('/') ? p : '/' + p);
 
-
     onReady(() => {
+        if (window.__swims_notifs_started) return;
+        window.__swims_notifs_started = true;
+
+        // If not signed in, do nothing (prevents 401 + useless work)
+        const meMeta = document.querySelector('meta[name="swims-user-id"]');
+        if (!meMeta || !meMeta.content) return;
+
         // Elements
         const bell = document.getElementById('notif-bell');
         const menu = document.getElementById('notif-dropdown');
@@ -18,16 +23,14 @@
         const btnAll = document.getElementById('notif-mark-all');
         const btnMore = document.getElementById('notif-load-more');
 
-        if (!bell || !menu || !list || !badge) return; // not on this page/layout
+        if (!bell || !menu || !list || !badge) return; // not on this layout
 
         // State
         let skip = 0, take = 10, total = 0, items = [], loading = false;
 
         // Utils
         const parseJSON = (s, fallback = {}) => { try { return s ? JSON.parse(s) : fallback; } catch { return fallback; } };
-        const fmtTime = (iso) => {
-            try { return new Date(iso).toLocaleString(); } catch { return iso || ''; }
-        };
+        const fmtTime = (iso) => { try { return new Date(iso).toLocaleString(); } catch { return iso || ''; } };
         const setBadge = (count) => {
             if (count > 0) {
                 badge.textContent = String(count);
@@ -38,12 +41,9 @@
             if (badgeH) badgeH.textContent = String(count || 0);
         };
 
-        
         const liHtml = (n) => {
             const payload = parseJSON(n.payloadJson);
             const seenClass = n.seen ? 'opacity-75' : 'bg-neutral-50';
-
-            // per-type renderer
             let title = n.type;
             let subtitle = fmtTime(n.createdUtc);
             let href = null;
@@ -65,15 +65,12 @@
                     icon = { bg: 'bg-success-subtle', fg: 'text-success-main', name: 'bitcoin-icons:verify-outline' };
                     break;
                 }
-                // add more cases as you introduce new types…
                 default: {
-                    // generic: show payload.message if present
                     title = payload.message || title;
                     subtitle = fmtTime(n.createdUtc);
                 }
             }
 
-            // clickable li: store href for the click handler
             return `
 <li data-id="${n.id}" ${href ? `data-href="${href}"` : ''}>
   <a href="javascript:void(0)"
@@ -90,7 +87,6 @@
   </a>
 </li>`;
         };
-
 
         const render = () => {
             list.innerHTML = items.map(liHtml).join('');
@@ -111,7 +107,6 @@
                 items = items.concat(newItems);
                 render();
             } catch (e) {
-                // eslint-disable-next-line no-console
                 console.warn('[notifs] load failed:', e);
             } finally {
                 loading = false;
@@ -125,25 +120,21 @@
                 const data = await r.json();
                 setBadge(Number(data.count || 0));
             } catch {
-                // fallback: compute from current items (approximate)
                 const c = items.reduce((acc, n) => acc + (n.seen ? 0 : 1), 0);
                 setBadge(c);
             }
         };
 
-        // --- Bootstrap dropdown events ---
-        // Load when dropdown is shown
+        // Dropdown events
         bell.addEventListener('shown.bs.dropdown', async () => {
             await load(false);
             await refreshCount();
         });
-
-        // Optional: refresh count when dropdown hides
         bell.addEventListener('hidden.bs.dropdown', async () => {
             await refreshCount();
         });
 
-        // Mark all as read
+        // Mark all
         btnAll && btnAll.addEventListener('click', async () => {
             try {
                 await fetch(api('/api/v1/me/notifications/seen-all'), { method: 'POST', credentials: 'same-origin' });
@@ -155,10 +146,10 @@
             }
         });
 
-        // Load more
+        // More
         btnMore && btnMore.addEventListener('click', () => load(true));
 
-        // Mark one on click (event delegation)
+        // Click one
         list.addEventListener('click', async (e) => {
             const li = e.target.closest('li[data-id]');
             if (!li) return;
@@ -179,7 +170,7 @@
             if (href) window.location.href = href;
         });
 
-        // --- SignalR live updates ---
+        // SignalR live
         if (window.signalR) {
             const conn = new signalR.HubConnectionBuilder()
                 .withUrl(api('/hubs/notifs'), { withCredentials: true })
@@ -187,13 +178,11 @@
                 .build();
 
             conn.on('notif', async (n) => {
-                // Normalize and prepend
                 items.unshift({
                     id: n.id, type: n.type, payloadJson: n.payloadJson,
                     createdUtc: n.createdUtc, seen: false
                 });
                 render();
-                // bump badge
                 await refreshCount();
             });
 

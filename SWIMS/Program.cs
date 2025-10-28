@@ -333,7 +333,11 @@ if (!string.IsNullOrWhiteSpace(pathBaseToUse))
 // Honor common reverse-proxy headers (scheme/host/client IP)
 app.UseForwardedHeaders(new ForwardedHeadersOptions
 {
-    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto,
+    // Accept from any proxy (or explicitly set KnownProxies/KnownNetworks)
+    RequireHeaderSymmetry = false,
+    ForwardLimit = null
+    // KnownProxies = { IPAddress.Parse("YOUR_PROXY_IP") }   // optional stricter config
 });
 
 // Honor X-Forwarded-Prefix if your proxy sets it (e.g., /swims)

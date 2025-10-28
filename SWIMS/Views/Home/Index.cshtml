@@ -77,7 +77,7 @@
         <div class="col-lg-6">
             <div class="card radius-12 overflow-hidden h-100 d-flex align-items-center flex-nowrap flex-row">
                 <div class="d-flex flex-shrink-0 w-170-px h-100">
-                    <img src="~/uploads/@inx.image" class="h-100 w-100 object-fit-cover" alt="" />
+                    <img src="@Url.Content($"~/uploads/@inx.image")" class="h-100 w-100 object-fit-cover" loading="lazy" alt="" />
                 </div>
                 <div class="card-body p-16 flex-grow-1">
                     <h5 class="card-title text-lg text-primary-light mb-6">@inx.name</h5>
