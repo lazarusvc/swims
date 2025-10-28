@@ -38,12 +38,16 @@
     <script>
         if ('serviceWorker' in navigator) {
           window.addEventListener('load', () => {
-            navigator.serviceWorker.register('/sw.js', { scope: '/' })
-              .then(reg => console.log('SW registered', reg.scope))
-              .catch(err => console.error('SW registration failed', err));
+            const base = (window.__appBasePath || '');
+            const swUrl = `${base}/sw.js`;
+            const scope = `${base}/`;
+            navigator.serviceWorker.register(swUrl, { scope })
+              .then(reg => console.log('[SW] registered:', reg.scope))
+              .catch(err => console.error('[SW] registration failed:', err));
           });
         }
     </script>
+
 
     @if (User?.Identity?.IsAuthenticated ?? false)
     {

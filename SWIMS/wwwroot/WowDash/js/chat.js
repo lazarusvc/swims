@@ -1,9 +1,14 @@
 ﻿(() => {
+    if (window.__swims_chats_started) return;
+
+    // Only run on pages that actually have the chat UI
+    const chatRoot = document.getElementById('chat-convos');
+    if (!chatRoot) return;
+    window.__swims_chats_started = true;
+
     const $ = (s, r = document) => r.querySelector(s);
     const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
-
     const api = (p) => (window.__appBasePath || '') + (p.startsWith('/') ? p : '/' + p);
-
 
     const qsAny = (selectors) => {
         for (const s of selectors.split(',')) {
@@ -13,27 +18,34 @@
         return null;
     };
 
-
-
     const state = { me: null, convoId: null, messages: [], hub: null, peers: {} };
 
     async function fetchJson(url, opts = {}) {
-        const r = await fetch(url, Object.assign({ credentials: 'same-origin' }, opts));
+        const r = await fetch(url, {
+            credentials: 'same-origin',
+            headers: { 'Accept': 'application/json', ...(opts.headers || {}) },
+            ...opts
+        });
         if (!r.ok) {
             let msg; try { msg = await r.json(); } catch { msg = await r.text(); }
             const text = (msg && msg.error) ? msg.error : (typeof msg === 'string' ? msg : `HTTP ${r.status}`);
             throw new Error(text);
         }
+        const ct = (r.headers.get('content-type') || '').toLowerCase();
+        if (!ct.includes('application/json')) throw new Error('Unexpected content type from server.');
         return r.json();
     }
+
     const esc = (s) => (s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     const debounce = (fn, ms = 200) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
 
     // ---------- render ----------
     function setHeader(convoId) {
         const peer = state.peers[convoId] || null;
-        $('#chat-peer-name').textContent = peer ? (peer.displayName || '(unknown)') : 'Select a conversation';
-        $('#chat-peer-sub').textContent = peer && peer.email ? `${peer.email}` : '';
+        const nameEl = $('#chat-peer-name');
+        const subEl = $('#chat-peer-sub');
+        if (nameEl) nameEl.textContent = peer ? (peer.displayName || '(unknown)') : 'Select a conversation';
+        if (subEl) subEl.textContent = (peer && peer.email) ? `${peer.email}` : '';
     }
 
     function renderConvos(d) {
@@ -78,7 +90,6 @@
                        <div class="meta">${new Date(m.createdUtc).toLocaleString()}</div></div>`;
             pane.appendChild(div);
         }
-        // keep scroll inside the thread (fixed height)
         pane.scrollTop = pane.scrollHeight;
     }
 
@@ -91,10 +102,10 @@
 
     async function openConvo(id) {
         state.convoId = id;
-        setHeader(id);                       // set header based on peers map
+        setHeader(id);
 
         await ensureHub();
-        try { await state.hub.invoke('Join', id); } catch { }
+        try { await state.hub.invoke('Join', id); } catch { /* no-op */ }
         const d = await fetchJson(api(`/api/v1/me/chats/${id}/messages?take=50`));
         state.messages = d.items || [];
         renderMessages(state.messages);
@@ -104,7 +115,6 @@
     async function startWithLogin(login) {
         const data = await fetchJson(api(`/api/v1/me/chats/start/login?login=${encodeURIComponent(login)}`), { method: 'POST' });
         await openConvo(data.id);
-        // refresh list to populate peers map (in case it was a brand new convo)
         await loadConvos();
         setHeader(data.id);
     }
@@ -139,7 +149,7 @@
             return;
         }
         state.hub = new signalR.HubConnectionBuilder()
-            .withUrl(api('/hubs/chats'))
+            .withUrl(api('/hubs/chats'), { withCredentials: true })
             .withAutomaticReconnect()
             .build();
 
@@ -159,7 +169,7 @@
     // ---------- typeahead ----------
     function attachTypeahead() {
         const input = qsAny('#chat-start-login,#chat-start-user,#chat-start-email,[data-chat-start-input]');
-        if (!input) return; // no start box on this page layout
+        if (!input) return;
 
         const menu = document.createElement('div');
         menu.id = 'chat-people-menu';
@@ -203,8 +213,8 @@
             show(html);
             $$('button.dropdown-item', menu).forEach(b => {
                 b.onclick = async () => {
-                input.value = b.dataset.login || '';
-                hide();
+                    input.value = b.dataset.login || '';
+                    hide();
                     const btnStart = qsAny('#chat-start,[data-chat-start]');
                     if (btnStart) btnStart.click();
                 };
@@ -221,7 +231,6 @@
         });
     }
 
-
     // ---------- boot ----------
     function initMe() {
         const me = document.querySelector('meta[name="swims-user-id"]')?.content;
@@ -237,8 +246,8 @@
         if (btnSend && box) {
             btnSend.onclick = sendMessage;
             box.onkeydown = (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
-        };
+                if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+            };
         }
 
         if (btnStart && inputNew) {
@@ -251,7 +260,6 @@
             inputNew.onkeydown = (e) => { if (e.key === 'Enter') { e.preventDefault(); btnStart.click(); } };
         }
     }
-
 
     async function main() {
         initMe();
