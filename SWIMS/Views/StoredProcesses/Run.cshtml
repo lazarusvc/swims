@@ -12,6 +12,11 @@
 <form asp-action="Run" method="post">
     @Html.AntiForgeryToken()
 
+    <input type="hidden" name="uid" value="@Context.Request.Query["uid"]" />
+
+    <input type="hidden" name="formId" value="@Context.Request.Query["formId"]" />
+    <input type="hidden" name="orgId" value="@Context.Request.Query["orgId"]" />  @* optional *@
+
     <table class="table table-sm">
         <thead><tr><th>Parameter</th><th>Type</th><th>Value</th></tr></thead>
         <tbody>

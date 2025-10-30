@@ -53,10 +53,10 @@ namespace SWIMS.Controllers
                 ViewBag.LK = 1;
             }
 
-            ViewBag.processes = _context.SW_formProcesses
+            ViewBag.processes = await _context.SW_formProcesses
                 .Where(c => c.SW_formsId == formId)
-                .Select(c => new SelectListItem() { Text = c.url, Value = c.url })
-                .ToList();
+                .Select(c => new { c.name, c.url })      // anonymous with only what the view needs
+                .ToListAsync();
 
             ViewBag.entries = _context.SW_formTableData.Where(c => c.SW_formsId == formId).Count();
             ViewBag.entries_pending = _context.SW_formTableData.Where(
