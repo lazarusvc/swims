@@ -9,12 +9,16 @@
     <div class="d-flex align-items-center">
         @if (hasRows && Model.ProcessId > 0)
         {
-            <a class="btn btn-outline-primary me-2"
-               asp-action="Export"
+            <a class="btn btn-outline-primary me-2" asp-action="Export"
                asp-route-id="@Model.ProcessId"
-               asp-route-format="csv">
+               asp-route-format="csv"
+               asp-route-uid="@ViewBag.uid"
+               asp-route-formId="@(ViewBag.formId ?? "")"
+               asp-route-orgId="@(ViewBag.orgId ?? "")"
+               class="btn btn-sm btn-primary">
                 Export CSV
             </a>
+
         }
         <a class="btn btn-outline-secondary" asp-action="Index">Back</a>
     </div>

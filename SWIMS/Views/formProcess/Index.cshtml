@@ -12,6 +12,7 @@
 <table class="table bordered-table mb-0" id="dataTable" data-page-length='10'>
     <thead>
         <tr>
+            <th>Label</th>
             <th scope="col">
                 @Html.DisplayNameFor(model => model.url)
             </th>
@@ -24,6 +25,7 @@
     <tbody>
 @foreach (var item in Model) {
         <tr>
+            <td>@item.name</td>
             <td>
                 @Html.DisplayFor(modelItem => item.url)
             </td>

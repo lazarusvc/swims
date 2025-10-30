@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using System.Text.RegularExpressions;
 using SWIMS.Data;
 using SWIMS.Models;
 using System;
@@ -14,6 +15,13 @@ namespace SWIMS.Controllers
     {
         private readonly SwimsDb_moreContext _context;
         private readonly SwimsStoredProcsDbContext _context_sp;
+
+        private static int? TryExtractProcIdFromRunUrl(string? url)
+        {
+            if (string.IsNullOrWhiteSpace(url)) return null;
+            var m = Regex.Match(url, @"/StoredProcesses/Run/(\d+)", RegexOptions.IgnoreCase);
+            return m.Success ? int.Parse(m.Groups[1].Value) : (int?)null;
+        }
 
         public formProcessController(SwimsDb_moreContext context, SwimsStoredProcsDbContext sp)
         {
@@ -49,22 +57,41 @@ namespace SWIMS.Controllers
         public IActionResult Create()
         {
             ViewBag.processes = _context_sp.StoredProcesses
-            .Select(c => new SelectListItem() { Text = c.Name, Value = "../StoredProcesses/Run/" + Convert.ToString(c.Id) })
-            .ToList();
+                .Select(c => new SelectListItem()
+                {
+                    Text = c.Name,
+                    Value = "../StoredProcesses/Run/" + Convert.ToString(c.Id)
+                })
+                .ToList();
 
             ViewData["SW_formsId"] = new SelectList(_context.SW_forms, "Id", "name");
             return View();
         }
 
         // POST: formProcess/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,url,name,SW_formsId")] SW_formProcess sW_formProcess)
         {
             if (ModelState.IsValid)
             {
+                // --- Auto-fill name from Stored Procedure when blank ---
+                if (string.IsNullOrWhiteSpace(sW_formProcess.name))
+                {
+                    var procId = TryExtractProcIdFromRunUrl(sW_formProcess.url);
+                    if (procId.HasValue)
+                    {
+                        var spName = await _context_sp.StoredProcesses
+                            .Where(x => x.Id == procId.Value)
+                            .Select(x => x.Name)
+                            .FirstOrDefaultAsync();
+
+                        if (!string.IsNullOrWhiteSpace(spName))
+                            sW_formProcess.name = spName;
+                    }
+                }
+                // -------------------------------------------------------
+
                 _context.Add(sW_formProcess);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -89,8 +116,6 @@ namespace SWIMS.Controllers
         }
 
         // POST: formProcess/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,url,name,SW_formsId")] SW_formProcess sW_formProcess)
@@ -104,6 +129,23 @@ namespace SWIMS.Controllers
             {
                 try
                 {
+                    // --- Auto-fill name from Stored Procedure when blank (on edit too) ---
+                    if (string.IsNullOrWhiteSpace(sW_formProcess.name))
+                    {
+                        var procId = TryExtractProcIdFromRunUrl(sW_formProcess.url);
+                        if (procId.HasValue)
+                        {
+                            var spName = await _context_sp.StoredProcesses
+                                .Where(x => x.Id == procId.Value)
+                                .Select(x => x.Name)
+                                .FirstOrDefaultAsync();
+
+                            if (!string.IsNullOrWhiteSpace(spName))
+                                sW_formProcess.name = spName;
+                        }
+                    }
+                    // ---------------------------------------------------------------------
+
                     _context.Update(sW_formProcess);
                     await _context.SaveChangesAsync();
                 }

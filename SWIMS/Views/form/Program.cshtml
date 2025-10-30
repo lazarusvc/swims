@@ -14,6 +14,8 @@
 @{
     ViewData["Title"] = "Program - " + @ViewBag.formName;
     ViewData["UID"] = @ViewBag.uuid;
+
+    var uid = ViewData["UID"];
 }
 @model FormTableViewModel
 
@@ -167,13 +169,27 @@
             <div class="card-body">
                 <ul class="list-group radius-8">
                 @foreach (var inx in ViewBag.processes)
-                {                
+                    {
+                        // Handle both shapes you've been using:
+                        // 1) SelectListItem (Text/Value)
+                        // 2) SW_formProcess (name/url)
+                        var s = inx as Microsoft.AspNetCore.Mvc.Rendering.SelectListItem;
+
+                        var raw = s != null ? (s.Value ?? "#")
+                        : (inx?.url as string) ?? "#";
+
+                        var label = s != null ? (s.Text ?? "Run")
+                        : ((inx?.name as string) ?? "Run");
+
+                        var sep = raw?.Contains("?") == true ? "&" : "?";
+                        var url = $"{raw}{sep}uid={uid}";
+
                     <li class="list-group-item d-flex align-items-center justify-content-between border text-secondary-light p-16 bg-base border-bottom-0">
                         <div class="d-flex align-items-center gap-2">
                             <span class="d-flex">
                                 <iconify-icon icon="mynaui:cart-check" class="text-xl"></iconify-icon>
                             </span>
-                                <a href="@inx.Value">@inx.Value</a>
+                                <a href="@url" target="_blank" rel="noopener">@label</a>
                         </div>
                         <span class="text-xs bg-success-100 text-success-600 radius-4 px-10 py-2 fw-semibold">RUN</span>
                     </li>                
