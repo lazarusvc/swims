@@ -242,10 +242,12 @@ builder.Services.AddHttpClient("ssrs-proxy", c =>
     UseDefaultCredentials = true,
     PreAuthenticate = true,
     AllowAutoRedirect = false,
-    UseCookies = true,                              // <— important: SSRS may set cookies
+    AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate | DecompressionMethods.Brotli,
+    UseCookies = true,
     CookieContainer = new CookieContainer(),
     UseProxy = false
 });
+
 
 // Emailing (SMTP + templates)
 builder.Services.AddSwimsEmailing(builder.Configuration);
