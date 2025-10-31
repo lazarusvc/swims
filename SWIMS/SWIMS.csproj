@@ -1,0 +1,90 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+
+	  <!-- Enable XML documentation file generation for DocFX metadata -->
+	  <GenerateDocumentationFile>true</GenerateDocumentationFile>
+	  <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
+	  <!-- Suppress warning about missing XML comments, if desired -->
+	  <NoWarn>$(NoWarn);1591</NoWarn>
+
+	  <!-- Toggle this to "false" to skip doc generation -->
+	  <DocFxBuildEnabled Condition="'$(DocFxBuildEnabled)'==''">false</DocFxBuildEnabled>
+	  
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Model_Designer\**" />
+    <Content Remove="Model_Designer\**" />
+    <EmbeddedResource Remove="Model_Designer\**" />
+    <None Remove="Model_Designer\**" />
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <PackageReference Include="Azure.Identity" Version="1.16.0" />
+    <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
+    <PackageReference Include="Handlebars.Net" Version="2.1.6" />
+    <PackageReference Include="Hangfire.AspNetCore" Version="1.8.21" />
+    <PackageReference Include="Hangfire.Console" Version="1.4.3" />
+    <PackageReference Include="Hangfire.SqlServer" Version="1.8.21" />
+    <PackageReference Include="Lib.AspNetCore.WebPush" Version="2.2.2" />
+    <PackageReference Include="Lib.Net.Http.WebPush" Version="3.3.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.10" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.8" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.8" />
+	  <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.10" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.9">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="9.0.8" />
+    <PackageReference Include="Microsoft.Graph" Version="5.93.0" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="9.0.0" />
+
+	  <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.*" />
+	  <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="9.0.*" />
+	  <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.0" />
+	  <PackageReference Include="QRCoder" Version="1.6.0" />
+	  <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
+	  <PackageReference Include="Serilog.Enrichers.Environment" Version="3.0.1" />
+	  <PackageReference Include="Serilog.Enrichers.Process" Version="3.0.0" />
+	  <PackageReference Include="Serilog.Enrichers.Thread" Version="4.0.0" />
+	  <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
+	  <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
+	  <PackageReference Include="Swashbuckle.AspNetCore" Version="6.9.0" />
+	  <PackageReference Include="System.DirectoryServices.Protocols" Version="9.0.8" />
+  </ItemGroup>
+
+	<ItemGroup>
+	  <None Include="efpt.config.json.user" />
+	</ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\uploads\" />
+  </ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="wwwroot\docs\" />
+	  <Folder Include="wwwroot\lib\signalr\" />
+	</ItemGroup>
+
+	<!-- Auto-generate DocFX site after each build -->
+	<Target Name="GenerateDocFX" AfterTargets="Build" Condition="'$(DocFxBuildEnabled)'=='true'">
+		<!-- restore local tools -->
+		<Exec WorkingDirectory="$(ProjectDir)wwwroot\docfx" Command="dotnet tool restore" />
+
+		<!-- generate metadata -->
+		<Exec WorkingDirectory="$(ProjectDir)wwwroot\docfx" Command="dotnet tool run docfx metadata --logLevel verbose" />
+
+		<!-- build the site -->
+		<Exec WorkingDirectory="$(ProjectDir)wwwroot\docfx" Command="dotnet tool run docfx build --logLevel verbose" />
+	</Target>
+	<ProjectExtensions><VisualStudio><UserProperties appsettings_1development_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>
+
+
+
+</Project>

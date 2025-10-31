@@ -1,0 +1,291 @@
+﻿@*
+    WowDash - ASP.Net Core 8 & Bootstrap Admin Dashboard Multipurpose Template design by Parv Infotech
+*@
+
+@using Microsoft.AspNetCore.Identity
+@using SWIMS.Models
+
+@using Microsoft.AspNetCore.Authorization
+@inject IAuthorizationService Authz
+
+@inject SignInManager<SwUser> SignInManager
+@inject UserManager<SwUser> UserManager
+@inject RoleManager<SwRole> RoleManager
+
+
+<aside class="sidebar">
+    <button type="button" class="sidebar-close-btn">
+        <iconify-icon icon="radix-icons:cross-2"></iconify-icon>
+    </button>
+    <div>
+        <a asp-area="" asp-controller="Home" asp-action="Index" class="sidebar-logo">
+            <img src="~/WowDash/images/logo.svg" alt="site logo" class="light-logo">
+            <img src="~/WowDash/images/logo-light.svg" alt="site logo" class="dark-logo">
+            <img src="~/WowDash/images/logo-icon.png" alt="site logo" class="logo-icon">
+        </a>
+    </div>
+    <div class="sidebar-menu-area">
+        <ul class="sidebar-menu" id="sidebar-menu">
+
+            <!-- DASHBOARD ----------------------------------------------------------- -->
+            <li class="dropdown">
+                <a href="javascript:void(0)">
+                    <iconify-icon icon="solar:layers-minimalistic-broken" class="menu-icon"></iconify-icon>
+                    <span>Dashboard</span>
+                </a>
+                <ul class="sidebar-submenu">
+                    <li>
+                        <a asp-area="" asp-controller="Home" asp-action="Index">
+                            <iconify-icon icon="tabler:home" class="menu-icon"></iconify-icon> Home
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-area="" asp-controller="Reports" asp-action="Index">
+                            <iconify-icon icon="mdi:file-chart-outline" class="menu-icon"></iconify-icon>
+                            Reports
+                        </a>
+                    </li>
+                </ul>
+            </li>
+
+            @if (SignInManager.IsSignedIn(User))
+            {
+                <li>
+                    <a asp-area="Portal" asp-page="/Messenger/Chat">
+                        <iconify-icon icon="bi:chat-dots" class="menu-icon"></iconify-icon>
+                        <span>Messenger</span>
+                    </a>
+                </li>
+            }
+
+
+            @if (SignInManager.IsSignedIn(User) && User.IsInRole("Admin"))
+            {
+                <!-- USERS ----------------------------------------------------------- -->
+                <li class="dropdown">
+                    <a href="javascript:void(0)">
+                        <iconify-icon icon="flowbite:users-group-outline" class="menu-icon"></iconify-icon>
+                        <span>Users</span>
+                    </a>
+                    <ul class="sidebar-submenu">
+                        <li>
+                            <a asp-area="" asp-controller="Users" asp-action="Index">
+                                <iconify-icon icon="tabler:users" class="menu-icon"></iconify-icon> Users List
+                            </a>
+                        </li>
+                        <li>
+                            <a asp-area="" asp-controller="Users" asp-action="Create">
+                                <iconify-icon icon="tabler:user-plus" class="menu-icon"></iconify-icon> Add User
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <!-- ROLE & ACCESS ------------------------------------------------------ -->
+                <li class="dropdown">
+                    <a href="javascript:void(0)">
+                        <i class="ri-user-settings-line text-xl me-6 d-flex w-auto"></i>
+                        <span>Role & Access</span>
+                    </a>
+                    <ul class="sidebar-submenu">
+                        <li>
+                            <a asp-area="" asp-controller="Roles" asp-action="Index">
+                                <iconify-icon icon="tabler:shield-lock" class="menu-icon"></iconify-icon> Roles
+                            </a>
+                        </li>
+                        <li>
+                            <a asp-area="" asp-controller="roles" asp-action="Create"><i class="ri-circle-fill circle-icon text-warning-main w-auto"></i> Add Role</a>
+                        </li>
+                    </ul>
+                </li>
+
+                <!-- DEV & OPS ----------------------------------------------------------- -->
+                <li class="dropdown">
+                    <a href="javascript:void(0)">
+                        <iconify-icon icon="tabler:tools" class="menu-icon"></iconify-icon>
+                        <span>Dev &amp; Ops</span>
+                    </a>
+                    <ul class="sidebar-submenu">
+                        <li>
+                            <a asp-area="Portal" asp-controller="Logs" asp-action="Audit">
+                                <iconify-icon icon="mdi:file-search-outline" class="menu-icon"></iconify-icon> Audit Log
+                            </a>
+                        </li>
+                        <li>
+                            <a asp-area="Portal" asp-controller="Logs" asp-action="Sessions">
+                                <iconify-icon icon="tabler:timeline" class="menu-icon"></iconify-icon> Session Log
+                            </a>
+                        </li>
+                        <li>
+                            <a asp-area="Portal" asp-controller="Notifications" asp-action="Prefs">
+                                <iconify-icon icon="mdi:bell-cog-outline" class="menu-icon"></iconify-icon> Notification Prefs
+                            </a>
+                        </li>
+                        <li>
+                            <a href="@Url.Content("~/ops/hangfire")" rel="nofollow" target="_blank">
+                                <iconify-icon icon="tabler:flame" class="menu-icon"></iconify-icon> Hangfire Dashboard
+                            </a>
+                        </li>
+                        <li>
+                            <a asp-area="Admin" asp-controller="Api" asp-action="Dashboard">
+                                <iconify-icon icon="mdi:api" class="menu-icon"></iconify-icon>
+                                <span>API Dashboard</span>
+                            </a>
+                        </li>
+
+
+                    </ul>
+                </li>
+
+            }
+
+            <!-- PAGE ACCESS ----------------------------------------------------------- -->
+            <li class="dropdown">
+                <a href="javascript:void(0)">
+                    <iconify-icon icon="solar:widget-4-outline" class="menu-icon"></iconify-icon>
+                    <span>Page Access</span>
+                </a>
+                <ul class="sidebar-submenu">
+                    <li>
+                        <a asp-area="Admin" asp-controller="AuthorizationPolicies" asp-action="Index">
+                            <iconify-icon icon="tabler:shield-check" class="menu-icon"></iconify-icon> Authorization Policies
+                        </a>
+                    </li>
+
+                    <li>
+                        <a asp-area="Admin" asp-controller="RouteInspector" asp-action="Index">
+                            <iconify-icon icon="tabler:route" class="menu-icon"></iconify-icon> Route Inspector
+                        </a>
+                    </li>
+
+                    <li>
+                        <a asp-area="Admin" asp-controller="PublicEndpoints" asp-action="Index">
+                            <iconify-icon icon="tabler:world" class="menu-icon"></iconify-icon> Public Access
+                        </a>
+                    </li>
+
+                    <li>
+                        <a asp-area="Admin" asp-controller="EndpointPolicies" asp-action="Index">
+                            <iconify-icon icon="mdi:shield-key-outline" class="menu-icon"></iconify-icon> Endpoint Policies
+                        </a>
+                    </li>
+
+                </ul>
+            </li>
+
+            <!-- PROCESSSES ----------------------------------------------------------- -->
+            <li class="dropdown">
+                <a href="javascript:void(0)">
+                    <iconify-icon icon="solar:code-square-broken" class="menu-icon"></iconify-icon>
+                    <span>Processes</span>
+                </a>
+                <ul class="sidebar-submenu">
+                    <li>
+                        <a asp-area="" asp-controller="StoredProcesses" asp-action="Index">
+                            <iconify-icon icon="mdi:play-circle-outline" class="menu-icon"></iconify-icon> Run SPs
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-area="" asp-controller="StoredProcessesAdmin" asp-action="Index">
+                            <iconify-icon icon="tabler:database-cog" class="menu-icon"></iconify-icon> SP Management
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-area="" asp-controller="StoredProcessParams" asp-action="Index">
+                            <iconify-icon icon="tabler:adjustments" class="menu-icon"></iconify-icon> SP Parameters
+                        </a>
+                    </li>
+                </ul>
+            </li>
+
+            <!-- ADMINISTRATOR & SETTINGS ---------------------------------------------- -->
+            <li class="dropdown">
+                <a href="javascript:void(0)">
+                    <iconify-icon icon="solar:palette-round-outline" class="menu-icon"></iconify-icon>
+                    <span>Administration & Settings</span>
+                </a>
+                <ul class="sidebar-submenu">
+                    <li>
+                        <a asp-area="" asp-controller="identity" asp-action="Index">
+                            <iconify-icon icon="tabler:id" class="menu-icon"></iconify-icon> Site Identity
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-area="" asp-controller="form" asp-action="Index">
+                            <iconify-icon icon="mdi:form-select" class="menu-icon"></iconify-icon> Form Management
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-area="" asp-controller="beneficiary" asp-action="Index">
+                            <iconify-icon icon="mdi:handshake" class="menu-icon"></iconify-icon> Beneficiaries
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-area="" asp-controller="city" asp-action="Index">
+                            <iconify-icon icon="tabler:building-skyscraper" class="menu-icon"></iconify-icon> Cities
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-area="" asp-controller="organization" asp-action="Index">
+                            <iconify-icon icon="tabler:building-community" class="menu-icon"></iconify-icon> Organizations
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-area="" asp-controller="financial_institution" asp-action="Index">
+                            <iconify-icon icon="tabler:building-bank" class="menu-icon"></iconify-icon> Financial Institutions
+                        </a>
+                    </li>
+
+                    <li>
+                        <a asp-area="Admin" asp-controller="ReportsAdmin" asp-action="Index">
+                            <iconify-icon icon="mdi:file-chart-outline" class="menu-icon"></iconify-icon>
+                            <span>Report Management</span>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+
+            <!-- AUTHENTICATION --------------------------------------------------------- -->
+            <li class="dropdown">
+                <a href="javascript:void(0)">
+                    <iconify-icon icon="solar:shield-user-outline" class="menu-icon"></iconify-icon>
+                    <span>Authentication</span>
+                </a>
+                <ul class="sidebar-submenu">
+                    <li>
+                        <a asp-area="Identity" asp-page="/Account/Login">
+                            <iconify-icon icon="tabler:login" class="menu-icon"></iconify-icon> Sign In
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-area="Identity" asp-page="/Account/Register">
+                            <iconify-icon icon="tabler:user-plus" class="menu-icon"></iconify-icon> Sign Up
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-area="Identity" asp-page="/Account/ForgotPassword">
+                            <iconify-icon icon="tabler:key" class="menu-icon"></iconify-icon> Forgot Password
+                        </a>
+                    </li>
+                </ul>
+            </li>
+
+            
+            
+            @if (SignInManager.IsSignedIn(User))
+            {
+                <li>
+                    <a asp-area="Identity" asp-page="/Account/Manage/Index"><i class="ri-user-settings-line text-xl me-6 d-flex w-auto"></i> View Profile</a>
+                </li>
+
+                <li>
+                    <a asp-area="Identity" asp-page="/Account/Logout">
+                        <iconify-icon icon="lucide:power" class="menu-icon"></iconify-icon>
+                        <span>Log Out</span>
+                    </a>
+                </li>
+            }
+            
+        </ul>
+    </div>
+</aside>

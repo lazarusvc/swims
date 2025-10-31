@@ -1,0 +1,27 @@
+﻿@model IEnumerable<SWIMS.Models.Reports.SwReportParam>
+@{
+    var rpt = (SWIMS.Models.Reports.SwReport)ViewBag.Report;
+    ViewData["Title"] = "Parameters: " + (rpt.Desc ?? rpt.Name);
+}
+<h2>@ViewData["Title"]</h2>
+<p><a class="btn btn-primary" asp-action="Create" asp-route-reportId="@rpt.Id">New Parameter</a></p>
+<table class="table table-sm">
+    <thead><tr><th>Key</th><th>Value</th><th>Type</th><th></th></tr></thead>
+    <tbody>
+        @foreach (var p in Model)
+        {
+            <tr>
+                <td>@p.ParamKey</td>
+                <td>@p.ParamValue</td>
+                <td>@p.ParamDataType</td>
+                <td class="text-end">
+                    <a class="btn btn-sm btn-outline-secondary" asp-action="Edit" asp-route-id="@p.Id">Edit</a>
+                    <form asp-action="Delete" asp-route-id="@p.Id" method="post" class="d-inline">
+                        @Html.AntiForgeryToken()
+                        <button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

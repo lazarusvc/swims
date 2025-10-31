@@ -1,0 +1,37 @@
+﻿@page
+@model LogoutModel
+@{
+    ViewData["title"] = "Log out";
+}
+
+@{
+    if (User.Identity?.IsAuthenticated ?? false)
+    {
+        <section class="auth bg-base d-flex flex-wrap">
+            <div class="auth-left d-lg-block d-none">
+                <div class="d-flex align-items-center flex-column h-100 justify-content-center">
+                    <img src="~/WowDash/images/auth/auth-img.png" alt="">
+                </div>
+            </div>
+            <div class="auth-right py-32 px-24 d-flex flex-column justify-content-center">
+                <div class="max-w-464-px mx-auto w-100">
+                    <div>
+                        <a href="~/index" class="mb-40 max-w-290-px">
+                            <img src="~/WowDash/images/logo.png" alt="">
+                        </a>
+                        <h4 class="mb-12">@ViewData["title"]</h4>
+                    </div>
+                    <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Page("/", new { area = "" })" method="post">
+
+                        <button type="submit" class="btn btn-primary text-sm btn-sm px-12 py-16 w-100 radius-12 mt-32"> Click here to Logout</button>
+
+                    </form>
+                </div>
+            </div>
+        </section>
+    }
+    else
+    {
+        <p>You have successfully logged out of the application.</p>
+    }
+}

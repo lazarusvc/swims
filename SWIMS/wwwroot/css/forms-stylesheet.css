@@ -1,0 +1,30 @@
+﻿/* ---------------------------------- 
+    Input Checkbox 
+*/
+.radio-group input[type="radio"] {
+    display: none;
+}
+.radio-group label {
+    display: inline-block;
+    padding: 10px 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-right: 10px;
+}
+.radio-group input[type="radio"]:checked + label {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+#approvalAmt {
+    background: linear-gradient(to right, #82CFD0 0%, #82CFD0 50%, #fff 100%);
+    border: solid 1px #82CFD0;
+    border-radius: 8px;
+    height: 7px;
+    width: 50%;
+    outline: none;
+    transition: background 450ms ease-in;
+    -webkit-appearance: none;
+}

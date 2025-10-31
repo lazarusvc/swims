@@ -1,0 +1,255 @@
+﻿@model SWIMS.Models.SW_form
+
+@{
+    ViewData["Title"] = "Form Development | NEW";
+}
+
+<hr />
+<br />
+<div class="row gy-4">
+    <div class="col-md-8">
+        <div id="logic-toolbar" class="mb-2"></div>
+        <div id="fb-editor"></div>
+        <button type="button" class="btn btn-warning-100 text-warning-600 radius-8 px-14 py-6 text-sm" id="sv_2FormInput" style="float: right;">
+            Save
+        </button>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Complete & Save</h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="Create" method="post" enctype="multipart/form-data">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                    <div class="row mb-24 gy-3 align-items-center">
+                        <label asp-for="name" class="form-label mb-0 col-sm-4">NAME:<span style="color:red;">*</span></label>
+                        <div class="col-sm-10">
+                            <input asp-for="name" class="form-control" placeholder="Enter form Name..." required />
+                            <span asp-validation-for="name" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row mb-24 gy-3 align-items-center">
+                        <label asp-for="desc" class="form-label mb-0 col-sm-4">DESC:</label>
+                        <div class="col-sm-10">
+                            <textarea asp-for="desc" class="form-control" rows="4" cols="50" placeholder="Enter form description..."></textarea>
+                            <span asp-validation-for="desc" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row mb-24 gy-3 align-items-center">
+                        <label asp-for="uuid" class="form-label mb-0 col-sm-4">UUID:</label>
+                        <div class="col-sm-10">
+                            <input asp-for="uuid" class="form-control" readonly placeholder="******" value="@ViewBag.UUID" />
+                            <span asp-validation-for="uuid" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row mb-24 gy-3 align-items-center">
+                        <label asp-for="form" class="form-label mb-0 col-sm-4">DATA:<span style="color:red;">*</span></label>
+                        <div class="col-sm-10">
+                            <input asp-for="form" class="form-control" readonly placeholder="******" required />
+                            <span asp-validation-for="form" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row mb-24 gy-3 align-items-center">
+                        <label asp-for="SW_identityId" class="form-label mb-0 col-sm-4">LOCATION:</label>
+                        <div class="col-sm-10">
+                            <select asp-for="SW_identityId" class="form-control" asp-items="ViewBag.SW_identityId" readonly></select>
+                        </div>
+                    </div>
+
+                    <div class="row mb-24 gy-3 align-items-center">
+                        <label asp-for="image" class="form-label mb-0 col-sm-4">IMAGE:<span style="color:red;">*</span></label>
+                        <div class="col-sm-10">
+                            <input asp-for="image" type="file" class="form-control" required />
+                            <span asp-validation-for="image" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row mb-24 gy-3 align-items-center">
+                        <label asp-for="header" class="form-label mb-0 col-sm-4">HEADER:</label>
+                        <div class="col-sm-10">
+                            <textarea asp-for="header" id="trumbowyg"></textarea>
+                            <span asp-validation-for="header" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row mb-24 gy-3 align-items-center">
+                        <label class="form-label mb-0 col-sm-4">IS FORM LINKING:</label>
+                        <div class="col-sm-10">                           
+                            
+                            <input type="radio" id="is_linking" name="is_linking" value="true">
+                            <label for="is_linking">Yes</label><br />
+
+                            <input type="radio" id="is_linking" name="is_linking" value="false">
+                            <label for="is_linking">No</label><br />
+                            <span asp-validation-for="is_linking" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row mb-24 gy-3 align-items-center">
+                        <label asp-for="approvalAmt" class="form-label mb-0 col-sm-4">APPROVAL LEVELS:</label>
+                        <div class="col-sm-10">
+                            <input asp-for="approvalAmt" type="range" min="0" max="3" value="@ViewBag.appAmt">
+                            <p>Selected Volume: <span id="volumeValue">0</span></p>
+                            <span asp-validation-for="approvalAmt" class="text-danger"></span>
+                        </div>
+                    </div>
+
+
+                    <p>created:</p>
+                    <input asp-for="dateModified" type="hidden" type="datetime" value="@ViewBag.datetime" />
+                    <span asp-validation-for="dateModified" class="text-danger"></span>
+                    <input type="submit" value="Submit" id="saveData" class="btn btn-primary" width="100" />
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
+
+<link href="~/css/forms-stylesheet.css" rel="stylesheet" />
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/lib/formbuilder/form-builder.min.js"></script>
+<script src="~/lib/fb-logic/formbuilder-conditional-logic.umd.js"></script>
+<link href="~/lib/trumbowyg-editor/ui/trumbowyg.min.css" rel="stylesheet" />
+<script src="~/lib/trumbowyg-editor/trumbowyg.min.js"></script>
+
+<script type="text/javascript">
+  jQuery(function ($) {
+    // ---- DOM
+    var fbEditor = document.getElementById('fb-editor');   // MUST exist in your markup
+    var frm      = document.getElementById("form");
+    var formEl   = document.querySelector('form');
+    var saveBtn  = document.getElementById('sv_2FormInput');
+    var formBuilder;
+
+    // ---- Make these GLOBAL + null-safe (consistent with Edit)
+    window.volumeSlider       = document.getElementById('approvalAmt') || null;
+    window.volumeValueDisplay = document.getElementById('volumeValue') || null;
+
+    // ---- Your custom image block (kept)
+    var storedImgHost = document.getElementById("storedIMG");
+    if (storedImgHost) {
+      storedImgHost.innerHTML =
+        "<img src='../../uploads/@ViewBag.img' width='50%' />" +
+        "<input type='hidden' name='image' id='image' value='@ViewBag.img' />";
+    }
+
+    // ---- Sanity checks with explicit logs (so it can’t fail silently)
+    if (!fbEditor) {
+      console.error('Create: missing <div id="fb-editor"></div> container in the markup.');
+      return;
+    }
+    if (!$.fn || !$.fn.formBuilder) {
+      console.error('Create: $.fn.formBuilder is undefined. Check script order: jquery → form-builder.min.js → plugin UMD → this block.');
+      return;
+    }
+
+    function getAvailableFields() {
+      try {
+        var raw = (formBuilder && formBuilder.actions) ? formBuilder.actions.getData('json') : '[]';
+        var arr = (typeof raw === 'string') ? JSON.parse(raw) : (Array.isArray(raw) ? raw : []);
+        return arr.map(function (f, i) {
+          var name  = f && f.name  ? String(f.name)  : '';
+          var label = f && f.label ? String(f.label) : name || ('Field ' + (i + 1));
+          var type  = f && f.type  ? String(f.type)  : 'text';
+          var values = Array.isArray(f.values)
+            ? f.values.filter(function(v){return v && (v.value!=null || v.label!=null);})
+                      .map(function(v){return {label:String(v.label||v.value), value:String(v.value!=null?v.value:v.label)};})
+            : undefined;
+          return { name, type, label, values };
+        }).filter(function (f) { return f.name && f.name.trim().length; });
+      } catch { return []; }
+    }
+
+    var baseOptions = { disabledActionButtons: ['data', 'save'] };
+
+    var pluginOptions = (window.FBConditionalLogic && FBConditionalLogic.builder)
+      ? FBConditionalLogic.builder.withConditionalLogic({
+          panelTitle: 'Conditional Logic',
+          enableVisualEditor: true,
+          getAvailableFields: getAvailableFields
+        })
+      : {};
+
+    var options = Object.assign({}, pluginOptions, baseOptions);
+
+    console.log('Create: building formBuilder…');
+    formBuilder = $(fbEditor).formBuilder(options);
+
+    // Optional Logic Groups toolbar
+    var host = document.getElementById('logic-toolbar');
+    if (host && window.FBConditionalLogic) {
+      FBConditionalLogic.builder.attachLogicGroupsManager(host, { getAvailableFields: getAvailableFields });
+    }
+
+      // Save → write JSON; also ensure it posts
+      saveBtn.addEventListener('click', function () {
+          frm.value = formBuilder.formData;
+          frm.style.backgroundColor = '#59AC77';
+          frm.style.color = 'white';
+        });
+    // Ensure JSON always posts (Save click AND submit)
+    wireSaveToHiddenJson(formEl, saveBtn, function(){ return formBuilder.formData; });
+
+    // Approval slider hookup (guarded)
+    if (window.volumeSlider && window.volumeValueDisplay) {
+      window.volumeSlider.addEventListener('input', function(){
+        window.volumeValueDisplay.textContent = this.value;
+        });
+    }
+
+    function wireSaveToHiddenJson(formEl, triggerEl, getter) {
+      if (!formEl || !getter) return;
+      var jsonInput = formEl.querySelector('[name="form"]');
+      if (!jsonInput) {
+        jsonInput = document.createElement('input');
+        jsonInput.type = 'hidden';
+        jsonInput.name = 'form';
+        jsonInput.id   = 'form';
+        formEl.appendChild(jsonInput);
+      } else if (jsonInput.disabled) {
+        jsonInput.disabled = false;
+      }
+      function pushJson(){ try { jsonInput.value = getter() || '[]'; } catch(e){ console.error('Create: set JSON failed', e); } }
+      if (triggerEl) triggerEl.addEventListener('click', pushJson);
+      formEl.addEventListener('submit', pushJson);
+    }
+    });
+</script>
+
+
+
+
+<Script type="text/javascript">
+    // ------------------------------------------- TINYMCE - WYSWYGET EDITOR
+    jQuery(function ($) {
+        $("#trumbowyg").trumbowyg({
+            btns: [
+                ['viewHTML'],
+                ['undo', 'redo'], // Only supported in Blink browsers
+                ['formatting'],
+                ['strong', 'em', 'del'],
+                ['superscript', 'subscript'],
+                ['link'],
+                ['insertImage'],
+                ['justifyLeft', 'justifyCenter', 'justifyRight', 'justifyFull'],
+                ['unorderedList', 'orderedList'],
+                ['horizontalRule'],
+                ['removeformat'],
+                ['fullscreen']
+            ],
+            autogrow: true
+        });
+    });
+</script>
