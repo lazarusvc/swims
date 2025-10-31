@@ -22,6 +22,14 @@ namespace SWIMS.Controllers
             _opt = opt.Value;
         }
 
+        [HttpPost]
+        public Task<IActionResult> ProxyRootPost() =>
+            ProxyToReportServerAsync(remainder: null);
+
+        [HttpPost("{**remainder}")]
+        public Task<IActionResult> ProxyPathPost(string? remainder) =>
+            ProxyToReportServerAsync(remainder);
+
         // 1) Query-style: /ssrs?%2FVCAS_Report%2FReportName&...
         [HttpGet]
         public Task<IActionResult> ProxyRoot() =>
@@ -37,118 +45,100 @@ namespace SWIMS.Controllers
             if (string.IsNullOrWhiteSpace(_opt.ReportServerUrl))
                 return StatusCode(500, "ReportServerUrl is not configured.");
 
-            // Build upstream URL
-            var upstreamBase = _opt.ReportServerUrl.TrimEnd('/');            // http://server/ReportServer
-            var qs = HttpContext.Request.QueryString.Value ?? string.Empty;  // ?%2FVCAS_Report%2F...
+            var upstreamBase = _opt.ReportServerUrl.TrimEnd('/');
+            var qs = HttpContext.Request.QueryString.Value ?? string.Empty;
             var upstream = string.IsNullOrEmpty(remainder)
-                ? $"{upstreamBase}{qs}"                                      // http://.../ReportServer?%2F...
-                : $"{upstreamBase}/{remainder}{qs}";                         // http://.../ReportServer/Pages/...?... 
+                ? $"{upstreamBase}{qs}"
+                : $"{upstreamBase}/{remainder}{qs}";
 
-            using var req = new HttpRequestMessage(HttpMethod.Get, upstream);
+            // Build outbound request with the SAME HTTP method
+            var method = new HttpMethod(Request.Method);
+            using var req = new HttpRequestMessage(method, upstream);
 
-            // Forward non-restricted headers (no cookies by default; the handler isn’t using them)
+            // Forward headers (skip restricted and hop-by-hop)
             foreach (var (key, val) in Request.Headers)
-                if (!WebHeaderCollection.IsRestricted(key))
+            {
+                if (string.Equals(key, "Host", StringComparison.OrdinalIgnoreCase)) continue;
+                if (string.Equals(key, "Connection", StringComparison.OrdinalIgnoreCase)) continue;
+                if (string.Equals(key, "Proxy-Connection", StringComparison.OrdinalIgnoreCase)) continue;
+                if (string.Equals(key, "Keep-Alive", StringComparison.OrdinalIgnoreCase)) continue;
+                if (string.Equals(key, "Transfer-Encoding", StringComparison.OrdinalIgnoreCase)) continue;
+
+                if (!System.Net.WebHeaderCollection.IsRestricted(key))
                     req.Headers.TryAddWithoutValidation(key, (IEnumerable<string>)val);
+            }
+
+            // If there is a body, forward it and copy content headers
+            if (Request.ContentLength.HasValue && Request.ContentLength.Value > 0)
+            {
+                req.Content = new StreamContent(Request.Body);
+                foreach (var (key, val) in Request.Headers)
+                {
+                    // Only typical content headers
+                    if (key.StartsWith("Content-", StringComparison.OrdinalIgnoreCase))
+                        req.Content.Headers.TryAddWithoutValidation(key, (IEnumerable<string>)val);
+                }
+            }
 
             using var upstreamRes = await _http.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, HttpContext.RequestAborted);
 
             // Mirror status
             Response.StatusCode = (int)upstreamRes.StatusCode;
 
-            // Rewrite Location header on redirects to stay under /ssrs
+            // Rewrite Location to stay under /ssrs
             if (upstreamRes.Headers.Location is Uri loc)
             {
                 var rewritten = RewriteLocation(loc);
                 if (rewritten is not null)
-                    Response.Headers["Location"] = rewritten;
+                {
+                    // Make it absolute for robustness
+                    var absolute = $"{Request.Scheme}://{Request.Host}{rewritten}";
+                    Response.Headers["Location"] = absolute;
+                }
             }
 
-            // Copy headers (after potential Location rewrite)
+            // Copy headers (after Location handling)
             foreach (var h in upstreamRes.Headers)
                 if (!string.Equals(h.Key, "Location", StringComparison.OrdinalIgnoreCase))
                     Response.Headers[h.Key] = h.Value.ToArray();
             foreach (var h in upstreamRes.Content.Headers)
                 Response.Headers[h.Key] = h.Value.ToArray();
 
-            // (optional) turn upstream 401 into a clean server-side failure
-            if (upstreamRes.StatusCode == HttpStatusCode.Unauthorized)
-            {
-                // You can log details here if you want.
-                return StatusCode(502, "SSRS authentication failed for the relay identity.");
-            }
-
-            // Hop-by-hop cleanup
+            // Normalize hop-by-hop
             Response.Headers.Remove("transfer-encoding");
             Response.Headers.Remove("Keep-Alive");
             Response.Headers.Remove("Connection");
             Response.Headers.Remove("Proxy-Connection");
 
-            var mediaType = upstreamRes.Content.Headers.ContentType?.MediaType ?? "application/octet-stream";
-            var stream = await upstreamRes.Content.ReadAsStreamAsync(HttpContext.RequestAborted);
+            if (upstreamRes.StatusCode == HttpStatusCode.Unauthorized)
+                return StatusCode(502, "SSRS authentication failed for the relay identity.");
 
-            // For HTML (and only HTML), rewrite embedded ReportServer links to /{pathbase}/ssrs
+            var mediaType = upstreamRes.Content.Headers.ContentType?.MediaType ?? "application/octet-stream";
+
             if (mediaType.Equals("text/html", StringComparison.OrdinalIgnoreCase))
             {
-                using var reader = new StreamReader(stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true, bufferSize: 64 * 1024, leaveOpen: false);
-                var html = await reader.ReadToEndAsync(HttpContext.RequestAborted);
+                // Fully buffer, rewrite, then write out
+                var html = await upstreamRes.Content.ReadAsStringAsync(HttpContext.RequestAborted);
+                var proxyBase = GetProxyBasePath();
 
-                var proxyBase = GetProxyBasePath(); // includes PathBase, e.g. "/SWIMS/ssrs" or "/ssrs"
-
-                // Build absolute prefixes from configured ReportServerUrl
-                Uri rsUri;
-                try { rsUri = new Uri(_opt.ReportServerUrl, UriKind.Absolute); }
-                catch { rsUri = new Uri("http://invalid/ReportServer", UriKind.Absolute); }
-
-                var host = rsUri.Host;
-                var httpAbs = "http://" + host + (rsUri.Port > 0 && rsUri.Port != 80 ? ":" + rsUri.Port : "") + "/ReportServer";
-                var httpsAbs = "https://" + host + (rsUri.Port > 0 && rsUri.Port != 443 ? ":" + rsUri.Port : "") + "/ReportServer";
-                var schemeRel = "//" + host + (rsUri.Port > 0 && rsUri.IsDefaultPort == false ? ":" + rsUri.Port : "") + "/ReportServer";
-
-                // Minimal, safe replacements (case-insensitive)
-                html = html
-                    // Relative paths
-                    .Replace("href=\"/ReportServer", $"href=\"{proxyBase}", StringComparison.OrdinalIgnoreCase)
-                    .Replace("href='/ReportServer", $"href='{proxyBase}", StringComparison.OrdinalIgnoreCase)
-                    .Replace("src=\"/ReportServer", $"src=\"{proxyBase}", StringComparison.OrdinalIgnoreCase)
-                    .Replace("src='/ReportServer", $"src='{proxyBase}", StringComparison.OrdinalIgnoreCase)
-                    .Replace("action=\"/ReportServer", $"action=\"{proxyBase}", StringComparison.OrdinalIgnoreCase)
-                    .Replace("action='/ReportServer", $"action='{proxyBase}", StringComparison.OrdinalIgnoreCase)
-                    .Replace("url(/ReportServer", $"url({proxyBase}", StringComparison.OrdinalIgnoreCase)
-
-                    // Absolute http/https and scheme-relative to the SSRS host
-                    .Replace($"href=\"{httpAbs}", $"href=\"{proxyBase}", StringComparison.OrdinalIgnoreCase)
-                    .Replace($"href=\"{httpsAbs}", $"href=\"{proxyBase}", StringComparison.OrdinalIgnoreCase)
-                    .Replace($"href=\"{schemeRel}", $"href=\"{proxyBase}", StringComparison.OrdinalIgnoreCase)
-                    .Replace($"href='{httpAbs}", $"href='{proxyBase}", StringComparison.OrdinalIgnoreCase)
-                    .Replace($"href='{httpsAbs}", $"href='{proxyBase}", StringComparison.OrdinalIgnoreCase)
-                    .Replace($"href='{schemeRel}", $"href='{proxyBase}", StringComparison.OrdinalIgnoreCase)
-                    .Replace($"src=\"{httpAbs}", $"src=\"{proxyBase}", StringComparison.OrdinalIgnoreCase)
-                    .Replace($"src=\"{httpsAbs}", $"src=\"{proxyBase}", StringComparison.OrdinalIgnoreCase)
-                    .Replace($"src=\"{schemeRel}", $"src=\"{proxyBase}", StringComparison.OrdinalIgnoreCase)
-                    .Replace($"src='{httpAbs}", $"src='{proxyBase}", StringComparison.OrdinalIgnoreCase)
-                    .Replace($"src='{httpsAbs}", $"src='{proxyBase}", StringComparison.OrdinalIgnoreCase)
-                    .Replace($"src='{schemeRel}", $"src='{proxyBase}", StringComparison.OrdinalIgnoreCase)
-                    .Replace($"action=\"{httpAbs}", $"action=\"{proxyBase}", StringComparison.OrdinalIgnoreCase)
-                    .Replace($"action=\"{httpsAbs}", $"action=\"{proxyBase}", StringComparison.OrdinalIgnoreCase)
-                    .Replace($"action=\"{schemeRel}", $"action=\"{proxyBase}", StringComparison.OrdinalIgnoreCase)
-                    .Replace($"action='{httpAbs}", $"action='{proxyBase}", StringComparison.OrdinalIgnoreCase)
-                    .Replace($"action='{httpsAbs}", $"action='{proxyBase}", StringComparison.OrdinalIgnoreCase)
-                    .Replace($"action='{schemeRel}", $"action='{proxyBase}", StringComparison.OrdinalIgnoreCase)
-                    .Replace($"url({httpAbs}", $"url({proxyBase}", StringComparison.OrdinalIgnoreCase)
-                    .Replace($"url({httpsAbs}", $"url({proxyBase}", StringComparison.OrdinalIgnoreCase)
-                    .Replace($"url({schemeRel}", $"url({proxyBase}", StringComparison.OrdinalIgnoreCase);
+                // (existing rewrite logic retained)
+                html = RewriteHtmlToProxy(html, proxyBase);
 
                 Response.Headers["X-SWIMS-SSRS-Relay"] = "hit";
-                // Return the rewritten HTML
-                return Content(html, upstreamRes.Content.Headers.ContentType?.ToString() ?? "text/html; charset=utf-8");
+                Response.ContentType = upstreamRes.Content.Headers.ContentType?.ToString() ?? "text/html; charset=utf-8";
+                await Response.WriteAsync(html, HttpContext.RequestAborted);
+                return new EmptyResult();
             }
-
-            // Stream everything else as-is (scripts, images, axd, PDFs, etc.)
-            var contentType = upstreamRes.Content.Headers.ContentType?.ToString() ?? mediaType;
-            Response.Headers["X-SWIMS-SSRS-Relay"] = "hit";
-            return new FileStreamResult(stream, contentType);
+            else
+            {
+                // Stream non-HTML bytes directly to the client (no premature dispose)
+                Response.Headers["X-SWIMS-SSRS-Relay"] = "hit";
+                Response.ContentType = upstreamRes.Content.Headers.ContentType?.ToString() ?? mediaType;
+                await upstreamRes.Content.CopyToAsync(Response.Body, HttpContext.RequestAborted);
+                return new EmptyResult();
+            }
         }
+
 
         private string? RewriteLocation(Uri loc)
         {
@@ -164,7 +154,6 @@ namespace SWIMS.Controllers
 
             return null;
         }
-
         private string GetProxyBasePath()
         {
             // Respect app PathBase and ReverseProxyBasePath ("~/ssrs" or "/ssrs")
@@ -173,5 +162,51 @@ namespace SWIMS.Controllers
             var withoutTilde = configured.StartsWith("~") ? configured[1..] : configured; // "~/ssrs" -> "/ssrs"
             return (basePath + withoutTilde).TrimEnd('/');
         }
+
+        private string RewriteHtmlToProxy(string html, string proxyBase)
+        {
+            // Safety
+            if (string.IsNullOrEmpty(html) || string.IsNullOrEmpty(proxyBase))
+                return html;
+
+            // 1) Rewrite absolute links that point to .../ReportServer to the proxy base.
+            //    e.g. href="http://server/ReportServer/xyz" -> href="/ssrs/xyz"
+            html = Regex.Replace(
+                html,
+                @"(?is)(?<p>\b(?:href|src|action)\s*=\s*[""'])(?<u>https?://[^""']*/ReportServer(?<tail>[^""']*))",
+                m =>
+                {
+                    var p = m.Groups["p"].Value;
+                    var u = m.Groups["u"].Value;
+                    var idx = u.IndexOf("/ReportServer", StringComparison.OrdinalIgnoreCase);
+                    var tail = idx >= 0 ? u.Substring(idx + "/ReportServer".Length) : "";
+                    return p + proxyBase + tail;
+                });
+
+            // 2) Rewrite relative links that start with /ReportServer to the proxy base.
+            //    e.g. src="/ReportServer/Reserved.ReportViewerWebControl.axd?..." -> src="/ssrs/Reserved.ReportViewerWebControl.axd?..."
+            html = Regex.Replace(
+                html,
+                @"(?is)(?<p>\b(?:href|src|action)\s*=\s*[""'])(?<u>/ReportServer(?<tail>[^""']*))",
+                m => m.Groups["p"].Value + proxyBase + m.Groups["tail"].Value
+            );
+
+            // 3) Fix <base href=".../ReportServer/..."> to keep all relative fetches under the proxy.
+            html = Regex.Replace(
+                html,
+                @"(?is)<base\s+href=[""'][^""']*/ReportServer[^""']*[""'][^>]*>",
+                _ => $"<base href=\"{proxyBase}/\">"
+            );
+
+            // 4) Catch naked JS string usages like '/ReportServer?...'
+            html = Regex.Replace(
+                html,
+                @"(?i)(['""])/ReportServer",
+                m => $"{m.Groups[1].Value}{proxyBase}"
+            );
+
+            return html;
+        }
+
     }
 }
