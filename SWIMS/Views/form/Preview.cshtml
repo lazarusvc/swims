@@ -1,0 +1,51 @@
+﻿@using System.Text.Json
+
+
+<div id="fb-rendered-form"></div>
+
+<link href="~/css/forms-stylesheet.css" rel="stylesheet" />
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/lib/formbuilder/form-render.min.js"></script>
+<script src="~/lib/fb-logic/formbuilder-conditional-logic.umd.js"></script>
+
+<script type="text/javascript">
+    // RENDER FORM
+    //
+    // -----------------------------------------------------------------------------------------------------
+    jQuery(function($) {
+      var container = document.getElementById('fb-rendered-form');
+    const __rawServerValue = @Html.Raw(JsonSerializer.Serialize(ViewBag.form ?? "[]"));
+
+    function normalizeFormData(raw) {
+      if (raw == null) return [];
+      try {
+        if (typeof raw === 'string') {
+          const once = JSON.parse(raw);
+          return (typeof once === 'string') ? JSON.parse(once) : once;
+        }
+        return raw;
+      } catch (e) {
+        console.error('Form JSON parse failed:', e, raw);
+        return [];
+      }
+    }
+
+    const formData = normalizeFormData(__rawServerValue);
+    $(container).formRender({ formData: formData, dataType: 'json' });
+
+    if (window.FBConditionalLogic) {
+      FBConditionalLogic.setup(container, formData);
+    }
+
+      $(container).formRender(formRenderOpts);
+    });
+</script>
+
+@for (int i = 1; i < 250; i++)
+{
+    int j = i - 1;
+    <script>
+        $("input[name='FormData_@i.ToString("D2")']").val("@Html.Raw(ViewBag.Collection[j])");
+    </script>
+
+}

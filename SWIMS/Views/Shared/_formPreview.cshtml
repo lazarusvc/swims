@@ -1,0 +1,111 @@
+﻿@using System.Text.Json
+@{
+    ViewData["title"] = "Form Preview";
+
+    var htmlScript = "";
+    @foreach (var inx in ViewBag.Collection2)
+    {
+        @for (int i = 1; i < 256; i++)
+        {
+            int j = i - 1;
+            string selector = "FormData" + @i.ToString("D2");
+            var collection = @Html.Raw(ViewBag.Collection[j]);
+            if (@inx.field == selector)
+            {
+                if (@inx.type == "text") // form input field = text
+                {
+                    htmlScript += "$('input[name=" + selector + "]').val('" + collection + "').attr('readonly', 'true').css('background', '#cecece');";
+                }
+                else if (@inx.type == "select") // form select field
+                {
+                    htmlScript += "$('input[name=" + selector + "]').attr('type', 'text').val('" + collection + "');";
+                }
+                else if (@inx.type == "radio-group") // form checkbox field
+                {
+                    htmlScript += "$('input[name=" + selector + "]').prop('checked', '" + collection + "');";
+                }  
+                else // default field
+                {
+                    htmlScript += "$('input[name=" + selector + "]').val('" + collection + "').attr('readonly', 'true');";
+                }
+            }
+            // hide any other field not like var:selector
+            //
+            if (@inx.field == "beneficiary")
+            {                
+                htmlScript = 
+                "$('#beneficiary').hide();" +
+                "$('#organization').hide();" +
+                "$('#financial_institution').hide();" +
+                "$('#city').hide();" +
+                "$.ajax({" +
+                "url: '/api/v1/beneficiary'," +
+                "method: 'GET'," +
+                "dataType: 'json'," +
+                "success: function (data) {" +
+                "if (!data) return;" +
+                "$.each(data, function (i, opt) {" +
+                "if (opt.uuid == $('.beneficiary').val()) {" +
+                "$('.beneficiary').after('<div><br/><style>.tg{border-collapse:collapse;border-color:#ccc;border-spacing:0}.tg td{background-color:#fff;border-color:#ccc;border-style:solid;border-width:1px;color:#333;font-family:Arial,sans-serif;font-size:14px;overflow:hidden;padding:10px 5px;word-break:normal}.tg th{background-color:#f0f0f0;border-color:#ccc;border-style:solid;border-width:1px;color:#333;font-family:Arial,sans-serif;font-size:14px;font-weight:400;overflow:hidden;padding:10px 5px;word-break:normal}.tg .tg-0pky{border-color:inherit;text-align:left;vertical-align:top}.tg .tg-0lax{text-align:left;vertical-align:top}</style><table class=tg><thead><tr><th class=tg-0pky>NAME:<th class=tg-0pky>DOB:<th class=tg-0lax>ID No.<th class=tg-0lax>TEL NO.<tbody><tr><td class=tg-0pky>'+opt.name+'<td class=tg-0pky>'+opt.dob+'<td class=tg-0lax>'+opt.id_number+'<td class=tg-0lax>'+opt.telephone_number+'</table></div>');" +
+                "}" +
+                "});" +
+                "}" +
+                "});";
+            }
+        }
+    } 
+}
+
+
+
+@Html.Raw(@ViewBag.header)
+<div id="fb-rendered-form"></div>
+
+<link href="~/css/forms-stylesheet.css" rel="stylesheet" />
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/lib/formbuilder/form-render.min.js"></script>
+<script src="~/lib/fb-logic/formbuilder-conditional-logic.umd.js"></script>
+<script type="text/javascript">
+    // RENDER FORM
+    //
+    jQuery(function($) {
+      var container = document.getElementById('fb-rendered-form');
+
+    // Safely emit the server value as a JS string
+    const __rawServerValue = @Html.Raw(JsonSerializer.Serialize(ViewBag.form ?? "[]"));
+
+    // Normalize to an Array the renderer expects (handles double-encoded JSON too)
+    function normalizeFormData(raw) {
+      if (raw == null) return [];
+      try {
+        if (typeof raw === 'string') {
+          const once = JSON.parse(raw);
+          return (typeof once === 'string') ? JSON.parse(once) : once;
+        }
+        return raw;
+      } catch (e) {
+        console.error('Form JSON parse failed:', e, raw);
+        return [];
+      }
+    }
+
+    const formData = normalizeFormData(__rawServerValue);
+
+    // Render and hydrate logic
+    $(container).formRender({ formData: formData, dataType: 'json' });
+
+    if (window.FBConditionalLogic) {
+      FBConditionalLogic.setup(container, formData);
+    }
+
+    });
+
+</script>
+
+<script type='text/javascript'>
+    jQuery(function($) {
+        @Html.Raw(@htmlScript)
+    });
+</script>
+
+

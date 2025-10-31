@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+ <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <!-- Diagram content (shape and connector positions) -->
+    <edmx:Diagrams>
+      <Diagram DiagramId="f14f822ad5d94bd59830f38001665507" Name="Diagram1" ZoomLevel="113" >
+        <EntityTypeShape EntityType="Model.SW_forms" Width="2.75" PointX="3.375" PointY="0.75" FillColor="Yellow" />
+        <EntityTypeShape EntityType="Model.SW_formTableName" Width="2.25" PointX="7.25" PointY="0.75" FillColor="Yellow" />
+        <EntityTypeShape EntityType="Model.SW_identity" Width="1.75" PointX="0.625" PointY="5.125" FillColor="192, 0, 192" />
+        <EntityTypeShape EntityType="Model.SW_roles" Width="1.75" PointX="0.625" PointY="3.25" />
+        <EntityTypeShape EntityType="Model.SW_users" Width="1.75" PointX="0.625" PointY="0.75" />
+        <AssociationConnector Association="Model.FK_SW_formsSW_formTableName" />
+        <AssociationConnector Association="Model.FK_SW_identitySW_forms" />
+        <AssociationConnector Association="Model.FK_SW_rolesSW_users" />
+      </Diagram>
+    </edmx:Diagrams>
+  </edmx:Designer>
+</edmx:Edmx>

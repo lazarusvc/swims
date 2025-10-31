@@ -1,0 +1,38 @@
+﻿@inject SignInManager<SwUser> SignInManager
+@{
+    var hasExternalLogins = (await SignInManager.GetExternalAuthenticationSchemesAsync()).Any();
+}
+
+@inject UserManager<SwUser> UserManager
+@{
+    var user = await UserManager.GetUserAsync(User);
+    var logins = await UserManager.GetLoginsAsync(user);
+    var isLdapUser = logins.Any(l => l.LoginProvider == "LDAP");
+}
+
+
+<ul class="nav bordered-tab d-inline-flex nav-pills mb-0" id="pills-tab-six" role="tablist">
+    <li class="nav-item" role="presentation">
+        <a class="nav-link px-16 py-10 @ManageNavPages.IndexNavClass(ViewContext)" id="profile" asp-page="./Index">Profile</a>
+    </li>
+    @if (!isLdapUser)
+    {
+        <li class="nav-item" role="presentation"><a class="nav-link px-16 py-10 @ManageNavPages.EmailNavClass(ViewContext)" id="email" asp-page="./Email">Email</a></li>
+    }
+    @if (!isLdapUser)
+    {
+        <li class="nav-item" role="presentation"><a class="nav-link px-16 py-10 @ManageNavPages.ChangePasswordNavClass(ViewContext)" id="change-password" asp-page="./ChangePassword">Password</a></li>
+    }
+    @if (hasExternalLogins)
+    {
+        <li id="external-logins" class="nav-item" role="presentation"><a id="external-login" class="nav-link px-16 py-10 @ManageNavPages.ExternalLoginsNavClass(ViewContext)" asp-page="./ExternalLogins">External logins</a></li>
+    }
+    @if (!isLdapUser)
+    {
+        <li class="nav-item" role="presentation"><a class="nav-link px-16 py-10 @ManageNavPages.TwoFactorAuthenticationNavClass(ViewContext)" id="two-factor" asp-page="./TwoFactorAuthentication">Two-factor authentication</a></li>
+    }
+    <li class="nav-item" role="presentation"><a class="nav-link px-16 py-10 @ManageNavPages.PersonalDataNavClass(ViewContext)" id="personal-data" asp-page="./PersonalData">Personal data</a></li>
+</ul>
+
+
+

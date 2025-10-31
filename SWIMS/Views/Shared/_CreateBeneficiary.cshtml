@@ -1,0 +1,91 @@
+﻿
+<div class="row">
+<div class="col-md-12">
+<div class="card">
+            <div class="card-header" style="background: #16a34a; color: white;">
+    New Applicant
+</div>
+<div class="card-body">
+        <form asp-action="Create" asp-controller="beneficiary">
+            <div class="row mb-24 gy-3 align-items-center">
+                <label class="form-label mb-0 col-sm-4">First Name:</label>
+                <div class="col-sm-10">
+                <input name="first_name" type="text" class="form-control" placeholder="e.g. John"/>
+                </div>
+            </div>
+            <div class="row mb-24 gy-3 align-items-center">
+                <label class="form-label mb-0 col-sm-4">Middle Name:</label>
+                <div class="col-sm-10">
+                <input name="middle_name" type="text" class="form-control" placeholder="e.g. Dale"/>
+                </div>
+            </div>
+            <div class="row mb-24 gy-3 align-items-center">
+                <label class="form-label mb-0 col-sm-4">Last Name:</label>
+                <div class="col-sm-10">
+                <input name="last_name" type="text" class="form-control" placeholder="e.g. Doe"/>
+                </div>
+            </div>
+            <div class="row mb-24 gy-3 align-items-center">
+                <label class="form-label mb-0 col-sm-4">Date of Birth:</label>
+                <div class="col-sm-10">
+                <input name="dob" type="datetime" class="form-control" />
+                </div>
+            </div>
+            <div class="row mb-24 gy-3 align-items-center">
+                <label class="form-label mb-0 col-sm-4">Gender:</label>
+                <div class="col-sm-10">
+                <select class="form-control" name="gender">
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Undecided">Undecided</option>
+                </select>
+                </div>
+            </div>
+            <div class="row mb-24 gy-3 align-items-center">
+                <label class="form-label mb-0 col-sm-4">Martial Status:</label>
+                <div class="col-sm-10">
+                    <select class="form-control" name="gender">
+                        <option value="Single">Single</option>
+                        <option value="Married">Married</option>
+                        <option value="Widow">Widow</option>
+                        <option value="Widower">Widower</option>
+                    </select>
+                </div>
+            </div>
+            <div class="row mb-24 gy-3 align-items-center">
+                <label class="form-label mb-0 col-sm-4">ID Number:</label>
+                <div class="col-sm-10">
+                <input name="id_number" type="text"class="form-control" placeholder="e.g. DOEJ000000"/>
+                </div>
+            </div>
+            <div class="row mb-24 gy-3 align-items-center">
+                <label class="form-label mb-0 col-sm-4">Telephone No.:</label>
+                <div class="col-sm-10">
+                <input name="telephone_number" type="number" class="form-control" placeholder="17675555555"/>
+                </div>
+            </div>
+            <div class="row mb-24 gy-3 align-items-center">
+                <label class="form-label mb-0 col-sm-4">Status:</label>
+                <div class="col-sm-10">
+                    <select class="form-control" name="status">
+                        <option value="true">True</option>
+                        <option value="false">False</option>
+                    </select>
+                </div>
+            </div>
+            <div class="row mb-24 gy-3 align-items-center">
+                <label class="form-label mb-0 col-sm-4">Approved Amt:</label>
+                <div class="col-sm-10">
+                <input name="approved_amount" type="number" class="form-control" placeholder="150"/>
+                </div>
+            </div>
+
+            <input type="hidden" name="partialCheck" id="partialCheck" value="@ViewData["UID"]" />
+            <input type="submit" value="Create" class="btn rounded-pill btn-success-600" />
+        </form>
+        </div>
+    </div>
+</div>
+</div>
+
+

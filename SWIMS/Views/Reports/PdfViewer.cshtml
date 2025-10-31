@@ -1,0 +1,9 @@
+﻿@{
+    ViewData["Title"] = "Report";
+    var id = (int)ViewBag.Id;
+    var format = (string)ViewBag.Format ?? "PDF";
+}
+<div class="ratio ratio-16x9 mt-3">
+    <iframe src="@Url.Action("Inline", "Reports", new { id, format })"
+            width="100%" height="100%" style="border:0;" loading="lazy"></iframe>
+</div>

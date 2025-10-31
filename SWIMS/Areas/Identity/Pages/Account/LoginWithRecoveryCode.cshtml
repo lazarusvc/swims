@@ -1,0 +1,44 @@
+﻿@page
+@model LoginWithRecoveryCodeModel
+@{
+    ViewData["title"] = "Recovery code verification";
+}
+
+<section class="auth bg-base d-flex flex-wrap">
+    <div class="auth-left d-lg-block d-none">
+        <div class="d-flex align-items-center flex-column h-100 justify-content-center">
+            <img src="~/WowDash/images/auth/auth-img.png" alt="">
+        </div>
+    </div>
+    <div class="auth-right py-32 px-24 d-flex flex-column justify-content-center">
+        <div class="max-w-464-px mx-auto w-100">
+            <div>
+                <a href="~/index" class="mb-40 max-w-290-px">
+                    <img src="~/WowDash/images/logo.png" alt="">
+                </a>
+                <h4 class="mb-12">@ViewData["title"]</h4>
+                <p class="mb-32 text-secondary-light text-lg">
+                    You have requested to log in with a recovery code. This login will not be remembered until you provide
+                    an authenticator app code at log in or disable 2FA and log in again.
+                </p>
+            </div>
+            <form method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+                <span asp-validation-for="Input.RecoveryCode" class="text-danger"></span>
+                <div class="icon-field mb-0">
+                    <span class="icon top-50 translate-middle-y">
+                        <iconify-icon icon="solar:lock-password-outline"></iconify-icon>
+                    </span>
+                    <input asp-for="Input.RecoveryCode" class="form-control h-56-px bg-neutral-50 radius-12" placeholder="Recovery Code">
+                </div>
+
+                <button type="submit" class="btn btn-primary text-sm btn-sm px-12 py-16 w-100 radius-12 mt-32"> Sign In</button>
+
+            </form>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
