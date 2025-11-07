@@ -4,8 +4,10 @@
 }
 
 <!-- STATS -------------------------------------------------------- -->
+
 <div class="row gy-4">
-    <!-- Earning Static End -->
+
+@*     <!-- Earning Static End -->
     <div class="col-lg-6">
         <div class="card h-100 border shadow-none radius-8 overflow-hidden">
             <div class="card-body p-24">
@@ -70,7 +72,8 @@
             </div>
         </div>
     </div>
-    <!-- Total Transactions End -->
+    <!-- Total Transactions End --> *@
+
     <!-- PROGRAMS -------------------------------------------------------- -->
     @foreach (var inx in ViewBag.frmBtn)
     {
@@ -92,7 +95,7 @@
     }
 </div>
 
-<script src="~/js/apexcharts.min.js"></script>
+@* <script src="~/js/apexcharts.min.js"></script>
 <script>
     // ================================ Users Overview Donut chart Start ================================
     var options = {
@@ -252,4 +255,4 @@
     var chart = new ApexCharts(document.querySelector('#transactionLineChart'), options);
     chart.render();
     // ================================ Total Transaction line chart End ================================
-</script>
+</script> *@
