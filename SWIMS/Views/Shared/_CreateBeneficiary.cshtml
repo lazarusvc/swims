@@ -64,7 +64,8 @@
                 <input name="telephone_number" type="number" class="form-control" placeholder="17675555555"/>
                 </div>
             </div>
-            <div class="row mb-24 gy-3 align-items-center">
+            @*
+                <div class="row mb-24 gy-3 align-items-center">
                 <label class="form-label mb-0 col-sm-4">Status:</label>
                 <div class="col-sm-10">
                     <select class="form-control" name="status">
@@ -78,7 +79,9 @@
                 <div class="col-sm-10">
                 <input name="approved_amount" type="number" class="form-control" placeholder="150"/>
                 </div>
-            </div>
+            </div> 
+            
+            *@
 
             <input type="hidden" name="partialCheck" id="partialCheck" value="@ViewData["UID"]" />
             <input type="submit" value="Create" class="btn rounded-pill btn-success-600" />

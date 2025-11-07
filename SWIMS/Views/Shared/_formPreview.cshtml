@@ -23,7 +23,12 @@
                 else if (@inx.type == "radio-group") // form checkbox field
                 {
                     htmlScript += "$('input[name=" + selector + "]').prop('checked', '" + collection + "');";
-                }  
+                } 
+                else if (@inx.type == "file") // form file field
+                {
+                    htmlScript += "$('input[name=" + selector + "]').before('<br/><a href=../uploads/"+ collection +"> ::ACCESS FILE::</a>');";
+                    htmlScript += "$('input[name=" + selector + "]').hide();";
+                }
                 else // default field
                 {
                     htmlScript += "$('input[name=" + selector + "]').val('" + collection + "').attr('readonly', 'true');";
@@ -39,7 +44,7 @@
                 "$('#financial_institution').hide();" +
                 "$('#city').hide();" +
                 "$.ajax({" +
-                "url: '/api/v1/beneficiary'," +
+                "url: '../api/v1/beneficiary'," +
                 "method: 'GET'," +
                 "dataType: 'json'," +
                 "success: function (data) {" +
