@@ -46,6 +46,9 @@
                                     <a asp-action="Details" asp-route-id="@item.Id" class="bg-info-focus bg-hover-info-200 text-info-600 fw-medium w-40-px h-40-px d-flex justify-content-center align-items-center rounded-circle">
                                         <iconify-icon icon="iconamoon:eye-light"></iconify-icon>
                                     </a>
+                                    <a asp-action="ManageUsers" asp-route-id="@item.Id" class="bg-success-focus text-success-600 bg-hover-success-200 fw-medium w-40-px h-40-px d-flex justify-content-center align-items-center rounded-circle" title="Manage Users">
+                                        <iconify-icon icon="lucide:user-cog"></iconify-icon>
+                                    </a>
                                     <a asp-action="Edit" asp-route-id="@item.Id" class="bg-success-focus text-success-600 bg-hover-success-200 fw-medium w-40-px h-40-px d-flex justify-content-center align-items-center rounded-circle">
                                         <iconify-icon icon="lucide:edit"></iconify-icon>
                                     </a>

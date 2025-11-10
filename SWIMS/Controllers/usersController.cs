@@ -212,5 +212,82 @@ namespace SWIMS.Controllers
                 await _userManager.DeleteAsync(user);
             return RedirectToAction(nameof(Index));
         }
+
+        // GET: users/ManageRoles/5
+        public async Task<IActionResult> ManageRoles(int id)
+        {
+            var user = await _userManager.FindByIdAsync(id.ToString());
+            if (user == null) return NotFound();
+
+            var allRoles = await _roleManager.Roles
+                                             .Select(r => new { r.Id, r.Name })
+                                             .ToListAsync();
+            var userRoleNames = await _userManager.GetRolesAsync(user);
+
+            var vm = new EditUserRolesVM
+            {
+                UserId = user.Id,
+                DisplayName = user.Email ?? user.UserName ?? $"User {user.Id}",
+                Roles = allRoles.Select(r => new RoleChoiceVM
+                {
+                    RoleId = r.Id,
+                    RoleName = r.Name!,
+                    Selected = userRoleNames.Contains(r.Name!)
+                }).OrderBy(x => x.RoleName).ToList()
+            };
+
+            return View(vm);
+        }
+
+        // POST: users/ManageRoles/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ManageRoles(int id, EditUserRolesVM model)
+        {
+            if (id != model.UserId) return NotFound();
+
+            var user = await _userManager.FindByIdAsync(id.ToString());
+            if (user == null) return NotFound();
+
+            var currentRoleNames = await _userManager.GetRolesAsync(user);
+
+            // Desired roles from checkboxes
+            var desiredRoleNames = new List<string>();
+            foreach (var rc in model.Roles)
+            {
+                if (rc.Selected)
+                {
+                    var role = await _roleManager.FindByIdAsync(rc.RoleId.ToString());
+                    if (role != null && !string.IsNullOrWhiteSpace(role.Name))
+                        desiredRoleNames.Add(role.Name);
+                }
+            }
+
+            var toAdd = desiredRoleNames.Except(currentRoleNames).ToList();
+            var toRemove = currentRoleNames.Except(desiredRoleNames).ToList();
+
+            if (toAdd.Any())
+            {
+                var addResult = await _userManager.AddToRolesAsync(user, toAdd);
+                if (!addResult.Succeeded)
+                    foreach (var e in addResult.Errors) ModelState.AddModelError("", e.Description);
+            }
+
+            if (toRemove.Any())
+            {
+                var removeResult = await _userManager.RemoveFromRolesAsync(user, toRemove);
+                if (!removeResult.Succeeded)
+                    foreach (var e in removeResult.Errors) ModelState.AddModelError("", e.Description);
+            }
+
+            if (!ModelState.IsValid)
+            {
+                // Rehydrate display name on error
+                model.DisplayName = user.Email ?? user.UserName ?? $"User {user.Id}";
+                return View(model);
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
     }
 }

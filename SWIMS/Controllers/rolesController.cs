@@ -10,10 +10,12 @@
 //   - Microsoft.AspNetCore.Mvc, Microsoft.AspNetCore.Authorization, Microsoft.AspNetCore.Identity
 // -------------------------------------------------------------------
 
+using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using SWIMS.Models;
+using SWIMS.Models.ViewModels;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -27,16 +29,17 @@ namespace SWIMS.Controllers
     public class rolesController : Controller
     {
         private readonly RoleManager<SwRole> _roleManager;
+        private readonly UserManager<SwUser> _userManager;
 
         /// <summary>
-        /// Constructs an instance of <see cref="rolesController"/> using the provided <see cref="RoleManager{SwRole}"/>.
+        /// Initializes a new instance of the rolesController.
         /// </summary>
-        /// <param name="roleManager">
-        /// The ASP.NET Core Identity manager for handling <see cref="SwRole"/> operations.
-        /// </param>
-        public rolesController(RoleManager<SwRole> roleManager)
+        /// <param name="roleManager">Identity RoleManager for <see cref="SwRole"/>.</param>
+        /// <param name="userManager">Identity UserManager for <see cref="SwUser"/>.</param>
+        public rolesController(RoleManager<SwRole> roleManager, UserManager<SwUser> userManager)
         {
             _roleManager = roleManager;
+            _userManager = userManager;
         }
 
         /// <summary>
@@ -191,6 +194,78 @@ namespace SWIMS.Controllers
         {
             // Use RoleManager.Roles to check existence by ID
             return _roleManager.Roles.Any(r => r.Id == id);
+        }
+
+        // GET: roles/ManageUsers/5
+        public async Task<IActionResult> ManageUsers(int id)
+        {
+            var role = await _roleManager.FindByIdAsync(id.ToString());
+            if (role == null) return NotFound();
+
+            var users = await _userManager.Users.AsNoTracking().ToListAsync();
+
+            var vm = new EditRoleUsersVM
+            {
+                RoleId = role.Id,
+                RoleName = role.Name ?? $"Role {role.Id}",
+                Users = new List<UserChoiceVM>()
+            };
+
+            foreach (var u in users)
+            {
+                var inRole = await _userManager.IsInRoleAsync(u, role.Name!);
+                vm.Users.Add(new UserChoiceVM
+                {
+                    UserId = u.Id,
+                    DisplayName = string.IsNullOrWhiteSpace(u.FirstName) && string.IsNullOrWhiteSpace(u.LastName)
+                                  ? (u.Email ?? u.UserName ?? $"User {u.Id}")
+                                  : $"{u.FirstName} {u.LastName}".Trim(),
+                    Email = u.Email ?? "",
+                    Selected = inRole
+                });
+            }
+
+            vm.Users = vm.Users.OrderBy(x => x.DisplayName).ToList();
+            return View(vm);
+        }
+
+        // POST: roles/ManageUsers/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ManageUsers(int id, EditRoleUsersVM model)
+        {
+            if (id != model.RoleId) return NotFound();
+
+            var role = await _roleManager.FindByIdAsync(id.ToString());
+            if (role == null || string.IsNullOrWhiteSpace(role.Name)) return NotFound();
+
+            // Build desired + current sets
+            var desiredUserIds = model.Users.Where(x => x.Selected).Select(x => x.UserId).ToHashSet();
+            var allUsers = await _userManager.Users.ToListAsync();
+
+            foreach (var u in allUsers)
+            {
+                var currentlyInRole = await _userManager.IsInRoleAsync(u, role.Name);
+                var shouldBeInRole = desiredUserIds.Contains(u.Id);
+
+                if (!currentlyInRole && shouldBeInRole)
+                {
+                    var addRes = await _userManager.AddToRoleAsync(u, role.Name);
+                    if (!addRes.Succeeded)
+                        foreach (var e in addRes.Errors) ModelState.AddModelError("", e.Description);
+                }
+                else if (currentlyInRole && !shouldBeInRole)
+                {
+                    var remRes = await _userManager.RemoveFromRoleAsync(u, role.Name);
+                    if (!remRes.Succeeded)
+                        foreach (var e in remRes.Errors) ModelState.AddModelError("", e.Description);
+                }
+            }
+
+            if (!ModelState.IsValid)
+                return View(model);
+
+            return RedirectToAction(nameof(Index));
         }
     }
 }
