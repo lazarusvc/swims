@@ -224,23 +224,27 @@ namespace SWIMS.Areas.Identity.Pages.Account
                     }
 
 
-                    // 5. Sync LDAP groups into ASP.NET roles *before* signing in
-                    foreach (var dn in ldapUser.Groups)
+                    // 5. (optional) Sync LDAP groups into ASP.NET roles *before* signing in
+                    var syncLdapRoles = _configuration.GetValue<bool>("Ldap:EnableRoleSync", false);
+                    if (syncLdapRoles && ldapUser.Groups != null)
                     {
-                        var m = Regex.Match(dn, @"CN=([^,]+)");
-                        if (!m.Success) continue;
-                        var groupName = m.Groups[1].Value;
-
-                        // ensure the role exists
-                        if (!await _roleManager.RoleExistsAsync(groupName))
+                        foreach (var dn in ldapUser.Groups)
                         {
-                            await _roleManager.CreateAsync(new SwRole { Name = groupName });
-                        }
+                            var m = Regex.Match(dn, @"CN=([^,]+)");
+                            if (!m.Success) continue;
+                            var groupName = m.Groups[1].Value;
 
-                        // ensure the user is in that role
-                        if (!await _userManager.IsInRoleAsync(user, groupName))
-                        {
-                            await _userManager.AddToRoleAsync(user, groupName);
+                            // ensure the role exists
+                            if (!await _roleManager.RoleExistsAsync(groupName))
+                            {
+                                await _roleManager.CreateAsync(new SwRole { Name = groupName });
+                            }
+
+                            // ensure the user is in that role
+                            if (!await _userManager.IsInRoleAsync(user, groupName))
+                            {
+                                await _userManager.AddToRoleAsync(user, groupName);
+                            }
                         }
                     }
 
