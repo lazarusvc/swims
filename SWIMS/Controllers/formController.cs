@@ -32,7 +32,6 @@ namespace SWIMS.Controllers
             return Guid.NewGuid().ToString();
         }
 
-        [HttpGet]
         public async Task<IActionResult> Program(string? uuid)
         {
             // 0. Varibales
@@ -46,12 +45,7 @@ namespace SWIMS.Controllers
             ViewBag.formImage = f_Linq.Select(m => m.image).FirstOrDefault();
             ViewBag.formDesc = f_Linq.Select(m => m.desc).FirstOrDefault();
             ViewBag.header = f_Linq.Select(x => x.header).FirstOrDefault();
-            var linking = f_Linq.Select(x => x.is_linking).FirstOrDefault();
-            if (linking == true)
-            {
-                ViewBag.formLINK = _context.SW_forms.Where(x => x.is_linking == true).ToList();
-                ViewBag.LK = 1;
-            }
+            ViewBag.formLINK = _context.SW_forms.Where(x => x.is_linking == true).ToList();
 
             ViewBag.processes = await _context.SW_formProcesses
                 .Where(c => c.SW_formsId == formId)
@@ -149,11 +143,7 @@ namespace SWIMS.Controllers
             ViewBag.formDesc = f_Linq.Select(m => m.desc).FirstOrDefault();
             ViewBag.header = f_Linq.Select(x => x.header).FirstOrDefault();
             var linking = f_Linq.Select(x => x.is_linking).FirstOrDefault();
-            if (linking == true)
-            {
-                ViewBag.formLINK = _context.SW_forms.Where(x => x.is_linking == true).ToList();
-                ViewBag.LK = 1;
-            }
+            ViewBag.formLINK = _context.SW_forms.Where(x => x.is_linking == true).ToList();
 
             ViewBag.processes = _context.SW_formProcesses
                 .Where(c => c.SW_formsId == formId)
@@ -237,7 +227,6 @@ namespace SWIMS.Controllers
             return View(model);
         }
 
-        [HttpGet]
         public IActionResult Approval(string? uuid)
         {
             var formId = Convert.ToInt32(_context.SW_forms.Where(m => m.uuid == uuid).Select(m => m.Id).FirstOrDefault());
@@ -550,6 +539,25 @@ namespace SWIMS.Controllers
             ViewBag.Collection2 = _fDataType;
             return PartialView("Views/Shared/_formPreview.cshtml");
         }
+        
+        
+        public IActionResult Update(string? dataID, string? uuid)
+        {
+            // 0. Varibales
+            // 
+            var f_Linq = _context.SW_forms.Where(m => m.uuid.Equals(uuid));
+            int formId = Convert.ToInt32(f_Linq.Select(m => m.Id).FirstOrDefault());
+            ViewBag.uuid = uuid;
+            ViewBag.formId = formId;
+            ViewBag.form = f_Linq.Select(m => m.form).FirstOrDefault();
+            ViewBag.formName = f_Linq.Select(m => m.name).FirstOrDefault();
+            ViewBag.formImage = f_Linq.Select(m => m.image).FirstOrDefault();
+            ViewBag.formDesc = f_Linq.Select(m => m.desc).FirstOrDefault();
+            ViewBag.header = f_Linq.Select(x => x.header).FirstOrDefault();
+            ViewBag.formLINK = _context.SW_forms.Where(x => x.is_linking == true).ToList();
+            return View();
+        }
+
         // GET: form
         public async Task<IActionResult> Index()
         {

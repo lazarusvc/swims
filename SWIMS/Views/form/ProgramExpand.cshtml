@@ -13,6 +13,16 @@
 <!-- ----------------------------------------------- -->
 @{
     ViewData["Title"] = "Program - " + @ViewBag.formName;
+
+    // List of forms that are linking
+    // ______________________________
+    //
+    var linkOption = "";
+    @foreach (var inx in ViewBag.formLINK)
+    {
+        linkOption = "<option>--select--</option><option value="+ inx.uuid +">"+ inx.name +"</option>";
+        ViewData["link_UUID"] = inx.uuid;
+    }
 }
 
 <div class="row">
@@ -23,29 +33,16 @@
                     @Html.Raw(@ViewBag.header)
                     <div id="fb-rendered-form"></div>
                     <input type="hidden" name="SW_formsId" value="@ViewBag.formId" />
-                    <br />
-                    <br />
-                    @if (ViewBag.LK == 1)
-                    {
-                        <div class="alert alert-primary bg-primary-50 text-primary-600 border-primary-600 border-start-width-4-px border-top-0 border-end-0 border-bottom-0 px-24 py-13 mb-0 fw-semibold text-lg radius-4 d-flex align-items-center justify-content-between" role="alert">
-                            <div class="d-flex align-items-center gap-2">
-                                <iconify-icon icon="mdi:form-dropdown" class="icon text-xl"></iconify-icon>
-                                Link to form:
-                            </div><br />
-                            <select name="isLinkingForm" class="form-control">
-                                @foreach (var inx in ViewBag.formLINK)
-                                {
-                                    <option value="@inx.Id">FORM ID:- @inx.uuid.Substring(0, 5) - @inx.name</option>
-                                }
-                            </select>
-                        </div>
-                    }
-                    <br />
                     <button type="submit" class="btn btn-success">Submit</button>
                 </form>
                 
             </div>
         </div>
+    </div>
+
+    <!-- LINKING FORM LOGIC ____________________________________________ -->
+    <div id="ex5" class="modal">
+        <partial name="~/Views/Shared/_CreateLinkingForm.cshtml" view-data="ViewData">        
     </div>
 </div>
 
@@ -58,6 +55,9 @@
 <script src="~/js/datatables.min.js"></script>
 <link href="~/lib/trumbowyg-editor/ui/trumbowyg.min.css" rel="stylesheet" />
 <script src="~/lib/trumbowyg-editor/trumbowyg.min.js"></script>
+
+<script src="~/lib/jquery-modal/jquery.modal.min.js"></script>
+<link href="~/lib/jquery-modal/jquery.modal.min.css" rel="stylesheet" />
 <script type="text/javascript">
     // RENDER FORM
     //
@@ -116,7 +116,18 @@
 
                 // Grab ids into an Array
                 var fieldIds = ($field.attr("id")).split(/\s+/).filter(c => c.length > 0);
-                // console.log(fieldIds);
+
+                // If Select Dropdown has field name `linking`
+                //
+                // 1. hide current Dropdown element
+                // 2. infuse WowDash styling Dropdown list
+                // 3. inject Form ID with linking check
+                // 4. Popup the selected partial view linked form
+                //
+                if (fieldName === "linking") {
+                    $('input[name="linking"]').before("<div class='alert alert-primary bg-primary-50 text-primary-600 border-primary-600 border-start-width-4-px border-top-0 border-end-0 border-bottom-0 px-24 py-13 mb-0 fw-semibold text-lg radius-4 d-flex align-items-center justify-content-between' role='alert'><div class='d-flex align-items-center gap-2'><iconify-icon icon='mdi:form-dropdown' class='icon text-xl'></iconify-icon>ID: </div><br><select id='isLinkingForm' class='form-control'>@Html.Raw(linkOption)</select></div>");
+                    $('input[name="linking"]').hide();
+                }
 
                 // API LOGIC
                 //
@@ -205,5 +216,11 @@
         $('.organization').select2();
         $('.financial_institution').select2();
         $('.city').select2();
+    });
+
+    jQuery(function ($) {
+        $('#isLinkingForm').on('change', function(e) {
+              $("#ex5").modal();        
+        });
     });
 </script>
