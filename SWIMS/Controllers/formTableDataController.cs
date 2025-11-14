@@ -1,11 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using SWIMS.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Cryptography;
+using System.Threading.Tasks;
 
 namespace SWIMS.Controllers
 {
@@ -48,6 +49,17 @@ namespace SWIMS.Controllers
         public IActionResult Create()
         {
             ViewData["SW_formsId"] = new SelectList(_context.SW_forms, "Id", "name");
+
+            // Redirect to Program if no
+            // file uploaded on Form
+            // 
+            int noFile = Convert.ToInt32(ViewData["NoFile"]);
+            string uID = Convert.ToString(ViewData["uID"]);
+            if (noFile == 1)
+            {
+                return RedirectToAction("Program", "form", new { uuid = uID });
+            }
+
             return View();
         }
 
@@ -72,9 +84,13 @@ namespace SWIMS.Controllers
                 // consequently updating it's DB row record
                 //
                 // _________________________________________________________
+
                 var formVar = _context.SW_forms.Where(x => x.Id == sW_formTableDatum.SW_formsId);
                 int? fID = formVar.Select(x => x.Id).FirstOrDefault();
                 string? formField_w_File = _context.SW_formTableData_Types.Where(x => x.SW_formsId == fID && x.type == "file").Select(x => x.field).FirstOrDefault();
+                string? uID = formVar.Select(x => x.uuid).FirstOrDefault();
+                ViewData["uID"] = uID;
+                var uploadedFile = Request.Form.Files[formField_w_File] as IFormFile;
 
                 // Define a path to save the file (e.g., in wwwroot/uploads)
                 var uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
@@ -82,30 +98,29 @@ namespace SWIMS.Controllers
                 {
                     Directory.CreateDirectory(uploadPath);
                 }
-
-                var uploadedFile = Request.Form.Files[formField_w_File] as IFormFile;
-                if (uploadedFile.Length != 0)
+                
+                if (uploadedFile == null || uploadedFile.Length == 0)
                 {
-                    // Create a unique file name to avoid conflicts
-                    var uniqueFileName = Guid.NewGuid().ToString() + "_" + uploadedFile.FileName;
-                    var filePath = Path.Combine(uploadPath, uniqueFileName);
-
-                    // Save the file to the server
-                    using (var stream = new FileStream(filePath, FileMode.Create))
-                    {
-                        await uploadedFile.CopyToAsync(stream);
-                    }
-
-                    await _context.SW_formTableData
-                            .Where(r => r.Id == sW_formTableDatum.Id)
-                            .ExecuteUpdateAsync(set => set
-                            .SetProperty(r => EF.Property<string>(r, formField_w_File), _ => uniqueFileName)
-                        );
+                    ViewData["NoFile"] = 1;
+                    return BadRequest("No file uploaded.");
                 }
+                // Create a unique file name to avoid conflicts
+                var uniqueFileName = Guid.NewGuid().ToString() + "_" + uploadedFile.FileName;
+                var filePath = Path.Combine(uploadPath, uniqueFileName);
+
+                // Save the file to the server
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await uploadedFile.CopyToAsync(stream);
+                }
+
+                await _context.SW_formTableData
+                        .Where(r => r.Id == sW_formTableDatum.Id)
+                        .ExecuteUpdateAsync(set => set
+                        .SetProperty(r => EF.Property<string>(r, formField_w_File), _ => uniqueFileName));
                 //
                 //  ________________________________________________________
-
-                string? uID = formVar.Select(x => x.uuid).FirstOrDefault();
+                
                 return RedirectToAction("Program", "form", new { uuid = uID });
             }
             ViewData["SW_formsId"] = new SelectList(_context.SW_forms, "Id", "name", sW_formTableDatum.SW_formsId);

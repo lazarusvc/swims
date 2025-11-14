@@ -16,8 +16,17 @@
     ViewData["UID"] = @ViewBag.uuid;
 
     var uid = ViewData["UID"];
+
+    // List of forms that are linking
+    // ______________________________
+    //
+    var linkOption = "";
+    @foreach (var inx in ViewBag.formLINK)
+    {
+        linkOption = "<option>--select--</option><option value=" + inx.uuid + ">" + inx.name + "</option>";
+        ViewData["link_UUID"] = inx.uuid;
+    }
 }
-@model FormTableViewModel
 
 <hr />
 <br />
@@ -124,6 +133,13 @@
             <iconify-icon icon="tabler:building-bank" class="menu-icon"></iconify-icon> Financial Institution
         </a>
     </div>
+
+    <!-- LINKING FORM LOGIC ____________________________________________ -->
+    <div id="ex5" class="modal">
+        <partial name="~/Views/Shared/_CreateLinkingForm.cshtml" view-data="ViewData">
+    </div>
+
+
 </div>
 <br />
 <div class="row">
@@ -131,30 +147,12 @@
         <div class="card radius-12 h-100">
             <div class="card-body py-16 px-24" style="overflow-y: scroll; height:500px;">
                 <a asp-action="ProgramExpand" asp-route-uuid="@ViewBag.uuid" type="button" align="end">
-                    <iconify-icon icon="cuida:expand-outline" class="text-xl"></iconify-icon>
+                    <iconify-icon icon="cuida:expand-outline" class="text-xl"></iconify-icon>                    
                 </a>
                 <form asp-action="Create" asp-controller="formTableData" method="post" enctype="multipart/form-data">
                     @Html.Raw(@ViewBag.header)
                     <div id="fb-rendered-form"></div>
                     <input type="hidden" name="SW_formsId" value="@ViewBag.formId" />
-                    <br />
-                    <br /> 
-                    @if (ViewBag.LK == 1)
-                    {
-                        <div class="alert alert-primary bg-primary-50 text-primary-600 border-primary-600 border-start-width-4-px border-top-0 border-end-0 border-bottom-0 px-24 py-13 mb-0 fw-semibold text-lg radius-4 d-flex align-items-center justify-content-between" role="alert">
-                            <div class="d-flex align-items-center gap-2">
-                                <iconify-icon icon="mdi:form-dropdown" class="icon text-xl"></iconify-icon>
-                                Link to form:
-                            </div><br/>
-                            <select name="isLinkingForm" class="form-control">
-                                @foreach (var inx in ViewBag.formLINK)
-                                {
-                                    <option value="@inx.Id">FORM ID:- @inx.uuid.Substring(0, 5) - @inx.name</option>
-                                }
-                            </select>
-                        </div>
-                    }
-                    <br />
                     <button type="submit" class="btn btn-success">Submit</button>
                 </form>
                 
@@ -222,9 +220,9 @@
                         @foreach (var row in Model.Rows)
                         {
                             <tr>
-                                <td>
-                                    
+                                <td>                                    
                                     <a asp-action="Preview" asp-route-dataID="@row["IDS"]" asp-route-uuid="@ViewBag.uuid" class="w-32-px h-32-px bg-primary-light text-primary-600 rounded-circle d-inline-flex align-items-center justify-content-center"><iconify-icon icon="iconamoon:eye-light"></iconify-icon></a>
+                                    <a asp-action="Update" asp-route-dataID="@row["IDS"]" asp-route-uuid="@ViewBag.uuid" class="w-32-px h-32-px bg-primary-light text-primary-600 rounded-circle d-inline-flex align-items-center justify-content-center"><iconify-icon icon="iconamoon:eye-light"></iconify-icon></a>
                                 </td>
                                 @foreach (var col in Model.Columns)
                                 {
@@ -303,12 +301,25 @@
                     fieldName_actual = fieldName;
                 }
 
+
                 //  Grab classes into an array
                 var fieldClasses = ($field.attr("class")).split(/\s+/).filter(c => c.length > 0);
 
                 // Grab ids into an Array
                 var fieldIds = ($field.attr("id")).split(/\s+/).filter(c => c.length > 0);
                 // console.log(fieldIds);
+
+                // If Select Dropdown has field name `linking`
+                //
+                // 1. hide current Dropdown element
+                // 2. infuse WowDash styling Dropdown list
+                // 3. inject Form ID with linking check
+                // 4. Popup the selected partial view linked form
+                //
+                if (fieldName === "linking") {
+                    $('input[name="linking"]').before("<div class='alert alert-primary bg-primary-50 text-primary-600 border-primary-600 border-start-width-4-px border-top-0 border-end-0 border-bottom-0 px-24 py-13 mb-0 fw-semibold text-lg radius-4 d-flex align-items-center justify-content-between' role='alert'><div class='d-flex align-items-center gap-2'><iconify-icon icon='mdi:form-dropdown' class='icon text-xl'></iconify-icon>ID: </div><br><select id='isLinkingForm' class='form-control'>@Html.Raw(linkOption)</select></div>");
+                    $('input[name="linking"]').hide();
+                }
                 
                 // API LOGIC
                 //
@@ -351,8 +362,7 @@
                             if (fieldName === "organization") {
                                 $("." + fieldName).val(select_list_classVAL[2]);
                             }
-                        });                      
-
+                        });  
 
                     },
                     error: function (xhr, status, error) {
@@ -369,9 +379,9 @@
             findFields($formContainer);
         }
     });
-    // TABLE DATATABLE INIT
-    //
-    // -----------------------------------------------------------------------------------------------------
+    
+
+    // ------------------------------------------- TABLE DATATABLE INIT
     let table = new DataTable('#dataTable');
 
     // ------------------------------------------- TINYMCE - WYSWYGET EDITOR
@@ -379,7 +389,7 @@
         $(".trumbowyg").trumbowyg({
             btns: [
                 ['viewHTML'],
-                ['undo', 'redo'], // Only supported in Blink browsers
+                ['undo', 'redo'], 
                 ['formatting'],
                 ['strong', 'em', 'del'],
                 ['superscript', 'subscript'],
@@ -401,5 +411,12 @@
         $('.organization').select2();
         $('.financial_institution').select2();
         $('.city').select2();
+    });
+
+    // ------------------------------------------- SELECT2 Dropdown
+    jQuery(function ($) {
+        $('#isLinkingForm').on('keyup change', function() {
+            $("#ex5").modal();
+        });
     });
 </script>
