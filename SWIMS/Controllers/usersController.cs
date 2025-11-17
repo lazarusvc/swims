@@ -13,13 +13,13 @@ using Microsoft.EntityFrameworkCore; // <-- added for ToListAsync/AsNoTracking
 using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
 using SWIMS.Models;
 using SWIMS.Models.ViewModels;
+using SWIMS.Security;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace SWIMS.Controllers
 {
-    [Authorize(Roles = "Admin")]
     public class usersController : Controller
     {
         private readonly UserManager<SwUser> _userManager;

@@ -6,3 +6,11 @@
     display: block;
     margin: 0 auto;
 }
+
+/* Compact circular badge for sidebar items */
+#notif-badge-sidebar {
+    width: 22px;  smaller than header’s 40px 
+    height: 22px;
+    font-size: 12px;  readable but compact 
+    margin-left: 8px;  little gap from label 
+}

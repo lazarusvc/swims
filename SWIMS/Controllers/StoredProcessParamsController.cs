@@ -8,7 +8,6 @@ using SWIMS.Models.ViewModels;
 
 namespace SWIMS.Controllers
 {
-    [Authorize(Roles = "Admin")]
     [Route("[controller]")] // base = /StoredProcessParams
     public class StoredProcessParamsController : Controller
     {

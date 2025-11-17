@@ -10,7 +10,6 @@ using SWIMS.Services.Diagnostics;
 namespace SWIMS.Areas.Admin.Controllers
 {
     [Area("Admin")]
-    [Authorize(Roles = "Admin")]
     public class PublicEndpointsController : Controller
     {
         private readonly SwimsIdentityDbContext _db;

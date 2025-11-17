@@ -19,7 +19,7 @@ public static class OperationsEndpoints
 
         if (env.IsDevelopment())
         {
-            var group = app.MapGroup("__dev__/ops").RequireAuthorization();
+            var group = app.MapGroup("__dev__/ops").RequireAuthorization(policy => policy.RequireRole("SuperAdmin"));
 
             group.MapPost("email-test", async (IEmailOutbox outbox, string to) =>
             {

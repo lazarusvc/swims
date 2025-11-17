@@ -6,7 +6,21 @@
 @using SWIMS.Models
 
 @using Microsoft.AspNetCore.Authorization
+
+@using SWIMS.Security
 @inject IAuthorizationService Authz
+
+@functions {
+    public async Task<bool> Can(string policy)
+        => (await Authz.AuthorizeAsync(User, policy)).Succeeded;
+
+    public async Task<bool> CanAny(params string[] policies)
+    {
+        foreach (var p in policies)
+            if ((await Authz.AuthorizeAsync(User, p)).Succeeded) return true;
+        return false;
+    }
+}
 
 @inject SignInManager<SwUser> SignInManager
 @inject UserManager<SwUser> UserManager
@@ -25,7 +39,7 @@
         </a>
     </div>
     <div class="sidebar-menu-area">
-        <ul class="sidebar-menu" id="sidebar-menu">
+        @* <ul class="sidebar-menu" id="sidebar-menu">
 
             <!-- DASHBOARD ----------------------------------------------------------- -->
             <li class="dropdown">
@@ -53,6 +67,7 @@
                 <li>
                     <a asp-area="Portal" asp-page="/Messenger/Chat">
                         <iconify-icon icon="bi:chat-dots" class="menu-icon"></iconify-icon>
+                        <iconify-icon icon="mdi:message-text-outline" class="menu-icon"></iconify-icon>
                         <span>Messenger</span>
                     </a>
                 </li>
@@ -272,6 +287,418 @@
 
             
             
+            
+            
+        </ul>
+
+        <p>___________</p> *@
+
+        <ul class="sidebar-menu" id="sidebar-menu">
+
+            @* ───────────── Messenger ───────────── *@
+            @if (User.Identity?.IsAuthenticated ?? false)
+            {
+                <li>
+                    <a asp-area="Portal" asp-page="/Messenger/Chat">
+                        <iconify-icon icon="mdi:message-text-outline" class="menu-icon"></iconify-icon>
+                        <span>Messenger</span>
+                        @* <span id="notif-badge-sidebar"
+                              class="d-none text-primary-600 fw-semibold rounded-circle bg-base d-flex justify-content-center align-items-center"
+                              aria-live="polite" aria-label="Unread messages">
+                            0
+                        </span> *@
+                    </a>
+                </li>
+            }
+
+            @* ───────────── Programs & Forms ───────────── *@
+            @if (await CanAny(
+                        Permissions.Intake_View, Permissions.Intake_Create, Permissions.Intake_Edit, Permissions.Intake_Assign,
+                        Permissions.Clients_View, Permissions.Clients_Create, Permissions.Clients_Edit, Permissions.Clients_Archive,
+                        Permissions.Applications_View, Permissions.Applications_Edit, Permissions.Applications_Assign,
+                        Permissions.Assessment_View,
+                        Permissions.Approvals_L1, Permissions.Approvals_L2, Permissions.Approvals_L3, Permissions.Approvals_L4, Permissions.Approvals_L5,
+                        Permissions.Payments_View, Permissions.Payments_Validate, Permissions.Payments_ExportLists, Permissions.Payments_Reconcile,
+                        Permissions.Forms_Builder, Permissions.Forms_Submit))
+            {
+                <li class="dropdown">
+                    <a href="javascript:void(0)">
+                        <iconify-icon icon="mdi:clipboard-list-outline" class="menu-icon"></iconify-icon>
+                        <span>Programs &amp; Forms</span>
+                    </a>
+                    <ul class="sidebar-submenu">
+                        @* Programs Dashboard (overview) *@
+                        @if (await CanAny(
+                                            Permissions.Intake_View, Permissions.Clients_View, Permissions.Applications_View, Permissions.Assessment_View,
+                                            Permissions.Approvals_L1, Permissions.Approvals_L2, Permissions.Approvals_L3, Permissions.Approvals_L4, Permissions.Approvals_L5,
+                                            Permissions.Payments_View))
+                        {
+                            <li>
+                                <a asp-area="" asp-controller="Home" asp-action="Index">
+                                    <iconify-icon icon="mdi:view-dashboard-outline" class="menu-icon"></iconify-icon>
+                                    <span>Programs Dashboard</span>
+                                </a>
+                            </li>
+                        }
+
+
+                        @* Intake *@
+                        @if (await CanAny(Permissions.Intake_View, Permissions.Intake_Create, Permissions.Intake_Edit, Permissions.Intake_Assign))
+                        {
+                            <li>
+                                <a asp-controller="Intake" asp-action="Index">
+                                    <iconify-icon icon="mdi:inbox-arrow-down" class="menu-icon"></iconify-icon>
+                                    <span>Intake</span>
+                                </a>
+                            </li>
+                        }
+
+                        @* Clients *@
+                        @if (await CanAny(Permissions.Clients_View, Permissions.Clients_Create, Permissions.Clients_Edit, Permissions.Clients_Archive))
+                        {
+                            <li>
+                                <a asp-controller="Clients" asp-action="Index">
+                                    <iconify-icon icon="mdi:account-group" class="menu-icon"></iconify-icon>
+                                    <span>Clients</span>
+                                </a>
+                            </li>
+                        }
+
+                        @* Applications *@
+                        @if (await CanAny(Permissions.Applications_View, Permissions.Applications_Edit, Permissions.Applications_Assign))
+                        {
+                            <li>
+                                <a asp-controller="Applications" asp-action="Index">
+                                    <iconify-icon icon="mdi:file-document-edit-outline" class="menu-icon"></iconify-icon>
+                                    <span>Applications</span>
+                                </a>
+                            </li>
+                        }
+
+                        @* Assessment *@
+                        @if (await Can(Permissions.Assessment_View))
+                        {
+                            <li>
+                                <a asp-controller="Assessment" asp-action="Index">
+                                    <iconify-icon icon="mdi:clipboard-check-outline" class="menu-icon"></iconify-icon>
+                                    <span>Assessment</span>
+                                </a>
+                            </li>
+                        }
+
+                        @* Approvals (any level L1–L5) *@
+                        @if (await CanAny(Permissions.Approvals_L1, Permissions.Approvals_L2, Permissions.Approvals_L3, Permissions.Approvals_L4, Permissions.Approvals_L5))
+                        {
+                            <li>
+                                <a asp-controller="Approvals" asp-action="Index">
+                                    <iconify-icon icon="mdi:check-decagram-outline" class="menu-icon"></iconify-icon>
+                                    <span>Approvals</span>
+                                </a>
+                            </li>
+                        }
+
+                        @* Payments *@
+                        @if (await CanAny(Permissions.Payments_View, Permissions.Payments_Validate, Permissions.Payments_ExportLists, Permissions.Payments_Reconcile))
+                        {
+                            <li>
+                                <a asp-controller="Payments" asp-action="Index">
+                                    <iconify-icon icon="mdi:cash-check" class="menu-icon"></iconify-icon>
+                                    <span>Payments</span>
+                                </a>
+                            </li>
+                        }
+
+                        @* Form Design & Admin *@
+                        @if (await Can(Permissions.Forms_Builder))
+                        {
+                            <li class="sidebar-menu-group-title">Form Design &amp; Admin</li>
+                           
+                            <li>
+                                <a asp-area="" asp-controller="form" asp-action="Index">
+                                    <iconify-icon icon="mdi:table-cog" class="menu-icon"></iconify-icon>
+                                    <span>Form Management</span>
+                                </a>
+                            </li>
+
+                            <li>
+                                <a asp-area="" asp-controller="form" asp-action="Create">
+                                    <iconify-icon icon="mdi:form-select" class="menu-icon"></iconify-icon>
+                                    <span>Form Builder</span>
+                                </a>
+                            </li>
+                               
+                        }
+                    </ul>
+                </li>
+            }
+
+            @* ───────────── Reference Data & Site Identity ───────────── *@
+            @if (await CanAny(Permissions.RefData_Manage, Permissions.Admin_Settings))
+            {
+                <li class="dropdown">
+                    <a href="javascript:void(0)">
+                        <iconify-icon icon="mdi:database-cog-outline" class="menu-icon"></iconify-icon>
+                        <span>Reference Data</span>
+                    </a>
+                    <ul class="sidebar-submenu">
+                        @* Site Identity / Branding (uses Admin.Settings) *@
+                        @if (await Can(Permissions.Admin_Settings))
+                        {
+                            <li>
+                                <a asp-area="" asp-controller="identity" asp-action="Index">
+                                    <iconify-icon icon="mdi:palette-swatch-outline" class="menu-icon"></iconify-icon>
+                                    <span>Site Identity</span>
+                                </a>
+                            </li>
+                        }
+
+                        @* Prefilled datasets (cities, beneficiaries, orgs, financial institutions) *@
+                        @if (await Can(Permissions.RefData_Manage))
+                        {
+                            <li>
+                                <a asp-area="" asp-controller="beneficiary" asp-action="Index">
+                                    <iconify-icon icon="mdi:account-multiple-outline" class="menu-icon"></iconify-icon>
+                                    <span>Beneficiaries</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a asp-area="" asp-controller="city" asp-action="Index">
+                                    <iconify-icon icon="mdi:city-variant-outline" class="menu-icon"></iconify-icon>
+                                    <span>Cities</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a asp-area="" asp-controller="organization" asp-action="Index">
+                                    <iconify-icon icon="mdi:office-building-cog-outline" class="menu-icon"></iconify-icon>
+                                    <span>Organizations</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a asp-area="" asp-controller="financial_institution" asp-action="Index">
+                                    <iconify-icon icon="mdi:bank-outline" class="menu-icon"></iconify-icon>
+                                    <span>Financial Institutions</span>
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </li>
+            }
+
+
+            @* ---------- Admin (Users / Roles / Settings) ---------- *@
+            @if (await CanAny(Permissions.Admin_Users, Permissions.Admin_Roles, Permissions.Admin_Settings))
+            {
+                <li class="dropdown">
+                    <a href="javascript:void(0)">
+                        <iconify-icon icon="solar:palette-round-outline" class="menu-icon"></iconify-icon>
+                        <span>Admin</span>
+                    </a>
+                    <ul class="sidebar-submenu">
+                        @if (await Can(Permissions.Admin_Users))
+                        {
+                            <li>
+                                <a asp-area="" asp-controller="Users" asp-action="Index">
+                                    <iconify-icon icon="tabler:users" class="menu-icon"></iconify-icon> User Management
+                                </a>
+                            </li>
+                        }
+                        
+                        @if (await Can(Permissions.Admin_Roles))
+                        {
+                            <li>
+                                <a asp-area="" asp-controller="Roles" asp-action="Index">
+                                    <iconify-icon icon="tabler:shield-lock" class="menu-icon"></iconify-icon> Role Management
+                                </a>
+                            </li>
+                        }
+
+                        @if (await Can(Permissions.Admin_Settings))
+                        {
+                            <li>
+                                <a asp-area="" asp-controller="Settings" asp-action="Index">
+                                    <iconify-icon icon="tabler:shield-lock" class="menu-icon"></iconify-icon> System Settings
+                                </a>
+                            </li>
+                        }
+                        
+                    </ul>
+                </li>
+            }
+
+            @* ---------- Authorization Module ---------- *@
+            @if (await CanAny(Permissions.Admin_Policies, Permissions.Admin_Endpoints, Permissions.Admin_PublicEndpoints, Permissions.Admin_RouteInspector))
+            {
+                <li class="dropdown">
+                    <a href="javascript:void(0)">
+                        <iconify-icon icon="solar:widget-4-outline" class="menu-icon"></iconify-icon>
+                        <span>Authorization</span>
+                    </a>
+                    <ul class="sidebar-submenu">
+                        @if (await Can(Permissions.Admin_Policies))
+                        {
+                            <li>
+                                <a asp-area="Admin" asp-controller="AuthorizationPolicies" asp-action="Index">
+                                    <iconify-icon icon="tabler:shield-check" class="menu-icon"></iconify-icon> Policies
+                                </a>
+                            </li>
+                        }
+                        
+                        @if (await Can(Permissions.Admin_Endpoints))
+                        {
+                            <li>
+                                <a asp-area="Admin" asp-controller="EndpointPolicies" asp-action="Index">
+                                    <iconify-icon icon="mdi:shield-key-outline" class="menu-icon"></iconify-icon> Endpoint Policies
+                                </a>
+                            </li>
+                        }
+
+                        @if (await Can(Permissions.Admin_PublicEndpoints))
+                        {
+                            <li>
+                                <a asp-area="Admin" asp-controller="PublicEndpoints" asp-action="Index">
+                                    <iconify-icon icon="tabler:world" class="menu-icon"></iconify-icon> Public Endpoints
+                                </a>
+                            </li>
+                        }
+
+                        @if (await Can(Permissions.Admin_RouteInspector))
+                        {
+                            <li>
+                                <a asp-area="Admin" asp-controller="RouteInspector" asp-action="Index">
+                                    <iconify-icon icon="tabler:route" class="menu-icon"></iconify-icon> Route Inspector
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </li>
+            }
+
+            @* ---------- Audit / Session Logs ---------- *@
+            @if (await CanAny(Permissions.Admin_AuditLogs, Permissions.Admin_SessionLog))
+            {
+                <!-- DEV & OPS ----------------------------------------------------------- -->
+                <li class="dropdown">
+                    <a href="javascript:void(0)">
+                        <iconify-icon icon="tabler:tools" class="menu-icon"></iconify-icon>
+                        <span>Monitoring</span>
+                    </a>
+                    <ul class="sidebar-submenu">
+                        @if (await Can(Permissions.Admin_AuditLogs))
+                        {
+                            <li>
+                                <a asp-area="Portal" asp-controller="Logs" asp-action="Audit">
+                                    <iconify-icon icon="mdi:file-search-outline" class="menu-icon"></iconify-icon> Audit Logs
+                                </a>
+                            </li>
+                        }
+
+                        @if (await Can(Permissions.Admin_SessionLog))
+                        {
+                            <li>
+                                <a asp-area="Portal" asp-controller="Logs" asp-action="Sessions">
+                                    <iconify-icon icon="tabler:timeline" class="menu-icon"></iconify-icon> Session Logs
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </li>
+            }
+
+            @* ---------- Stored Procedures (Manage / Params / Run) ---------- *@
+            @if (await CanAny(Permissions.SP_Manage, Permissions.SP_Params, Permissions.SP_Run))
+            {
+                <li class="dropdown">
+                    <a href="javascript:void(0)">
+                        <iconify-icon icon="solar:code-square-broken" class="menu-icon"></iconify-icon>
+                        <span>Stored Procedures</span>
+                    </a>
+                    <ul class="sidebar-submenu">
+                        @if (await Can(Permissions.SP_Manage))
+                        {
+                            <li>
+                                <a asp-area="" asp-controller="StoredProcessesAdmin" asp-action="Index">
+                                    <iconify-icon icon="tabler:database-cog" class="menu-icon"></iconify-icon> Manage Definitions
+                                </a>
+                            </li>
+                        }
+
+                        @if (await Can(Permissions.SP_Params))
+                        {
+                            <li>
+                                <a asp-area="" asp-controller="StoredProcessParams" asp-action="Index">
+                                    <iconify-icon icon="tabler:adjustments" class="menu-icon"></iconify-icon> Parameters
+                                </a>
+                            </li>
+                        }
+
+                        @if (await Can(Permissions.SP_Run))
+                        {
+                            <li>
+                                <a asp-area="" asp-controller="StoredProcesses" asp-action="Index">
+                                    <iconify-icon icon="mdi:play-circle-outline" class="menu-icon"></iconify-icon> Run
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </li>
+            }
+
+            @* ---------- Reports / SSRS ---------- *@
+            @if (await Can(Permissions.Reports_View))
+            {
+                <li class="dropdown">
+                    <a href="javascript:void(0)">
+                        <iconify-icon icon="solar:palette-round-outline" class="menu-icon"></iconify-icon>
+                        <span>Reports</span>
+                    </a>
+                    <ul class="sidebar-submenu">
+                        <li>
+                            <a asp-area="Admin" asp-controller="ReportsAdmin" asp-action="Index">
+                                <iconify-icon icon="mdi:file-chart-outline" class="menu-icon"></iconify-icon>
+                                <span>Manage Definitions</span>
+                            </a>
+                        </li>
+
+                        <li>
+                            <a asp-area="" asp-controller="Reports" asp-action="Index">
+                                <iconify-icon icon="mdi:play-circle-outline" class="menu-icon"></iconify-icon> Run
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+            }
+
+            @* ---------- API & Jobs Dashboards ---------- *@
+            @if (await CanAny(Permissions.Admin_ApiDashboard, Permissions.Admin_Hangfire))
+            {
+                <li class="dropdown">
+                    <a href="javascript:void(0)">
+                        <iconify-icon icon="solar:layers-minimalistic-broken" class="menu-icon"></iconify-icon>
+                        <span>Dashboards</span>
+                    </a>
+                    <ul class="sidebar-submenu">
+                        @if (await Can(Permissions.Admin_ApiDashboard))
+                        {
+                            <li>
+                                <a asp-area="Admin" asp-controller="Api" asp-action="Dashboard">
+                                    <iconify-icon icon="mdi:api" class="menu-icon"></iconify-icon>
+                                    <span>API Dashboard</span>
+                                </a>
+                            </li>
+                        }
+
+                        @if (await Can(Permissions.Admin_Hangfire))
+                        {
+                            <li>
+                                <a href="@Url.Content("~/ops/hangfire")" rel="nofollow" target="_blank">
+                                    <iconify-icon icon="tabler:flame" class="menu-icon"></iconify-icon> Hangfire Dashboard
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </li>
+            }
+
             @if (SignInManager.IsSignedIn(User))
             {
                 <li>
@@ -285,7 +712,7 @@
                     </a>
                 </li>
             }
-            
         </ul>
+
     </div>
 </aside>

@@ -10,12 +10,13 @@
 //   - Microsoft.AspNetCore.Mvc, Microsoft.AspNetCore.Authorization, Microsoft.AspNetCore.Identity
 // -------------------------------------------------------------------
 
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using SWIMS.Models;
 using SWIMS.Models.ViewModels;
+using SWIMS.Security;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -25,7 +26,6 @@ namespace SWIMS.Controllers
     /// Controller for creating, reading, updating, and deleting <see cref="SwRole"/> entities.
     /// Secured so that only users assigned to the "Admin" role may invoke its endpoints.
     /// </summary>
-    [Authorize(Roles = "Admin")]
     public class rolesController : Controller
     {
         private readonly RoleManager<SwRole> _roleManager;
