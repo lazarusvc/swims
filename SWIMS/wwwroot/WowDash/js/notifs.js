@@ -20,6 +20,7 @@
         const list = document.getElementById('notif-list');
         const badge = document.getElementById('notif-badge');
         const badgeH = document.getElementById('notif-badge-header'); // header bubble (optional)
+        const badgeS = document.getElementById('notif-badge-sidebar'); // header bubble (optional)
         const btnAll = document.getElementById('notif-mark-all');
         const btnMore = document.getElementById('notif-load-more');
 
@@ -39,6 +40,7 @@
                 badge.classList.add('d-none');
             }
             if (badgeH) badgeH.textContent = String(count || 0);
+            if (badgeS) badgeS.textContent = String(count || 0);
         };
 
         const liHtml = (n) => {

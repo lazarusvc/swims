@@ -9,7 +9,6 @@ using SWIMS.Models.ViewModels;
 
 namespace SWIMS.Controllers
 {
-    [Authorize(Roles = "Admin")]
     public class StoredProcessesAdminController : Controller
     {
         private readonly SwimsStoredProcsDbContext _db;

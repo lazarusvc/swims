@@ -46,6 +46,9 @@ using System.Net;
 using System.Security.Claims;
 using System.Threading;
 
+using MsLogger = Microsoft.Extensions.Logging;
+
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Serilog bootstrap (read from config + dev-friendly console)
@@ -143,11 +146,7 @@ builder.Services.Configure<ReportingOptions>(builder.Configuration.GetSection("R
 builder.Services.AddScoped<ISsrsUrlBuilder, SsrsUrlBuilder>();
 
 // Configure Razor Pages
-builder.Services.AddRazorPages(options =>
-{
-    // Require auth for all Portal pages by default
-    options.Conventions.AuthorizeAreaFolder("Portal", "/");
-});
+builder.Services.AddRazorPages();
 
 // ------------------------------------------------------
 // Configure Identity and authentication services
@@ -292,28 +291,62 @@ builder.Services.AddEndpointsApiExplorer();
 var app = builder.Build();
 
 
-//using (var scope = app.Services.CreateScope())
-//{
-//    var services = scope.ServiceProvider;
-//    try
-//    {
-//        // Run pending migrations (Identity DB)
-//        var db_1 = services.GetRequiredService<SwimsIdentityDbContext>();
-//        db_1.Database.Migrate();
-//        //  re-enable for second DB:
-//        // var db_2 = services.GetRequiredService<SwimsDb_moreContext>();
-//        // db_2.Database.Migrate();
+// ---- Safe Migrate + Seed (Dev or when explicitly enabled) ----
+if (app.Environment.IsDevelopment() ||
+    (builder.Configuration.GetValue<bool?>("Auth:SeedOnStartup") ?? false))
+{
+    using var scope = app.Services.CreateScope();
+    var services = scope.ServiceProvider;
 
-//        // Seed roles  admin + policies
-//        await SeedData.EnsureSeedDataAsync(services);
-//    }
-//    catch (Exception ex)
-//    {
-//        var logger = services.GetRequiredService<ILogger<Program>>();
-//        logger.LogError(ex, "Seeding failed at startup.");
-//        throw; // fail fast so we see the real error
-//    }
-//}
+    // Use Microsoft logger explicitly (avoid Serilog ambiguity)
+    var logger = services.GetRequiredService<MsLogger.ILogger<Program>>();
+
+    static async Task MigrateIfPendingAsync<T>(IServiceProvider sp, MsLogger.ILogger log)
+        where T : DbContext
+    {
+        var ctx = sp.GetRequiredService<T>();
+        try
+        {
+            var pending = await ctx.Database.GetPendingMigrationsAsync();
+            if (pending.Any())
+            {
+                log.LogInformation("Applying {Count} migrations for {Context}...", pending.Count(), typeof(T).Name);
+                await ctx.Database.MigrateAsync();
+                log.LogInformation("{Context} migrations complete.", typeof(T).Name);
+            }
+            else
+            {
+                log.LogInformation("No pending migrations for {Context}.", typeof(T).Name);
+            }
+        }
+        catch (InvalidOperationException ex) when (
+            ex.Message.Contains("PendingModelChangesWarning", StringComparison.OrdinalIgnoreCase))
+        {
+            // Don’t block startup in dev/staging—log & continue to seeding.
+            log.LogWarning(ex,
+                "Skipping auto-migrate for {Context} due to pending model changes. " +
+                "Run Add-Migration/Update-Database for this context.", typeof(T).Name);
+        }
+    }
+
+    try
+    {
+        // Multi-DbContext: run each independently (history tables are separate)
+        //await MigrateIfPendingAsync<SwimsIdentityDbContext>(services, logger);
+        //await MigrateIfPendingAsync<SwimsDb_moreContext>(services, logger);
+        //await MigrateIfPendingAsync<SwimsStoredProcsDbContext>(services, logger);
+        //await MigrateIfPendingAsync<SwimsReportsDbContext>(services, logger);
+
+        // Seed base defaults (idempotent, additive)
+        await SeedData.EnsureSeedDataAsync(services);
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Migrate/Seed failed at startup.");
+        if (app.Environment.IsDevelopment()) throw;
+        // In non-Dev, log and continue so the app still boots.
+    }
+}
 
 
 // --- PathBase / reverse-proxy support

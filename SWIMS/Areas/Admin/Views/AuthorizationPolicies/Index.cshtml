@@ -19,7 +19,7 @@
         <tr>
             <th>Name</th>
             <th>Roles</th>
-            <th>Enabled</th>
+            <th>Status</th>
             <th>Updated</th>
             <th></th>
         </tr>
@@ -30,10 +30,6 @@
             <tr>
                 <td>
                     @p.Name
-                    @if (p.IsSystem)
-                    {
-                        <span class="badge bg-info ms-2">System</span>
-                    }
                 </td>
 
                 <td>
@@ -59,27 +55,52 @@
                     }
                 </td>
                 <td>@p.UpdatedAt.LocalDateTime</td>
-                @{
-                    bool isSystem = string.Equals(p.Name, "AdminOnly", StringComparison.OrdinalIgnoreCase);
-                }
-                <td class="text-end">
-                    <a asp-action="Edit" asp-route-id="@p.Id" class="btn btn-sm btn-outline-primary">Edit</a>
-
-                    @if (!p.IsSystem)
+                <td class="text-center align-middle">
+                    @if (p.IsSystem)
                     {
-                        <form asp-action="Toggle" asp-route-id="@p.Id" method="post" class="d-inline">
-                            @Html.AntiForgeryToken()
-                            <button type="submit" class="btn btn-sm btn-outline-warning">
-                                @(p.IsEnabled ? "Disable" : "Enable")
-                            </button>
-                        </form>
+                        <span class="badge bg-info d-inline-flex align-items-center justify-content-center" style="white-space:nowrap;">
+                            <iconify-icon icon="mdi:lock-outline"
+                                          style="display:inline-block; vertical-align:middle; margin-right:1ch;"></iconify-icon>
+                            <span style="line-height:1;">System</span>
+                        </span>
+                    }
+                    else
+                    {
+                        <div class="d-flex align-items-center gap-10 justify-content-center">
+                            <a asp-action="Details" asp-route-id="@p.Id"
+                               class="bg-info-focus bg-hover-info-200 text-info-600 fw-medium w-40-px h-40-px d-flex justify-content-center align-items-center rounded-circle"
+                               title="Details" aria-label="Details">
+                                <iconify-icon icon="iconamoon:eye-light"></iconify-icon>
+                            </a>
 
-                        <form asp-action="Delete" asp-route-id="@p.Id" method="post" class="d-inline" onsubmit="return confirm('Delete this policy?');">
-                            @Html.AntiForgeryToken()
-                            <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
-                        </form>
+                            <a asp-action="Edit" asp-route-id="@p.Id"
+                               class="bg-success-focus bg-hover-success-200 text-success-600 fw-medium w-40-px h-40-px d-flex justify-content-center align-items-center rounded-circle"
+                               title="Edit" aria-label="Edit">
+                                <iconify-icon icon="lucide:edit"></iconify-icon>
+                            </a>
+
+                            <form asp-action="Toggle" asp-route-id="@p.Id" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <button type="submit"
+                                        class="bg-warning-focus bg-hover-warning-200 text-warning-600 fw-medium w-40-px h-40-px d-flex justify-content-center align-items-center rounded-circle border-0"
+                                        title="@(p.IsEnabled ? "Disable" : "Enable")" aria-label="@(p.IsEnabled ? "Disable" : "Enable")">
+                                    <iconify-icon icon="@(p.IsEnabled ? "mdi:toggle-switch-off-outline" : "mdi:toggle-switch-outline")"></iconify-icon>
+                                </button>
+                            </form>
+
+                            <form asp-action="Delete" asp-route-id="@p.Id" method="post" class="d-inline" onsubmit="return confirm('Delete this policy?');">
+                                @Html.AntiForgeryToken()
+                                <button type="submit"
+                                        class="remove-item-btn bg-danger-focus bg-hover-danger-200 text-danger-600 fw-medium w-40-px h-40-px d-flex justify-content-center align-items-center rounded-circle border-0"
+                                        title="Delete" aria-label="Delete">
+                                    <iconify-icon icon="mingcute:delete-2-line"></iconify-icon>
+                                </button>
+                            </form>
+                        </div>
                     }
                 </td>
+
+
 
 
             </tr>

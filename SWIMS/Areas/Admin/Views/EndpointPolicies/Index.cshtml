@@ -12,7 +12,7 @@
 
 
 <table class="table table-sm table-striped align-middle">
-    <thead><tr><th>Type</th><th>Target</th><th>Policy</th><th>Enabled</th><th>Priority</th><th>Updated</th><th></th></tr></thead>
+    <thead><tr><th>Type</th><th>Target</th><th>Policy</th><th>Status</th><th>Priority</th><th>Updated</th><th></th></tr></thead>
     <tbody>
         @foreach (var x in Model)
         {
@@ -30,19 +30,51 @@
                 <td>@x.MatchType</td>
                 <td>@target</td>
                 <td><span class="badge bg-secondary">@x.PolicyName</span></td>
-                <td>@(x.IsEnabled ? "Yes" : "No")</td>
+                <td>
+                    @if (x.IsEnabled)
+                    {
+                        <span class="badge bg-success">Enabled</span>
+                    }
+                    else
+                    {
+
+                        <span class="badge bg-secondary">Disabled</span>
+                    }
+                </td>
                 <td>@x.Priority</td>
                 <td>@x.UpdatedAt.LocalDateTime</td>
-                <td class="text-end">
-                    <a asp-action="Edit" asp-route-id="@x.Id" class="btn btn-sm btn-outline-primary">Edit</a>
-                    <form asp-action="Toggle" asp-route-id="@x.Id" method="post" class="d-inline">
-                        @Html.AntiForgeryToken()
-                        <button class="btn btn-sm btn-outline-warning">@(x.IsEnabled ? "Disable" : "Enable")</button>
-                    </form>
-                    <form asp-action="Delete" asp-route-id="@x.Id" method="post" class="d-inline" onsubmit="return confirm('Delete this?');">
-                        @Html.AntiForgeryToken()
-                        <button class="btn btn-sm btn-outline-danger">Delete</button>
-                    </form>
+                <td class="text-center align-middle">
+                    <div class="d-flex align-items-center gap-10 justify-content-center">
+                        <a asp-action="Details" asp-route-id="@x.Id"
+                           class="bg-info-focus bg-hover-info-200 text-info-600 fw-medium w-40-px h-40-px d-flex justify-content-center align-items-center rounded-circle"
+                           title="Details" aria-label="Details">
+                            <iconify-icon icon="iconamoon:eye-light"></iconify-icon>
+                        </a>
+
+                        <a asp-action="Edit" asp-route-id="@x.Id"
+                           class="bg-success-focus bg-hover-success-200 text-success-600 fw-medium w-40-px h-40-px d-flex justify-content-center align-items-center rounded-circle"
+                           title="Edit" aria-label="Edit">
+                            <iconify-icon icon="lucide:edit"></iconify-icon>
+                        </a>
+
+                        <form asp-action="Toggle" asp-route-id="@x.Id" method="post" class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <button type="submit"
+                                    class="bg-warning-focus bg-hover-warning-200 text-warning-600 fw-medium w-40-px h-40-px d-flex justify-content-center align-items-center rounded-circle border-0"
+                                    title="@(x.IsEnabled ? "Disable" : "Enable")" aria-label="@(x.IsEnabled ? "Disable" : "Enable")">
+                                <iconify-icon icon="@(x.IsEnabled ? "mdi:toggle-switch-off-outline" : "mdi:toggle-switch-outline")"></iconify-icon>
+                            </button>
+                        </form>
+
+                        <form asp-action="Delete" asp-route-id="@x.Id" method="post" class="d-inline" onsubmit="return confirm('Delete this assignment?');">
+                            @Html.AntiForgeryToken()
+                            <button type="submit"
+                                    class="remove-item-btn bg-danger-focus bg-hover-danger-200 text-danger-600 fw-medium w-40-px h-40-px d-flex justify-content-center align-items-center rounded-circle border-0"
+                                    title="Delete" aria-label="Delete">
+                                <iconify-icon icon="mingcute:delete-2-line"></iconify-icon>
+                            </button>
+                        </form>
+                    </div>
                 </td>
             </tr>
         }

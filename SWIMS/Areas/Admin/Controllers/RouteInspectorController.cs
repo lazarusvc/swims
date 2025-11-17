@@ -6,7 +6,6 @@ using SWIMS.Services.Auth;
 namespace SWIMS.Areas.Admin.Controllers
 {
     [Area("Admin")]
-    [Authorize(Roles = "Admin")]
     // Attribute route to avoid any conventional/area routing ambiguity
     [Route("Admin/RouteInspector")]
     public class RouteInspectorController : Controller

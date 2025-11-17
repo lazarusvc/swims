@@ -10,7 +10,6 @@ using SWIMS.Services.Auth;
 namespace SWIMS.Areas.Admin.Controllers
 {
     [Area("Admin")]
-    [Authorize(Roles = "Admin")]
     public class AuthorizationPoliciesController : Controller
     {
         private readonly SwimsIdentityDbContext _db;
@@ -98,6 +97,14 @@ namespace SWIMS.Areas.Admin.Controllers
                 .FirstOrDefaultAsync(p => p.Id == id);
             if (policy is null) return NotFound();
 
+            // Prevent editing of system policies
+            if (policy.IsSystem)
+            {
+                TempData["Ok"] = "This is a system policy and cannot be edited.";
+                return RedirectToAction(nameof(Index));
+            }
+
+
             var vm = new PolicyEditViewModel
             {
                 Id = policy.Id,
@@ -119,6 +126,13 @@ namespace SWIMS.Areas.Admin.Controllers
                 .Include(p => p.Roles)
                 .FirstOrDefaultAsync(p => p.Id == id);
             if (policy is null) return NotFound();
+
+            // Prevent editing of system policies
+            if (policy.IsSystem)
+            {
+                TempData["Ok"] = "This is a system policy and cannot be edited.";
+                return RedirectToAction(nameof(Index));
+            }
 
             // keep name immutable
             vm.Name = policy.Name;

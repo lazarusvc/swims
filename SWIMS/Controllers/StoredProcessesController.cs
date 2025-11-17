@@ -7,7 +7,6 @@ using SWIMS.Services;
 
 namespace SWIMS.Controllers
 {
-    [Authorize(Roles = "Admin")] // or "Admin,Runner" if operators should run
     public class StoredProcessesController : Controller
     {
         private readonly SwimsStoredProcsDbContext _db;
