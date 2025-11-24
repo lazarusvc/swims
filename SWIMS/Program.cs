@@ -47,11 +47,19 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Threading;
+using SWIMS.Services.SystemSettings;
+using SWIMS.Services.Setup;
+using SWIMS.Web.Setup;
+
+
 
 using MsLogger = Microsoft.Extensions.Logging;
 
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddScoped<ISystemSettingsService, SystemSettingsService>();
+
 
 // Serilog bootstrap (read from config + dev-friendly console)
 Log.Logger = new LoggerConfiguration()
@@ -312,6 +320,8 @@ builder.Services.AddHttpClient("Elsa", (sp, client) =>
 builder.Services.AddScoped<IElsaWorkflowClient, ElsaWorkflowClient>();
 
 
+builder.Services.AddScoped<ISetupStateService, SetupStateService>();
+
 
 var app = builder.Build();
 
@@ -484,6 +494,9 @@ app.UseFileServer(new FileServerOptions
 });
 
 app.UseRouting();
+
+// Moodle-style entry: redirect to /Setup when app is not fully configured
+app.UseSetupGuard();
 
 app.UseAuthentication();
 app.UseAuthorization();

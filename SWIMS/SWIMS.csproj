@@ -64,6 +64,7 @@
 	</ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Areas\Admin\Views\NewFolder\" />
     <Folder Include="wwwroot\uploads\" />
   </ItemGroup>
 
