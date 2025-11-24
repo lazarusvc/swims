@@ -1,0 +1,129 @@
+﻿@model SWIMS.Services.Setup.SetupSummary
+
+@{
+    ViewData["Title"] = "System Setup & Health";
+}
+
+<div class="container-fluid">
+
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
+        <div>
+            <h4 class="mb-1">System Setup &amp; Health</h4>
+            <p class="fs-13 mb-0 text-muted">
+                First-run checks for configuration, database connectivity, and EF Core migrations.
+            </p>
+        </div>
+
+        <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-soft-primary text-primary">
+                Environment: @Model.EnvironmentName
+            </span>
+
+            @if (Model.IsConfigured)
+            {
+                <span class="badge bg-soft-success text-success">
+                    <iconify-icon icon="tabler:check" class="me-1"></iconify-icon>
+                    Ready
+                </span>
+            }
+            else
+            {
+                <span class="badge bg-soft-warning text-warning">
+                    <iconify-icon icon="tabler:alert-triangle" class="me-1"></iconify-icon>
+                    Setup required
+                </span>
+            }
+        </div>
+    </div>
+
+    <div class="alert @(Model.IsConfigured ? "alert-soft-success" : "alert-soft-warning") mb-4">
+        @if (Model.IsConfigured)
+        {
+            <div class="d-flex align-items-center gap-2">
+                <iconify-icon icon="tabler:circle-check" class="fs-18 text-success"></iconify-icon>
+                <div>
+                    <h6 class="mb-1">Everything looks good.</h6>
+                    <p class="mb-0 fs-13">
+                        All core checks passed. You can safely continue to use SWIMS.
+                        This page remains available under <code>/setup</code> for future diagnostics.
+                    </p>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="d-flex align-items-center gap-2">
+                <iconify-icon icon="tabler:alert-triangle" class="fs-18 text-warning"></iconify-icon>
+                <div>
+                    <h6 class="mb-1">Setup is not complete yet.</h6>
+                    <p class="mb-0 fs-13">
+                        Review the checks below. Fix red items first (connection / errors), then address yellow
+                        items (pending migrations or optional configuration). Once all blocking issues are resolved,
+                        this page will show as <strong>Ready</strong>.
+                    </p>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="row g-3">
+        @foreach (var check in Model.Checks)
+        {
+            var statusClass = check.Status switch
+            {
+                SWIMS.Services.Setup.SetupCheckStatus.Ok => "success",
+                SWIMS.Services.Setup.SetupCheckStatus.Warning => "warning",
+                SWIMS.Services.Setup.SetupCheckStatus.Error => "danger",
+                _ => "secondary"
+            };
+
+            var icon = check.Status switch
+            {
+                SWIMS.Services.Setup.SetupCheckStatus.Ok => "tabler:circle-check",
+                SWIMS.Services.Setup.SetupCheckStatus.Warning => "tabler:alert-triangle",
+                SWIMS.Services.Setup.SetupCheckStatus.Error => "tabler:circle-x",
+                _ => "tabler:info-circle"
+            };
+
+            <div class="col-xl-6 col-xxl-4 col-lg-6 col-md-6">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-start justify-content-between mb-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="avatar-text avatar-sm bg-soft-@statusClass text-@statusClass rounded-circle d-flex align-items-center justify-content-center">
+                                    <iconify-icon icon="@icon" class="fs-16"></iconify-icon>
+                                </span>
+                                <div>
+                                    <h6 class="mb-1">@check.Name</h6>
+                                    @if (!string.IsNullOrWhiteSpace(check.Description))
+                                    {
+                                        <p class="fs-12 text-muted mb-0">@check.Description</p>
+                                    }
+                                </div>
+                            </div>
+
+                            <span class="badge bg-soft-@statusClass text-@statusClass text-capitalize">
+                                @check.Status.ToString()
+                            </span>
+                        </div>
+
+                        @if (!string.IsNullOrWhiteSpace(check.Details))
+                        {
+                            <p class="fs-12 mb-0">@check.Details</p>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="alert alert-soft-info mt-4">
+        <h6 class="mb-1">Typical first-run sequence</h6>
+        <ol class="mb-0 fs-13 ps-3">
+            <li>Configure <code>ConnectionStrings:DefaultConnection</code> and ensure SQL Server is reachable.</li>
+            <li>Apply EF Core migrations for all contexts (Identity, Core, StoredProcs, Reports).</li>
+            <li>Verify the bootstrap admin user (<code>AdminUser</code>) and email settings (<code>Emailing</code> section).</li>
+            <li>Refresh this page. When all blocking issues are cleared, the app is fully configured.</li>
+        </ol>
+    </div>
+</div>

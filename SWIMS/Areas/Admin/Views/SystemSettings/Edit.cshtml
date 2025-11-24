@@ -1,0 +1,241 @@
+﻿@model SWIMS.Areas.Admin.ViewModels.SystemSettings.SystemSettingsEditViewModel
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+@{
+    ViewData["Title"] = "Edit Settings - " + Model.DisplayName;
+    var isDev = (bool?)ViewBag.IsDevelopment ?? false;
+
+    // Known modes for Emailing:Mode – adjust if your enum changes
+    var emailModes = new[] { "Disabled", "Pickup", "Smtp" };
+}
+
+<div class="row mb-3">
+    <div class="col-12">
+        <h2 class="mb-1">Edit Settings: @Model.DisplayName</h2>
+        <p class="text-muted mb-0">
+            Key: <code>@Model.Key</code>
+            @if (!string.IsNullOrWhiteSpace(Model.EnvironmentName))
+            {
+                <span class="ms-3">
+                    Environment: <strong>@Model.EnvironmentName</strong>
+                </span>
+            }
+        </p>
+        @if (!string.IsNullOrWhiteSpace(Model.Description))
+        {
+            <p class="text-muted mt-1">
+                @Model.Description
+            </p>
+        }
+
+        @if (!isDev)
+        {
+            <div class="alert alert-warning mt-3">
+                Editing is currently <strong>read-only</strong> because the application is not running in the Development environment.
+            </div>
+        }
+
+        @if (!ViewData.ModelState.IsValid && ViewData.ModelState.ErrorCount > 0)
+        {
+            <div class="alert alert-danger mt-3">
+                @foreach (var entry in ViewData.ModelState)
+                {
+                    foreach (var error in entry.Value.Errors)
+                    {
+                        <div>@error.ErrorMessage</div>
+                    }
+                }
+            </div>
+        }
+    </div>
+</div>
+
+<form asp-area="Admin"
+      asp-controller="SystemSettings"
+      asp-action="Edit"
+      method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Key" />
+    <input type="hidden" asp-for="DisplayName" />
+    <input type="hidden" asp-for="EnvironmentName" />
+
+    <div class="card">
+        <div class="card-header">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+                <h5 class="mb-0">Settings</h5>
+                <div class="d-flex align-items-center gap-2">
+                    <input type="search"
+                           id="settings-search"
+                           class="form-control form-control-sm"
+                           placeholder="Search keys &amp; values..." />
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table align-middle" id="settings-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 30%;">Key</th>
+                            <th style="width: 55%;">Value</th>
+                            <th style="width: 15%;">Type</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{
+                            // Helper state for grouping:
+                            // group by second segment of KeyPath (e.g. Emailing:Smtp:Host → "Smtp")
+                            string currentGroup = null;
+                        }
+                        @for (int i = 0; i < Model.Items.Count; i++)
+                        {
+                            var keyPath = Model.Items[i].KeyPath ?? string.Empty;
+                            var segments = keyPath.Split(':', StringSplitOptions.RemoveEmptyEntries);
+                            string groupName = null;
+
+                            // Only treat as group if we have at least 3 segments (Section:Group:Key...)
+                            if (segments.Length > 2)
+                            {
+                                groupName = segments[1];
+                            }
+
+                            if (!string.IsNullOrEmpty(groupName) &&
+                                !string.Equals(groupName, currentGroup, StringComparison.OrdinalIgnoreCase))
+                            {
+                                currentGroup = groupName;
+                                <tr class="table-active group-row">
+                                    <td colspan="3" class="fw-semibold text-uppercase small text-muted">
+                                        @currentGroup
+                                    </td>
+                                </tr>
+                            }
+
+                            // Special-case helpers
+                            bool isEmailingSection = string.Equals(Model.Key, "Emailing", System.StringComparison.OrdinalIgnoreCase);
+                            bool isEmailingMode = isEmailingSection &&
+                                                  string.Equals(keyPath, "Emailing:Mode", System.StringComparison.OrdinalIgnoreCase);
+
+                            <tr>
+                                <td class="align-middle">
+                                    <strong>@Model.Items[i].DisplayName</strong>
+                                    <div class="small text-muted">
+                                        @Model.Items[i].KeyPath
+                                    </div>
+                                    <input type="hidden" asp-for="Items[@i].KeyPath" />
+                                    <input type="hidden" asp-for="Items[@i].DisplayName" />
+                                    <input type="hidden" asp-for="Items[@i].DataType" />
+                                    <input type="hidden" asp-for="Items[@i].IsSecret" />
+                                    <input type="hidden" asp-for="Items[@i].IsRequired" />
+                                </td>
+                                <td>
+                                    @if (isEmailingMode)
+                                    {
+                                        
+                                            var itemValue = Model.Items[i].Value ?? string.Empty;
+                                            var hasMatch = emailModes.Any(m => string.Equals(m, itemValue, System.StringComparison.OrdinalIgnoreCase));
+                                        
+                                        <select asp-for="Items[@i].Value"
+                                                class="form-select"
+                                                disabled="@(isDev ? null : "disabled")">
+                                            <option value="">(unset)</option>
+                                            @foreach (var mode in emailModes)
+                                            {
+                                                <option value="@mode">@mode</option>
+                                            }
+                                            @if (!string.IsNullOrEmpty(itemValue) && !hasMatch)
+                                            {
+                                                <option value="@itemValue">@itemValue</option>
+                                            }
+                                        </select>
+                                    }
+                                    else if (Model.Items[i].IsSecret)
+                                    {
+                                        <input asp-for="Items[@i].Value"
+                                               class="form-control"
+                                               type="password"
+                                               disabled="@(isDev ? null : "disabled")" />
+                                    }
+                                    else if (string.Equals(Model.Items[i].DataType, "bool", System.StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        <select asp-for="Items[@i].Value"
+                                                class="form-select"
+                                                disabled="@(isDev ? null : "disabled")">
+                                            <option value="">(unset)</option>
+                                            <option value="true">true</option>
+                                            <option value="false">false</option>
+                                        </select>
+                                    }
+                                    else
+                                    {
+                                        <input asp-for="Items[@i].Value"
+                                               class="form-control"
+                                               disabled="@(isDev ? null : "disabled")" />
+                                    }
+                                </td>
+                                <td class="align-middle">
+                                    <span class="badge bg-secondary-subtle text-secondary">
+                                        @Model.Items[i].DataType
+                                    </span>
+                                    @if (Model.Items[i].IsSecret)
+                                    {
+                                        <span class="badge bg-danger-subtle text-danger ms-1">
+                                            secret
+                                        </span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card-footer d-flex justify-content-between">
+            <a asp-area="Admin"
+               asp-controller="SystemSettings"
+               asp-action="Index"
+               class="btn btn-light">
+                Back
+            </a>
+
+            <button type="submit"
+                    class="btn btn-primary"
+                    disabled="@(isDev ? null : "disabled")">
+                Save Changes
+            </button>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    <script>
+        (function () {
+            var input = document.getElementById('settings-search');
+            if (!input) return;
+
+            var table = document.getElementById('settings-table');
+            if (!table) return;
+
+            var rows = Array.prototype.slice.call(table.querySelectorAll('tbody tr'));
+
+            function normalize(text) {
+                return (text || '').toLowerCase();
+            }
+
+            input.addEventListener('input', function () {
+                var q = normalize(this.value);
+
+                rows.forEach(function (row) {
+                    // group-row text should also be searchable
+                    if (!q) {
+                        row.style.display = '';
+                        return;
+                    }
+
+                    var text = normalize(row.innerText);
+                    row.style.display = text.indexOf(q) !== -1 ? '' : 'none';
+                });
+            });
+        })();
+    </script>
+}
