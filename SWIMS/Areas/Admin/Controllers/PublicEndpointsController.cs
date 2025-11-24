@@ -6,6 +6,9 @@ using SWIMS.Data;
 using SWIMS.Models.Security;
 using SWIMS.Services.Auth;
 using SWIMS.Services.Diagnostics;
+using System.Security.Claims;
+using System.Text.Json;
+using SWIMS.Services.Elsa;
 
 namespace SWIMS.Areas.Admin.Controllers
 {
@@ -15,9 +18,19 @@ namespace SWIMS.Areas.Admin.Controllers
         private readonly SwimsIdentityDbContext _db;
         private readonly IPublicAccessStore _store;
         private readonly IEndpointCatalog _catalog;
+        private readonly IElsaWorkflowClient _elsa;
 
-        public PublicEndpointsController(SwimsIdentityDbContext db, IPublicAccessStore store, IEndpointCatalog catalog)
-        { _db = db; _store = store; _catalog = catalog; }
+        public PublicEndpointsController(
+            SwimsIdentityDbContext db,
+            IPublicAccessStore store,
+            IEndpointCatalog catalog,
+            IElsaWorkflowClient elsa)
+        {
+            _db = db;
+            _store = store;
+            _catalog = catalog;
+            _elsa = elsa;
+        }
 
         public async Task<IActionResult> Index()
         {
@@ -81,6 +94,23 @@ namespace SWIMS.Areas.Admin.Controllers
             _db.PublicEndpoints.Add(row);
             await _db.SaveChangesAsync();
             await _store.InvalidateAsync();
+
+            // 🔔 Notify: Public endpoint created
+            await NotifyAdminAsync(
+                subject: "Public endpoint created",
+                body: "A public endpoint was created.",
+                metadata: new
+                {
+                    action = "PublicEndpointCreated",
+                    endpointId = row.Id,
+                    matchType = row.MatchType,
+                    area = row.Area,
+                    controller = row.Controller,
+                    actionName = row.Action,
+                    page = row.Page,
+                    path = row.Path
+                });
+
             TempData["Ok"] = "Public endpoint created.";
             return RedirectToAction(nameof(Index));
         }
@@ -121,6 +151,23 @@ namespace SWIMS.Areas.Admin.Controllers
 
             await _db.SaveChangesAsync();
             await _store.InvalidateAsync();
+
+            // 🔔 Notify: Public endpoint updated
+            await NotifyAdminAsync(
+                subject: "Public endpoint updated",
+                body: $"Public endpoint ID {x.Id} was updated.",
+                metadata: new
+                {
+                    action = "PublicEndpointUpdated",
+                    endpointId = x.Id,
+                    matchType = x.MatchType,
+                    area = x.Area,
+                    controller = x.Controller,
+                    actionName = x.Action,
+                    page = x.Page,
+                    path = x.Path
+                });
+
             TempData["Ok"] = "Public endpoint updated.";
             return RedirectToAction(nameof(Index));
         }
@@ -135,6 +182,18 @@ namespace SWIMS.Areas.Admin.Controllers
             x.UpdatedAt = DateTimeOffset.UtcNow;
             await _db.SaveChangesAsync();
             await _store.InvalidateAsync();
+
+            // 🔔 Notify: Public endpoint toggled
+            await NotifyAdminAsync(
+                subject: "Public endpoint toggled",
+                body: $"Public endpoint ID {x.Id} was {(x.IsEnabled ? "enabled" : "disabled")}.",
+                metadata: new
+                {
+                    action = "PublicEndpointToggled",
+                    endpointId = x.Id,
+                    isEnabled = x.IsEnabled
+                });
+
             TempData["Ok"] = $"Public endpoint {(x.IsEnabled ? "enabled" : "disabled")}.";
             return RedirectToAction(nameof(Index));
         }
@@ -145,14 +204,28 @@ namespace SWIMS.Areas.Admin.Controllers
             var x = await _db.PublicEndpoints.FindAsync(id);
             if (x is null) return NotFound();
 
+            var endpointId = x.Id;
+
             _db.PublicEndpoints.Remove(x);
             await _db.SaveChangesAsync();
             await _store.InvalidateAsync();
+
+            // 🔔 Notify: Public endpoint deleted
+            await NotifyAdminAsync(
+                subject: "Public endpoint deleted",
+                body: $"Public endpoint ID {endpointId} was deleted.",
+                metadata: new
+                {
+                    action = "PublicEndpointDeleted",
+                    endpointId = endpointId
+                });
+
             TempData["Ok"] = "Public endpoint deleted.";
             return RedirectToAction(nameof(Index));
+
         }
 
-        
+
 
         // Prefill Create with a Razor Page
         [HttpGet]
@@ -187,6 +260,35 @@ namespace SWIMS.Areas.Admin.Controllers
                 Priority = 100
             };
             return View("Create", vm);
+        }
+
+        private async Task NotifyAdminAsync(string subject, string body, object? metadata = null)
+        {
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            string? recipient = !string.IsNullOrWhiteSpace(userIdClaim)
+                ? userIdClaim
+                : User.Identity?.Name;
+
+            if (string.IsNullOrWhiteSpace(recipient))
+                return;
+
+            var payload = new
+            {
+                Recipient = recipient,
+                Channel = "InApp",
+                Subject = subject,
+                Body = body,
+                MetadataJson = metadata == null ? null : JsonSerializer.Serialize(metadata)
+            };
+
+            try
+            {
+                // 🔔 Notify: Admin authorization config event
+                await _elsa.ExecuteByNameAsync("Swims.Notifications.DirectInApp", payload);
+            }
+            catch
+            {
+            }
         }
 
 

@@ -14,16 +14,21 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using static System.Net.Mime.MediaTypeNames;
 using System.Text.RegularExpressions;
+using System.Security.Claims;
+using SWIMS.Services.Elsa;
+
 
 namespace SWIMS.Controllers
 {
     public class formController : Controller
     {
         private readonly SwimsDb_moreContext _context;
+        private readonly IElsaWorkflowClient _elsa;
 
-        public formController(SwimsDb_moreContext context)
+        public formController(SwimsDb_moreContext context, IElsaWorkflowClient elsa)
         {
             _context = context;
+            _elsa = elsa;
         }
 
         public string GenerateNewUuidAsString()
@@ -615,6 +620,15 @@ namespace SWIMS.Controllers
                     header = sW_form.header
                 });
                 await _context.SaveChangesAsync();
+
+                // 🔔 Notify: Form created
+                await NotifyFormEventAsync(
+                    sW_form.Id,
+                    "FormCreated",
+                    "Form created",
+                    $"Form '{sW_form.name}' was created.",
+                    HttpContext.RequestAborted);
+
                 return RedirectToAction(nameof(Index), new { id = sW_form.Id });
             }
             ViewData["SW_identityId"] = new SelectList(_context.SW_identities, "Id", "name", sW_form.SW_identityId);
@@ -817,6 +831,14 @@ namespace SWIMS.Controllers
                 await tx.CommitAsync();
             }
 
+            // 🔔 Notify: Form published
+            await NotifyFormEventAsync(
+                fID, // resolved formId in this method
+                "FormPublished",
+                "Form published",
+                $"Form with ID {fID} was published.",
+                HttpContext.RequestAborted);
+
             // After successful publish, go to the Program page for this form
             return RedirectToAction(nameof(Program), new { uuid = swForm.uuid });
         }
@@ -854,6 +876,14 @@ namespace SWIMS.Controllers
                 {
                     _context.Update(sW_form);
                     await _context.SaveChangesAsync();
+
+                    // 🔔 Notify: Form updated
+                    await NotifyFormEventAsync(
+                        sW_form.Id,
+                        "FormUpdated",
+                        "Form updated",
+                        $"Form '{sW_form.name}' was updated.",
+                        HttpContext.RequestAborted);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -1008,8 +1038,50 @@ namespace SWIMS.Controllers
             }
 
             await _context.SaveChangesAsync();
+
+            // 🔔 Notify: Form deleted
+            var formName = sW_form?.name ?? $"ID {id}";
+            await NotifyFormEventAsync(
+                id,
+                "FormDeleted",
+                "Form deleted",
+                $"Form '{formName}' was deleted.",
+                HttpContext.RequestAborted);
+
             return RedirectToAction(nameof(Index));
         }
+
+        private async Task NotifyFormEventAsync(
+            int formId,
+            string eventType,
+            string subject,
+            string body,
+            CancellationToken ct = default)
+        {
+            // Resolve current userId as int
+            var userIdString = User?.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(userIdString, out var userId))
+                return; // no logged-in user, skip
+
+            var payload = new
+            {
+                Recipient = userId.ToString(), // Elsa → SWIMS resolves this to the user
+                Channel = "InApp",
+                Subject = subject,
+                Body = body,
+                MetadataJson = JsonSerializer.Serialize(new
+                {
+                    formId,
+                    eventType
+                })
+            };
+
+            await _elsa.ExecuteByNameAsync(
+                "Swims.Notifications.DirectInApp",
+                payload,
+                ct);
+        }
+
 
         private bool SW_formExists(int id)
         {

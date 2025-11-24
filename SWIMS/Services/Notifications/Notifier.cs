@@ -67,7 +67,7 @@ public sealed class Notifier : INotifier
         }
 
         // Email via Outbox — honors per-type prefs; uses NotificationEmailComposer
-        await SendEmailIfEnabledAsync(userId, type, username, json);
+        // await SendEmailIfEnabledAsync(userId, type, username, json);
     }
 
     private async Task SendEmailIfEnabledAsync(int userId, string type, string usernameOrEmail, string payloadJson)

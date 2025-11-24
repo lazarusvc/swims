@@ -6,6 +6,9 @@ using SWIMS.Areas.Admin.ViewModels.AuthorizationPolicies;
 using SWIMS.Data;
 using SWIMS.Models.Security;
 using SWIMS.Services.Auth;
+using System.Security.Claims;
+using System.Text.Json;
+using SWIMS.Services.Elsa;
 
 namespace SWIMS.Areas.Admin.Controllers
 {
@@ -14,11 +17,16 @@ namespace SWIMS.Areas.Admin.Controllers
     {
         private readonly SwimsIdentityDbContext _db;
         private readonly IPolicyStore _store;
+        private readonly IElsaWorkflowClient _elsa;
 
-        public AuthorizationPoliciesController(SwimsIdentityDbContext db, IPolicyStore store)
+        public AuthorizationPoliciesController(
+        SwimsIdentityDbContext db,
+        IPolicyStore store,
+        IElsaWorkflowClient elsa) 
         {
             _db = db;
             _store = store;
+            _elsa = elsa;
         }
 
         // GET: /Admin/AuthorizationPolicies
@@ -85,6 +93,18 @@ namespace SWIMS.Areas.Admin.Controllers
             await _db.SaveChangesAsync();
 
             await _store.InvalidateAsync(policy.Name);
+
+            // 🔔 Notify: Authorization policy created
+            await NotifyAdminAsync(
+                subject: "Authorization policy created",
+                body: $"Policy '{policy.Name}' was created.",
+                metadata: new
+                {
+                    action = "AuthPolicyCreated",
+                    policyId = policy.Id,
+                    policyName = policy.Name
+                });
+
             TempData["Ok"] = $"Policy '{policy.Name}' created.";
             return RedirectToAction(nameof(Index));
         }
@@ -152,6 +172,17 @@ namespace SWIMS.Areas.Admin.Controllers
             await _db.SaveChangesAsync();
             await _store.InvalidateAsync(policy.Name);
 
+            // 🔔 Notify: Authorization policy updated
+            await NotifyAdminAsync(
+                subject: "Authorization policy updated",
+                body: $"Policy '{policy.Name}' was updated.",
+                metadata: new
+                {
+                    action = "AuthPolicyUpdated",
+                    policyId = policy.Id,
+                    policyName = policy.Name
+                });
+
             TempData["Ok"] = $"Policy '{policy.Name}' updated.";
             return RedirectToAction(nameof(Index));
         }
@@ -177,6 +208,18 @@ namespace SWIMS.Areas.Admin.Controllers
             await _db.SaveChangesAsync();
             await _store.InvalidateAsync(policy.Name);
 
+            // 🔔 Notify: Authorization policy toggled
+            await NotifyAdminAsync(
+                subject: "Authorization policy toggled",
+                body: $"Policy '{policy.Name}' was {(policy.IsEnabled ? "enabled" : "disabled")}.",
+                metadata: new
+                {
+                    action = "AuthPolicyToggled",
+                    policyId = policy.Id,
+                    policyName = policy.Name,
+                    isEnabled = policy.IsEnabled
+                });
+
             TempData["Ok"] = $"Policy '{policy.Name}' {(policy.IsEnabled ? "enabled" : "disabled")}.";
             return RedirectToAction(nameof(Index));
         }
@@ -199,6 +242,17 @@ namespace SWIMS.Areas.Admin.Controllers
             _db.AuthorizationPolicies.Remove(policy);
             await _db.SaveChangesAsync();
             await _store.InvalidateAsync(policy.Name);
+
+            // 🔔 Notify: Authorization policy deleted
+            await NotifyAdminAsync(
+                subject: "Authorization policy deleted",
+                body: $"Policy '{policy.Name}' was deleted.",
+                metadata: new
+                {
+                    action = "AuthPolicyDeleted",
+                    policyId = policy.Id,
+                    policyName = policy.Name
+                });
 
             TempData["Ok"] = $"Policy '{policy.Name}' deleted.";
             return RedirectToAction(nameof(Index));
@@ -241,5 +295,36 @@ namespace SWIMS.Areas.Admin.Controllers
                 }
             }
         }
+
+        private async Task NotifyAdminAsync(string subject, string body, object? metadata = null)
+        {
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            string? recipient = !string.IsNullOrWhiteSpace(userIdClaim)
+                ? userIdClaim
+                : User.Identity?.Name;
+
+            if (string.IsNullOrWhiteSpace(recipient))
+                return;
+
+            var payload = new
+            {
+                Recipient = recipient,
+                Channel = "InApp",
+                Subject = subject,
+                Body = body,
+                MetadataJson = metadata == null ? null : JsonSerializer.Serialize(metadata)
+            };
+
+            try
+            {
+                // 🔔 Notify: Admin authorization config event
+                await _elsa.ExecuteByNameAsync("Swims.Notifications.DirectInApp", payload);
+            }
+            catch
+            {
+            }
+        }
+
+
     }
 }

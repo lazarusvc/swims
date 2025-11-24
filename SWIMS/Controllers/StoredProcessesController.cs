@@ -4,6 +4,9 @@ using Microsoft.EntityFrameworkCore;
 using SWIMS.Data;
 using SWIMS.Models.ViewModels;
 using SWIMS.Services;
+using System.Security.Claims;
+using System.Text.Json;
+using SWIMS.Services.Elsa;
 
 namespace SWIMS.Controllers
 {
@@ -11,11 +14,16 @@ namespace SWIMS.Controllers
     {
         private readonly SwimsStoredProcsDbContext _db;
         private readonly StoredProcedureRunner _runner;
+        private readonly IElsaWorkflowClient _elsa;
 
-        public StoredProcessesController(SwimsStoredProcsDbContext db, StoredProcedureRunner runner)
+        public StoredProcessesController(
+            SwimsStoredProcsDbContext db,
+            StoredProcedureRunner runner,
+            IElsaWorkflowClient elsa)
         {
             _db = db;
             _runner = runner;
+            _elsa = elsa;
         }
 
         // GET: /StoredProcesses
@@ -96,6 +104,47 @@ namespace SWIMS.Controllers
 
             var (table, error) = await _runner.ExecuteAsync(sp, tokenizedParams);
 
+            var hasError = !string.IsNullOrWhiteSpace(error);
+            string subject;
+            string body;
+            string? errorSummary = null;
+
+            if (!hasError)
+            {
+                subject = "Stored procedure executed successfully";
+                body = $"Stored process '{sp.Name}' executed successfully.";
+            }
+            else
+            {
+                // Take only the first line / prefix of the error, so we don't spam the notif.
+                var firstLine = error
+                    .Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
+                    .FirstOrDefault() ?? "Unknown error";
+
+                // Trim to a reasonable length for the notification.
+                errorSummary = firstLine.Length > 160 ? firstLine[..160] + "…" : firstLine;
+
+                subject = "Stored procedure execution failed";
+                body = $"Stored process '{sp.Name}' failed: {errorSummary}";
+            }
+
+            // 🔔 Notify: Stored procedure executed (with success/failure info)
+            await NotifyStoredProcAsync(
+                subject: subject,
+                body: body,
+                metadata: new
+                {
+                    action = "StoredProcessRun",
+                    processId = sp.Id,
+                    processName = sp.Name,
+                    formId,
+                    orgId,
+                    uid,
+                    hasError,
+                    errorSummary
+                },
+                ct: HttpContext.RequestAborted);
+
             // make context available to the RunResult view so Export can include it
             ViewBag.uid = uid;
             ViewBag.formId = formId;
@@ -109,6 +158,7 @@ namespace SWIMS.Controllers
                 Error = error,
                 Table = table
             });
+
         }
 
         [HttpGet]
@@ -144,6 +194,22 @@ namespace SWIMS.Controllers
 
             if (!string.Equals(format, "csv", StringComparison.OrdinalIgnoreCase))
                 return BadRequest("Only CSV is supported right now.");
+
+            // 🔔 Notify: Stored procedure export
+            await NotifyStoredProcAsync(
+                subject: "Stored procedure exported",
+                body: $"Data from stored process '{sp.Name}' was exported as {format.ToUpperInvariant()}.",
+                metadata: new
+                {
+                    action = "StoredProcessExport",
+                    processId = sp.Id,
+                    processName = sp.Name,
+                    formId = formIdStr,
+                    orgId = orgIdStr,
+                    uid = uidQ,
+                    format
+                },
+                ct: HttpContext.RequestAborted);
 
             var csv = DataTableToCsv(table);
             var fileName = $"{sp.Name.Replace(':', '_').Replace('/', '_')}_{DateTime.UtcNow:yyyyMMdd_HHmmss}.csv";
@@ -213,5 +279,44 @@ namespace SWIMS.Controllers
             }
         }
         // ---------------------------------------------------------------------------
+
+        // ---------------------------------------------------------------------------
+        // Generic notification helper for stored procedure operations.
+        // ---------------------------------------------------------------------------
+        private async Task NotifyStoredProcAsync(
+            string subject,
+            string body,
+            object? metadata = null,
+            CancellationToken ct = default)
+        {
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var recipient = !string.IsNullOrWhiteSpace(userIdClaim)
+                ? userIdClaim
+                : User.Identity?.Name;
+
+            if (string.IsNullOrWhiteSpace(recipient))
+                return;
+
+            var payload = new
+            {
+                Recipient = recipient,
+                Channel = "InApp",
+                Subject = subject,
+                Body = body,
+                MetadataJson = metadata == null ? null : JsonSerializer.Serialize(metadata)
+            };
+
+            try
+            {
+                // 🔔 Notify: Stored procedure event
+                await _elsa.ExecuteByNameAsync("Swims.Notifications.DirectInApp", payload, ct);
+            }
+            catch
+            {
+                // Never block execution if Elsa is unavailable.
+            }
+        }
+
+
     }
 }

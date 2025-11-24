@@ -1,21 +1,29 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using SWIMS.Models;
+using SWIMS.Services.Elsa;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
+using System.Text.Json;
+using System.Threading.Tasks;
+
 
 namespace SWIMS.Controllers
 {
+    [Authorize]
     public class formReportController : Controller
     {
         private readonly SwimsDb_moreContext _context;
+        private readonly IElsaWorkflowClient _elsa;
 
-        public formReportController(SwimsDb_moreContext context)
+        public formReportController(SwimsDb_moreContext context, IElsaWorkflowClient elsa)
         {
             _context = context;
+            _elsa = elsa;
         }
 
         // GET: formReport
@@ -62,8 +70,23 @@ namespace SWIMS.Controllers
             {
                 _context.Add(sW_formReport);
                 await _context.SaveChangesAsync();
+
+                // 🔔 Notify: Form report created
+                await NotifyFormReportAsync(
+                    subject: "Form report created",
+                    body: $"Form report '{sW_formReport.name}' was created.",
+                    metadata: new
+                    {
+                        action = "FormReportCreated",
+                        id = sW_formReport.Id,
+                        formId = sW_formReport.SW_formsId,
+                        url = sW_formReport.url
+                    },
+                    ct: HttpContext.RequestAborted);
+
                 return RedirectToAction(nameof(Index));
             }
+
             ViewData["SW_formsId"] = new SelectList(_context.SW_forms, "Id", "name", sW_formReport.SW_formsId);
             return View(sW_formReport);
         }
@@ -103,19 +126,26 @@ namespace SWIMS.Controllers
                 {
                     _context.Update(sW_formReport);
                     await _context.SaveChangesAsync();
+
+                    // 🔔 Notify: Form report updated
+                    await NotifyFormReportAsync(
+                        subject: "Form report updated",
+                        body: $"Form report '{sW_formReport.name}' was updated.",
+                        metadata: new
+                        {
+                            action = "FormReportUpdated",
+                            id = sW_formReport.Id,
+                            formId = sW_formReport.SW_formsId,
+                            url = sW_formReport.url
+                        },
+                        ct: HttpContext.RequestAborted);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!SW_formReportExists(sW_formReport.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
+
                 }
                 return RedirectToAction(nameof(Index));
+
             }
             ViewData["SW_formsId"] = new SelectList(_context.SW_forms, "Id", "name", sW_formReport.SW_formsId);
             return View(sW_formReport);
@@ -148,16 +178,67 @@ namespace SWIMS.Controllers
             var sW_formReport = await _context.SW_formReports.FindAsync(id);
             if (sW_formReport != null)
             {
+                var formId = sW_formReport.SW_formsId;
+                var name = sW_formReport.name;
+
                 _context.SW_formReports.Remove(sW_formReport);
+                await _context.SaveChangesAsync();
+
+                // 🔔 Notify: Form report deleted
+                await NotifyFormReportAsync(
+                    subject: "Form report deleted",
+                    body: $"Form report '{name}' was deleted.",
+                    metadata: new
+                    {
+                        action = "FormReportDeleted",
+                        id,
+                        formId
+                    },
+                    ct: HttpContext.RequestAborted);
             }
 
-            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
+
 
         private bool SW_formReportExists(int id)
         {
             return _context.SW_formReports.Any(e => e.Id == id);
         }
+
+
+        private async Task NotifyFormReportAsync(
+            string subject,
+            string body,
+            object? metadata = null,
+            CancellationToken ct = default)
+        {
+            // Get the numeric user id from claims
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(userIdString, out var userId))
+                return; // no valid user, skip
+
+            var payload = new
+            {
+                Recipient = userId.ToString(), // always send numeric user id
+                Channel = "InApp",
+                Subject = subject,
+                Body = body,
+                MetadataJson = metadata == null ? null : JsonSerializer.Serialize(metadata)
+            };
+
+            try
+            {
+                // 🔔 Notify: Form report admin event
+                await _elsa.ExecuteByNameAsync("Swims.Notifications.DirectInApp", payload, ct);
+            }
+            catch
+            {
+                // keep swallowing for now so admin UX isn't blocked
+            }
+        }
+
+
+
     }
 }
