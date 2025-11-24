@@ -5,6 +5,10 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using SWIMS.Data;
 using SWIMS.Models;
 using SWIMS.Models.ViewModels;
+using System.Security.Claims;
+using System.Text.Json;
+using SWIMS.Services.Elsa;
+
 
 namespace SWIMS.Controllers
 {
@@ -12,7 +16,15 @@ namespace SWIMS.Controllers
     public class StoredProcessParamsController : Controller
     {
         private readonly SwimsStoredProcsDbContext _db;
-        public StoredProcessParamsController(SwimsStoredProcsDbContext db) { _db = db; }
+        private readonly IElsaWorkflowClient _elsa;
+
+        public StoredProcessParamsController(
+            SwimsStoredProcsDbContext db,
+            IElsaWorkflowClient elsa)
+        {
+            _db = db;
+            _elsa = elsa;
+        }
 
         // GET: /StoredProcessParams or /StoredProcessParams/{processId}
         [HttpGet("")]
@@ -97,6 +109,20 @@ namespace SWIMS.Controllers
             });
             await _db.SaveChangesAsync();
 
+
+            // 🔔 Notify: Stored procedure parameter created
+            await NotifyParamAsync(
+                subject: "Stored procedure parameter created",
+                body: $"Parameter '{vm.Key}' was added to stored process ID {vm.StoredProcessId}.",
+                metadata: new
+                {
+                    action = "StoredProcessParamCreated",
+                    processId = vm.StoredProcessId,
+                    key = vm.Key,
+                    dataType = vm.DataType
+                },
+                ct: HttpContext.RequestAborted);
+
             return RedirectToAction(nameof(Index), new { processId = vm.StoredProcessId });
         }
 
@@ -139,6 +165,20 @@ namespace SWIMS.Controllers
             row.Value = vm.Value;
             await _db.SaveChangesAsync();
 
+            // 🔔 Notify: Stored procedure parameter updated
+            await NotifyParamAsync(
+                subject: "Stored procedure parameter updated",
+                body: $"Parameter '{vm.Key}' on stored process ID {vm.StoredProcessId} was updated.",
+                metadata: new
+                {
+                    action = "StoredProcessParamUpdated",
+                    processId = vm.StoredProcessId,
+                    paramId = row.Id,
+                    key = vm.Key,
+                    dataType = vm.DataType
+                },
+                ct: HttpContext.RequestAborted);
+
             return RedirectToAction(nameof(Index), new { processId = vm.StoredProcessId });
         }
 
@@ -160,11 +200,66 @@ namespace SWIMS.Controllers
             if (row != null)
             {
                 var pid = row.StoredProcessId;
+                var key = row.Key;
+
                 _db.StoredProcessParams.Remove(row);
                 await _db.SaveChangesAsync();
+
+                // 🔔 Notify: Stored procedure parameter deleted
+                await NotifyParamAsync(
+                    subject: "Stored procedure parameter deleted",
+                    body: $"Parameter '{key}' was removed from stored process ID {pid}.",
+                    metadata: new
+                    {
+                        action = "StoredProcessParamDeleted",
+                        processId = pid,
+                        paramId = id,
+                        key
+                    },
+                    ct: HttpContext.RequestAborted);
+
                 return RedirectToAction(nameof(Index), new { processId = pid });
             }
             return RedirectToAction(nameof(Index));
+
         }
+
+        // --------------------------------------------------------------------
+        // Generic admin notification helper for stored procedure parameter actions.
+        // --------------------------------------------------------------------
+        private async Task NotifyParamAsync(
+            string subject,
+            string body,
+            object? metadata = null,
+            CancellationToken ct = default)
+        {
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var recipient = !string.IsNullOrWhiteSpace(userIdClaim)
+                ? userIdClaim
+                : User.Identity?.Name;
+
+            if (string.IsNullOrWhiteSpace(recipient))
+                return;
+
+            var payload = new
+            {
+                Recipient = recipient,
+                Channel = "InApp",
+                Subject = subject,
+                Body = body,
+                MetadataJson = metadata == null ? null : JsonSerializer.Serialize(metadata)
+            };
+
+            try
+            {
+                // 🔔 Notify: Stored procedure parameter event
+                await _elsa.ExecuteByNameAsync("Swims.Notifications.DirectInApp", payload, ct);
+            }
+            catch
+            {
+            }
+        }
+
+
     }
 }

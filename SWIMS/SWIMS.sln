@@ -1,0 +1,30 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SWIMS", "SWIMS.csproj", "{624ABCE0-5AB5-4156-3CA8-89CBE64B7E58}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Model_Designer", "Model_Designer\Model_Designer.csproj", "{F0FBD118-30C3-EB03-0ACC-159D6046A5FC}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{624ABCE0-5AB5-4156-3CA8-89CBE64B7E58}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{624ABCE0-5AB5-4156-3CA8-89CBE64B7E58}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{624ABCE0-5AB5-4156-3CA8-89CBE64B7E58}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{624ABCE0-5AB5-4156-3CA8-89CBE64B7E58}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F0FBD118-30C3-EB03-0ACC-159D6046A5FC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F0FBD118-30C3-EB03-0ACC-159D6046A5FC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F0FBD118-30C3-EB03-0ACC-159D6046A5FC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F0FBD118-30C3-EB03-0ACC-159D6046A5FC}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {1AB4B279-0C3D-4B43-A0A5-CF9A8F68EB36}
+	EndGlobalSection
+EndGlobal

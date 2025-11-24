@@ -6,6 +6,10 @@ using SWIMS.Data;
 using SWIMS.Models;
 using SWIMS.Models.Security;
 using SWIMS.Models.ViewModels;
+using System.Security.Claims;
+using System.Text.Json;
+using SWIMS.Services.Elsa;
+
 
 namespace SWIMS.Controllers
 {
@@ -13,11 +17,16 @@ namespace SWIMS.Controllers
     {
         private readonly SwimsStoredProcsDbContext _db;
         private readonly IDataProtector? _protector;
+        private readonly IElsaWorkflowClient _elsa;
 
-        public StoredProcessesAdminController(SwimsStoredProcsDbContext db, IDataProtectionProvider dp)
+        public StoredProcessesAdminController(
+            SwimsStoredProcsDbContext db,
+            IDataProtectionProvider dp,
+            IElsaWorkflowClient elsa)
         {
             _db = db;
             _protector = dp.CreateProtector(DataProtectionPurposes.StoredProcedures);
+            _elsa = elsa;
         }
 
         // GET: /StoredProcessesAdmin
@@ -56,6 +65,19 @@ namespace SWIMS.Controllers
 
             _db.StoredProcesses.Add(row);
             await _db.SaveChangesAsync();
+
+            // 🔔 Notify: Stored procedure created
+            await NotifyAdminAsync(
+                subject: "Stored procedure created",
+                body: $"Stored process '{row.Name}' was created.",
+                metadata: new
+                {
+                    action = "StoredProcessCreated",
+                    processId = row.Id,
+                    processName = row.Name
+                },
+                ct: HttpContext.RequestAborted);
+
             return RedirectToAction(nameof(Index));
         }
 
@@ -105,6 +127,19 @@ namespace SWIMS.Controllers
             if (!string.IsNullOrWhiteSpace(vm.DbPassword)) row.DbPasswordEncrypted = Protect(vm.DbPassword!);
 
             await _db.SaveChangesAsync();
+
+            // 🔔 Notify: Stored procedure updated
+            await NotifyAdminAsync(
+                subject: "Stored procedure updated",
+                body: $"Stored process '{row.Name}' was updated.",
+                metadata: new
+                {
+                    action = "StoredProcessUpdated",
+                    processId = row.Id,
+                    processName = row.Name
+                },
+                ct: HttpContext.RequestAborted);
+
             return RedirectToAction(nameof(Index));
         }
 
@@ -123,11 +158,64 @@ namespace SWIMS.Controllers
             var row = await _db.StoredProcesses.Include(x => x.Params).FirstOrDefaultAsync(x => x.Id == id);
             if (row != null)
             {
+                var name = row.Name;
+                var pid = row.Id;
+
                 _db.StoredProcesses.Remove(row); // cascade deletes params
                 await _db.SaveChangesAsync();
+
+                // 🔔 Notify: Stored procedure deleted
+                await NotifyAdminAsync(
+                    subject: "Stored procedure deleted",
+                    body: $"Stored process '{name}' was deleted.",
+                    metadata: new
+                    {
+                        action = "StoredProcessDeleted",
+                        processId = pid,
+                        processName = name
+                    },
+                    ct: HttpContext.RequestAborted);
             }
             return RedirectToAction(nameof(Index));
+
         }
+
+        // --------------------------------------------------------------------
+        // Generic admin notification helper for stored procedure admin actions.
+        // --------------------------------------------------------------------
+        private async Task NotifyAdminAsync(
+            string subject,
+            string body,
+            object? metadata = null,
+            CancellationToken ct = default)
+        {
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var recipient = !string.IsNullOrWhiteSpace(userIdClaim)
+                ? userIdClaim
+                : User.Identity?.Name;
+
+            if (string.IsNullOrWhiteSpace(recipient))
+                return;
+
+            var payload = new
+            {
+                Recipient = recipient,
+                Channel = "InApp",
+                Subject = subject,
+                Body = body,
+                MetadataJson = metadata == null ? null : JsonSerializer.Serialize(metadata)
+            };
+
+            try
+            {
+                // 🔔 Notify: Stored procedure admin event
+                await _elsa.ExecuteByNameAsync("Swims.Notifications.DirectInApp", payload, ct);
+            }
+            catch
+            {
+            }
+        }
+
 
         private string Protect(string plaintext) =>
             _protector == null ? plaintext : _protector.Protect(plaintext);

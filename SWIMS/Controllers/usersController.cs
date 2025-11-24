@@ -17,6 +17,9 @@ using SWIMS.Security;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Security.Claims;
+using System.Text.Json;
+using SWIMS.Services.Elsa;
 
 namespace SWIMS.Controllers
 {
@@ -24,12 +27,16 @@ namespace SWIMS.Controllers
     {
         private readonly UserManager<SwUser> _userManager;
         private readonly RoleManager<SwRole> _roleManager;
+        private readonly IElsaWorkflowClient _elsa;
 
-        public usersController(UserManager<SwUser> userManager,
-                               RoleManager<SwRole> roleManager)
+        public usersController(
+            UserManager<SwUser> userManager,
+            RoleManager<SwRole> roleManager,
+            IElsaWorkflowClient elsa)
         {
             _userManager = userManager;
             _roleManager = roleManager;
+            _elsa = elsa;
         }
 
         // GET: users
@@ -118,6 +125,18 @@ namespace SWIMS.Controllers
             if (!string.IsNullOrEmpty(role) && await _roleManager.RoleExistsAsync(role))
                 await _userManager.AddToRoleAsync(swUser, role);
 
+            // 🔔 Notify: Admin created user account
+            await NotifyAdminAsync(
+                subject: "User account created",
+                body: $"User '{(swUser.Email ?? swUser.UserName ?? $"ID {swUser.Id}")}' was created.",
+                metadata: new
+                {
+                    action = "UserCreated",
+                    userId = swUser.Id,
+                    userEmail = swUser.Email,
+                    role
+                });
+
             return RedirectToAction(nameof(Index));
         }
 
@@ -180,6 +199,18 @@ namespace SWIMS.Controllers
                     await _userManager.AddToRoleAsync(user, role);
             }
 
+            // 🔔 Notify: Admin updated user account
+            await NotifyAdminAsync(
+                subject: "User account updated",
+                body: $"User '{(user.Email ?? user.UserName ?? $"ID {user.Id}")}' was updated.",
+                metadata: new
+                {
+                    action = "UserUpdated",
+                    userId = user.Id,
+                    userEmail = user.Email,
+                    role
+                });
+
             return RedirectToAction(nameof(Index));
         }
 
@@ -209,9 +240,31 @@ namespace SWIMS.Controllers
         {
             var user = await _userManager.FindByIdAsync(id.ToString());
             if (user != null)
-                await _userManager.DeleteAsync(user);
+            {
+                var userId = user.Id;
+                var userEmail = user.Email;
+                var userName = user.UserName;
+
+                var result = await _userManager.DeleteAsync(user);
+
+                if (result.Succeeded)
+                {
+                    // 🔔 Notify: Admin deleted user account
+                    await NotifyAdminAsync(
+                        subject: "User account deleted",
+                        body: $"User '{(userEmail ?? userName ?? $"ID {userId}")}' was deleted.",
+                        metadata: new
+                        {
+                            action = "UserDeleted",
+                            userId = userId,
+                            userEmail = userEmail
+                        });
+                }
+            }
+
             return RedirectToAction(nameof(Index));
         }
+
 
         // GET: users/ManageRoles/5
         public async Task<IActionResult> ManageRoles(int id)
@@ -287,7 +340,52 @@ namespace SWIMS.Controllers
                 return View(model);
             }
 
+            // 🔔 Notify: Admin updated user roles
+            await NotifyAdminAsync(
+                subject: "User roles updated",
+                body: $"Roles for user '{(user.Email ?? user.UserName ?? $"ID {user.Id}")}' were updated.",
+                metadata: new
+                {
+                    action = "UserRolesUpdated",
+                    userId = user.Id,
+                    userEmail = user.Email,
+                    addedRoles = toAdd,
+                    removedRoles = toRemove
+                });
+
             return RedirectToAction(nameof(Index));
         }
+
+
+        // --------------------------------------------------------------------
+        // Generic admin notification helper for user management actions.
+        // --------------------------------------------------------------------
+        private async Task NotifyAdminAsync(string subject, string body, object metadata = null)
+        {
+            var recipient = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.Identity?.Name;
+            if (string.IsNullOrWhiteSpace(recipient))
+                return;
+
+            var payload = new
+            {
+                Recipient = recipient,
+                Channel = "InApp",
+                Subject = subject,
+                Body = body,
+                MetadataJson = metadata == null ? null : JsonSerializer.Serialize(metadata)
+            };
+
+            try
+            {
+                // 🔔 Notify: Admin user / role management event
+                await _elsa.ExecuteByNameAsync("Swims.Notifications.DirectInApp", payload);
+            }
+            catch
+            {
+                // Swallow failures so admin UX is never blocked by Elsa issues.
+            }
+        }
+
+
     }
 }

@@ -7,6 +7,9 @@ using SWIMS.Data;
 using SWIMS.Models.Security;
 using SWIMS.Services.Auth;
 using SWIMS.Services.Diagnostics;
+using System.Security.Claims;
+using System.Text.Json;
+using SWIMS.Services.Elsa;
 
 namespace SWIMS.Areas.Admin.Controllers
 {
@@ -16,9 +19,19 @@ namespace SWIMS.Areas.Admin.Controllers
         private readonly SwimsIdentityDbContext _db;
         private readonly IEndpointPolicyAssignmentStore _store;
         private readonly IEndpointCatalog _catalog;
+        private readonly IElsaWorkflowClient _elsa;
 
-        public EndpointPoliciesController(SwimsIdentityDbContext db, IEndpointPolicyAssignmentStore store, IEndpointCatalog catalog)
-        { _db = db; _store = store; _catalog = catalog; }
+        public EndpointPoliciesController(
+            SwimsIdentityDbContext db,
+            IEndpointPolicyAssignmentStore store,
+            IEndpointCatalog catalog,
+            IElsaWorkflowClient elsa)
+        {
+            _db = db;
+            _store = store;
+            _catalog = catalog;
+            _elsa = elsa;
+        }
 
         public async Task<IActionResult> Index()
         {
@@ -90,6 +103,25 @@ namespace SWIMS.Areas.Admin.Controllers
             _db.EndpointPolicyAssignments.Add(row);
             await _db.SaveChangesAsync();
             await _store.InvalidateAsync();
+
+            // 🔔 Notify: Endpoint policy assignment created
+            await NotifyAdminAsync(
+                subject: "Endpoint policy assignment created",
+                body: $"Endpoint assignment for policy '{policy.Name}' was created.",
+                metadata: new
+                {
+                    action = "EndpointPolicyAssignmentCreated",
+                    assignmentId = row.Id,
+                    policyId = policy.Id,
+                    policyName = policy.Name,
+                    matchType = row.MatchType,
+                    area = row.Area,
+                    controller = row.Controller,
+                    actionName = row.Action,
+                    page = row.Page,
+                    path = row.Path
+                });
+
             TempData["Ok"] = "Endpoint policy assignment created.";
             return RedirectToAction(nameof(Index));
         }
@@ -147,6 +179,25 @@ namespace SWIMS.Areas.Admin.Controllers
 
             await _db.SaveChangesAsync();
             await _store.InvalidateAsync();
+
+            // 🔔 Notify: Endpoint policy assignment updated
+            await NotifyAdminAsync(
+                subject: "Endpoint policy assignment updated",
+                body: $"Endpoint assignment for policy '{policy.Name}' was updated.",
+                metadata: new
+                {
+                    action = "EndpointPolicyAssignmentUpdated",
+                    assignmentId = x.Id,
+                    policyId = policy.Id,
+                    policyName = policy.Name,
+                    matchType = x.MatchType,
+                    area = x.Area,
+                    controller = x.Controller,
+                    actionName = x.Action,
+                    page = x.Page,
+                    path = x.Path
+                });
+
             TempData["Ok"] = "Endpoint policy assignment updated.";
             return RedirectToAction(nameof(Index));
         }
@@ -161,6 +212,18 @@ namespace SWIMS.Areas.Admin.Controllers
             x.UpdatedAt = DateTimeOffset.UtcNow;
             await _db.SaveChangesAsync();
             await _store.InvalidateAsync();
+
+            // 🔔 Notify: Endpoint policy assignment toggled
+            await NotifyAdminAsync(
+                subject: "Endpoint policy assignment toggled",
+                body: $"Endpoint assignment ID {x.Id} was {(x.IsEnabled ? "enabled" : "disabled")}.",
+                metadata: new
+                {
+                    action = "EndpointPolicyAssignmentToggled",
+                    assignmentId = x.Id,
+                    isEnabled = x.IsEnabled
+                });
+
             TempData["Ok"] = $"Assignment {(x.IsEnabled ? "enabled" : "disabled")}.";
             return RedirectToAction(nameof(Index));
         }
@@ -171,11 +234,25 @@ namespace SWIMS.Areas.Admin.Controllers
             var x = await _db.EndpointPolicyAssignments.FindAsync(id);
             if (x is null) return NotFound();
 
+            var assignmentId = x.Id;
+
             _db.EndpointPolicyAssignments.Remove(x);
             await _db.SaveChangesAsync();
             await _store.InvalidateAsync();
+
+            // 🔔 Notify: Endpoint policy assignment deleted
+            await NotifyAdminAsync(
+                subject: "Endpoint policy assignment deleted",
+                body: $"Endpoint assignment ID {assignmentId} was deleted.",
+                metadata: new
+                {
+                    action = "EndpointPolicyAssignmentDeleted",
+                    assignmentId = assignmentId
+                });
+
             TempData["Ok"] = "Assignment deleted.";
             return RedirectToAction(nameof(Index));
+
         }
 
         private async Task<List<SelectListItem>> PolicyOptionsAsync(string? selected = null)
@@ -295,6 +372,22 @@ namespace SWIMS.Areas.Admin.Controllers
                 await _db.SaveChangesAsync();
 
             await _store.InvalidateAsync();
+
+            // 🔔 Notify: Endpoint policy bulk assignments created
+            if (created > 0)
+            {
+                await NotifyAdminAsync(
+                    subject: "Endpoint policy assignments created",
+                    body: $"Bulk created {created} endpoint policy assignment(s) for policy '{policy.Name}'.",
+                    metadata: new
+                    {
+                        action = "EndpointPolicyAssignmentsBulkCreated",
+                        createdCount = created,
+                        policyId = policy.Id,
+                        policyName = policy.Name
+                    });
+            }
+
             TempData["Ok"] = created > 0
                 ? $"Created {created} assignment(s)."
                 : "No new assignments were created (duplicates skipped).";
@@ -327,6 +420,34 @@ namespace SWIMS.Areas.Admin.Controllers
             return View("Create", vm);
         }
 
+        private async Task NotifyAdminAsync(string subject, string body, object? metadata = null)
+        {
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            string? recipient = !string.IsNullOrWhiteSpace(userIdClaim)
+                ? userIdClaim
+                : User.Identity?.Name;
+
+            if (string.IsNullOrWhiteSpace(recipient))
+                return;
+
+            var payload = new
+            {
+                Recipient = recipient,
+                Channel = "InApp",
+                Subject = subject,
+                Body = body,
+                MetadataJson = metadata == null ? null : JsonSerializer.Serialize(metadata)
+            };
+
+            try
+            {
+                // 🔔 Notify: Admin authorization config event
+                await _elsa.ExecuteByNameAsync("Swims.Notifications.DirectInApp", payload);
+            }
+            catch
+            {
+            }
+        }
 
 
     }

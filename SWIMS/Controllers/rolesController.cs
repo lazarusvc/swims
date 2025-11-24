@@ -19,6 +19,9 @@ using SWIMS.Models.ViewModels;
 using SWIMS.Security;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Security.Claims;
+using System.Text.Json;
+using SWIMS.Services.Elsa;
 
 namespace SWIMS.Controllers
 {
@@ -30,16 +33,22 @@ namespace SWIMS.Controllers
     {
         private readonly RoleManager<SwRole> _roleManager;
         private readonly UserManager<SwUser> _userManager;
+        private readonly IElsaWorkflowClient _elsa;
 
         /// <summary>
         /// Initializes a new instance of the rolesController.
         /// </summary>
         /// <param name="roleManager">Identity RoleManager for <see cref="SwRole"/>.</param>
         /// <param name="userManager">Identity UserManager for <see cref="SwUser"/>.</param>
-        public rolesController(RoleManager<SwRole> roleManager, UserManager<SwUser> userManager)
+        /// <param name="elsa"></param>
+        public rolesController(
+        RoleManager<SwRole> roleManager,
+        UserManager<SwUser> userManager,
+        IElsaWorkflowClient elsa)
         {
             _roleManager = roleManager;
             _userManager = userManager;
+            _elsa = elsa;
         }
 
         /// <summary>
@@ -103,6 +112,18 @@ namespace SWIMS.Controllers
                     ModelState.AddModelError(string.Empty, err.Description);
                 return View(role);
             }
+
+            // 🔔 Notify: Admin created role
+            await NotifyAdminAsync(
+                subject: "Role created",
+                body: $"Role '{role.Name}' was created.",
+                metadata: new
+                {
+                    action = "RoleCreated",
+                    roleId = role.Id,
+                    roleName = role.Name
+                });
+
             return RedirectToAction(nameof(Index));
         }
 
@@ -151,6 +172,18 @@ namespace SWIMS.Controllers
                     ModelState.AddModelError(string.Empty, err.Description);
                 return View(model);
             }
+
+            // 🔔 Notify: Admin updated role
+            await NotifyAdminAsync(
+                subject: "Role updated",
+                body: $"Role '{role.Name}' was updated.",
+                metadata: new
+                {
+                    action = "RoleUpdated",
+                    roleId = role.Id,
+                    roleName = role.Name
+                });
+
             return RedirectToAction(nameof(Index));
         }
 
@@ -181,9 +214,30 @@ namespace SWIMS.Controllers
         {
             var role = await _roleManager.FindByIdAsync(id.ToString());
             if (role != null)
-                await _roleManager.DeleteAsync(role);
+            {
+                var roleId = role.Id;
+                var roleName = role.Name;
+
+                var result = await _roleManager.DeleteAsync(role);
+
+                if (result.Succeeded)
+                {
+                    // 🔔 Notify: Admin deleted role
+                    await NotifyAdminAsync(
+                        subject: "Role deleted",
+                        body: $"Role '{roleName ?? $"ID {roleId}"}' was deleted.",
+                        metadata: new
+                        {
+                            action = "RoleDeleted",
+                            roleId = roleId,
+                            roleName = roleName
+                        });
+                }
+            }
+
             return RedirectToAction(nameof(Index));
         }
+
 
         /// <summary>
         /// Determines whether a role with the given identifier exists.
@@ -265,7 +319,49 @@ namespace SWIMS.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
+            // 🔔 Notify: Admin updated role membership
+            await NotifyAdminAsync(
+                subject: "Role membership updated",
+                body: $"Membership for role '{role.Name}' was updated.",
+                metadata: new
+                {
+                    action = "RoleUsersUpdated",
+                    roleId = role.Id,
+                    roleName = role.Name
+                });
+
             return RedirectToAction(nameof(Index));
         }
+
+        // --------------------------------------------------------------------
+        // Generic admin notification helper for role management actions.
+        // --------------------------------------------------------------------
+        private async Task NotifyAdminAsync(string subject, string body, object metadata = null)
+        {
+            var recipient = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.Identity?.Name;
+            if (string.IsNullOrWhiteSpace(recipient))
+                return;
+
+            var payload = new
+            {
+                Recipient = recipient,
+                Channel = "InApp",
+                Subject = subject,
+                Body = body,
+                MetadataJson = metadata == null ? null : JsonSerializer.Serialize(metadata)
+            };
+
+            try
+            {
+                // 🔔 Notify: Admin user / role management event
+                await _elsa.ExecuteByNameAsync("Swims.Notifications.DirectInApp", payload);
+            }
+            catch
+            {
+                // Don't block role admin if Elsa is unavailable.
+            }
+        }
+
+
     }
 }

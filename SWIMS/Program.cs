@@ -32,6 +32,7 @@ using SWIMS.Services.Auth;
 using SWIMS.Services.Diagnostics;
 using SWIMS.Services.Diagnostics.Auditing;
 using SWIMS.Services.Diagnostics.Sessions;
+using SWIMS.Services.Elsa;
 using SWIMS.Services.Email;
 using SWIMS.Services.Messaging;
 using SWIMS.Services.Notifications;
@@ -43,6 +44,7 @@ using SWIMS.Web.Endpoints;
 using SWIMS.Web.Hubs;
 using SWIMS.Web.Ops;
 using System.Net;
+using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Threading;
 
@@ -287,6 +289,29 @@ builder.Services.AddSingleton<IChatPresence, InMemoryChatPresence>();
 // Add OpenAPI Support to project
 builder.Services.AddOpenApi();
 builder.Services.AddEndpointsApiExplorer();
+
+builder.Services.AddHttpClient("Elsa", (sp, client) =>
+{
+    var config = sp.GetRequiredService<IConfiguration>();
+    var serverUrl = config["Elsa:ServerUrl"]
+                    ?? throw new InvalidOperationException("Elsa:ServerUrl is not configured.");
+
+    // Ensure trailing slash
+    if (!serverUrl.EndsWith("/"))
+        serverUrl += "/";
+
+    client.BaseAddress = new Uri(serverUrl);
+
+    var apiKey = config["Elsa:ApiKey"]
+                 ?? throw new InvalidOperationException("Elsa:ApiKey is not configured.");
+
+    client.DefaultRequestHeaders.Authorization =
+        new AuthenticationHeaderValue("ApiKey", apiKey);
+});
+
+builder.Services.AddScoped<IElsaWorkflowClient, ElsaWorkflowClient>();
+
+
 
 var app = builder.Build();
 
