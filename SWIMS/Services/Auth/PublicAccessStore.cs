@@ -8,11 +8,17 @@ namespace SWIMS.Services.Auth
 {
     public interface IPublicAccessStore
     {
-        // Existing: check via HttpContext
+        // Runtime entry point (used by PublicOrAuthenticatedHandler)
         Task<bool> IsPublicAsync(HttpContext http, CancellationToken ct = default);
 
-        // NEW: offline/preview overload (no HttpContext required)
-        Task<bool> IsPublicAsync(string? area, string? controller, string? action, string? page, string? path, CancellationToken ct = default);
+        // Offline / preview overload (used by RouteInspector)
+        Task<bool> IsPublicAsync(
+            string? area,
+            string? controller,
+            string? action,
+            string? page,
+            string? path,
+            CancellationToken ct = default);
 
         Task InvalidateAsync();
     }
@@ -24,53 +30,112 @@ namespace SWIMS.Services.Auth
         private const string CacheKey = "public:endpoints";
 
         public EfPublicAccessStore(SwimsIdentityDbContext db, IMemoryCache cache)
-        { _db = db; _cache = cache; }
-
-        // Existing entry point now delegates to the core overload
-        public async Task<bool> IsPublicAsync(HttpContext http, CancellationToken ct = default)
         {
-            var (area, controller, action, page, path) = GetRouteBits(http);
-            return await IsPublicCoreAsync(area, controller, action, page, path, ct);
+            _db = db;
+            _cache = cache;
         }
 
-        // NEW: offline/preview overload
-        public Task<bool> IsPublicAsync(string? area, string? controller, string? action, string? page, string? path, CancellationToken ct = default)
-            => IsPublicCoreAsync(area, controller, action, page, path, ct);
+        /// <summary>
+        /// Entry point used at runtime by PublicOrAuthenticatedHandler.
+        /// </summary>
+        public async Task<bool> IsPublicAsync(HttpContext http, CancellationToken ct = default)
+        {
+            var (area, controller, action, page, path, fullPath) = GetRouteBits(http);
+            return await IsPublicCoreAsync(area, controller, action, page, path, fullPath, ct);
+        }
 
-        private async Task<bool> IsPublicCoreAsync(string? area, string? controller, string? action, string? page, string? path, CancellationToken ct)
+        /// <summary>
+        /// Offline / preview entry point (e.g. RouteInspector) that only knows route bits.
+        /// We treat the supplied path as both "path only" and "fullPath" for regex matching.
+        /// </summary>
+        public Task<bool> IsPublicAsync(
+            string? area,
+            string? controller,
+            string? action,
+            string? page,
+            string? path,
+            CancellationToken ct = default)
+        {
+            return IsPublicCoreAsync(area, controller, action, page, path, path, ct);
+        }
+
+        private async Task<bool> IsPublicCoreAsync(
+            string? area,
+            string? controller,
+            string? action,
+            string? page,
+            string? path,
+            string? fullPath,
+            CancellationToken ct)
         {
             var items = await _cache.GetOrCreateAsync(CacheKey, async e =>
             {
                 e.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(1);
-                return await _db.PublicEndpoints.AsNoTracking()
-                    .Where(x => x.IsEnabled).OrderBy(x => x.Priority).ToListAsync(ct);
+                return await _db.PublicEndpoints
+                    .AsNoTracking()
+                    .Where(x => x.IsEnabled)
+                    .OrderBy(x => x.Priority)
+                    .Select(x => new Slim(x))
+                    .ToListAsync(ct);
             });
 
-            foreach (var x in items!)
+            if (items is null || items.Count == 0)
+                return false;
+
+            foreach (var x in items)
             {
+                if (!x.IsEnabled)
+                    continue;
+
                 switch (x.MatchType)
                 {
                     case MatchTypes.ControllerAction:
-                        if (Eq(x.Area, area) && Eq(x.Controller, controller) && Eq(x.Action, action)) return true;
+                        if (Eq(x.Area, area) &&
+                            Eq(x.Controller, controller) &&
+                            Eq(x.Action, action))
+                        {
+                            return true;
+                        }
                         break;
+
                     case MatchTypes.Controller:
-                        if (Eq(x.Area, area) && Eq(x.Controller, controller)) return true;
+                        if (Eq(x.Area, area) &&
+                            Eq(x.Controller, controller))
+                        {
+                            return true;
+                        }
                         break;
+
                     case MatchTypes.RazorPage:
-                        if (Eq(x.Area, area) && Eq(x.Page, page)) return true;
+                        if (Eq(x.Area, area) &&
+                            Eq(x.Page, page))
+                        {
+                            return true;
+                        }
                         break;
+
                     case MatchTypes.Path:
-                        if (Eq(x.Path, path)) return true;
+                        // Path matching stays as "pure path".
+                        if (Eq(x.Path, path))
+                        {
+                            return true;
+                        }
                         break;
+
                     case MatchTypes.Regex:
-                        if (!string.IsNullOrWhiteSpace(x.Regex) && Regex.IsMatch(path ?? "", x.Regex, RegexOptions.IgnoreCase)) return true;
+                        // Regex sees the combined path + query string so we can
+                        // match on things like "publicPreview=true" anywhere.
+                        var target = fullPath ?? path ?? string.Empty;
+                        if (!string.IsNullOrWhiteSpace(x.Regex) &&
+                            Regex.IsMatch(target, x.Regex, RegexOptions.IgnoreCase))
+                        {
+                            return true;
+                        }
                         break;
                 }
             }
-            return false;
 
-            static bool Eq(string? a, string? b)
-                => string.Equals(a ?? "", b ?? "", StringComparison.OrdinalIgnoreCase);
+            return false;
         }
 
         public Task InvalidateAsync()
@@ -79,16 +144,53 @@ namespace SWIMS.Services.Auth
             return Task.CompletedTask;
         }
 
-        private static (string? area, string? controller, string? action, string? page, string? path)
+        private record Slim(
+            string MatchType,
+            string? Area,
+            string? Controller,
+            string? Action,
+            string? Page,
+            string? Path,
+            string? Regex,
+            bool IsEnabled,
+            int Priority)
+        {
+            public Slim(PublicEndpoint e)
+                : this(
+                    e.MatchType,
+                    e.Area,
+                    e.Controller,
+                    e.Action,
+                    e.Page,
+                    e.Path,
+                    e.Regex,
+                    e.IsEnabled,
+                    e.Priority)
+            {
+            }
+        }
+
+        private static bool Eq(string? a, string? b) =>
+            string.Equals(a ?? string.Empty, b ?? string.Empty, StringComparison.OrdinalIgnoreCase);
+
+        private static (string? area, string? controller, string? action, string? page, string? path, string? fullPath)
             GetRouteBits(HttpContext http)
         {
             var rd = http.GetRouteData()?.Values;
+
             var area = rd?["area"]?.ToString();
             var controller = rd?["controller"]?.ToString();
             var action = rd?["action"]?.ToString();
-            var page = rd?["page"]?.ToString(); // Razor Pages sets this
-            var path = http.Request.Path.Value;
-            return (area, controller, action, page, path);
+            var page = rd?["page"]?.ToString();
+
+            var pathOnly = http.Request.Path.Value ?? string.Empty;
+            var query = http.Request.QueryString.HasValue
+                ? http.Request.QueryString.Value!
+                : string.Empty;
+
+            var fullPath = pathOnly + query;
+
+            return (area, controller, action, page, pathOnly, fullPath);
         }
     }
 }
