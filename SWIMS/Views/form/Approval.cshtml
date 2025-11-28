@@ -1,5 +1,6 @@
 ﻿@using Microsoft.AspNetCore.Identity
 @using SWIMS.Models
+@model SWIMS.Models.SW_formTableDatum
 @inject UserManager<SwUser> UserManager
 
 <!-- BACK BUTTON -->
@@ -13,135 +14,272 @@
 </div>
 <!-- ----------------------------------------------- -->
 @{
-    ViewData["Title"] = "Approval";
+    ViewData["Title"] = "Approvals / Recommendations";
 }
 
 <div class="row">
-    <div class="col-md-12">
+    <div class="col-sm-6">
         <div class="card">
+            <div class="card-header">Documents::</div>
             <div class="card-body">
                 <!-- Form Wizard Start -->
                 <div class="form-wizard">
-                    <div class="form-wizard-header overflow-x-auto scroll-sm pb-8 my-32">
-                        <ul class="list-unstyled form-wizard-list">
+                    <div class="form-wizard-header overflow-x-auto scroll-sm pb-8 my-32">                        
                             @if (ViewBag.appAmt == 1)
                             {
-                                <li class="form-wizard-list__item active">
-                                    <div class="form-wizard-list__line">
-                                        <span class="count">1</span>
-                                    </div>
-                                    <span class="text text-xs fw-semibold">APPROVER 1</span>
-                                    <span style="background: red; color: white;padding: 5px; border-radius: 30px;">@ViewBag.appList01Ctn</span>
-                                </li>
+                                <ul class="list-unstyled form-wizard-list">
+                                    <li class="form-wizard-list__item active">
+                                        <div class="form-wizard-list__line">
+                                            <span class="count">1</span>
+                                        </div>
+                                        <span class="text text-xs fw-semibold">APPROVER 1</span>
+                                        <span style="background: red; color: white;padding: 5px; border-radius: 30px;">@ViewBag.appList01Ctn</span>
+                                    </li>
+                                </ul>
                             }
                             else if (ViewBag.appAmt == 2)
                             {
-                                <li class="form-wizard-list__item active">
-                                    <div class="form-wizard-list__line">
-                                        <span class="count">1</span>
-                                    </div>
-                                    <span class="text text-xs fw-semibold">APPROVER 1</span>
-                                    <span style="background: red; color: white;padding: 5px; border-radius: 30px;">@ViewBag.appList01Ctn</span>
-                                </li>
-                                <li class="form-wizard-list__item">
-                                    <div class="form-wizard-list__line">
-                                        <span class="count">2</span>
-                                    </div>
-                                    <span class="text text-xs fw-semibold">APPROVER 2</span>
-                                    <span style="background: red; color: white;padding: 5px; border-radius: 30px;">@ViewBag.appList02Ctn</span>
-                                </li>
+                                <ul class="list-unstyled form-wizard-list">
+                                    <li class="form-wizard-list__item active">
+                                        <div class="form-wizard-list__line">
+                                            <span class="count">1</span>
+                                        </div>
+                                        <span class="text text-xs fw-semibold">APPROVER 1</span>
+                                        <span style="background: red; color: white;padding: 5px; border-radius: 30px;">@ViewBag.appList01Ctn</span>
+                                    </li>
+                                    <li class="form-wizard-list__item">
+                                        <div class="form-wizard-list__line">
+                                            <span class="count">2</span>
+                                        </div>
+                                        <span class="text text-xs fw-semibold">APPROVER 2</span>
+                                        <span style="background: red; color: white;padding: 5px; border-radius: 30px;">@ViewBag.appList02Ctn</span>
+                                    </li>
+                                </ul>
                             }
                             else if (ViewBag.appAmt == 3)
                             {
-                                <li class="form-wizard-list__item active">
-                                    <div class="form-wizard-list__line">
-                                        <span class="count">1</span>
-                                    </div>
-                                    <span class="text text-xs fw-semibold">APPROVER 1 </span>
-                                    <span style="background: red; color: white;padding: 5px; border-radius: 30px;">@ViewBag.appList01Ctn</span>
-                                </li>
-                                <li class="form-wizard-list__item">
-                                    <div class="form-wizard-list__line">
-                                        <span class="count">2</span>
-                                    </div>
-                                    <span class="text text-xs fw-semibold">APPROVER 2 </span>
-                                    <span style="background: red; color: white;padding: 5px; border-radius: 30px;">@ViewBag.appList02Ctn</span>
-                                </li>
-                                <li class="form-wizard-list__item">
-                                    <div class="form-wizard-list__line">
-                                        <span class="count">3</span>
-                                    </div>
-                                    <span class="text text-xs fw-semibold">APPROVER 3 </span>
-                                    <span style="background: red; color: white;padding: 5px; border-radius: 30px;">@ViewBag.appList03Ctn</span>
-                                </li>
+                                <ul class="list-unstyled form-wizard-list">
+                                    <li class="form-wizard-list__item active">
+                                        <div class="form-wizard-list__line">
+                                            <span class="count">1</span>
+                                        </div>
+                                        <span class="text text-xs fw-semibold">APPROVER 1 </span>
+                                        <span style="background: red; color: white;padding: 5px; border-radius: 30px;">@ViewBag.appList01Ctn</span>
+                                    </li>
+                                    <li class="form-wizard-list__item">
+                                        <div class="form-wizard-list__line">
+                                            <span class="count">2</span>
+                                        </div>
+                                        <span class="text text-xs fw-semibold">APPROVER 2 </span>
+                                        <span style="background: red; color: white;padding: 5px; border-radius: 30px;">@ViewBag.appList02Ctn</span>
+                                    </li>
+                                    <li class="form-wizard-list__item">
+                                        <div class="form-wizard-list__line">
+                                            <span class="count">3</span>
+                                        </div>
+                                        <span class="text text-xs fw-semibold">APPROVER 3 </span>
+                                        <span style="background: red; color: white;padding: 5px; border-radius: 30px;">@ViewBag.appList03Ctn</span>
+                                    </li>
+                                </ul>
+                            } 
+                            else if (ViewBag.appAmt == 4)
+                            {
+                                <ul class="list-unstyled form-wizard-list">
+                                    <li class="form-wizard-list__item active">
+                                        <div class="form-wizard-list__line">
+                                            <span class="count">1</span>
+                                        </div>
+                                        <span class="text text-xs fw-semibold">APPROVER 1 </span>
+                                        <span style="background: red; color: white;padding: 5px; border-radius: 30px;">@ViewBag.appList01Ctn</span>
+                                    </li>
+                                    <li class="form-wizard-list__item">
+                                        <div class="form-wizard-list__line">
+                                            <span class="count">2</span>
+                                        </div>
+                                        <span class="text text-xs fw-semibold">APPROVER 2 </span>
+                                        <span style="background: red; color: white;padding: 5px; border-radius: 30px;">@ViewBag.appList02Ctn</span>
+                                    </li>
+                                    <li class="form-wizard-list__item">
+                                        <div class="form-wizard-list__line">
+                                            <span class="count">3</span>
+                                        </div>
+                                        <span class="text text-xs fw-semibold">APPROVER 3 </span>
+                                        <span style="background: red; color: white;padding: 5px; border-radius: 30px;">@ViewBag.appList03Ctn</span>
+                                    </li>
+                                    <li class="form-wizard-list__item">
+                                        <div class="form-wizard-list__line">
+                                            <span class="count">4</span>
+                                        </div>
+                                        <span class="text text-xs fw-semibold">APPROVER 4 </span>
+                                        <span style="background: red; color: white;padding: 5px; border-radius: 30px;">@ViewBag.appList04Ctn</span>
+                                    </li>
+                                </ul>
                             }
-                        </ul>
+                            else if (ViewBag.appAmt == 5)
+                            {
+                                <ul class="list-unstyled form-wizard-list">
+                                    <li class="form-wizard-list__item active">
+                                        <div class="form-wizard-list__line">
+                                            <span class="count">1</span>
+                                        </div>
+                                        <span class="text text-xs fw-semibold">APPROVER 1 </span>
+                                        <span style="background: red; color: white;padding: 5px; border-radius: 30px;">@ViewBag.appList01Ctn</span>
+                                    </li>
+                                    <li class="form-wizard-list__item">
+                                        <div class="form-wizard-list__line">
+                                            <span class="count">2</span>
+                                        </div>
+                                        <span class="text text-xs fw-semibold">APPROVER 2 </span>
+                                        <span style="background: red; color: white;padding: 5px; border-radius: 30px;">@ViewBag.appList02Ctn</span>
+                                    </li>
+                                    <li class="form-wizard-list__item">
+                                        <div class="form-wizard-list__line">
+                                            <span class="count">3</span>
+                                        </div>
+                                        <span class="text text-xs fw-semibold">APPROVER 3 </span>
+                                        <span style="background: red; color: white;padding: 5px; border-radius: 30px;">@ViewBag.appList03Ctn</span>
+                                    </li>
+                                    <li class="form-wizard-list__item">
+                                        <div class="form-wizard-list__line">
+                                            <span class="count">4</span>
+                                        </div>
+                                        <span class="text text-xs fw-semibold">APPROVER 4 </span>
+                                        <span style="background: red; color: white;padding: 5px; border-radius: 30px;">@ViewBag.appList04Ctn</span>
+                                    </li>
+                                    <li class="form-wizard-list__item">
+                                        <div class="form-wizard-list__line">
+                                            <span class="count">5</span>
+                                        </div>
+                                        <span class="text text-xs fw-semibold">APPROVER 5 </span>
+                                        <span style="background: red; color: white;padding: 5px; border-radius: 30px;">@ViewBag.appList05Ctn</span>
+                                    </li>
+                                </ul>
+                            }                             
                     </div>
 
                     <fieldset class="wizard-fieldset show">
                         <!-- APPROVER 1 --------------- -->
 
                         <div class="btn-group radius-8" role="group" aria-label="Default button group">
-                            <button type="button" class="form-wizard-previous-btn btn btn-primary-600 px-20 py-11 radius-50">Previous</button>
-                            <button type="button" class="form-wizard-next-btn btn btn-primary-600 px-20 py-11 radius-50">Next</button>
+                            <button type="button" class="form-wizard-previous-btn btn btn-outline-neutral-600 px-30 py-11 radius-50">Previous</button>
+                            <button type="button" class="form-wizard-next-btn btn btn-outline-neutral-600 px-30 py-11 radius-50">Next</button>
                         </div>
                         <br />
                         <br />
-                        <select id="appList01" style="width: 100%;">
+                        <select id="appList01" style="width: 50%;">
                             <option>-- Select Entry: --</option>
-                            @foreach (var item in ViewBag.appList01) {<option value="@item.Id">Entry No.: - @item.Id</option>}
+                            @foreach (var item in ViewBag.appList01) {
+                                <option value="@item.Id">Entry No.: - @item.Id</option>
+                            }
                         </select>
-
-                        <form asp-action="Edit" asp-controller="formTableData">
-                            <input type="hidden" name="Id" id="Id" />
-                            <div id="appListPreview01"></div>
-                        </form>
+                        <div id="appListPreview01"></div>
+                        <div id="appListEntry01"></div>                        
                     </fieldset>
 
                     <fieldset class="wizard-fieldset">
                         <!-- APPROVER 2 --------------- -->
 
                         <div class="btn-group radius-8" role="group" aria-label="Default button group">
-                            <button type="button" class="form-wizard-previous-btn btn btn-primary-600 px-20 py-11 radius-50">Previous</button>
-                            <button type="button" class="form-wizard-next-btn btn btn-primary-600 px-20 py-11 radius-50">Next</button>
+                            <button type="button" class="form-wizard-previous-btn btn btn-outline-neutral-600 px-30 py-11 radius-50">Previous</button>
+                            <button type="button" class="form-wizard-next-btn btn btn-outline-neutral-600 px-30 py-11 radius-50">Next</button>
                         </div>
                         <br />
                         <br />
-                        <select id="appList02" style="width: 100%;">
+                        <select id="appList02" style="width: 50%;">
                             <option>-- Select Entry: --</option>
-                            @foreach (var item in ViewBag.appList02){<option value="@item.Id">Entry No.: - @item.Id</option>}
-                        </select>
-
-                        <form asp-action="Edit" asp-controller="formTableData">                            
-                            <div id="appListPreview02"></div>
-                        </form>
+                            @foreach (var item in ViewBag.appList02) {
+                                <option value="@item.Id">Entry No.: - @item.Id</option>
+                            }
+                        </select>                                                
+                        <div id="appListPreview02"></div>
+                        <div id="appListEntry02"></div>
                     </fieldset>
 
                     <fieldset class="wizard-fieldset">
                         <!-- APPROVER 3 --------------- -->
 
                         <div class="btn-group radius-8" role="group" aria-label="Default button group">
-                            <button type="button" class="form-wizard-previous-btn btn btn-primary-600 px-20 py-11 radius-50">Previous</button>
-                            <button type="button" class="form-wizard-next-btn btn btn-primary-600 px-20 py-11 radius-50">Next</button>
+                            <button type="button" class="form-wizard-previous-btn btn btn-outline-neutral-600 px-30 py-11 radius-50">Previous</button>
+                            <button type="button" class="form-wizard-next-btn btn btn-outline-neutral-600 px-30 py-11 radius-50">Next</button>
                         </div>
                         <br />
                         <br />
-                        <select id="appList03" style="width: 100%;">
+                        <select id="appList03" style="width: 50%;">
                             <option>-- Select Entry: --</option>
-                            @foreach (var item in ViewBag.appList03) {<option value="@item.Id">Entry No.: - @item.Id</option>}
-                        </select>
+                            @foreach (var item in ViewBag.appList03) {
+                                <option value="@item.Id">Entry No.: - @item.Id</option>
+                            }
+                        </select>                        
+                        <div id="appListPreview03"></div>
+                        <div id="appListEntry03"></div>
+                    </fieldset>
+                    <fieldset class="wizard-fieldset">
+                        <!-- APPROVER 4 --------------- -->
 
-                        <form asp-action="Edit" asp-controller="formTableData">
-                            <div id="appListPreview03"></div>
-                        </form>
+                        <div class="btn-group radius-8" role="group" aria-label="Default button group">
+                            <button type="button" class="form-wizard-previous-btn btn btn-outline-neutral-600 px-30 py-11 radius-50">Previous</button>
+                            <button type="button" class="form-wizard-next-btn btn btn-outline-neutral-600 px-30 py-11 radius-50">Next</button>
+                        </div>
+                        <br />
+                        <br />
+                        <select id="appList04" style="width: 50%;">
+                            <option>-- Select Entry: --</option>
+                            @foreach (var item in ViewBag.appList04)
+                            {
+                                <option value="@item.Id">Entry No.: - @item.Id</option>
+                            }
+                        </select>
+                        <div id="appListPreview04"></div>
+                        <div id="appListEntry04"></div>
+                    </fieldset>
+                    <fieldset class="wizard-fieldset">
+                        <!-- APPROVER 5 --------------- -->
+
+                        <div class="btn-group radius-8" role="group" aria-label="Default button group">
+                            <button type="button" class="form-wizard-previous-btn btn btn-outline-neutral-600 px-30 py-11 radius-50">Previous</button>
+                            <button type="button" class="form-wizard-next-btn btn btn-outline-neutral-600 px-30 py-11 radius-50">Next</button>
+                        </div>
+                        <br />
+                        <br />
+                        <select id="appList05" style="width: 50%;">
+                            <option>-- Select Entry: --</option>
+                            @foreach (var item in ViewBag.appList05)
+                            {
+                                <option value="@item.Id">Entry No.: - @item.Id</option>
+                            }
+                        </select>
+                        <div id="appListPreview05"></div>
+                        <div id="appListEntry05"></div>
                     </fieldset>
                 </div>
                 <!-- Form Wizard End -->
             </div>
         </div>
     </div>
+    <div class="col-sm-6">
+        <div class="card">
+            <div class="card-header">History::</div>
+            <div class="card-body">
+
+                <div class="timeline">
+                    <div id="appHistory"></div>
+                </div>
+
+            </div>
+        </div>
+        <br />
+        <div class="card">
+            <div class="card-header">Take Action::</div>
+            <div class="card-body">
+                <a href="#" id="appBTN" type="button" class="btn rounded-pill btn-outline-success-600 radius-8 px-20 py-11 d-flex align-items-center gap-2">
+                    <iconify-icon icon="tabler:copy-check-filled" class="text-xl"></iconify-icon> GO
+                </a>
+            </div>
+        </div>
+    </div>
 </div>
 
+<link href="~/css/forms-stylesheet.css" rel="stylesheet" />
 <script src="~/lib/jquery/dist/jquery.min.js"></script>
 <script src="~/lib/jquery-modal/jquery.modal.min.js"></script>
 <link href="~/lib/jquery-modal/jquery.modal.min.css" rel="stylesheet" />
@@ -149,10 +287,10 @@
 <script src="~/lib/trumbowyg-editor/trumbowyg.min.js"></script>
 <link href="~/lib/select2/select2.css" rel="stylesheet" />
 <script src="~/lib/select2/select2.js"></script>
-<script type="text/javascript">
+<script type="text/javascript"> 
         // =============================== Wizard Step Js Start ================================
         jQuery(function($) {
-            // click on next button
+                // click on next button -- form-wizard-list__line
             $('.form-wizard-next-btn').on('click', function () {
                 var parentFieldset = $(this).parents('.wizard-fieldset');
                 var currentActiveStep = $(this).parents('.form-wizard').find('.form-wizard-list .active');
@@ -258,127 +396,122 @@
             $("#appList01").select2();
             $("#appList02").select2();
             $("#appList03").select2();
+            $("#appList04").select2();
+            $("#appList05").select2();
         });
 
         // ------------------------------------------- Approval dropdown logic & auto-fill Edit hidden Id
         jQuery(function ($) {
             var uuid = "@ViewBag.uuid"
 
-            $("#appList01").on('keyup change', function() {
+            $("#appList01").on('keyup change', function() {  // ------ APPROVER 1
+                // -------- fetch FormData innerWidth preview
                 var selID = $(this).val().trim();
-                $("#Id").val(selID);
                 $.ajax({
                     url: '@Url.Action("Preview", "form")?&dataId=' + selID + '&uuid=' + uuid.trim() + '',
                     type: "GET",
                     success: function (result) {
-                        $("#appListPreview01").html(result).prepend(
-                            "<input type='hidden' name='Id' id='Id' value='"+ selID +"' /><br />" +
-                            "<input type='hidden' name='isApproval_01' id='isApproval_01' value=1 /><br />" +
-                            "<textarea id='trumbowyg1' name='isAppComment_01' placeholder='your comment ...'></textarea>" +
-                            "<input type='hidden' name='SW_formsId' id='SW_formsId' value='" + @ViewBag.formId + "' />" +
-                            "<br />" +
-                            "<label for='isApprover_01'>Approved By: </label>" +
-                            "<input type='text' name='isApprover_01' id='isApprover_01' value='@UserManager.GetUserName(User)' placeholder='...' /><br />" +
-                            "<button type='submit' class='btn btn-success text-success-main px-20 py-13 text-white d-flex'><iconify-icon icon='bitcoin-icons:share-filled' class='text-xl'></iconify-icon>Approve</button>"
-                        );
-                        $("#trumbowyg1").trumbowyg({ // ---- Render TINYMCE - WYSWYGET EDITOR
-                            btns: [
-                                ['viewHTML'],
-                                ['undo', 'redo'],
-                                ['formatting'],
-                                ['strong', 'em', 'del'],
-                                ['superscript', 'subscript'],
-                                ['link'],
-                                ['insertImage'],
-                                ['justifyLeft', 'justifyCenter', 'justifyRight', 'justifyFull'],
-                                ['unorderedList', 'orderedList'],
-                                ['horizontalRule'],
-                                ['removeformat'],
-                                ['fullscreen']
-                            ],
-                            autogrow: true
-                        });
+                        $("#appListPreview01").html(result);
+                    }
+                });
+                // -------- dynamic Navigation button to comment
+                $("#appBTN").attr('href', '@Url.Action("ApprovalAction", "form")?&dataId=' + selID + '&appCnt=1&uuid=' + uuid.trim() + '');
+                // -------- dynamic history 
+                $.ajax({
+                    url: '@Url.Action("ApprovalHistory", "form")?&dataId=' + selID + '&appCnt=1',
+                    type: "GET",
+                    success: function (result) {
+                        $("#appHistory").html(result);
                     }
                 });
             });
-            $("#appList02").on('keyup change', function() {
-                var selID = $(this).val().trim();
-                $("#Id").val(selID);
-                console.log(selID);
-                $.ajax({
-                    url: '@Url.Action("Preview", "form")?&dataId=' + selID + '&uuid=' + uuid.trim() + '',
-                    type: "GET",
-                    success: function (result) {
-                        $("#appListPreview02").html(result).prepend(
-                            "<input type='hidden' name='Id' id='Id' value='"+ selID +"' /><br />" +
-                            "<input type='hidden' name='isApproval_01' id='isApproval_01' value=1 /><br />" +
-                            "<input type='hidden' name='isApproval_02' id='isApproval_02' value=1 /><br />" +
-                            "<textarea id='trumbowyg2' name='isAppComment_02' id='isAppComment_02' placeholder='your comment ...'></textarea>" +
-                            "<input type='hidden' name='SW_formsId' id='SW_formsId' value='" + @ViewBag.formId + "' />" +
-                            "<br />" +
-                            "<label for='isApprover_02'>Approved By: </label>" +
-                            "<input type='text' name='isApprover_02' id='isApprover_02' value='@UserManager.GetUserName(User)' placeholder='...' /><br />" +
-                            "<button type='submit' class='btn btn-success text-success-main px-20 py-13 text-white d-flex'><iconify-icon icon='bitcoin-icons:share-filled' class='text-xl'></iconify-icon>Approve</button>"
-                        );
-                        $("#trumbowyg2").trumbowyg({ // ---- Render TINYMCE - WYSWYGET EDITOR
-                            btns: [
-                                ['viewHTML'],
-                                ['undo', 'redo'],
-                                ['formatting'],
-                                ['strong', 'em', 'del'],
-                                ['superscript', 'subscript'],
-                                ['link'],
-                                ['insertImage'],
-                                ['justifyLeft', 'justifyCenter', 'justifyRight', 'justifyFull'],
-                                ['unorderedList', 'orderedList'],
-                                ['horizontalRule'],
-                                ['removeformat'],
-                                ['fullscreen']
-                            ],
-                            autogrow: true
-                        });
-                    }
-                });
-            });            
-            $("#appList03").on('keyup change', function() {
-                var selID = $(this).val().trim();
-                $("#Id").val(selID);
 
+            $("#appList02").on('keyup change', function() { // ------ APPROVER 2
+                // -------- fetch FormData innerWidth preview
+                var selID = $(this).val().trim();
                 $.ajax({
                     url: '@Url.Action("Preview", "form")?&dataId=' + selID + '&uuid=' + uuid.trim() + '',
                     type: "GET",
                     success: function (result) {
-                        $("#appListPreview03").html(result).prepend(
-                            "<input type='hidden' name='Id' id='Id' value='"+ selID +"' /><br />" +
-                            "<input type='hidden' name='isApproval_01' id='isApproval_01' value=1 /><br />" +
-                            "<input type='hidden' name='isApproval_02' id='isApproval_02' value=1 /><br />" +
-                            "<input type='hidden' name='isApproval_03' id='isApproval_03' value=1 /><br />" +
-                            "<textarea id='trumbowyg3' name='isAppComment_03' id='isAppComment_03' placeholder='your comment ...'></textarea>" +
-                            "<input type='hidden' name='SW_formsId' id='SW_formsId' value='" + @ViewBag.formId + "' />" +
-                            "<br />" +
-                            "<label for='isApprover_03'>Approved By: </label>" +
-                            "<input type='text' name='isApprover_03' id='isApprover_03' value='@UserManager.GetUserName(User)' placeholder='...' /><br />" +
-                            "<button type='submit' class='btn btn-success text-success-main px-20 py-13 text-white d-flex'><iconify-icon icon='bitcoin-icons:share-filled' class='text-xl'></iconify-icon>Approve</button>"
-                        );
-                        $("#trumbowyg3").trumbowyg({ // ---- Render TINYMCE - WYSWYGET EDITOR
-                            btns: [
-                                ['viewHTML'],
-                                ['undo', 'redo'],
-                                ['formatting'],
-                                ['strong', 'em', 'del'],
-                                ['superscript', 'subscript'],
-                                ['link'],
-                                ['insertImage'],
-                                ['justifyLeft', 'justifyCenter', 'justifyRight', 'justifyFull'],
-                                ['unorderedList', 'orderedList'],
-                                ['horizontalRule'],
-                                ['removeformat'],
-                                ['fullscreen']
-                            ],
-                            autogrow: true
-                        });
+                        $("#appListPreview02").html(result);
+                    }
+                });
+                // -------- dynamic Navigation button to comment
+                $("#appBTN").attr('href', '@Url.Action("ApprovalAction", "form")?&dataId=' + selID + '&appCnt=2&uuid=' + uuid.trim() + '');
+                // -------- dynamic history 
+                $.ajax({
+                    url: '@Url.Action("ApprovalHistory", "form")?&dataId=' + selID + '&appCnt=2',
+                    type: "GET",
+                    success: function (result) {
+                        $("#appHistory").html(result);
+                    }
+                });
+            });     
+            
+            $("#appList03").on('keyup change', function() { // ------ APPROVER 3
+                // -------- fetch FormData innerWidth preview
+                var selID = $(this).val().trim();
+                $.ajax({
+                    url: '@Url.Action("Preview", "form")?&dataId=' + selID + '&uuid=' + uuid.trim() + '',
+                    type: "GET",
+                    success: function (result) {
+                        $("#appListPreview03").html(result);
+                    }
+                });
+                // -------- dynamic Navigation button to comment
+                $("#appBTN").attr('href', '@Url.Action("ApprovalAction", "form")?&dataId=' + selID + '&appCnt=3&uuid=' + uuid.trim() + '');
+                // -------- dynamic history 
+                $.ajax({
+                    url: '@Url.Action("ApprovalHistory", "form")?&dataId=' + selID + '&appCnt=3',
+                    type: "GET",
+                    success: function (result) {
+                        $("#appHistory").html(result);
                     }
                 });
             });
-    });
+
+            $("#appList04").on('keyup change', function() { // ------ APPROVER 4
+                // -------- fetch FormData innerWidth preview
+                var selID = $(this).val().trim();
+                $.ajax({
+                    url: '@Url.Action("Preview", "form")?&dataId=' + selID + '&uuid=' + uuid.trim() + '',
+                    type: "GET",
+                    success: function (result) {
+                        $("#appListPreview04").html(result);
+                    }
+                });
+                // -------- dynamic Navigation button to comment
+                $("#appBTN").attr('href', '@Url.Action("ApprovalAction", "form")?&dataId=' + selID + '&appCnt=4&uuid=' + uuid.trim() + '');
+                // -------- dynamic history 
+                $.ajax({
+                    url: '@Url.Action("ApprovalHistory", "form")?&dataId=' + selID + '&appCnt=4',
+                    type: "GET",
+                    success: function (result) {
+                        $("#appHistory").html(result);
+                    }
+                });
+            });
+
+            $("#appList05").on('keyup change', function() { // ------ APPROVER 5
+                // -------- fetch FormData innerWidth preview
+                var selID = $(this).val().trim();
+                $.ajax({
+                    url: '@Url.Action("Preview", "form")?&dataId=' + selID + '&uuid=' + uuid.trim() + '',
+                    type: "GET",
+                    success: function (result) {
+                        $("#appListPreview05").html(result);
+                    }
+                });
+                // -------- dynamic Navigation button to comment
+                $("#appBTN").attr('href', '@Url.Action("ApprovalAction", "form")?&dataId=' + selID + '&appCnt=5&uuid=' + uuid.trim() + '');
+                // -------- dynamic history 
+                $.ajax({
+                    url: '@Url.Action("ApprovalHistory", "form")?&dataId=' + selID + '&appCnt=5',
+                    type: "GET",
+                    success: function (result) {
+                        $("#appHistory").html(result);
+                    }
+                });
+            });
+});
 </script>

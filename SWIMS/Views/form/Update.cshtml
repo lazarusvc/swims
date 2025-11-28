@@ -1,68 +1,45 @@
-﻿@using System.Text.Json
+﻿@model SWIMS.Models.SW_formTableDatum
 
+<!-- BACK BUTTON -->
+<div style="width: 110px;">
+    <a href="##" onClick="history.go(-1); return false;"
+       class="btn rounded-pill btn-outline-dark-1 radius-8 px-20 py-11 d-flex align-items-center gap-2">
+        <iconify-icon icon="ion:return-up-back-sharp"></iconify-icon> Back
+    </a>
+    <br />
+    <br />
+</div>
+<!-- ----------------------------------------------- -->
 @{
-    var header = "";
-    var form = "";
-    int formID = 0;
-    @foreach (var inx in ViewBag.formLINK)
-    {
-        if (inx.uuid == "45d7bac7-98c8-4ac4-82ab-96c8978113e8")
-        {
-            header = inx.header;
-            form = inx.form;
-            formID = inx.Id;
-        }
-
-    }
-}
-
+    ViewData["Title"] = "Program - " + @ViewBag.formName;
+ }
 <link href="~/css/forms-stylesheet.css" rel="stylesheet" />
 <script src="~/lib/jquery/dist/jquery.min.js"></script>
-<script src="~/lib/formbuilder/form-render.min.js"></script>
-<script src="~/lib/fb-logic/formbuilder-conditional-logic.umd.js"></script>
-<link href="~/lib/trumbowyg-editor/ui/trumbowyg.min.css" rel="stylesheet" />
-<script src="~/lib/trumbowyg-editor/trumbowyg.min.js"></script>
+
 <script type="text/javascript">
-    // RENDER FORM
-    //
-    // -----------------------------------------------------------------------------------------------------
-    jQuery(function($) {
-      var container = document.getElementById('fb-rendered-form');
-
-    // Safely emit the server value as a JS string
-    const __rawServerValue = @Html.Raw(JsonSerializer.Serialize(form ?? "[]"));
-
-    // Normalize to an Array the renderer expects (handles double-encoded JSON too)
-    function normalizeFormData(raw) {
-      if (raw == null) return [];
-      try {
-        if (typeof raw === 'string') {
-          const once = JSON.parse(raw);
-          return (typeof once === 'string') ? JSON.parse(once) : once;
+    $.ajax({
+        url: '@Url.Action("Preview", "form")?&dataId=@ViewBag.dataID&uuid=@ViewBag.uuid',
+        type: "GET",
+        success: function (result) {
+            $("#fb-rendered-form").html(result);
         }
-        return raw;
-      } catch (e) {
-        console.error('Form JSON parse failed:', e, raw);
-        return [];
-      }
-    }
-
-    const formData = normalizeFormData(__rawServerValue);
-
-    // Render and hydrate logic
-    $(container).formRender({ formData: formData, dataType: 'json' });
-
-    if (window.FBConditionalLogic) {
-      FBConditionalLogic.setup(container, formData);
-    }
-
     });
 </script>
 
-<form asp-action="Create" asp-controller="formTableData" method="post" enctype="multipart/form-data">
-    @Html.Raw(header)
-    <div id="fb-rendered-form"></div>
-    <input type="hidden" name="SW_formsId" value="@formID" />
-    <button type="submit" class="btn btn-success">Submit</button>
-</form>
+<div class="row">
+    <div class="col-sm-12">
+        <div class="card radius-12 h-100">
+            <div class="card-body py-16 px-24" style="overflow-y: scroll; height:500px;">
+                <form asp-action="Edit" asp-controller="formTableData" method="post" enctype="multipart/form-data">
+                    @Html.Raw(ViewBag.header)
+                    <input asp-for="Id" type="hidden" name="Id" value="@ViewBag.dataID" />
+                    <input asp-for="SW_formsId" type="hidden" name="SW_formsId" value="@ViewBag.formId" />
+                    <div id="fb-rendered-form"></div>
+                    <button type="submit" class="btn btn-success">Submit</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 

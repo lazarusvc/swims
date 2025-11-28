@@ -39,3 +39,10 @@ body {
     margin: 0 auto;
 }
 
+.form-wizard .wizard-fieldset.show {
+    display In combination with 'float' and 'position', determines the type of box or boxes that are generated for an element. Widely available across major browsers (Baseline since January 2018) Learn more Don't show : block !important;
+    background: #f5f6fa !important;
+    border: 1px solid grey !important;
+    border-radius: 20px !important;
+    padding: 10px !important;
+}

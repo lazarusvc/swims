@@ -1,4 +1,5 @@
 ﻿@using System.Text.Json
+@model SWIMS.Models.SW_formTableDatum
 @{
     ViewData["title"] = "Form Preview";
 
@@ -15,6 +16,10 @@
                 if (@inx.type == "text") // form input field = text
                 {
                     htmlScript += "$('input[name=" + selector + "]').val('" + collection + "').attr('readonly', 'true').css('background', '#cecece');";
+                }
+                else if (@inx.type == "textarea") // form checkbox field
+                {
+                    htmlScript += "$('#" + selector + "').val('" + collection + "');";
                 }
                 else if (@inx.type == "select") // form select field
                 {

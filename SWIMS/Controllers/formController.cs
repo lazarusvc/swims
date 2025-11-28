@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Humanizer;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Graph.Models;
 using Microsoft.SqlServer.Server;
 using SWIMS.Data;
 using SWIMS.Models;
@@ -9,11 +11,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Metadata.Ecma335;
+using System.Security.Cryptography;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using static System.Net.Mime.MediaTypeNames;
-using System.Text.RegularExpressions;
 
 namespace SWIMS.Controllers
 {
@@ -26,9 +29,16 @@ namespace SWIMS.Controllers
             _context = context;
         }
 
+        /// <summary>
+        /// Forms UUID
+        /// </summary>
+        /// 
+        /// <remarks>
+        /// Generates the routing unique that represents forms
+        /// </remarks>
+        /// 
         public string GenerateNewUuidAsString()
         {
-            // Generates a new GUID and converts it to a string representation
             return Guid.NewGuid().ToString();
         }
 
@@ -238,14 +248,144 @@ namespace SWIMS.Controllers
             var al1 = _context.SW_formTableData.Where(x => x.isApproval_01 == 0 && x.SW_formsId == formId).ToList();
             var al2 = _context.SW_formTableData.Where(x => x.isApproval_02 == 0 && x.SW_formsId == formId).ToList();
             var al3 = _context.SW_formTableData.Where(x => x.isApproval_03 == 0 && x.SW_formsId == formId).ToList();
+            var al4 = _context.SW_formTableData.Where(x => x.isApproval_04 == 0 && x.SW_formsId == formId).ToList();
+            var al5 = _context.SW_formTableData.Where(x => x.isApproval_05 == 0 && x.SW_formsId == formId).ToList();
             ViewBag.appList01 = al1;
             ViewBag.appList02 = al2;
             ViewBag.appList03 = al3;
+            ViewBag.appList04 = al4;
+            ViewBag.appList05 = al5;
             ViewBag.appList01Ctn = al1.Count();
             ViewBag.appList02Ctn = al2.Count();
             ViewBag.appList03Ctn = al3.Count();
+            ViewBag.appList04Ctn = al4.Count();
+            ViewBag.appList05Ctn = al5.Count();
 
             return View();
+        }
+
+        public IActionResult ApprovalAction(int? dataID, int? appCnt, string uuid)
+        {
+            ViewBag.AppCnt = appCnt;
+            ViewBag.dataID = dataID;
+            ViewBag.uuid = uuid;
+            ViewBag.formId = Convert.ToInt32(_context.SW_formTableData.Where(m => m.Id == dataID).Select(m => m.SW_formsId).FirstOrDefault());
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ApprovalAction(IFormCollection frm)
+        {
+            if (!int.TryParse(frm["Id"], out int dataID))
+            {
+                return BadRequest("Invalid ID");
+            }
+
+            var sw_frmData = await _context.SW_formTableData.FindAsync(dataID);
+
+            if (sw_frmData == null)
+            {
+                return NotFound();
+            }
+
+            // Handle integers
+            // --------------------------------------------------
+            if (int.TryParse(frm["isApproval_01"], out int app1))
+                sw_frmData.isApproval_01 = app1;
+
+            if (int.TryParse(frm["isApproval_02"], out int app2))
+                sw_frmData.isApproval_02 = app2;
+
+            if (int.TryParse(frm["isApproval_03"], out int app3))
+                sw_frmData.isApproval_03 = app3;
+
+            if (int.TryParse(frm["isApproval_04"], out int app4))
+                sw_frmData.isApproval_04 = app4;
+
+            if (int.TryParse(frm["isApproval_05"], out int app5))
+                sw_frmData.isApproval_05 = app5;
+
+            // Handle comments (string fields)
+            // --------------------------------------------------
+            if (!string.IsNullOrWhiteSpace(frm["isAppComment_01"]))
+                sw_frmData.isAppComment_01 = frm["isAppComment_01"];
+
+            if (!string.IsNullOrWhiteSpace(frm["isAppComment_02"]))
+                sw_frmData.isAppComment_02 = frm["isAppComment_02"];
+
+            if (!string.IsNullOrWhiteSpace(frm["isAppComment_03"]))
+                sw_frmData.isAppComment_03 = frm["isAppComment_03"];
+
+            if (!string.IsNullOrWhiteSpace(frm["isAppComment_04"]))
+                sw_frmData.isAppComment_04 = frm["isAppComment_04"];
+
+            if (!string.IsNullOrWhiteSpace(frm["isAppComment_05"]))
+                sw_frmData.isAppComment_05 = frm["isAppComment_05"];
+
+
+            // Handle approvers (string fields)
+            // --------------------------------------------------
+            if (!string.IsNullOrWhiteSpace(frm["isApprover_01"]))
+                sw_frmData.isApprover_01 = frm["isApprover_01"];
+
+            if (!string.IsNullOrWhiteSpace(frm["isApprover_02"]))
+                sw_frmData.isApprover_02 = frm["isApprover_02"];
+
+            if (!string.IsNullOrWhiteSpace(frm["isApprover_03"]))
+                sw_frmData.isApprover_03 = frm["isApprover_03"];
+
+            if (!string.IsNullOrWhiteSpace(frm["isApprover_04"]))
+                sw_frmData.isApprover_04 = frm["isApprover_04"];
+
+            if (!string.IsNullOrWhiteSpace(frm["isApprover_05"]))
+                sw_frmData.isApprover_05 = frm["isApprover_05"];
+
+
+            // Handle approvers (datetime fields)
+            // --------------------------------------------------
+            if (DateTime.TryParse(frm["isApp_dateTime_01"], out var parsedDate1))
+                sw_frmData.isApp_dateTime_01 = parsedDate1;
+
+            if (DateTime.TryParse(frm["isApp_dateTime_02"], out var parsedDate2))
+                sw_frmData.isApp_dateTime_02 = parsedDate2;
+
+            if (DateTime.TryParse(frm["isApp_dateTime_03"], out var parsedDate3))
+                sw_frmData.isApp_dateTime_03 = parsedDate3;
+
+            if (DateTime.TryParse(frm["isApp_dateTime_04"], out var parsedDate4))
+                sw_frmData.isApp_dateTime_04 = parsedDate4;
+
+            if (DateTime.TryParse(frm["isApp_dateTime_05"], out var parsedDate5))
+                sw_frmData.isApp_dateTime_05 = parsedDate5;
+
+
+            string uuid = frm["uuid"].ToString();
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("Program", "Form", new { uuid });
+        }
+
+        public IActionResult ApprovalHistory(int? dataID, int? appCnt)
+        {
+            ViewBag.AppCnt = appCnt;
+            ViewBag.dataID = dataID;
+            ViewBag.AppNm1 = _context.SW_formTableData.Where(m => m.Id == dataID).Select(m => m.isApprover_01).FirstOrDefault();
+            ViewBag.AppNm2 = _context.SW_formTableData.Where(m => m.Id == dataID).Select(m => m.isApprover_02).FirstOrDefault();
+            ViewBag.AppNm3 = _context.SW_formTableData.Where(m => m.Id == dataID).Select(m => m.isApprover_03).FirstOrDefault();
+            ViewBag.AppNm4 = _context.SW_formTableData.Where(m => m.Id == dataID).Select(m => m.isApprover_04).FirstOrDefault();
+            ViewBag.AppNm5 = _context.SW_formTableData.Where(m => m.Id == dataID).Select(m => m.isApprover_05).FirstOrDefault();
+            ViewBag.AppCmt1 = _context.SW_formTableData.Where(m => m.Id == dataID).Select(m => m.isAppComment_01).FirstOrDefault();
+            ViewBag.AppCmt2 = _context.SW_formTableData.Where(m => m.Id == dataID).Select(m => m.isAppComment_02).FirstOrDefault();
+            ViewBag.AppCmt3 = _context.SW_formTableData.Where(m => m.Id == dataID).Select(m => m.isAppComment_03).FirstOrDefault();
+            ViewBag.AppCmt4 = _context.SW_formTableData.Where(m => m.Id == dataID).Select(m => m.isAppComment_04).FirstOrDefault();
+            ViewBag.AppCmt5 = _context.SW_formTableData.Where(m => m.Id == dataID).Select(m => m.isAppComment_05).FirstOrDefault();
+            ViewBag.AppDate1 = _context.SW_formTableData.Where(m => m.Id == dataID).Select(m => m.isApp_dateTime_01).FirstOrDefault()?.ToString("dd, MM yyyy");
+            ViewBag.AppDate2 = _context.SW_formTableData.Where(m => m.Id == dataID).Select(m => m.isApp_dateTime_02).FirstOrDefault()?.ToString("dd, MM yyyy");
+            ViewBag.AppDate3 = _context.SW_formTableData.Where(m => m.Id == dataID).Select(m => m.isApp_dateTime_03).FirstOrDefault()?.ToString("dd, MM yyyy");
+            ViewBag.AppDate4 = _context.SW_formTableData.Where(m => m.Id == dataID).Select(m => m.isApp_dateTime_04).FirstOrDefault()?.ToString("dd, MM yyyy");
+            ViewBag.AppDate5 = _context.SW_formTableData.Where(m => m.Id == dataID).Select(m => m.isApp_dateTime_05).FirstOrDefault()?.ToString("dd, MM yyyy");
+
+            return PartialView("Views/Shared/_ApprovalHistory.cshtml");
         }
 
         public async Task<IActionResult> Preview(string? dataID, string? uuid)
@@ -269,7 +409,7 @@ namespace SWIMS.Controllers
             {
                 return NotFound();
             }
-            var stringArray = new string[256]
+            var stringArray = new string[]
             {
                 _fData.FormData01,
                 _fData.FormData02,
@@ -524,9 +664,14 @@ namespace SWIMS.Controllers
                 _fData.isAppComment_01,
                 _fData.isAppComment_02,
                 _fData.isAppComment_03,
+                _fData.isAppComment_04,
+                _fData.isAppComment_05,    
                 _fData.isApprover_01,
                 _fData.isApprover_02,
-                _fData.isApprover_03
+                _fData.isApprover_03,
+                _fData.isApprover_04,
+                _fData.isApprover_05,
+                _fData.isLinkingForm
             };
             ViewBag.Collection = stringArray;
 
@@ -540,22 +685,30 @@ namespace SWIMS.Controllers
             return PartialView("Views/Shared/_formPreview.cshtml");
         }
         
-        
-        public IActionResult Update(string? dataID, string? uuid)
+        public IActionResult Update(int? dataID, string? uuid)
         {
             // 0. Varibales
             // 
             var f_Linq = _context.SW_forms.Where(m => m.uuid.Equals(uuid));
             int formId = Convert.ToInt32(f_Linq.Select(m => m.Id).FirstOrDefault());
+            ViewBag.dataID = Convert.ToInt32(dataID);
             ViewBag.uuid = uuid;
             ViewBag.formId = formId;
             ViewBag.form = f_Linq.Select(m => m.form).FirstOrDefault();
             ViewBag.formName = f_Linq.Select(m => m.name).FirstOrDefault();
-            ViewBag.formImage = f_Linq.Select(m => m.image).FirstOrDefault();
-            ViewBag.formDesc = f_Linq.Select(m => m.desc).FirstOrDefault();
             ViewBag.header = f_Linq.Select(x => x.header).FirstOrDefault();
-            ViewBag.formLINK = _context.SW_forms.Where(x => x.is_linking == true).ToList();
             return View();
+        }
+
+        public IActionResult Linking(string? uuid, string? originUUID)
+        {
+            var formLINK = _context.SW_forms.Where(x => x.is_linking == true && x.uuid == uuid);
+
+            ViewBag.header = formLINK.Select(x =>x.header).FirstOrDefault();
+            ViewBag.form = formLINK.Select(x => x.form).FirstOrDefault();
+            ViewBag.SW_formsId = formLINK.Select(x => x.Id).FirstOrDefault();
+            ViewBag.isLinkingForm = originUUID;
+            return PartialView("Views/Shared/_LinkingForm.cshtml");
         }
 
         // GET: form
