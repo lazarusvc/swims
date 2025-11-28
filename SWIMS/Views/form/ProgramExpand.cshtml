@@ -13,15 +13,15 @@
 <!-- ----------------------------------------------- -->
 @{
     ViewData["Title"] = "Program - " + @ViewBag.formName;
+    var uid = ViewBag.uuid;
 
     // List of forms that are linking
     // ______________________________
     //
-    var linkOption = "";
+    var linkOption = "<option>--select--</option>";
     @foreach (var inx in ViewBag.formLINK)
     {
-        linkOption = "<option>--select--</option><option value="+ inx.uuid +">"+ inx.name +"</option>";
-        ViewData["link_UUID"] = inx.uuid;
+        linkOption += "<option value=" + inx.uuid + ">" + inx.name + "</option>";
     }
 }
 
@@ -41,8 +41,7 @@
     </div>
 
     <!-- LINKING FORM LOGIC ____________________________________________ -->
-    <div id="ex5" class="modal">
-        <partial name="~/Views/Shared/_CreateLinkingForm.cshtml" view-data="ViewData">        
+    <div id="ex5" class="modal">     
     </div>
 </div>
 
@@ -93,6 +92,7 @@
     //
     // -----------------------------------------------------------------------------------------------------
     let table = new DataTable('#dataTable');
+
     // CUSTOM FORM FUNCTIONALITY
     //
     // -----------------------------------------------------------------------------------------------------
@@ -116,18 +116,6 @@
 
                 // Grab ids into an Array
                 var fieldIds = ($field.attr("id")).split(/\s+/).filter(c => c.length > 0);
-
-                // If Select Dropdown has field name `linking`
-                //
-                // 1. hide current Dropdown element
-                // 2. infuse WowDash styling Dropdown list
-                // 3. inject Form ID with linking check
-                // 4. Popup the selected partial view linked form
-                //
-                if (fieldName === "linking") {
-                    $('input[name="linking"]').before("<div class='alert alert-primary bg-primary-50 text-primary-600 border-primary-600 border-start-width-4-px border-top-0 border-end-0 border-bottom-0 px-24 py-13 mb-0 fw-semibold text-lg radius-4 d-flex align-items-center justify-content-between' role='alert'><div class='d-flex align-items-center gap-2'><iconify-icon icon='mdi:form-dropdown' class='icon text-xl'></iconify-icon>ID: </div><br><select id='isLinkingForm' class='form-control'>@Html.Raw(linkOption)</select></div>");
-                    $('input[name="linking"]').hide();
-                }
 
                 // API LOGIC
                 //
@@ -218,9 +206,29 @@
         $('.city').select2();
     });
 
+    // ------------------------------------------- LINKING SCRIPT LOGIC
     jQuery(function ($) {
-        $('#isLinkingForm').on('change', function(e) {
-              $("#ex5").modal();        
+        // If Select Dropdown has field name `linking`
+        //
+        // 1. hide current Dropdown element
+        // 2. infuse WowDash styling Dropdown list
+        // 3. inject Form ID with linking check
+        // 4. Popup the selected partial view linked form
+        //
+        if ('input[name="linking"]') {
+            $('input[name="linking"]').before("<div class='alert alert-primary bg-primary-50 text-primary-600 border-primary-600 border-start-width-4-px border-top-0 border-end-0 border-bottom-0 px-24 py-13 mb-0 fw-semibold text-lg radius-4 d-flex align-items-center justify-content-between' role='alert'><div class='d-flex align-items-center gap-2'><iconify-icon icon='mdi:form-dropdown' class='icon text-xl'></iconify-icon>ID: </div><br><select id='isLinkingForm' class='form-control'>@Html.Raw(linkOption)</select></div>");
+            $('input[name="linking"]').hide();
+        }
+
+        $('#isLinkingForm').on('keyup change', function() {
+                $.ajax({
+                    url: '@Url.Action("Linking", "form")?&uuid=' + $(this).val() + "&=@uid",
+                    type: "GET",
+                    success: function (result) {
+                        $("#ex5").html(result);
+                    }
+                });
+            $("#ex5").modal();
         });
     });
 </script>

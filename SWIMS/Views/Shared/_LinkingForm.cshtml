@@ -1,25 +1,11 @@
 ﻿@using System.Text.Json
-
-@{
-    var header = "";
-    var form = "";
-    int formID = 0;
-    @foreach (var inx in ViewBag.formLINK)
-    {
-        if (inx.uuid == ViewData["link_UUID"])
-        {
-            header = inx.header;
-            form = inx.form;
-            formID = inx.Id;
-        }
-        
-    }
-}
+@model SWIMS.Models.SW_formTableDatum
 
 <form asp-action="Create" asp-controller="formTableData" method="post" enctype="multipart/form-data">
-    @Html.Raw(header)
+    @Html.Raw(ViewBag.header)
     <div id="fb-rendered-form-partial"></div>
-    <input type="hidden" name="SW_formsId" value="@formID" />
+    <input asp-for="SW_formsId" type="hidden" value="@ViewBag.SW_formsId" />
+    <input asp-for="isLinkingForm" type="hidden" value="@ViewBag.isLinkingForm" />
     <button type="submit" class="btn btn-success">Submit</button>
 </form>
 
@@ -38,7 +24,7 @@
       var container = $('#fb-rendered-form-partial');
 
     // Safely emit the server value as a JS string
-    const __rawServerValue = @Html.Raw(JsonSerializer.Serialize(form ?? "[]"));
+    const __rawServerValue = @Html.Raw(JsonSerializer.Serialize(ViewBag.form ?? "[]"));
 
     // Normalize to an Array the renderer expects (handles double-encoded JSON too)
     function normalizeFormData(raw) {

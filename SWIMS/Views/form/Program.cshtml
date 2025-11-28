@@ -13,21 +13,14 @@
 <!-- ----------------------------------------------- -->
 @{
     ViewData["Title"] = "Program - " + @ViewBag.formName;
-    ViewData["UID"] = @ViewBag.uuid;
+    var uid = ViewBag.uuid;   // page variable - form UUID 
 
-    var uid = ViewData["UID"];
-
-    // List of forms that are linking
-    // ______________________________
-    //
-    var linkOption = "";
+    var linkOption = "<option>--select--</option>"; // List of forms that are linking
     @foreach (var inx in ViewBag.formLINK)
     {
-        linkOption = "<option>--select--</option><option value=" + inx.uuid + ">" + inx.name + "</option>";
-        ViewData["link_UUID"] = inx.uuid;
+        linkOption += "<option value=" + inx.uuid + ">" + inx.name + "</option>";
     }
 }
-
 <hr />
 <br />
 <div class="row">
@@ -134,9 +127,12 @@
         </a>
     </div>
 
-    <!-- LINKING FORM LOGIC ____________________________________________ -->
+    <!-- LINKING FORM MODAL ________________________________________________ -->
     <div id="ex5" class="modal">
-        <partial name="~/Views/Shared/_CreateLinkingForm.cshtml" view-data="ViewData">
+    </div>
+
+    <!-- APPROVAL HISTORY MODAL ____________________________________________ -->
+    <div id="ex6" class="modal timeline">
     </div>
 
 
@@ -220,9 +216,10 @@
                         @foreach (var row in Model.Rows)
                         {
                             <tr>
-                                <td>                                    
-                                    <a asp-action="Preview" asp-route-dataID="@row["IDS"]" asp-route-uuid="@ViewBag.uuid" class="w-32-px h-32-px bg-primary-light text-primary-600 rounded-circle d-inline-flex align-items-center justify-content-center"><iconify-icon icon="iconamoon:eye-light"></iconify-icon></a>
-                                    <a asp-action="Update" asp-route-dataID="@row["IDS"]" asp-route-uuid="@ViewBag.uuid" class="w-32-px h-32-px bg-primary-light text-primary-600 rounded-circle d-inline-flex align-items-center justify-content-center"><iconify-icon icon="iconamoon:eye-light"></iconify-icon></a>
+                                <td>
+                                    <a asp-action="Preview" asp-route-dataID="@row["IDS"]" asp-route-uuid="@uid" class="w-32-px h-32-px bg-primary-light text-primary-600 rounded-circle d-inline-flex align-items-center justify-content-center"><iconify-icon icon="iconamoon:eye-light"></iconify-icon></a>
+                                    <a asp-action="Update" asp-route-dataID="@row["IDS"]" asp-route-uuid="@uid" class="w-32-px h-32-px bg-success-focus text-success-main rounded-circle d-inline-flex align-items-center justify-content-center"><iconify-icon icon="lucide:edit"></iconify-icon></a>
+                                    <a href="#ex6" onclick="_AHB(@row["IDS"])" rel="modal:open" class="w-32-px h-32-px bg-danger-focus text-danger-main rounded-circle d-inline-flex align-items-center justify-content-center"><iconify-icon icon="flat-color-icons:timeline"></iconify-icon></a>
                                 </td>
                                 @foreach (var col in Model.Columns)
                                 {
@@ -301,25 +298,12 @@
                     fieldName_actual = fieldName;
                 }
 
-
                 //  Grab classes into an array
                 var fieldClasses = ($field.attr("class")).split(/\s+/).filter(c => c.length > 0);
 
                 // Grab ids into an Array
                 var fieldIds = ($field.attr("id")).split(/\s+/).filter(c => c.length > 0);
                 // console.log(fieldIds);
-
-                // If Select Dropdown has field name `linking`
-                //
-                // 1. hide current Dropdown element
-                // 2. infuse WowDash styling Dropdown list
-                // 3. inject Form ID with linking check
-                // 4. Popup the selected partial view linked form
-                //
-                if (fieldName === "linking") {
-                    $('input[name="linking"]').before("<div class='alert alert-primary bg-primary-50 text-primary-600 border-primary-600 border-start-width-4-px border-top-0 border-end-0 border-bottom-0 px-24 py-13 mb-0 fw-semibold text-lg radius-4 d-flex align-items-center justify-content-between' role='alert'><div class='d-flex align-items-center gap-2'><iconify-icon icon='mdi:form-dropdown' class='icon text-xl'></iconify-icon>ID: </div><br><select id='isLinkingForm' class='form-control'>@Html.Raw(linkOption)</select></div>");
-                    $('input[name="linking"]').hide();
-                }
                 
                 // API LOGIC
                 //
@@ -413,10 +397,40 @@
         $('.city').select2();
     });
 
-    // ------------------------------------------- SELECT2 Dropdown
+    // ------------------------------------------- LINKING SCRIPT LOGIC
     jQuery(function ($) {
+        // If Select Dropdown has field name `linking`
+        //
+        // 1. hide current Dropdown element
+        // 2. infuse WowDash styling Dropdown list
+        // 3. inject Form ID with linking check
+        // 4. Popup the selected partial view linked form
+        //
+        if ('input[name="linking"]') {
+            $('input[name="linking"]').before("<div class='alert alert-primary bg-primary-50 text-primary-600 border-primary-600 border-start-width-4-px border-top-0 border-end-0 border-bottom-0 px-24 py-13 mb-0 fw-semibold text-lg radius-4 d-flex align-items-center justify-content-between' role='alert'><div class='d-flex align-items-center gap-2'><iconify-icon icon='mdi:form-dropdown' class='icon text-xl'></iconify-icon>ID: </div><br><select id='isLinkingForm' class='form-control'>@Html.Raw(linkOption)</select></div>");
+            $('input[name="linking"]').hide();
+        }
+
         $('#isLinkingForm').on('keyup change', function() {
+                $.ajax({
+                    url: '@Url.Action("Linking", "form")?&uuid=' + $(this).val() + "&=@uid",
+                    type: "GET",
+                    success: function (result) {
+                        $("#ex5").html(result);
+                    }
+                });
             $("#ex5").modal();
         });
     });
+
+    // ------------------------------------------- HISTORY BTN ONCLICK LOGIC
+    function _AHB(id) {
+        $.ajax({
+            url: '@Url.Action("ApprovalHistory", "form")?&dataID=' + id + "&appCnt=5",
+            type: "GET",
+            success: function (result) {
+                $("#ex6").html(result);
+            }
+        });
+    }
 </script>

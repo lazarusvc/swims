@@ -512,27 +512,29 @@ public partial class SW_formTableDatum
 
     public int SW_formsId { get; set; }
 
-    //[Column(TypeName = "tinyint")] public byte? isApproval_01 { get; set; }
-    //[Column(TypeName = "tinyint")] public byte? isApproval_02 { get; set; }
-    //[Column(TypeName = "tinyint")] public byte? isApproval_03 { get; set; }
-
     public int? isApproval_01 { get; set; }
     public int? isApproval_02 { get; set; }
     public int? isApproval_03 { get; set; }
-
+    public int? isApproval_04 { get; set; }
+    public int? isApproval_05 { get; set; }
     public string isAppComment_01 { get; set; }
-
     public string isAppComment_02 { get; set; }
-
     public string isAppComment_03 { get; set; }
-
+    public string isAppComment_04 { get; set; }
+    public string isAppComment_05 { get; set; }
     public string isApprover_01 { get; set; }
-
     public string isApprover_02 { get; set; }
-
     public string isApprover_03 { get; set; }
+    public string isApprover_04 { get; set; }
+    public string isApprover_05 { get; set; }
+    public DateTime? isApp_dateTime_01 { get; set; } = default(DateTime?);
+    public DateTime? isApp_dateTime_02 { get; set; } = default(DateTime?);
+    public DateTime? isApp_dateTime_03 { get; set; } = default(DateTime?);
+    public DateTime? isApp_dateTime_04 { get; set; } = default(DateTime?);
+    public DateTime? isApp_dateTime_05 { get; set; } = default(DateTime?);  
 
-    public int? isLinkingForm {  get; set; }
 
+
+    public string isLinkingForm {  get; set; }
     public virtual SW_form SW_forms { get; set; }
 }

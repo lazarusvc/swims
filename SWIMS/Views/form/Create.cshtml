@@ -94,7 +94,7 @@
                     <div class="row mb-24 gy-3 align-items-center">
                         <label asp-for="approvalAmt" class="form-label mb-0 col-sm-4">APPROVAL LEVELS:</label>
                         <div class="col-sm-10">
-                            <input asp-for="approvalAmt" type="range" min="0" max="3" value="@ViewBag.appAmt">
+                            <input asp-for="approvalAmt" type="range" min="0" max="5" value="@ViewBag.appAmt">
                             <p>Selected Volume: <span id="volumeValue">0</span></p>
                             <span asp-validation-for="approvalAmt" class="text-danger"></span>
                         </div>
