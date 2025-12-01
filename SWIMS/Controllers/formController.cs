@@ -274,7 +274,7 @@ namespace SWIMS.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> ApprovalAction(IFormCollection frm)
+        public async Task<IActionResult> ApprovalAction([FromBody] IFormCollection frm)
         {
             if (!int.TryParse(frm["Id"], out int dataID))
             {

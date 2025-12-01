@@ -32,8 +32,6 @@
 /* ---------------------------------- 
     Approval timeline styling 
 */
-
-
 .timeline {
     position: relative;
     width: 100%;
@@ -166,40 +164,47 @@ width: 50%;
 }
 
 @media (max-width: 767.98px) {
-.timeline::after {
-    left: 90px;
-}
+    .timeline::after {
+        left: 90px;
+    }
 
-.container_timeline {
-width: 100%;
-padding-left: 120px;
-padding-right: 30px;
-}
+    .container_timeline {
+        width: 100%;
+        padding-left: 120px;
+        padding-right: 30px;
+    }
 
-.container_timeline.right {
-left: 0%;
-}
+        .container_timeline.right {
+            left: 0%;
+        }
 
-.container_timeline.left::after,
-.container_timeline.right::after {
-    left: 82px;
-}
+            .container_timeline.left::after,
+            .container_timeline.right::after {
+                left: 82px;
+            }
 
-.container_timeline.left::before,
-.container_timeline.right::before {
-    left: 100px;
-    border-color: transparent #006E51 transparent transparent;
-}
+            .container_timeline.left::before,
+            .container_timeline.right::before {
+                left: 100px;
+                border-color: transparent #006E51 transparent transparent;
+            }
 
-.container_timeline.left .date,
-.container_timeline.right .date {
-    right: auto;
-    left: 15px;
-}
+            .container_timeline.left .date,
+            .container_timeline.right .date {
+                right: auto;
+                left: 15px;
+            }
 
-.container_timeline.left .content,
-.container_timeline.right .content {
-    padding: 30px 30px 30px 90px;
-    border-radius: 500px 0 0 500px;
+            .container_timeline.left .content,
+            .container_timeline.right .content {
+                padding: 30px 30px 30px 90px;
+                border-radius: 500px 0 0 500px;
+            }
 }
+/* ---------------------------------- 
+    ApprovalAction Editor lib spacing 
+    issue
+*/
+.trumbowyg-box, .textareaTrum {
+    top: -120px !important;
 }

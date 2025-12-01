@@ -127,6 +127,7 @@
     jQuery(function($) { // ---- Revert Button logic
         $("#revertBTN").on('click', function() {
 
+            $("#Id").val("@ViewBag.dataID");
             $("#isApproval_01").val("0");
             $("#isApproval_02").val("0");
             $("#isApproval_03").val("0");
@@ -135,6 +136,7 @@
 
             var formData =
             {
+                Id: $("#Id").val(),
                 isApproval_01: $("#isApproval_01").val(),
                 isApproval_02: $("#isApproval_02").val(),
                 isApproval_03: $("#isApproval_03").val(),
@@ -147,9 +149,13 @@
             $.ajax({
                 url: '@Url.Action("ApprovalAction", "form")',
                 type: "POST",
+                contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
                 data: formData,
-                success: function () {
+                success: function (response) {
                     window.location = '@Url.Action("Program", "form")?uuid=@ViewBag.uuid';
+                },
+                error: function (request, status, error) {
+                    alert(request.responseText);
                 }
             });
         });
