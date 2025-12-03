@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using SWIMS.Services.Diagnostics.Sessions;
@@ -64,6 +65,16 @@ public static class CoreEndpoints
                 return Results.Ok(new { ok = true });
             }).RequireAuthorization();
         }
+
+        if (env.IsDevelopment())
+        {
+            app.MapGet("/__authtest/{policy}", async (string policy, IAuthorizationService authz, ClaimsPrincipal user) =>
+            {
+                var ok = await authz.AuthorizeAsync(user, policy);
+                return ok.Succeeded ? Results.Ok(new { policy, ok = true }) : Results.StatusCode(403);
+            }).RequireAuthorization();
+        }
+
 
         return app;
     }

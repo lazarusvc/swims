@@ -7,27 +7,32 @@
 
     const api = (p) => (window.__appBasePath || '') + (p.startsWith('/') ? p : '/' + p);
 
-
     onReady(() => {
+        if (window.__swims_notifs_started) return;
+        window.__swims_notifs_started = true;
+
+        // If not signed in, do nothing (prevents 401 + useless work)
+        const meMeta = document.querySelector('meta[name="swims-user-id"]');
+        if (!meMeta || !meMeta.content) return;
+
         // Elements
         const bell = document.getElementById('notif-bell');
         const menu = document.getElementById('notif-dropdown');
         const list = document.getElementById('notif-list');
         const badge = document.getElementById('notif-badge');
         const badgeH = document.getElementById('notif-badge-header'); // header bubble (optional)
+        const badgeS = document.getElementById('notif-badge-sidebar'); // header bubble (optional)
         const btnAll = document.getElementById('notif-mark-all');
         const btnMore = document.getElementById('notif-load-more');
 
-        if (!bell || !menu || !list || !badge) return; // not on this page/layout
+        if (!bell || !menu || !list || !badge) return; // not on this layout
 
         // State
         let skip = 0, take = 10, total = 0, items = [], loading = false;
 
         // Utils
         const parseJSON = (s, fallback = {}) => { try { return s ? JSON.parse(s) : fallback; } catch { return fallback; } };
-        const fmtTime = (iso) => {
-            try { return new Date(iso).toLocaleString(); } catch { return iso || ''; }
-        };
+        const fmtTime = (iso) => { try { return new Date(iso).toLocaleString(); } catch { return iso || ''; } };
         const setBadge = (count) => {
             if (count > 0) {
                 badge.textContent = String(count);
@@ -36,9 +41,9 @@
                 badge.classList.add('d-none');
             }
             if (badgeH) badgeH.textContent = String(count || 0);
+            if (badgeS) badgeS.textContent = String(count || 0);
         };
 
-        
         const liHtml = (n) => {
             const payload = parseJSON(n.payloadJson);
             const seenClass = n.seen ? 'opacity-75' : 'bg-neutral-50';
@@ -91,7 +96,6 @@
 </li>`;
         };
 
-
         const render = () => {
             list.innerHTML = items.map(liHtml).join('');
             btnMore && (btnMore.style.display = (skip < total) ? '' : 'none');
@@ -131,6 +135,7 @@
             }
         };
 
+        // Dropdown events
         // --- Bootstrap dropdown events ---
         // Load when dropdown is shown
         bell.addEventListener('shown.bs.dropdown', async () => {
@@ -143,6 +148,7 @@
             await refreshCount();
         });
 
+        // Mark all
         // Mark all as read
         btnAll && btnAll.addEventListener('click', async () => {
             try {
@@ -155,9 +161,11 @@
             }
         });
 
+        // More
         // Load more
         btnMore && btnMore.addEventListener('click', () => load(true));
 
+        // Click one
         // Mark one on click (event delegation)
         list.addEventListener('click', async (e) => {
             const li = e.target.closest('li[data-id]');
@@ -179,6 +187,7 @@
             if (href) window.location.href = href;
         });
 
+        // SignalR live
         // --- SignalR live updates ---
         if (window.signalR) {
             const conn = new signalR.HubConnectionBuilder()

@@ -1,8 +1,23 @@
 ﻿@model PublicEndpointEditViewModel
+
 @{
-    ViewData["Title"] = "Edit Public Endpoint";
+    ViewData["title"] = "Edit Public Endpoint";
+    ViewData["subTitle"] = "Edit Public Endpoint";
+    ViewData["description"] = "Edit public endpoint configuration.";
+
+    // Parent crumb → main index page
+    ViewData["BreadcrumbParentText"] = "Public Endpoints";
+    ViewData["BreadcrumbParentArea"] = "Admin";
+    ViewData["BreadcrumbParentController"] = "PublicEndpoints";
+    ViewData["BreadcrumbParentAction"] = "Index";
+
+    // Current page crumb
+    ViewData["BreadcrumbCurrentArea"] = "Admin";
+    ViewData["BreadcrumbCurrentController"] = "PublicEndpoints";
+    ViewData["BreadcrumbCurrentAction"] = "Edit";
 }
-<h2>Edit Public Endpoint</h2>
+
+
 <form asp-action="Edit" method="post">
     @Html.AntiForgeryToken()
     <input type="hidden" asp-for="Id" />

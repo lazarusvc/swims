@@ -1,18 +1,80 @@
 ﻿@*
-    WowDash - ASP.Net Core 8 & Bootstrap Admin Dashboard Multipurpose Template design by Parv Infotech
+    WowDash - Breadcrumb with description + multi-level clickable trail
 *@
 
+@{
+    string title = ViewBag.BreadcrumbTitle as string ?? "";
+    string description = ViewBag.BreadcrumbDescription as string ?? "";
+    string subTitle = ViewBag.BreadcrumbSubTitle as string ?? "";
+
+    // Optional parent crumb (e.g. index/list page for CRUD screens)
+    string parentText = ViewBag.BreadcrumbParentText as string ?? "";
+    string parentArea = ViewBag.BreadcrumbParentArea as string ?? "";
+    string parentController = ViewBag.BreadcrumbParentController as string ?? "";
+    string parentAction = ViewBag.BreadcrumbParentAction as string ?? "";
+
+    // Route for the current crumb (used to make current page clickable)
+    string currentArea = ViewBag.BreadcrumbCurrentArea as string ?? "";
+    string currentController = ViewBag.BreadcrumbCurrentController as string ?? "";
+    string currentAction = ViewBag.BreadcrumbCurrentAction as string ?? "";
+}
 
 <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
-    <h6 class="fw-semibold mb-0">@ViewBag.BreadcrumbTitle</h6>
+    <div>
+        <h6 class="fw-semibold mb-1">@title</h6>
+
+        @if (!string.IsNullOrWhiteSpace(description))
+        {
+            <p class="mb-0 text-sm text-muted">
+                @description
+            </p>
+        }
+    </div>
+
     <ul class="d-flex align-items-center gap-2">
+        <!-- Root: SWIMS → Home -->
         <li class="fw-medium">
-            <a href="~/WowDash/index" class="d-flex align-items-center gap-1 hover-text-primary">
+            <a asp-area="" asp-controller="Home" asp-action="Index"
+               class="d-flex align-items-center gap-1 hover-text-primary">
                 <iconify-icon icon="solar:home-smile-angle-outline" class="icon text-lg"></iconify-icon>
                 SWIMS
             </a>
         </li>
-        <li>-</li>
-        <li class="fw-medium">@ViewBag.BreadcrumbSubTitle</li>
+
+        @* Optional parent crumb, e.g. "Public Endpoints" index for Create/Edit pages *@
+        @if (!string.IsNullOrWhiteSpace(parentText))
+        {
+            <li>-</li>
+            <li class="fw-medium">
+                <a asp-area="@parentArea"
+                   asp-controller="@parentController"
+                   asp-action="@parentAction"
+                   class="hover-text-primary">
+                    @parentText
+                </a>
+            </li>
+        }
+
+        @* Current page crumb – clickable if we have route info *@
+        @if (!string.IsNullOrWhiteSpace(subTitle))
+        {
+            <li>-</li>
+
+            @if (!string.IsNullOrWhiteSpace(currentController) || !string.IsNullOrWhiteSpace(currentAction))
+            {
+                <li class="fw-medium">
+                    <a asp-area="@currentArea"
+                       asp-controller="@currentController"
+                       asp-action="@currentAction"
+                       class="hover-text-primary">
+                        @subTitle
+                    </a>
+                </li>
+            }
+            else
+            {
+                <li class="fw-medium">@subTitle</li>
+            }
+        }
     </ul>
 </div>

@@ -19,7 +19,7 @@
     @foreach (var inx in ViewBag.formLINK)
     {
         linkOption += "<option value=" + inx.uuid + ">" + inx.name + "</option>";
-    }
+}
 }
 <hr />
 <br />
@@ -129,7 +129,7 @@
 
     <!-- LINKING FORM MODAL ________________________________________________ -->
     <div id="ex5" class="modal">
-    </div>
+</div>
 
     <!-- APPROVAL HISTORY MODAL ____________________________________________ -->
     <div id="ex6" class="modal timeline">
@@ -143,7 +143,7 @@
         <div class="card radius-12 h-100">
             <div class="card-body py-16 px-24" style="overflow-y: scroll; height:500px;">
                 <a asp-action="ProgramExpand" asp-route-uuid="@ViewBag.uuid" type="button" align="end">
-                    <iconify-icon icon="cuida:expand-outline" class="text-xl"></iconify-icon>                    
+                    <iconify-icon icon="cuida:expand-outline" class="text-xl"></iconify-icon>
                 </a>
                 <form asp-action="Create" asp-controller="formTableData" method="post" enctype="multipart/form-data">
                     @Html.Raw(@ViewBag.header)
@@ -163,7 +163,7 @@
             </div>
             <div class="card-body">
                 <ul class="list-group radius-8">
-                    @foreach (var inx in ViewBag.processes)
+                @foreach (var inx in ViewBag.processes)
                     {
                         // Handle both shapes you've been using:
                         // 1) SelectListItem (Text/Value)
@@ -179,16 +179,16 @@
                         var sep = raw?.Contains("?") == true ? "&" : "?";
                         var url = $"{raw}{sep}uid={uid}";
 
-                        <li class="list-group-item d-flex align-items-center justify-content-between border text-secondary-light p-16 bg-base border-bottom-0">
-                            <div class="d-flex align-items-center gap-2">
-                                <span class="d-flex">
-                                    <iconify-icon icon="mynaui:cart-check" class="text-xl"></iconify-icon>
-                                </span>
+                    <li class="list-group-item d-flex align-items-center justify-content-between border text-secondary-light p-16 bg-base border-bottom-0">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="d-flex">
+                                <iconify-icon icon="mynaui:cart-check" class="text-xl"></iconify-icon>
+                            </span>
                                 <a href="@url" target="_blank" rel="noopener">@label</a>
-                            </div>
-                            <span class="text-xs bg-success-100 text-success-600 radius-4 px-10 py-2 fw-semibold">RUN</span>
-                        </li>
-                    }
+                        </div>
+                        <span class="text-xs bg-success-100 text-success-600 radius-4 px-10 py-2 fw-semibold">RUN</span>
+                    </li>                
+                }
                 </ul>
             </div>
         </div>
@@ -346,7 +346,8 @@
                             if (fieldName === "organization") {
                                 $("." + fieldName).val(select_list_classVAL[2]);
                             }
-                        });  
+                        });                      
+
 
                     },
                     error: function (xhr, status, error) {
@@ -373,7 +374,7 @@
         $(".trumbowyg").trumbowyg({
             btns: [
                 ['viewHTML'],
-                ['undo', 'redo'], 
+                ['undo', 'redo'], // Only supported in Blink browsers
                 ['formatting'],
                 ['strong', 'em', 'del'],
                 ['superscript', 'subscript'],
@@ -431,6 +432,6 @@
             success: function (result) {
                 $("#ex6").html(result);
             }
-        });
+    });
     }
 </script>

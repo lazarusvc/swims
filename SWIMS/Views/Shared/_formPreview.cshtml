@@ -63,7 +63,7 @@
                 "});";
             }
         }
-    } 
+    }
 }
 
 
@@ -79,7 +79,7 @@
     // RENDER FORM
     //
     jQuery(function($) {
-      var container = document.getElementById('fb-rendered-form');
+          var container = document.getElementById('fb-rendered-form');
 
     // Safely emit the server value as a JS string
     const __rawServerValue = @Html.Raw(JsonSerializer.Serialize(ViewBag.form ?? "[]"));

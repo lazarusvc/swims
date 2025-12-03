@@ -24,26 +24,26 @@
             <div class="card-body">
                 <!-- Form Wizard Start -->
                 <div class="form-wizard">
-                    <div class="form-wizard-header overflow-x-auto scroll-sm pb-8 my-32">                        
+                    <div class="form-wizard-header overflow-x-auto scroll-sm pb-8 my-32">
                             @if (ViewBag.appAmt == 1)
                             {
                                 <ul class="list-unstyled form-wizard-list">
-                                    <li class="form-wizard-list__item active">
-                                        <div class="form-wizard-list__line">
-                                            <span class="count">1</span>
-                                        </div>
+                                <li class="form-wizard-list__item active">
+                                    <div class="form-wizard-list__line">
+                                        <span class="count">1</span>
+                                    </div>
                                         <span class="text text-xs fw-semibold">APPROVER 1</span>
                                         <span style="background: red; color: white;padding: 5px; border-radius: 30px;">@ViewBag.appList01Ctn</span>
-                                    </li>
+                                </li>
                                 </ul>
                             }
                             else if (ViewBag.appAmt == 2)
                             {
                                 <ul class="list-unstyled form-wizard-list">
-                                    <li class="form-wizard-list__item active">
-                                        <div class="form-wizard-list__line">
-                                            <span class="count">1</span>
-                                        </div>
+                                <li class="form-wizard-list__item active">
+                                    <div class="form-wizard-list__line">
+                                        <span class="count">1</span>
+                                    </div>
                                         <span class="text text-xs fw-semibold">APPROVER 1</span>
                                         <span style="background: red; color: white;padding: 5px; border-radius: 30px;">@ViewBag.appList01Ctn</span>
                                     </li>
@@ -63,16 +63,16 @@
                                         <div class="form-wizard-list__line">
                                             <span class="count">1</span>
                                         </div>
-                                        <span class="text text-xs fw-semibold">APPROVER 1 </span>
+                                    <span class="text text-xs fw-semibold">APPROVER 1 </span>
                                         <span style="background: red; color: white;padding: 5px; border-radius: 30px;">@ViewBag.appList01Ctn</span>
-                                    </li>
-                                    <li class="form-wizard-list__item">
-                                        <div class="form-wizard-list__line">
-                                            <span class="count">2</span>
-                                        </div>
-                                        <span class="text text-xs fw-semibold">APPROVER 2 </span>
+                                </li>
+                                <li class="form-wizard-list__item">
+                                    <div class="form-wizard-list__line">
+                                        <span class="count">2</span>
+                                    </div>
+                                    <span class="text text-xs fw-semibold">APPROVER 2 </span>
                                         <span style="background: red; color: white;padding: 5px; border-radius: 30px;">@ViewBag.appList02Ctn</span>
-                                    </li>
+                                </li>
                                     <li class="form-wizard-list__item">
                                         <div class="form-wizard-list__line">
                                             <span class="count">3</span>
@@ -81,31 +81,31 @@
                                         <span style="background: red; color: white;padding: 5px; border-radius: 30px;">@ViewBag.appList03Ctn</span>
                                     </li>
                                 </ul>
-                            } 
+                            }
                             else if (ViewBag.appAmt == 4)
                             {
                                 <ul class="list-unstyled form-wizard-list">
-                                    <li class="form-wizard-list__item active">
-                                        <div class="form-wizard-list__line">
-                                            <span class="count">1</span>
-                                        </div>
-                                        <span class="text text-xs fw-semibold">APPROVER 1 </span>
+                                <li class="form-wizard-list__item active">
+                                    <div class="form-wizard-list__line">
+                                        <span class="count">1</span>
+                                    </div>
+                                    <span class="text text-xs fw-semibold">APPROVER 1 </span>
                                         <span style="background: red; color: white;padding: 5px; border-radius: 30px;">@ViewBag.appList01Ctn</span>
-                                    </li>
-                                    <li class="form-wizard-list__item">
-                                        <div class="form-wizard-list__line">
-                                            <span class="count">2</span>
-                                        </div>
-                                        <span class="text text-xs fw-semibold">APPROVER 2 </span>
+                                </li>
+                                <li class="form-wizard-list__item">
+                                    <div class="form-wizard-list__line">
+                                        <span class="count">2</span>
+                                    </div>
+                                    <span class="text text-xs fw-semibold">APPROVER 2 </span>
                                         <span style="background: red; color: white;padding: 5px; border-radius: 30px;">@ViewBag.appList02Ctn</span>
-                                    </li>
-                                    <li class="form-wizard-list__item">
-                                        <div class="form-wizard-list__line">
-                                            <span class="count">3</span>
-                                        </div>
-                                        <span class="text text-xs fw-semibold">APPROVER 3 </span>
+                                </li>
+                                <li class="form-wizard-list__item">
+                                    <div class="form-wizard-list__line">
+                                        <span class="count">3</span>
+                                    </div>
+                                    <span class="text text-xs fw-semibold">APPROVER 3 </span>
                                         <span style="background: red; color: white;padding: 5px; border-radius: 30px;">@ViewBag.appList03Ctn</span>
-                                    </li>
+                                </li>
                                     <li class="form-wizard-list__item">
                                         <div class="form-wizard-list__line">
                                             <span class="count">4</span>
@@ -153,7 +153,7 @@
                                         <span class="text text-xs fw-semibold">APPROVER 5 </span>
                                         <span style="background: red; color: white;padding: 5px; border-radius: 30px;">@ViewBag.appList05Ctn</span>
                                     </li>
-                                </ul>
+                        </ul>
                             }                             
                     </div>
 
@@ -172,7 +172,7 @@
                                 <option value="@item.Id">Entry No.: - @item.Id</option>
                             }
                         </select>
-                        <div id="appListPreview01"></div>
+                            <div id="appListPreview01"></div>
                         <div id="appListEntry01"></div>                        
                     </fieldset>
 
@@ -190,8 +190,8 @@
                             @foreach (var item in ViewBag.appList02) {
                                 <option value="@item.Id">Entry No.: - @item.Id</option>
                             }
-                        </select>                                                
-                        <div id="appListPreview02"></div>
+                        </select>
+                            <div id="appListPreview02"></div>
                         <div id="appListEntry02"></div>
                     </fieldset>
 
@@ -209,8 +209,8 @@
                             @foreach (var item in ViewBag.appList03) {
                                 <option value="@item.Id">Entry No.: - @item.Id</option>
                             }
-                        </select>                        
-                        <div id="appListPreview03"></div>
+                        </select>
+                            <div id="appListPreview03"></div>
                         <div id="appListEntry03"></div>
                     </fieldset>
                     <fieldset class="wizard-fieldset">
@@ -266,7 +266,7 @@
                 </div>
 
             </div>
-        </div>
+                </div>
         <br />
         <div class="card">
             <div class="card-header">Take Action::</div>
@@ -287,7 +287,7 @@
 <script src="~/lib/trumbowyg-editor/trumbowyg.min.js"></script>
 <link href="~/lib/select2/select2.css" rel="stylesheet" />
 <script src="~/lib/select2/select2.js"></script>
-<script type="text/javascript"> 
+<script type="text/javascript">
         // =============================== Wizard Step Js Start ================================
         jQuery(function($) {
                 // click on next button -- form-wizard-list__line
@@ -388,7 +388,7 @@
                     $(this).siblings('.wizard-form-error').hide();
                 }
             });
-        });       
+        });
 
 
         // ------------------------------------------- SELECT2 Dropdown
@@ -447,7 +447,7 @@
                     }
                 });
             });     
-            
+
             $("#appList03").on('keyup change', function() { // ------ APPROVER 3
                 // -------- fetch FormData innerWidth preview
                 var selID = $(this).val().trim();
@@ -468,7 +468,7 @@
                         $("#appHistory").html(result);
                     }
                 });
-            });
+            });            
 
             $("#appList04").on('keyup change', function() { // ------ APPROVER 4
                 // -------- fetch FormData innerWidth preview
@@ -513,5 +513,5 @@
                     }
                 });
             });
-});
+    });
 </script>

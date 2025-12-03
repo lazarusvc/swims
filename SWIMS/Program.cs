@@ -32,6 +32,7 @@ using SWIMS.Services.Auth;
 using SWIMS.Services.Diagnostics;
 using SWIMS.Services.Diagnostics.Auditing;
 using SWIMS.Services.Diagnostics.Sessions;
+using SWIMS.Services.Elsa;
 using SWIMS.Services.Email;
 using SWIMS.Services.Messaging;
 using SWIMS.Services.Notifications;
@@ -43,10 +44,22 @@ using SWIMS.Web.Endpoints;
 using SWIMS.Web.Hubs;
 using SWIMS.Web.Ops;
 using System.Net;
+using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Threading;
+using SWIMS.Services.SystemSettings;
+using SWIMS.Services.Setup;
+using SWIMS.Web.Setup;
+
+
+
+using MsLogger = Microsoft.Extensions.Logging;
+
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddScoped<ISystemSettingsService, SystemSettingsService>();
+
 
 // Serilog bootstrap (read from config + dev-friendly console)
 Log.Logger = new LoggerConfiguration()
@@ -100,78 +113,11 @@ builder.Services.AddScoped<SessionCookieEvents>();
 var webRootFiles = builder.Environment.WebRootFileProvider;
 
 // Identity cookie events hookup (after AddIdentity / before app.Build())
-builder.Services.ConfigureApplicationCookie(options =>
+builder.Services.ConfigureApplicationCookie(opts =>
 {
-    // keep your event hook
-    options.EventsType = typeof(SessionCookieEvents);
-
-    // force secure cookies in prod
-    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-
-    // your existing paths
-    options.LoginPath = "/Identity/Account/Login";
-    options.AccessDeniedPath = "/Identity/Account/AccessDenied";
-
-    // Optional: stop redirecting CSS/JS/uploads to /Login (return 401 instead)
-    options.Events.OnRedirectToLogin = ctx =>
-    {
-        // remove PathBase (/swims-test) so we can check the real file under wwwroot
-        PathString remainder = ctx.Request.Path;
-        if (ctx.Request.PathBase.HasValue &&
-            ctx.Request.Path.StartsWithSegments(ctx.Request.PathBase, out var rem))
-        {
-            remainder = rem;
-        }
-
-        // path relative to wwwroot (no leading slash)
-        var rel = remainder.Value?.TrimStart('/') ?? string.Empty;
-
-        // 1) if a real file exists under wwwroot -> don't redirect; return 401
-        if (!string.IsNullOrEmpty(rel) && webRootFiles.GetFileInfo(rel).Exists)
-        {
-            ctx.Response.StatusCode = StatusCodes.Status401Unauthorized;
-            return Task.CompletedTask;
-        }
-
-        // 2) belt & suspenders: treat "file-looking" requests and key folders as public assets
-        if (System.IO.Path.HasExtension(rel)
-            || ctx.Request.Path.StartsWithSegments("/WowDash", StringComparison.OrdinalIgnoreCase)
-            || ctx.Request.Path.StartsWithSegments("/uploads", StringComparison.OrdinalIgnoreCase))
-        {
-            ctx.Response.StatusCode = StatusCodes.Status401Unauthorized;
-            return Task.CompletedTask;
-        }
-
-        // otherwise do the normal login redirect
-        ctx.Response.Redirect(ctx.RedirectUri);
-        return Task.CompletedTask;
-    };
-
-    // mirror the same behavior for AccessDenied (403 instead of redirect)
-    options.Events.OnRedirectToAccessDenied = ctx =>
-    {
-        PathString remainder = ctx.Request.Path;
-        if (ctx.Request.PathBase.HasValue &&
-            ctx.Request.Path.StartsWithSegments(ctx.Request.PathBase, out var rem))
-        {
-            remainder = rem;
-        }
-        var rel = remainder.Value?.TrimStart('/') ?? string.Empty;
-
-        if ((!string.IsNullOrEmpty(rel) && webRootFiles.GetFileInfo(rel).Exists)
-            || System.IO.Path.HasExtension(rel)
-            || ctx.Request.Path.StartsWithSegments("/WowDash", StringComparison.OrdinalIgnoreCase)
-            || ctx.Request.Path.StartsWithSegments("/uploads", StringComparison.OrdinalIgnoreCase))
-        {
-            ctx.Response.StatusCode = StatusCodes.Status403Forbidden;
-            return Task.CompletedTask;
-        }
-
-        ctx.Response.Redirect(ctx.RedirectUri);
-        return Task.CompletedTask;
-    };
+    opts.EventsType = typeof(SessionCookieEvents);
+    // keep your existing cookie settings if any
 });
-
 
 builder.Services.AddSignalR();
 builder.Services.AddScoped<INotifier, Notifier>();
@@ -212,11 +158,7 @@ builder.Services.Configure<ReportingOptions>(builder.Configuration.GetSection("R
 builder.Services.AddScoped<ISsrsUrlBuilder, SsrsUrlBuilder>();
 
 // Configure Razor Pages
-builder.Services.AddRazorPages(options =>
-{
-    // Require auth for all Portal pages by default
-    options.Conventions.AuthorizeAreaFolder("Portal", "/");
-});
+builder.Services.AddRazorPages();
 
 // ------------------------------------------------------
 // Configure Identity and authentication services
@@ -254,8 +196,18 @@ builder.Services.AddSingleton<ILdapAuthService, LdapAuthService>();
 builder.Services.AddDataProtection(); // optional but recommended if using per-proc SQL logins
 builder.Services.AddSingleton<StoredProcedureRunner>();
 
+
+// Configure application cookie paths
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/Identity/Account/Login";
+    options.AccessDeniedPath = "/Identity/Account/AccessDenied";
+});
+
+
 // Add services to the container.
 // ------------------------------------------------------
+builder.Services.AddControllersWithViews();
 
 builder.Services.AddScoped<IPublicAccessStore, EfPublicAccessStore>();
 builder.Services.AddScoped<IEndpointPolicyAssignmentStore, EfEndpointPolicyAssignmentStore>();
@@ -290,8 +242,6 @@ builder.Services.AddControllersWithViews(o =>
 //                     .RequireAuthenticatedUser()
 //                     .Build();
 //    options.Filters.Add(new AuthorizeFilter(policy));
-
-builder.Services.AddHttpsRedirection(o => o.HttpsPort = 443);
 
 
 builder.Services.AddHttpClient("ssrs-proxy", c =>
@@ -346,77 +296,131 @@ builder.Services.AddSingleton<IChatPresence, InMemoryChatPresence>();
 builder.Services.AddOpenApi();
 builder.Services.AddEndpointsApiExplorer();
 
+builder.Services.AddHttpClient("Elsa", (sp, client) =>
+{
+    var config = sp.GetRequiredService<IConfiguration>();
+    var serverUrl = config["Elsa:ServerUrl"]
+                    ?? throw new InvalidOperationException("Elsa:ServerUrl is not configured.");
+
+    // Ensure trailing slash
+    if (!serverUrl.EndsWith("/"))
+        serverUrl += "/";
+
+    client.BaseAddress = new Uri(serverUrl);
+
+    var apiKey = config["Elsa:ApiKey"]
+                 ?? throw new InvalidOperationException("Elsa:ApiKey is not configured.");
+
+    client.DefaultRequestHeaders.Authorization =
+        new AuthenticationHeaderValue("ApiKey", apiKey);
+});
+
+builder.Services.AddScoped<IElsaWorkflowClient, ElsaWorkflowClient>();
+
+
+builder.Services.AddScoped<ISetupStateService, SetupStateService>();
+
+
 var app = builder.Build();
 
 
-//using (var scope = app.Services.CreateScope())
-//{
-//    var services = scope.ServiceProvider;
-//    try
-//    {
-//        // Run pending migrations (Identity DB)
-//        var db_1 = services.GetRequiredService<SwimsIdentityDbContext>();
-//        db_1.Database.Migrate();
-//        //  re-enable for second DB:
-//        // var db_2 = services.GetRequiredService<SwimsDb_moreContext>();
-//        // db_2.Database.Migrate();
-
-//        // Seed roles  admin + policies
-//        await SeedData.EnsureSeedDataAsync(services);
-//    }
-//    catch (Exception ex)
-//    {
-//        var logger = services.GetRequiredService<ILogger<Program>>();
-//        logger.LogError(ex, "Seeding failed at startup.");
-//        throw; // fail fast so we see the real error
-//    }
-//}
-
-var fwd = new ForwardedHeadersOptions
+// ---- Safe Migrate + Seed (Dev or when explicitly enabled) ----
+if (app.Environment.IsDevelopment() ||
+    (builder.Configuration.GetValue<bool?>("Auth:SeedOnStartup") ?? false))
 {
-    ForwardedHeaders = ForwardedHeaders.XForwardedFor
-                     | ForwardedHeaders.XForwardedProto
-                     | ForwardedHeaders.XForwardedHost,
-    ForwardLimit = null
-};
-fwd.KnownNetworks.Clear();
-fwd.KnownProxies.Clear();
+    using var scope = app.Services.CreateScope();
+    var services = scope.ServiceProvider;
 
-app.UseForwardedHeaders(fwd);
+    // Use Microsoft logger explicitly (avoid Serilog ambiguity)
+    var logger = services.GetRequiredService<MsLogger.ILogger<Program>>();
+
+    static async Task MigrateIfPendingAsync<T>(IServiceProvider sp, MsLogger.ILogger log)
+        where T : DbContext
+    {
+        var ctx = sp.GetRequiredService<T>();
+        try
+        {
+            var pending = await ctx.Database.GetPendingMigrationsAsync();
+            if (pending.Any())
+            {
+                log.LogInformation("Applying {Count} migrations for {Context}...", pending.Count(), typeof(T).Name);
+                await ctx.Database.MigrateAsync();
+                log.LogInformation("{Context} migrations complete.", typeof(T).Name);
+            }
+            else
+            {
+                log.LogInformation("No pending migrations for {Context}.", typeof(T).Name);
+            }
+        }
+        catch (InvalidOperationException ex) when (
+            ex.Message.Contains("PendingModelChangesWarning", StringComparison.OrdinalIgnoreCase))
+        {
+            // Don’t block startup in dev/staging—log & continue to seeding.
+            log.LogWarning(ex,
+                "Skipping auto-migrate for {Context} due to pending model changes. " +
+                "Run Add-Migration/Update-Database for this context.", typeof(T).Name);
+        }
+    }
+
+    try
+    {
+        // Multi-DbContext: run each independently (history tables are separate)
+        //await MigrateIfPendingAsync<SwimsIdentityDbContext>(services, logger);
+        //await MigrateIfPendingAsync<SwimsDb_moreContext>(services, logger);
+        //await MigrateIfPendingAsync<SwimsStoredProcsDbContext>(services, logger);
+        //await MigrateIfPendingAsync<SwimsReportsDbContext>(services, logger);
+
+        // Seed base defaults (idempotent, additive)
+        await SeedData.EnsureSeedDataAsync(services);
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Migrate/Seed failed at startup.");
+        if (app.Environment.IsDevelopment()) throw;
+        // In non-Dev, log and continue so the app still boots.
+    }
+}
 
 
-// --- PathBase / reverse-proxy support (normalized) ---
+// --- PathBase / reverse-proxy support
 var env = app.Environment;
 
+// Prefer config in Production; otherwise honor ASPNETCORE_PATHBASE if set
 var configuredPathBase = builder.Configuration["App:PathBase"];
 var envPathBase = Environment.GetEnvironmentVariable("ASPNETCORE_PATHBASE");
 
-// Prefer config in Production; otherwise honor ASPNETCORE_PATHBASE if set
-string? pathBaseToUse = null;
-if (env.IsProduction() && !string.IsNullOrWhiteSpace(configuredPathBase))
-    pathBaseToUse = configuredPathBase;
-else if (!string.IsNullOrWhiteSpace(envPathBase))
-    pathBaseToUse = envPathBase;
+var pathBaseToUse = env.IsProduction() && !string.IsNullOrWhiteSpace(configuredPathBase)
+    ? configuredPathBase
+    : (!string.IsNullOrWhiteSpace(envPathBase) ? envPathBase : null);
 
 if (!string.IsNullOrWhiteSpace(pathBaseToUse))
 {
-    // normalize: exactly one leading slash, no trailing slash
-    pathBaseToUse = "/" + pathBaseToUse.Trim().Trim('/');
     app.UsePathBase(pathBaseToUse);
 }
 
-// Honor X-Forwarded-Prefix if your proxy sends it (e.g., "/swims-test")
+// Honor common reverse-proxy headers (scheme/host/client IP)
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto,
+    // Accept from any proxy (or explicitly set KnownProxies/KnownNetworks)
+    RequireHeaderSymmetry = false,
+    ForwardLimit = null
+    // KnownProxies = { IPAddress.Parse("YOUR_PROXY_IP") }   // optional stricter config
+});
+
+// Honor X-Forwarded-Prefix if your proxy sets it (e.g., /swims)
 app.Use((ctx, next) =>
 {
     if (!ctx.Request.PathBase.HasValue &&
         ctx.Request.Headers.TryGetValue("X-Forwarded-Prefix", out var prefix) &&
         !string.IsNullOrWhiteSpace(prefix))
     {
-        var p = "/" + prefix.ToString().Trim().Trim('/');
-        ctx.Request.PathBase = new PathString(p);
+        ctx.Request.PathBase = new PathString(prefix.ToString());
     }
     return next();
 });
+
+
 
 
 using (var scope = app.Services.CreateScope())
@@ -489,6 +493,9 @@ app.UseFileServer(new FileServerOptions
 
 app.UseRouting();
 
+// Moodle-style entry: redirect to /Setup when app is not fully configured
+app.UseSetupGuard();
+
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -507,7 +514,7 @@ app.UseHangfireDashboard("/ops/hangfire", new DashboardOptions
     IsReadOnlyFunc = _ => false
 });
 
-app.MapStaticAssets().AllowAnonymous();
+app.MapStaticAssets();
 
 app.MapControllers();
 

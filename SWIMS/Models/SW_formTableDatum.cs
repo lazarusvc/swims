@@ -523,6 +523,7 @@ public partial class SW_formTableDatum
     public string isAppComment_04 { get; set; }
     public string isAppComment_05 { get; set; }
     public string isApprover_01 { get; set; }
+
     public string isApprover_02 { get; set; }
     public string isApprover_03 { get; set; }
     public string isApprover_04 { get; set; }

@@ -1,9 +1,22 @@
 ﻿@model PolicyEditViewModel
+
 @{
-    ViewData["Title"] = "Create Policy";
+    ViewData["title"] = "Create Policy";
+    ViewData["subTitle"] = "Create Policy";
+    ViewData["description"] = "Define a new authorization policy.";
+
+    // Parent crumb → main index page
+    ViewData["BreadcrumbParentText"] = "Policies";
+    ViewData["BreadcrumbParentArea"] = "Admin";
+    ViewData["BreadcrumbParentController"] = "AuthorizationPolicies";
+    ViewData["BreadcrumbParentAction"] = "Index";
+
+    // Current page crumb
+    ViewData["BreadcrumbCurrentArea"] = "Admin";
+    ViewData["BreadcrumbCurrentController"] = "AuthorizationPolicies";
+    ViewData["BreadcrumbCurrentAction"] = "Create";
 }
-<h2>Create Policy</h2>
-<hr />
+
 
 <form asp-action="Create" method="post">
     @Html.AntiForgeryToken()

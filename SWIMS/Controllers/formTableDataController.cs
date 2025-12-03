@@ -7,16 +7,22 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
+using System.Text.Json;
+using SWIMS.Services.Elsa;
+using System.Security.Claims;
+
 
 namespace SWIMS.Controllers
 {
     public class formTableDataController : Controller
     {
         private readonly SwimsDb_moreContext _context;
+        private readonly IElsaWorkflowClient _elsa;
 
-        public formTableDataController(SwimsDb_moreContext context)
+        public formTableDataController(SwimsDb_moreContext context, IElsaWorkflowClient elsa)
         {
             _context = context;
+            _elsa = elsa;
         }
 
         // GET: formTableData
@@ -61,10 +67,37 @@ namespace SWIMS.Controllers
         {
 
             if (ModelState.IsValid)
-            {             
+            {
                 // save new data to database
                 _context.Add(sW_formTableDatum);
                 await _context.SaveChangesAsync();
+
+                // 🔔 Fire Elsa workflow for in-app notification
+                var userIdString = User?.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (int.TryParse(userIdString, out var userId))
+                {
+                    var payload = new
+                    {
+                        // Send the int user Id as a string – TryParseUser will catch this path first.
+                        Recipient = userId.ToString(),
+                        Channel = "InApp",
+                        Subject = "Form submitted",
+                        Body = $"Your form entry #{sW_formTableDatum.Id} was submitted.",
+                        MetadataJson = JsonSerializer.Serialize(new
+                        {
+                            formId = sW_formTableDatum.SW_formsId,
+                            entryId = sW_formTableDatum.Id
+                        })
+                    };
+
+                    await _elsa.ExecuteByNameAsync("Swims.Notifications.DirectInApp", payload);
+                }
+                else
+                {
+                    // Optional: log this for debugging
+                    // _logger.LogWarning("Could not resolve current user ID for notifications.");
+                }
+
 
                 // update form data table row to look for fields with type: `file` from inputs
                 // then append the uploaded file to found column
@@ -87,7 +120,7 @@ namespace SWIMS.Controllers
                 {
                     Directory.CreateDirectory(uploadPath);
                 }
-                
+
                 if (uploadedFile == null || uploadedFile.Length == 0)
                 {
                     return RedirectToAction("Program", "form", new { uuid = uID });
@@ -114,8 +147,8 @@ namespace SWIMS.Controllers
                         return RedirectToAction("Program", "form", new { uuid = linkingUUID });
 
                     }
-                
-                }
+
+                    }
 
             }
             ViewData["SW_formsId"] = new SelectList(_context.SW_forms, "Id", "name", sW_formTableDatum.SW_formsId);

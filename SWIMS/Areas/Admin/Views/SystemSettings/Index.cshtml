@@ -1,0 +1,276 @@
+﻿@model SWIMS.Areas.Admin.ViewModels.SystemSettings.SystemSettingsIndexViewModel
+@using System.Linq
+@{
+    ViewData["Title"] = "System Settings";
+
+    var hasFromFile = Model.Sections.Any(s => s.IsFromAppSettings);
+    var defaultFilter = hasFromFile ? "file" : "all"; // "file" = only appsettings, "all" = all providers
+}
+
+<div class="row mb-3">
+    <div class="col-12">
+        <h2 class="mb-1">System Settings</h2>
+        <p class="text-muted mb-0">
+            Environment:
+            <strong>@(Model.ActiveEnvironment ?? "Current")</strong>
+        </p>
+        @if (TempData["StatusMessage"] is string status)
+        {
+            <div class="alert alert-success mt-2">@status</div>
+        }
+    </div>
+</div>
+
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="d-flex flex-wrap align-items-center gap-2 justify-content-between">
+            <div class="flex-grow-1" style="max-width: 320px;">
+                <input type="search"
+                       id="sections-search"
+                       class="form-control form-control-sm"
+                       placeholder="Search sections..." />
+            </div>
+
+            <div class="d-flex flex-wrap gap-2">
+                <div class="btn-group btn-group-sm" role="group" aria-label="Filter by source">
+                    <button type="button"
+                            class="btn btn-outline-primary @(defaultFilter == "file" ? "active" : "")"
+                            data-filter="file">
+                        Configured in appsettings
+                    </button>
+                    <button type="button"
+                            class="btn btn-outline-primary @(defaultFilter == "all" ? "active" : "")"
+                            data-filter="all">
+                        All sources
+                    </button>
+                </div>
+
+                <div class="btn-group btn-group-sm" role="group" aria-label="View mode">
+                    <button type="button"
+                            class="btn btn-outline-secondary active"
+                            data-view="cards">
+                        Cards
+                    </button>
+                    <button type="button"
+                            class="btn btn-outline-secondary"
+                            data-view="table">
+                        Table
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="sections-cards">
+    <div class="row">
+        @foreach (var s in Model.Sections)
+        {
+            var fromFile = s.IsFromAppSettings;
+            <div class="col-md-6 col-lg-4 mb-3 section-item"
+                 data-name="@s.DisplayName"
+                 data-description="@s.Description"
+                 data-key="@s.Key"
+                 data-fromfile="@(fromFile.ToString().ToLowerInvariant())">
+                <div class="card h-100">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title mb-1">@s.DisplayName</h5>
+                        <p class="text-muted small mb-2">
+                            <code>@s.Key</code>
+                        </p>
+                        @if (!string.IsNullOrWhiteSpace(s.Description))
+                        {
+                            <p class="text-muted small mb-2">@s.Description</p>
+                        }
+
+                        <div class="mb-2">
+                            @if (s.IsConfigured)
+                            {
+                                <span class="badge bg-success-subtle text-success me-1">Configured</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-warning-subtle text-warning me-1">Needs attention</span>
+                            }
+
+                            @if (s.IsFromAppSettings)
+                            {
+                                <span class="badge bg-primary-subtle text-primary">appsettings</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary-subtle text-secondary">other source</span>
+                            }
+                        </div>
+
+                        <div class="mt-auto pt-3 text-end">
+                            <a asp-area="Admin"
+                               asp-controller="SystemSettings"
+                               asp-action="Edit"
+                               asp-route-key="@s.Key"
+                               class="btn btn-sm btn-primary">
+                                Manage
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<div id="sections-table" class="d-none">
+    <div class="card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Section</th>
+                            <th>Key</th>
+                            <th>Status</th>
+                            <th>Source</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var s in Model.Sections)
+                        {
+                            var fromFile = s.IsFromAppSettings;
+                            <tr class="section-item"
+                                data-name="@s.DisplayName"
+                                data-description="@s.Description"
+                                data-key="@s.Key"
+                                data-fromfile="@(fromFile.ToString().ToLowerInvariant())">
+                                <td>
+                                    <div class="fw-semibold">@s.DisplayName</div>
+                                    @if (!string.IsNullOrWhiteSpace(s.Description))
+                                    {
+                                        <div class="small text-muted">@s.Description</div>
+                                    }
+                                </td>
+                                <td><code>@s.Key</code></td>
+                                <td>
+                                    @if (s.IsConfigured)
+                                    {
+                                        <span class="badge bg-success-subtle text-success">Configured</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-warning-subtle text-warning">Needs attention</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (s.IsFromAppSettings)
+                                    {
+                                        <span class="badge bg-primary-subtle text-primary">appsettings</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary-subtle text-secondary">other</span>
+                                    }
+                                </td>
+                                <td class="text-end">
+                                    <a asp-area="Admin"
+                                       asp-controller="SystemSettings"
+                                       asp-action="Edit"
+                                       asp-route-key="@s.Key"
+                                       class="btn btn-sm btn-outline-primary">
+                                        Manage
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            var searchInput = document.getElementById('sections-search');
+            var cardContainer = document.getElementById('sections-cards');
+            var tableContainer = document.getElementById('sections-table');
+
+            if (!cardContainer || !tableContainer) return;
+
+            var items = Array.prototype.slice.call(document.querySelectorAll('.section-item'));
+            var filterButtons = Array.prototype.slice.call(document.querySelectorAll('[data-filter]'));
+            var viewButtons = Array.prototype.slice.call(document.querySelectorAll('[data-view]'));
+
+            var currentFilter = '@defaultFilter'; // "file" or "all"
+            var currentView = 'cards';
+            var currentQuery = '';
+
+            function normalize(text) {
+                return (text || '').toLowerCase();
+            }
+
+            function applyView() {
+                if (currentView === 'cards') {
+                    cardContainer.classList.remove('d-none');
+                    tableContainer.classList.add('d-none');
+                } else {
+                    cardContainer.classList.add('d-none');
+                    tableContainer.classList.remove('d-none');
+                }
+
+                viewButtons.forEach(function (btn) {
+                    var mode = btn.getAttribute('data-view');
+                    btn.classList.toggle('active', mode === currentView);
+                });
+            }
+
+            function applyFilter() {
+                var q = normalize(currentQuery);
+
+                items.forEach(function (el) {
+                    var fromFile = el.getAttribute('data-fromfile') === 'true';
+                    var text = normalize(el.getAttribute('data-name') + ' ' + el.getAttribute('data-description') + ' ' + el.getAttribute('data-key'));
+
+                    var matchesFilter = (currentFilter === 'all') || fromFile;
+                    var matchesSearch = !q || text.indexOf(q) !== -1;
+
+                    el.style.display = (matchesFilter && matchesSearch) ? '' : 'none';
+                });
+
+                filterButtons.forEach(function (btn) {
+                    var mode = btn.getAttribute('data-filter');
+                    btn.classList.toggle('active', mode === currentFilter);
+                });
+            }
+
+            if (searchInput) {
+                searchInput.addEventListener('input', function () {
+                    currentQuery = this.value || '';
+                    applyFilter();
+                });
+            }
+
+            filterButtons.forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var mode = this.getAttribute('data-filter');
+                    if (!mode) return;
+                    currentFilter = mode;
+                    applyFilter();
+                });
+            });
+
+            viewButtons.forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var mode = this.getAttribute('data-view');
+                    if (!mode) return;
+                    currentView = mode;
+                    applyView();
+                });
+            });
+
+            // Initial state
+            applyView();
+            applyFilter();
+        })();
+    </script>
+}

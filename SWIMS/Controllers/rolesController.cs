@@ -13,9 +13,15 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using SWIMS.Models;
+using SWIMS.Models.ViewModels;
+using SWIMS.Security;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Security.Claims;
+using System.Text.Json;
+using SWIMS.Services.Elsa;
 
 namespace SWIMS.Controllers
 {
@@ -27,16 +33,23 @@ namespace SWIMS.Controllers
     public class rolesController : Controller
     {
         private readonly RoleManager<SwRole> _roleManager;
+        private readonly UserManager<SwUser> _userManager;
+        private readonly IElsaWorkflowClient _elsa;
 
         /// <summary>
-        /// Constructs an instance of <see cref="rolesController"/> using the provided <see cref="RoleManager{SwRole}"/>.
+        /// Initializes a new instance of the rolesController.
         /// </summary>
-        /// <param name="roleManager">
-        /// The ASP.NET Core Identity manager for handling <see cref="SwRole"/> operations.
-        /// </param>
-        public rolesController(RoleManager<SwRole> roleManager)
+        /// <param name="roleManager">Identity RoleManager for <see cref="SwRole"/>.</param>
+        /// <param name="userManager">Identity UserManager for <see cref="SwUser"/>.</param>
+        /// <param name="elsa"></param>
+        public rolesController(
+        RoleManager<SwRole> roleManager,
+        UserManager<SwUser> userManager,
+        IElsaWorkflowClient elsa)
         {
             _roleManager = roleManager;
+            _userManager = userManager;
+            _elsa = elsa;
         }
 
         /// <summary>
@@ -100,6 +113,18 @@ namespace SWIMS.Controllers
                     ModelState.AddModelError(string.Empty, err.Description);
                 return View(role);
             }
+
+            // 🔔 Notify: Admin created role
+            await NotifyAdminAsync(
+                subject: "Role created",
+                body: $"Role '{role.Name}' was created.",
+                metadata: new
+                {
+                    action = "RoleCreated",
+                    roleId = role.Id,
+                    roleName = role.Name
+                });
+
             return RedirectToAction(nameof(Index));
         }
 
@@ -148,6 +173,18 @@ namespace SWIMS.Controllers
                     ModelState.AddModelError(string.Empty, err.Description);
                 return View(model);
             }
+
+            // 🔔 Notify: Admin updated role
+            await NotifyAdminAsync(
+                subject: "Role updated",
+                body: $"Role '{role.Name}' was updated.",
+                metadata: new
+                {
+                    action = "RoleUpdated",
+                    roleId = role.Id,
+                    roleName = role.Name
+                });
+
             return RedirectToAction(nameof(Index));
         }
 
@@ -178,9 +215,30 @@ namespace SWIMS.Controllers
         {
             var role = await _roleManager.FindByIdAsync(id.ToString());
             if (role != null)
-                await _roleManager.DeleteAsync(role);
+            {
+                var roleId = role.Id;
+                var roleName = role.Name;
+
+                var result = await _roleManager.DeleteAsync(role);
+
+                if (result.Succeeded)
+                {
+                    // 🔔 Notify: Admin deleted role
+                    await NotifyAdminAsync(
+                        subject: "Role deleted",
+                        body: $"Role '{roleName ?? $"ID {roleId}"}' was deleted.",
+                        metadata: new
+                        {
+                            action = "RoleDeleted",
+                            roleId = roleId,
+                            roleName = roleName
+                        });
+                }
+            }
+
             return RedirectToAction(nameof(Index));
         }
+
 
         /// <summary>
         /// Determines whether a role with the given identifier exists.
@@ -192,5 +250,119 @@ namespace SWIMS.Controllers
             // Use RoleManager.Roles to check existence by ID
             return _roleManager.Roles.Any(r => r.Id == id);
         }
+
+        // GET: roles/ManageUsers/5
+        public async Task<IActionResult> ManageUsers(int id)
+        {
+            var role = await _roleManager.FindByIdAsync(id.ToString());
+            if (role == null) return NotFound();
+
+            var users = await _userManager.Users.AsNoTracking().ToListAsync();
+
+            var vm = new EditRoleUsersVM
+            {
+                RoleId = role.Id,
+                RoleName = role.Name ?? $"Role {role.Id}",
+                Users = new List<UserChoiceVM>()
+            };
+
+            foreach (var u in users)
+            {
+                var inRole = await _userManager.IsInRoleAsync(u, role.Name!);
+                vm.Users.Add(new UserChoiceVM
+                {
+                    UserId = u.Id,
+                    DisplayName = string.IsNullOrWhiteSpace(u.FirstName) && string.IsNullOrWhiteSpace(u.LastName)
+                                  ? (u.Email ?? u.UserName ?? $"User {u.Id}")
+                                  : $"{u.FirstName} {u.LastName}".Trim(),
+                    Email = u.Email ?? "",
+                    Selected = inRole
+                });
+            }
+
+            vm.Users = vm.Users.OrderBy(x => x.DisplayName).ToList();
+            return View(vm);
+        }
+
+        // POST: roles/ManageUsers/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ManageUsers(int id, EditRoleUsersVM model)
+        {
+            if (id != model.RoleId) return NotFound();
+
+            var role = await _roleManager.FindByIdAsync(id.ToString());
+            if (role == null || string.IsNullOrWhiteSpace(role.Name)) return NotFound();
+
+            // Build desired + current sets
+            var desiredUserIds = model.Users.Where(x => x.Selected).Select(x => x.UserId).ToHashSet();
+            var allUsers = await _userManager.Users.ToListAsync();
+
+            foreach (var u in allUsers)
+            {
+                var currentlyInRole = await _userManager.IsInRoleAsync(u, role.Name);
+                var shouldBeInRole = desiredUserIds.Contains(u.Id);
+
+                if (!currentlyInRole && shouldBeInRole)
+                {
+                    var addRes = await _userManager.AddToRoleAsync(u, role.Name);
+                    if (!addRes.Succeeded)
+                        foreach (var e in addRes.Errors) ModelState.AddModelError("", e.Description);
+                }
+                else if (currentlyInRole && !shouldBeInRole)
+                {
+                    var remRes = await _userManager.RemoveFromRoleAsync(u, role.Name);
+                    if (!remRes.Succeeded)
+                        foreach (var e in remRes.Errors) ModelState.AddModelError("", e.Description);
+                }
+            }
+
+            if (!ModelState.IsValid)
+                return View(model);
+
+            // 🔔 Notify: Admin updated role membership
+            await NotifyAdminAsync(
+                subject: "Role membership updated",
+                body: $"Membership for role '{role.Name}' was updated.",
+                metadata: new
+                {
+                    action = "RoleUsersUpdated",
+                    roleId = role.Id,
+                    roleName = role.Name
+                });
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        // --------------------------------------------------------------------
+        // Generic admin notification helper for role management actions.
+        // --------------------------------------------------------------------
+        private async Task NotifyAdminAsync(string subject, string body, object metadata = null)
+        {
+            var recipient = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.Identity?.Name;
+            if (string.IsNullOrWhiteSpace(recipient))
+                return;
+
+            var payload = new
+            {
+                Recipient = recipient,
+                Channel = "InApp",
+                Subject = subject,
+                Body = body,
+                MetadataJson = metadata == null ? null : JsonSerializer.Serialize(metadata)
+            };
+
+            try
+            {
+                // 🔔 Notify: Admin user / role management event
+                await _elsa.ExecuteByNameAsync("Swims.Notifications.DirectInApp", payload);
+            }
+            catch
+            {
+                // Don't block role admin if Elsa is unavailable.
+            }
+        }
+
+
     }
 }
