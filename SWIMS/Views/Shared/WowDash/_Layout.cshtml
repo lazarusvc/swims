@@ -18,8 +18,15 @@
             @{
                 string BreadcrumbTitle = ViewData.ContainsKey("title") ? ViewData["title"] as string ?? "" : "";
                 string BreadcrumbSubTitle = ViewData.ContainsKey("subTitle") ? ViewData["subTitle"] as string ?? "" : "";
+                string BreadcrumbDescription = ViewData.ContainsKey("description") ? ViewData["description"] as string ?? "" : "";
             }
-            <partial name="~/Views/Shared/WowDash/Partials/_Breadcrumb.cshtml" view-data='new ViewDataDictionary(ViewData) {{ "BreadcrumbTitle", BreadcrumbTitle }, { "BreadcrumbSubTitle", BreadcrumbSubTitle }}' />
+            <partial name="~/Views/Shared/WowDash/Partials/_Breadcrumb.cshtml"
+                     view-data='new ViewDataDictionary(ViewData)
+                        {
+                            { "BreadcrumbTitle", BreadcrumbTitle },
+                            { "BreadcrumbSubTitle", BreadcrumbSubTitle },
+                            { "BreadcrumbDescription", BreadcrumbDescription }
+                        }' />
             @RenderBody()
         </div>
 

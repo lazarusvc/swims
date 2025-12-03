@@ -1,82 +1,136 @@
 ﻿@model List<EndpointPolicyListItemViewModel>
+
 @{
-    ViewData["Title"] = "Endpoint Policy Assignments";
+    // Breadcrumb + page metadata
+    ViewData["title"] = "Endpoint Policy Assignments";
+    ViewData["subTitle"] = "Endpoint Policy Assignments";
+    ViewData["description"] = "Assign authorization policies to specific endpoints like actions, controllers, and pages.";
+
+    // Breadcrumb routing for THIS page (index)
+    ViewData["BreadcrumbCurrentArea"] = "Admin";
+    ViewData["BreadcrumbCurrentController"] = "EndpointPolicies";
+    ViewData["BreadcrumbCurrentAction"] = "Index";
 }
-<h2>Endpoint Policy Assignments</h2>
+
 @if (TempData["Ok"] is string ok)
 {
-    <div class="alert alert-success">@ok</div>
+    <div class="alert alert-success alert-dismissible fade show mb-24" role="alert">
+        @ok
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
 }
-<p><a asp-action="Create" class="btn btn-primary">Add Assignment</a></p>
-<a asp-action="BulkCreate" class="btn btn-outline-secondary ms-2">Bulk Apply</a>
 
+<div class="card basic-data-table">
+    <div class="card-header d-flex align-items-center justify-content-between gap-2 flex-wrap">
+        <h5 class="card-title mb-0">Endpoint Policy Assignments</h5>
 
-<table class="table table-sm table-striped align-middle">
-    <thead><tr><th>Type</th><th>Target</th><th>Policy</th><th>Status</th><th>Priority</th><th>Updated</th><th></th></tr></thead>
-    <tbody>
-        @foreach (var x in Model)
-        {
-            var target =
-            x.MatchType switch
-            {
-                "ControllerAction" => $"{x.Area ?? "(root)"} / {x.Controller}:{x.Action}",
-                "Controller" => $"{x.Area ?? "(root)"} / {x.Controller}",
-                "RazorPage" => $"{x.Area ?? "(root)"} {x.Page}",
-                "Path" => x.Path,
-                "Regex" => x.Regex,
-                _ => ""
-            };
-            <tr>
-                <td>@x.MatchType</td>
-                <td>@target</td>
-                <td><span class="badge bg-secondary">@x.PolicyName</span></td>
-                <td>
-                    @if (x.IsEnabled)
+        <div class="d-flex flex-wrap gap-2">
+            <a asp-action="Create"
+               class="btn btn-sm btn-primary d-flex align-items-center gap-1">
+                <iconify-icon icon="lucide:plus" class="fs-14"></iconify-icon>
+                <span>Add Assignment</span>
+            </a>
+
+            <a asp-action="BulkCreate"
+               class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1">
+                <iconify-icon icon="mdi:playlist-plus" class="fs-14"></iconify-icon>
+                <span>Bulk Apply</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="card-body">
+        <table class="table bordered-table mb-0 align-middle"
+               id="dataTable"
+               data-page-length="10">
+            <thead>
+                <tr>
+                    <th>Type</th>
+                    <th>Target</th>
+                    <th>Policy</th>
+                    <th>Status</th>
+                    <th>Priority</th>
+                    <th>Updated</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var x in Model)
+                {
+                    var target =
+                    x.MatchType switch
                     {
-                        <span class="badge bg-success">Enabled</span>
-                    }
-                    else
-                    {
+                        "ControllerAction" => $"{x.Area ?? "(root)"} / {x.Controller}:{x.Action}",
+                        "Controller" => $"{x.Area ?? "(root)"} / {x.Controller}",
+                        "RazorPage" => $"{x.Area ?? "(root)"} {x.Page}",
+                        "Path" => x.Path,
+                        "Regex" => x.Regex,
+                        _ => ""
+                    };
 
-                        <span class="badge bg-secondary">Disabled</span>
-                    }
-                </td>
-                <td>@x.Priority</td>
-                <td>@x.UpdatedAt.LocalDateTime</td>
-                <td class="text-center align-middle">
-                    <div class="d-flex align-items-center gap-10 justify-content-center">
-                        <a asp-action="Details" asp-route-id="@x.Id"
-                           class="bg-info-focus bg-hover-info-200 text-info-600 fw-medium w-40-px h-40-px d-flex justify-content-center align-items-center rounded-circle"
-                           title="Details" aria-label="Details">
-                            <iconify-icon icon="iconamoon:eye-light"></iconify-icon>
-                        </a>
+                    <tr>
+                        <td>@x.MatchType</td>
+                        <td>@target</td>
+                        <td><span class="badge bg-secondary">@x.PolicyName</span></td>
+                        <td>
+                            @if (x.IsEnabled)
+                            {
+                                <span class="badge bg-success">Enabled</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">Disabled</span>
+                            }
+                        </td>
+                        <td>@x.Priority</td>
+                        <td>@x.UpdatedAt.LocalDateTime</td>
+                        <td class="text-center align-middle">
+                            <div class="d-flex align-items-center gap-10 justify-content-center">
+                                <a asp-action="Details" asp-route-id="@x.Id"
+                                   class="bg-info-focus bg-hover-info-200 text-info-600 fw-medium w-40-px h-40-px d-flex justify-content-center align-items-center rounded-circle"
+                                   title="Details" aria-label="Details">
+                                    <iconify-icon icon="iconamoon:eye-light"></iconify-icon>
+                                </a>
 
-                        <a asp-action="Edit" asp-route-id="@x.Id"
-                           class="bg-success-focus bg-hover-success-200 text-success-600 fw-medium w-40-px h-40-px d-flex justify-content-center align-items-center rounded-circle"
-                           title="Edit" aria-label="Edit">
-                            <iconify-icon icon="lucide:edit"></iconify-icon>
-                        </a>
+                                <a asp-action="Edit" asp-route-id="@x.Id"
+                                   class="bg-success-focus bg-hover-success-200 text-success-600 fw-medium w-40-px h-40-px d-flex justify-content-center align-items-center rounded-circle"
+                                   title="Edit" aria-label="Edit">
+                                    <iconify-icon icon="lucide:edit"></iconify-icon>
+                                </a>
 
-                        <form asp-action="Toggle" asp-route-id="@x.Id" method="post" class="d-inline">
-                            @Html.AntiForgeryToken()
-                            <button type="submit"
-                                    class="bg-warning-focus bg-hover-warning-200 text-warning-600 fw-medium w-40-px h-40-px d-flex justify-content-center align-items-center rounded-circle border-0"
-                                    title="@(x.IsEnabled ? "Disable" : "Enable")" aria-label="@(x.IsEnabled ? "Disable" : "Enable")">
-                                <iconify-icon icon="@(x.IsEnabled ? "mdi:toggle-switch-off-outline" : "mdi:toggle-switch-outline")"></iconify-icon>
-                            </button>
-                        </form>
+                                <form asp-action="Toggle" asp-route-id="@x.Id" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit"
+                                            class="bg-warning-focus bg-hover-warning-200 text-warning-600 fw-medium w-40-px h-40-px d-flex justify-content-center align-items-center rounded-circle border-0"
+                                            title="@(x.IsEnabled ? "Disable" : "Enable")"
+                                            aria-label="@(x.IsEnabled ? "Disable" : "Enable")">
+                                        <iconify-icon icon="@(x.IsEnabled ? "mdi:toggle-switch-off-outline" : "mdi:toggle-switch-outline")"></iconify-icon>
+                                    </button>
+                                </form>
 
-                        <form asp-action="Delete" asp-route-id="@x.Id" method="post" class="d-inline" onsubmit="return confirm('Delete this assignment?');">
-                            @Html.AntiForgeryToken()
-                            <button type="submit"
-                                    class="remove-item-btn bg-danger-focus bg-hover-danger-200 text-danger-600 fw-medium w-40-px h-40-px d-flex justify-content-center align-items-center rounded-circle border-0"
-                                    title="Delete" aria-label="Delete">
-                                <iconify-icon icon="mingcute:delete-2-line"></iconify-icon>
-                            </button>
-                        </form>
-                    </div>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+                                <form asp-action="Delete"
+                                      asp-route-id="@x.Id"
+                                      method="post"
+                                      class="d-inline"
+                                      onsubmit="return confirm(" Delete this assignment?");">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit"
+                                            class="remove-item-btn bg-danger-focus bg-hover-danger-200 text-danger-600 fw-medium w-40-px h-40-px d-flex justify-content-center align-items-center rounded-circle border-0"
+                                            title="Delete" aria-label="Delete">
+                                        <iconify-icon icon="mingcute:delete-2-line"></iconify-icon>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const endpointPoliciesTable = new DataTable('#dataTable');
+    </script>
+}

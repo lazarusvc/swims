@@ -1,109 +1,138 @@
 ﻿@model List<PolicyListItemViewModel>
+
 @{
-    ViewData["Title"] = "Authorization Policies";
+    ViewData["title"] = "Policies";
+    ViewData["subTitle"] = "Policies";
+    ViewData["description"] = "Manage authorization policies used to protect endpoints across the system.";
+
+    // Breadcrumb routing for THIS page (index)
+    ViewData["BreadcrumbCurrentArea"] = "Admin";
+    ViewData["BreadcrumbCurrentController"] = "AuthorizationPolicies";
+    ViewData["BreadcrumbCurrentAction"] = "Index";
 }
 
-<h2 class="mb-3">Authorization Policies</h2>
 
 @if (TempData["Ok"] is string ok)
 {
-    <div class="alert alert-success">@ok</div>
+    <div class="alert alert-success alert-dismissible fade show mb-24" role="alert">
+        @ok
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
 }
 
-<p>
-    <a asp-action="Create" class="btn btn-primary">Create Policy</a>
-</p>
+<div class="card basic-data-table">
+    <div class="card-header d-flex align-items-center justify-content-between gap-2 flex-wrap">
+        <h5 class="card-title mb-0">Policies</h5>
 
-<table class="table table-sm table-striped align-middle">
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Roles</th>
-            <th>Status</th>
-            <th>Updated</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var p in Model)
-        {
-            <tr>
-                <td>
-                    @p.Name
-                </td>
+        <a asp-action="Create"
+           class="btn btn-sm btn-primary d-flex align-items-center gap-1">
+            <iconify-icon icon="lucide:plus" class="fs-14"></iconify-icon>
+            <span>Add Policy</span>
+        </a>
+    </div>
 
-                <td>
-                    @if (p.RoleNames.Count == 0)
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table bordered-table mb-0 align-middle w-100"
+                   id="dataTable"
+                   data-page-length="10">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Roles</th>
+                        <th>Status</th>
+                        <th>Updated</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var p in Model)
                     {
-                        <span class="text-muted">None</span>
+                        <tr>
+                            <td>
+                                @p.Name
+                            </td>
+
+                            <td>
+                                @if (p.RoleNames.Count == 0)
+                                {
+                                    <span class="text-muted">None</span>
+                                }
+                                else
+                                {
+                                    <div class="text-wrap text-break" style="max-width: 320px;">
+                                        @string.Join(", ", p.RoleNames)
+                                    </div>
+                                }
+                            </td>
+
+                            <td>
+                                @if (p.IsEnabled)
+                                {
+                                    <span class="badge bg-success">Enabled</span>
+                                }
+                                else
+                                {
+
+                                    <span class="badge bg-secondary">Disabled</span>
+                                }
+                            </td>
+                            <td>@p.UpdatedAt.LocalDateTime</td>
+                            <td class="text-center align-middle">
+                                @if (p.IsSystem)
+                                {
+                                    <span class="badge bg-info d-inline-flex align-items-center justify-content-center" style="white-space:nowrap;">
+                                        <iconify-icon icon="mdi:lock-outline"
+                                                      style="display:inline-block; vertical-align:middle; margin-right:1ch;"></iconify-icon>
+                                        <span style="line-height:1;">System</span>
+                                    </span>
+                                }
+                                else
+                                {
+                                    <div class="d-flex align-items-center gap-10 justify-content-center">
+                                        <a asp-action="Details" asp-route-id="@p.Id"
+                                           class="bg-info-focus bg-hover-info-200 text-info-600 fw-medium w-40-px h-40-px d-flex justify-content-center align-items-center rounded-circle"
+                                           title="Details" aria-label="Details">
+                                            <iconify-icon icon="iconamoon:eye-light"></iconify-icon>
+                                        </a>
+
+                                        <a asp-action="Edit" asp-route-id="@p.Id"
+                                           class="bg-success-focus bg-hover-success-200 text-success-600 fw-medium w-40-px h-40-px d-flex justify-content-center align-items-center rounded-circle"
+                                           title="Edit" aria-label="Edit">
+                                            <iconify-icon icon="lucide:edit"></iconify-icon>
+                                        </a>
+
+                                        <form asp-action="Toggle" asp-route-id="@p.Id" method="post" class="d-inline">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit"
+                                                    class="bg-warning-focus bg-hover-warning-200 text-warning-600 fw-medium w-40-px h-40-px d-flex justify-content-center align-items-center rounded-circle border-0"
+                                                    title="@(p.IsEnabled ? "Disable" : "Enable")" aria-label="@(p.IsEnabled ? "Disable" : "Enable")">
+                                                <iconify-icon icon="@(p.IsEnabled ? "mdi:toggle-switch-off-outline" : "mdi:toggle-switch-outline")"></iconify-icon>
+                                            </button>
+                                        </form>
+
+                                        <form asp-action="Delete" asp-route-id="@p.Id" method="post" class="d-inline" onsubmit="return confirm('Delete this policy?');">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit"
+                                                    class="remove-item-btn bg-danger-focus bg-hover-danger-200 text-danger-600 fw-medium w-40-px h-40-px d-flex justify-content-center align-items-center rounded-circle border-0"
+                                                    title="Delete" aria-label="Delete">
+                                                <iconify-icon icon="mingcute:delete-2-line"></iconify-icon>
+                                            </button>
+                                        </form>
+                                    </div>
+                                }
+                            </td>
+                        </tr>
                     }
-                    else
-                    {
-
-                        @string.Join(", ", p.RoleNames)
-                    }
-                </td>
-                <td>
-                    @if (p.IsEnabled)
-                    {
-                        <span class="badge bg-success">Enabled</span>
-                    }
-                    else
-                    {
-
-                        <span class="badge bg-secondary">Disabled</span>
-                    }
-                </td>
-                <td>@p.UpdatedAt.LocalDateTime</td>
-                <td class="text-center align-middle">
-                    @if (p.IsSystem)
-                    {
-                        <span class="badge bg-info d-inline-flex align-items-center justify-content-center" style="white-space:nowrap;">
-                            <iconify-icon icon="mdi:lock-outline"
-                                          style="display:inline-block; vertical-align:middle; margin-right:1ch;"></iconify-icon>
-                            <span style="line-height:1;">System</span>
-                        </span>
-                    }
-                    else
-                    {
-                        <div class="d-flex align-items-center gap-10 justify-content-center">
-                            <a asp-action="Details" asp-route-id="@p.Id"
-                               class="bg-info-focus bg-hover-info-200 text-info-600 fw-medium w-40-px h-40-px d-flex justify-content-center align-items-center rounded-circle"
-                               title="Details" aria-label="Details">
-                                <iconify-icon icon="iconamoon:eye-light"></iconify-icon>
-                            </a>
-
-                            <a asp-action="Edit" asp-route-id="@p.Id"
-                               class="bg-success-focus bg-hover-success-200 text-success-600 fw-medium w-40-px h-40-px d-flex justify-content-center align-items-center rounded-circle"
-                               title="Edit" aria-label="Edit">
-                                <iconify-icon icon="lucide:edit"></iconify-icon>
-                            </a>
-
-                            <form asp-action="Toggle" asp-route-id="@p.Id" method="post" class="d-inline">
-                                @Html.AntiForgeryToken()
-                                <button type="submit"
-                                        class="bg-warning-focus bg-hover-warning-200 text-warning-600 fw-medium w-40-px h-40-px d-flex justify-content-center align-items-center rounded-circle border-0"
-                                        title="@(p.IsEnabled ? "Disable" : "Enable")" aria-label="@(p.IsEnabled ? "Disable" : "Enable")">
-                                    <iconify-icon icon="@(p.IsEnabled ? "mdi:toggle-switch-off-outline" : "mdi:toggle-switch-outline")"></iconify-icon>
-                                </button>
-                            </form>
-
-                            <form asp-action="Delete" asp-route-id="@p.Id" method="post" class="d-inline" onsubmit="return confirm('Delete this policy?');">
-                                @Html.AntiForgeryToken()
-                                <button type="submit"
-                                        class="remove-item-btn bg-danger-focus bg-hover-danger-200 text-danger-600 fw-medium w-40-px h-40-px d-flex justify-content-center align-items-center rounded-circle border-0"
-                                        title="Delete" aria-label="Delete">
-                                    <iconify-icon icon="mingcute:delete-2-line"></iconify-icon>
-                                </button>
-                            </form>
-                        </div>
-                    }
-                </td>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 
 
-
-
-            </tr>
-        }
-    </tbody>
-</table>
+@section Scripts {
+    <script>
+        const policiesTable = new DataTable('#dataTable');
+    </script>
+}

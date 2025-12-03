@@ -1,8 +1,22 @@
 ﻿@model EndpointPolicyEditViewModel
+
 @{
-    ViewData["Title"] = "Assign Policy to Endpoint(s)";
+    ViewData["title"] = "Add Endpoint Policy Assignment";
+    ViewData["subTitle"] = "Add Endpoint Policy Assignment";
+    ViewData["description"] = "Assign an authorization policy to a specific endpoint.";
+
+    // Parent crumb → main index page
+    ViewData["BreadcrumbParentText"] = "Endpoint Policy Assignments";
+    ViewData["BreadcrumbParentArea"] = "Admin";
+    ViewData["BreadcrumbParentController"] = "EndpointPolicies";
+    ViewData["BreadcrumbParentAction"] = "Index";
+
+    // Current page crumb
+    ViewData["BreadcrumbCurrentArea"] = "Admin";
+    ViewData["BreadcrumbCurrentController"] = "EndpointPolicies";
+    ViewData["BreadcrumbCurrentAction"] = "Create";
 }
-<h2>@ViewData["Title"]</h2>
+
 
 <form asp-action="Create" method="post">
     @Html.AntiForgeryToken()

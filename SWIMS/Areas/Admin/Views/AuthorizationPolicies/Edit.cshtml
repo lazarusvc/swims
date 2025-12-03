@@ -1,9 +1,22 @@
 ﻿@model PolicyEditViewModel
+
 @{
-    ViewData["Title"] = "Edit Policy";
+    ViewData["title"] = "Edit Policy";
+    ViewData["subTitle"] = "Edit Policy";
+    ViewData["description"] = "Update this authorization policy.";
+
+    // Parent crumb → main index page
+    ViewData["BreadcrumbParentText"] = "Policies";
+    ViewData["BreadcrumbParentArea"] = "Admin";
+    ViewData["BreadcrumbParentController"] = "AuthorizationPolicies";
+    ViewData["BreadcrumbParentAction"] = "Index";
+
+    // Current page crumb
+    ViewData["BreadcrumbCurrentArea"] = "Admin";
+    ViewData["BreadcrumbCurrentController"] = "AuthorizationPolicies";
+    ViewData["BreadcrumbCurrentAction"] = "Edit";
 }
-<h2>Edit Policy</h2>
-<hr />
+
 
 <form asp-action="Edit" method="post">
     @Html.AntiForgeryToken()
