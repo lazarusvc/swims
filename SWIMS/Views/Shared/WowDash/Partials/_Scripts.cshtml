@@ -38,6 +38,18 @@
     <script src="~/lib/signalr/signalr.min.js"></script>
     <script src="~/WowDash/js/notifs.js" asp-append-version="true"></script>
     <script src="~/WowDash/js/chat.js" asp-append-version="true"></script>
+
+    <script>
+        (function () {
+          const conn = new signalR.HubConnectionBuilder()
+            .withUrl(window.apiUrl('/hubs/notifs'), { withCredentials: true })
+            .withAutomaticReconnect()
+            .build();
+
+          conn.on("notif", n => console.log("🔔 notif:", n));
+          conn.start().catch(console.error);
+        })();
+    </script>
 }
 
 <script>
@@ -65,17 +77,7 @@
     })();
 </script>
 
-<script>
-    (function () {
-      const conn = new signalR.HubConnectionBuilder()
-        .withUrl(window.apiUrl('/hubs/notifs'), { withCredentials: true })
-        .withAutomaticReconnect()
-        .build();
 
-      conn.on("notif", n => console.log("🔔 notif:", n));
-      conn.start().catch(console.error);
-    })();
-</script>
 
 
 
