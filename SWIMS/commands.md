@@ -6,6 +6,8 @@
 ## Add-Migration "StoredProcs_Init" -Context SwimsStoredProcsDbContext -Output Migrations/StoredProcs
 ## Add-Migration "Reporting_Init" -Context SWIMS.Data.Reports.SwimsReportsDbContext -Output Migrations/Reporting
 ## Add-Migration "DbMore_Init" -Context SwimsDb_moreContext -Output Migrations/DbMore
+## Add-Migration Cases_Init -Context SwimsCasesDbContext -OutputDir "Migrations/Cases"
+
 
 # Updating Database
 
@@ -13,3 +15,5 @@
 ## Update-Database -Context SwimsStoredProcsDbContext
 ## Update-Database -Context SWIMS.Data.Reports.SwimsReportsDbContext
 ## Update-Database -Context SwimsDb_moreContext
+## Update-Database -Context SwimsCasesDbContext
+

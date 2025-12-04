@@ -17,7 +17,7 @@ namespace SWIMS.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.10")
+                .HasAnnotation("ProductVersion", "9.0.11")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -70,6 +70,135 @@ namespace SWIMS.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("SW_beneficiary", (string)null);
+                });
+
+            modelBuilder.Entity("SWIMS.Models.SW_case", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("SW_beneficiaryId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("case_number")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<DateTime?>("closed_at")
+                        .HasColumnType("datetime");
+
+                    b.Property<DateTime>("created_at")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("created_by")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("notes")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("program_tag")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<string>("status")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<string>("title")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SW_beneficiaryId");
+
+                    b.ToTable("SW_case", (string)null);
+                });
+
+            modelBuilder.Entity("SWIMS.Models.SW_caseAssignment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("SW_caseId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("assigned_at")
+                        .HasColumnType("datetime");
+
+                    b.Property<bool>("is_active")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("role_on_case")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<DateTime?>("unassigned_at")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("user_id")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SW_caseId");
+
+                    b.ToTable("SW_caseAssignment", (string)null);
+                });
+
+            modelBuilder.Entity("SWIMS.Models.SW_caseForm", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("SW_caseId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SW_formTableDatumId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("form_role")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<bool>("is_primary_application")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("linked_at")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("linked_by")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SW_caseId");
+
+                    b.HasIndex("SW_formTableDatumId");
+
+                    b.ToTable("SW_caseForm", (string)null);
                 });
 
             modelBuilder.Entity("SWIMS.Models.SW_city", b =>
@@ -995,14 +1124,41 @@ namespace SWIMS.Migrations
                     b.Property<string>("isAppComment_03")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<byte?>("isApproval_01")
-                        .HasColumnType("tinyint");
+                    b.Property<string>("isAppComment_04")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<byte?>("isApproval_02")
-                        .HasColumnType("tinyint");
+                    b.Property<string>("isAppComment_05")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<byte?>("isApproval_03")
-                        .HasColumnType("tinyint");
+                    b.Property<DateTime?>("isApp_dateTime_01")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("isApp_dateTime_02")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("isApp_dateTime_03")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("isApp_dateTime_04")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("isApp_dateTime_05")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("isApproval_01")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("isApproval_02")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("isApproval_03")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("isApproval_04")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("isApproval_05")
+                        .HasColumnType("int");
 
                     b.Property<string>("isApprover_01")
                         .HasColumnType("nvarchar(max)");
@@ -1013,8 +1169,14 @@ namespace SWIMS.Migrations
                     b.Property<string>("isApprover_03")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("isLinkingForm")
-                        .HasColumnType("int");
+                    b.Property<string>("isApprover_04")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("isApprover_05")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("isLinkingForm")
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -1110,6 +1272,47 @@ namespace SWIMS.Migrations
                     b.ToTable("SW_organization", (string)null);
                 });
 
+            modelBuilder.Entity("SWIMS.Models.SW_case", b =>
+                {
+                    b.HasOne("SWIMS.Models.SW_beneficiary", "SW_beneficiary")
+                        .WithMany()
+                        .HasForeignKey("SW_beneficiaryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("SW_beneficiary");
+                });
+
+            modelBuilder.Entity("SWIMS.Models.SW_caseAssignment", b =>
+                {
+                    b.HasOne("SWIMS.Models.SW_case", "SW_case")
+                        .WithMany("SW_caseAssignments")
+                        .HasForeignKey("SW_caseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("SW_case");
+                });
+
+            modelBuilder.Entity("SWIMS.Models.SW_caseForm", b =>
+                {
+                    b.HasOne("SWIMS.Models.SW_case", "SW_case")
+                        .WithMany("SW_caseForms")
+                        .HasForeignKey("SW_caseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SWIMS.Models.SW_formTableDatum", "SW_formTableDatum")
+                        .WithMany()
+                        .HasForeignKey("SW_formTableDatumId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("SW_case");
+
+                    b.Navigation("SW_formTableDatum");
+                });
+
             modelBuilder.Entity("SWIMS.Models.SW_form", b =>
                 {
                     b.HasOne("SWIMS.Models.SW_identity", "SW_identity")
@@ -1163,6 +1366,13 @@ namespace SWIMS.Migrations
                         .HasConstraintName("FK_SW_formsSW_formTableName");
 
                     b.Navigation("SW_forms");
+                });
+
+            modelBuilder.Entity("SWIMS.Models.SW_case", b =>
+                {
+                    b.Navigation("SW_caseAssignments");
+
+                    b.Navigation("SW_caseForms");
                 });
 
             modelBuilder.Entity("SWIMS.Models.SW_form", b =>

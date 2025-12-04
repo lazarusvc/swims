@@ -50,6 +50,8 @@ using System.Threading;
 using SWIMS.Services.SystemSettings;
 using SWIMS.Services.Setup;
 using SWIMS.Web.Setup;
+using SWIMS.Data.Cases;
+
 
 
 
@@ -89,6 +91,12 @@ builder.Services.AddDbContext<SwimsDb_moreContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection"),
         sql => sql.MigrationsHistoryTable("__EFMigrationsHistory_More", "dbo")
+    ));
+
+builder.Services.AddDbContext<SwimsCasesDbContext>(options =>
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        sql => sql.MigrationsHistoryTable("__EFMigrationsHistory_Cases", "case")
     ));
 
 builder.Services.AddDbContext<SwimsStoredProcsDbContext>(options =>
