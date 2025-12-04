@@ -146,7 +146,7 @@ namespace SWIMS.Data
             [
                 // Reporting / Forms (yours already existed)
                 Permissions.Reports_View, Permissions.Reports_Admin, Permissions.Forms_Builder, Permissions.Forms_Submit,
-                Permissions.Programs_View, Permissions.Forms_Manage,
+                Permissions.Programs_View, Permissions.Forms_Manage, Permissions.Forms_Access,
 
                 // NEW: Intake/Clients/Applications/Assessment
                 Permissions.Intake_View, Permissions.Intake_Create, Permissions.Intake_Edit, Permissions.Intake_Assign,
@@ -244,6 +244,14 @@ namespace SWIMS.Data
                 Always(Permissions.Programs_View,
                        "SocialWorker", "Secretary", "Coordinator", "Director", "PermanentSecretary", "Minister", "ProgramManager", "ReadOnly"),
                 description: "View Programs dashboard");
+            // generic runtime access to program/forms workspace
+            await UpsertPolicyAsync(Permissions.Forms_Access,
+                Always(Permissions.Forms_Access,
+                       "SocialWorker", "Secretary", "VCCClerk", // workers who touch data
+                       "Coordinator", "Director",
+                       "PermanentSecretary", "Minister",
+                       "ProgramManager", "ReadOnly"),
+                description: "Access program/forms workspace (Program view, approvals, linking, etc.)");
             await UpsertPolicyAsync(Permissions.Forms_Manage,
                 Always(Permissions.Forms_Manage, "Admin"),
                 isSystem: true, description: "Manage forms metadata & processes");
@@ -547,11 +555,45 @@ namespace SWIMS.Data
 
             // Assessment & Approvals
             await UpsertEndpointPolicyAsync(Permissions.Assessment_View, MatchTypes.Controller, controller: "Assessment", priority: 100);
-            await UpsertEndpointPolicyAsync(Permissions.Approvals_L1, MatchTypes.ControllerAction, controller: "Approvals", action: "Level1", priority: 50);
-            await UpsertEndpointPolicyAsync(Permissions.Approvals_L2, MatchTypes.ControllerAction, controller: "Approvals", action: "Level2", priority: 50);
-            await UpsertEndpointPolicyAsync(Permissions.Approvals_L3, MatchTypes.ControllerAction, controller: "Approvals", action: "Level3", priority: 50);
-            await UpsertEndpointPolicyAsync(Permissions.Approvals_L4, MatchTypes.ControllerAction, controller: "Approvals", action: "Level4", priority: 50);
-            await UpsertEndpointPolicyAsync(Permissions.Approvals_L5, MatchTypes.ControllerAction, controller: "Approvals", action: "Level5", priority: 50);
+
+            // Approvals: gate ApprovalAction per approval level via appCnt in querystring
+            // Regex runs against the full path + query string, e.g.
+            //   /form/ApprovalAction?&dataId=1038&appCnt=1&uuid=...
+            // so we just look for "appCnt=N" anywhere after the "?".
+            await UpsertEndpointPolicyAsync(
+                Permissions.Approvals_L1,
+                MatchTypes.Regex,
+                regex: @"^/form/ApprovalAction\?.*appCnt=1\b",
+                priority: 50,
+                notes: "Approvals L1 – ApprovalAction (appCnt=1)");
+
+            await UpsertEndpointPolicyAsync(
+                Permissions.Approvals_L2,
+                MatchTypes.Regex,
+                regex: @"^/form/ApprovalAction\?.*appCnt=2\b",
+                priority: 50,
+                notes: "Approvals L2 – ApprovalAction (appCnt=2)");
+
+            await UpsertEndpointPolicyAsync(
+                Permissions.Approvals_L3,
+                MatchTypes.Regex,
+                regex: @"^/form/ApprovalAction\?.*appCnt=3\b",
+                priority: 50,
+                notes: "Approvals L3 – ApprovalAction (appCnt=3)");
+
+            await UpsertEndpointPolicyAsync(
+                Permissions.Approvals_L4,
+                MatchTypes.Regex,
+                regex: @"^/form/ApprovalAction\?.*appCnt=4\b",
+                priority: 50,
+                notes: "Approvals L4 – ApprovalAction (appCnt=4)");
+
+            await UpsertEndpointPolicyAsync(
+                Permissions.Approvals_L5,
+                MatchTypes.Regex,
+                regex: @"^/form/ApprovalAction\?.*appCnt=5\b",
+                priority: 50,
+                notes: "Approvals L5 – ApprovalAction (appCnt=5)");
 
             // Payments
             await UpsertEndpointPolicyAsync(Permissions.Payments_View, MatchTypes.Controller, controller: "Payments", priority: 100);
@@ -561,12 +603,159 @@ namespace SWIMS.Data
 
             // Form design/admin vs builder vs submit
             // Form Management (CRUD dashboard & related tables)
+            var formsController = "form"; // route/controller name for formController
+
+            // Form Management (CRUD + publish of form definitions)
             await UpsertEndpointPolicyAsync(
                 Permissions.Forms_Manage,
-                MatchTypes.Controller,
-                controller: "Form",
+                MatchTypes.ControllerAction,
+                controller: formsController,
+                action: "Index",
                 priority: 100,
-                notes: "Form Management dashboard");
+                notes: "Forms list & admin dashboard");
+
+            await UpsertEndpointPolicyAsync(
+                Permissions.Forms_Manage,
+                MatchTypes.ControllerAction,
+                controller: formsController,
+                action: "Details",
+                priority: 100,
+                notes: "View form metadata");
+
+            await UpsertEndpointPolicyAsync(
+                Permissions.Forms_Manage,
+                MatchTypes.ControllerAction,
+                controller: formsController,
+                action: "Create",
+                priority: 100,
+                notes: "Create form definitions");
+
+            await UpsertEndpointPolicyAsync(
+                Permissions.Forms_Manage,
+                MatchTypes.ControllerAction,
+                controller: formsController,
+                action: "Edit",
+                priority: 100,
+                notes: "Edit form definitions");
+
+            await UpsertEndpointPolicyAsync(
+                Permissions.Forms_Manage,
+                MatchTypes.ControllerAction,
+                controller: formsController,
+                action: "Delete",
+                priority: 100,
+                notes: "Delete form definitions");
+
+            await UpsertEndpointPolicyAsync(
+                Permissions.Forms_Manage,
+                MatchTypes.ControllerAction,
+                controller: formsController,
+                action: "Complete",
+                priority: 100,
+                notes: "Publish/complete form definitions");
+
+            // Runtime forms/program workspace: Program view, approvals, linking, etc.
+            await UpsertEndpointPolicyAsync(
+                Permissions.Forms_Access,
+                MatchTypes.ControllerAction,
+                controller: formsController,
+                action: "Program",
+                priority: 100,
+                notes: "Program dashboard for a form (entries, approvals, links)");
+
+            await UpsertEndpointPolicyAsync(
+                Permissions.Forms_Access,
+                MatchTypes.ControllerAction,
+                controller: formsController,
+                action: "Preview",
+                priority: 100,
+                notes: "Preview individual form entries");
+
+            await UpsertEndpointPolicyAsync(
+                Permissions.Forms_Access,
+                MatchTypes.ControllerAction,
+                controller: formsController,
+                action: "Update",
+                priority: 100,
+                notes: "Update an existing form entry from Program view");
+
+            await UpsertEndpointPolicyAsync(
+                Permissions.Forms_Access,
+                MatchTypes.ControllerAction,
+                controller: formsController,
+                action: "Linking",
+                priority: 100,
+                notes: "Link forms/entries together");
+
+            // Approvals workspace (dashboards + per-entry actions)
+            await UpsertEndpointPolicyAsync(
+                Permissions.Forms_Access,
+                MatchTypes.ControllerAction,
+                controller: formsController,
+                action: "Approval",
+                priority: 100,
+                notes: "Approvals dashboard for a form");
+
+            await UpsertEndpointPolicyAsync(
+                Permissions.Forms_Access,
+                MatchTypes.ControllerAction,
+                controller: formsController,
+                action: "ApprovalAction",
+                priority: 100,
+                notes: "Per-entry approval action surface");
+
+            await UpsertEndpointPolicyAsync(
+                Permissions.Forms_Access,
+                MatchTypes.ControllerAction,
+                controller: formsController,
+                action: "ApprovalHistory",
+                priority: 100,
+                notes: "Per-entry approval history");
+
+            var formTableDataController = "formTableData";
+
+            // Raw table views (list + detail) – require generic forms access
+            await UpsertEndpointPolicyAsync(
+                Permissions.Forms_Access,
+                MatchTypes.ControllerAction,
+                controller: formTableDataController,
+                action: "Index",
+                priority: 100,
+                notes: "List of form entries (raw table)");
+
+            await UpsertEndpointPolicyAsync(
+                Permissions.Forms_Access,
+                MatchTypes.ControllerAction,
+                controller: formTableDataController,
+                action: "Details",
+                priority: 100,
+                notes: "Raw detail view for a form entry");
+
+            // Submissions / data modification – stick with Forms.Submit
+            await UpsertEndpointPolicyAsync(
+                Permissions.Forms_Submit,
+                MatchTypes.ControllerAction,
+                controller: formTableDataController,
+                action: "Create",
+                priority: 100,
+                notes: "Create/submit a form entry");
+
+            await UpsertEndpointPolicyAsync(
+                Permissions.Forms_Submit,
+                MatchTypes.ControllerAction,
+                controller: formTableDataController,
+                action: "Edit",
+                priority: 100,
+                notes: "Edit an existing submitted entry");
+
+            await UpsertEndpointPolicyAsync(
+                Permissions.Forms_Submit,
+                MatchTypes.ControllerAction,
+                controller: formTableDataController,
+                action: "Delete",
+                priority: 100,
+                notes: "Delete a submitted entry");
+
 
             // Form Builder UI (your Create action on the same controller)
             await UpsertEndpointPolicyAsync(

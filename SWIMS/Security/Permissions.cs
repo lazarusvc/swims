@@ -19,6 +19,7 @@ public static class Permissions
     public const string Forms_Manage = "Forms.Manage";    // forms admin CRUD (not the builder)
     public const string Forms_Builder = "Forms.Builder";
     public const string Forms_Submit = "Forms.Submit";
+    public const string Forms_Access = "Forms.Access";    // NEW: runtime access to forms/program workspace
 
     // Intake
     public const string Intake_View = "Intake.View";
