@@ -11,6 +11,8 @@ using SWIMS.Data;
 using SWIMS.Data.Cases;
 using SWIMS.Models;
 using SWIMS.Models.ViewModels;
+using SWIMS.Data.Lookups;
+
 
 namespace SWIMS.Controllers
 {
@@ -21,22 +23,25 @@ namespace SWIMS.Controllers
         private readonly SwimsDb_moreContext _core;
         private readonly SwimsIdentityDbContext _identity;
         private readonly UserManager<SwUser> _userManager;
+        private readonly SwimsLookupDbContext _lookup;
 
         public CasesController(
             SwimsCasesDbContext cases,
             SwimsDb_moreContext core,
             SwimsIdentityDbContext identity,
-            UserManager<SwUser> userManager)
+            UserManager<SwUser> userManager,
+            SwimsLookupDbContext lookup)
         {
             _cases = cases;
             _core = core;
             _identity = identity;
             _userManager = userManager;
+            _lookup = lookup;
         }
 
 
         // GET: /Cases
-        public async Task<IActionResult> Index(string? search, string? status)
+        public async Task<IActionResult> Index(string? search, string? status, int? program)
         {
             var query = _cases.SW_cases.AsNoTracking();
 
@@ -57,6 +62,11 @@ namespace SWIMS.Controllers
                 query = query.Where(c => c.status == status);
             }
 
+            if (program.HasValue && program.Value > 0)
+            {
+                query = query.Where(c => c.ProgramTagId == program.Value);
+            }
+
             var caseEntities = await query
                 .OrderByDescending(c => c.created_at)
                 .ToListAsync();
@@ -70,6 +80,18 @@ namespace SWIMS.Controllers
                 .AsNoTracking()
                 .Where(b => beneficiaryIds.Contains(b.Id))
                 .ToDictionaryAsync(b => b.Id);
+
+            var programTagIds = caseEntities
+                .Select(c => c.ProgramTagId)
+                .Where(id => id.HasValue)
+                .Select(id => id!.Value)
+                .Distinct()
+                .ToList();
+
+            var programTags = await _lookup.SW_programTags
+                .AsNoTracking()
+                .Where(t => programTagIds.Contains(t.Id))
+                .ToDictionaryAsync(t => t.Id);
 
             var listItems = new List<CaseListItemViewModel>();
 
@@ -85,13 +107,24 @@ namespace SWIMS.Controllers
 
                 var uuid = b?.uuid ?? string.Empty;
 
+                string? programDisplay = null;
+                if (c.ProgramTagId.HasValue &&
+                    programTags.TryGetValue(c.ProgramTagId.Value, out var tag))
+                {
+                    programDisplay = tag.name;
+                }
+                else
+                {
+                    programDisplay = c.program_tag;
+                }
+
                 listItems.Add(new CaseListItemViewModel
                 {
                     Id = c.Id,
                     CaseNumber = c.case_number,
                     Title = c.title,
                     Status = c.status,
-                    ProgramTag = c.program_tag,
+                    ProgramTag = programDisplay,
                     CreatedAt = c.created_at,
                     CreatedBy = c.created_by,
                     BeneficiaryName = name,
@@ -99,15 +132,20 @@ namespace SWIMS.Controllers
                 });
             }
 
+            var programOptions = await BuildProgramTagSelectListAsync(program);
+
             var vm = new CaseIndexViewModel
             {
                 Cases = listItems,
                 SearchText = search,
-                StatusFilter = status
+                StatusFilter = status,
+                ProgramFilter = program,
+                ProgramOptions = programOptions
             };
 
             return View(vm);
         }
+
 
         // GET: /Cases/My
         public async Task<IActionResult> My(string? search, string? status)
@@ -150,8 +188,8 @@ namespace SWIMS.Controllers
             }
 
             var caseEntities = await query
-                .OrderByDescending(c => c.created_at)
-                .ToListAsync();
+    .OrderByDescending(c => c.created_at)
+    .ToListAsync();
 
             var beneficiaryIds = caseEntities
                 .Select(c => c.SW_beneficiaryId)
@@ -162,6 +200,18 @@ namespace SWIMS.Controllers
                 .AsNoTracking()
                 .Where(b => beneficiaryIds.Contains(b.Id))
                 .ToDictionaryAsync(b => b.Id);
+
+            var programTagIds = caseEntities
+                .Select(c => c.ProgramTagId)
+                .Where(id => id.HasValue)
+                .Select(id => id!.Value)
+                .Distinct()
+                .ToList();
+
+            var programTags = await _lookup.SW_programTags
+                .AsNoTracking()
+                .Where(t => programTagIds.Contains(t.Id))
+                .ToDictionaryAsync(t => t.Id);
 
             var listItems = new List<CaseListItemViewModel>();
 
@@ -177,13 +227,24 @@ namespace SWIMS.Controllers
 
                 var uuid = b?.uuid ?? string.Empty;
 
+                string? programDisplay = null;
+                if (c.ProgramTagId.HasValue &&
+                    programTags.TryGetValue(c.ProgramTagId.Value, out var tag))
+                {
+                    programDisplay = tag.name;
+                }
+                else
+                {
+                    programDisplay = c.program_tag;
+                }
+
                 listItems.Add(new CaseListItemViewModel
                 {
                     Id = c.Id,
                     CaseNumber = c.case_number,
                     Title = c.title,
                     Status = c.status,
-                    ProgramTag = c.program_tag,
+                    ProgramTag = programDisplay,
                     CreatedAt = c.created_at,
                     CreatedBy = c.created_by,
                     BeneficiaryName = name,
@@ -197,6 +258,7 @@ namespace SWIMS.Controllers
                 SearchText = search,
                 StatusFilter = status
             };
+
 
             // Use a dedicated view so the header / filter form can point back to My.
             return View("My", vm);
@@ -213,6 +275,7 @@ namespace SWIMS.Controllers
             };
 
             vm.Beneficiaries = await BuildBeneficiarySelectListAsync();
+            vm.ProgramOptions = await BuildProgramTagSelectListAsync();
 
             return View(vm);
         }
@@ -225,6 +288,7 @@ namespace SWIMS.Controllers
             if (!ModelState.IsValid)
             {
                 vm.Beneficiaries = await BuildBeneficiarySelectListAsync();
+                vm.ProgramOptions = await BuildProgramTagSelectListAsync(vm.ProgramTagId);
                 return View(vm);
             }
 
@@ -239,12 +303,36 @@ namespace SWIMS.Controllers
             {
                 ModelState.AddModelError(nameof(vm.SW_beneficiaryId), "Selected beneficiary not found.");
                 vm.Beneficiaries = await BuildBeneficiarySelectListAsync();
+                vm.ProgramOptions = await BuildProgramTagSelectListAsync(vm.ProgramTagId);
                 return View(vm);
             }
 
             var caseTitle = !string.IsNullOrWhiteSpace(beneficiary.name)
                 ? beneficiary.name
                 : $"{beneficiary.first_name} {beneficiary.last_name}".Trim();
+
+            // Resolve programme from lookup if selected
+            string resolvedProgramTagString = "Unspecified";
+            int? resolvedProgramTagId = null;
+
+            if (vm.ProgramTagId.HasValue && vm.ProgramTagId.Value > 0)
+            {
+                var tag = await _lookup.SW_programTags
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(t => t.Id == vm.ProgramTagId.Value && t.is_active);
+
+                if (tag != null)
+                {
+                    resolvedProgramTagId = tag.Id;
+                    // Use the stable code as the backing string
+                    resolvedProgramTagString = tag.code;
+                }
+            }
+            else if (!string.IsNullOrWhiteSpace(vm.ProgramTag))
+            {
+                // Fallback: if someone typed a value in the legacy string field
+                resolvedProgramTagString = vm.ProgramTag.Trim();
+            }
 
             var entity = new SW_case
             {
@@ -254,9 +342,8 @@ namespace SWIMS.Controllers
                 status = string.IsNullOrWhiteSpace(vm.Status)
                     ? "Pending"
                     : vm.Status.Trim(),
-                program_tag = string.IsNullOrWhiteSpace(vm.ProgramTag)
-                    ? "Unspecified"
-                    : vm.ProgramTag!.Trim(),
+                ProgramTagId = resolvedProgramTagId,
+                program_tag = resolvedProgramTagString,
                 created_at = DateTime.UtcNow,
                 created_by = userId,
                 closed_at = null,
@@ -271,6 +358,7 @@ namespace SWIMS.Controllers
             TempData["Ok"] = "Case created successfully.";
             return RedirectToAction(nameof(Details), new { id = entity.Id });
         }
+
 
         // GET: /Cases/Details/5
         public async Task<IActionResult> Details(int id)
@@ -775,6 +863,26 @@ namespace SWIMS.Controllers
                 })
                 .ToList();
         }
+
+        private async Task<List<SelectListItem>> BuildProgramTagSelectListAsync(int? selectedId = null)
+        {
+            var tags = await _lookup.SW_programTags
+                .AsNoTracking()
+                .Where(t => t.is_active)
+                .OrderBy(t => t.sort_order)
+                .ThenBy(t => t.name)
+                .ToListAsync();
+
+            return tags
+                .Select(t => new SelectListItem
+                {
+                    Value = t.Id.ToString(),
+                    Text = t.name, // e.g. "Public Assistance"
+                    Selected = selectedId.HasValue && selectedId.Value == t.Id
+                })
+                .ToList();
+        }
+
 
         private async Task<List<SelectListItem>> BuildAvailableFormsSelectListAsync()
         {

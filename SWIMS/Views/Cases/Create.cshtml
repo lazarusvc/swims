@@ -59,13 +59,16 @@
                             <span asp-validation-for="Status" class="text-danger"></span>
                         </div>
 
-                        <div class="col-md-3">
-                            <label asp-for="ProgramTag" class="form-label"></label>
-                            <input asp-for="ProgramTag"
-                                   class="form-control"
-                                   placeholder="e.g. PublicAssistance" />
-                            <span asp-validation-for="ProgramTag" class="text-danger"></span>
+                        <div class="mb-3">
+                            <label asp-for="ProgramTagId" class="form-label"></label>
+                            <select asp-for="ProgramTagId"
+                                    asp-items="Model.ProgramOptions"
+                                    class="form-select">
+                                <option value="">-- Select programme --</option>
+                            </select>
+                            <span asp-validation-for="ProgramTagId" class="text-danger"></span>
                         </div>
+
 
                         <div class="col-12">
                             <label asp-for="Notes" class="form-label"></label>

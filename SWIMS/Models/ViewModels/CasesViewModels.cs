@@ -34,6 +34,10 @@ namespace SWIMS.Models.ViewModels
         public string? SearchText { get; set; }
 
         public string? StatusFilter { get; set; }
+
+        public int? ProgramFilter { get; set; }
+
+        public List<SelectListItem> ProgramOptions { get; set; } = new();
     }
 
     public class CaseCreateViewModel
@@ -54,15 +58,22 @@ namespace SWIMS.Models.ViewModels
         [Display(Name = "Status")]
         public string Status { get; set; } = "Pending";
 
+        // Legacy backing string; we’ll still populate this from the selected tag/code for now.
         [MaxLength(128)]
-        [Display(Name = "Programme tag")]
+        [Display(Name = "Programme tag (legacy)")]
         public string? ProgramTag { get; set; }
+
+        [Display(Name = "Programme")]
+        public int? ProgramTagId { get; set; }
 
         [Display(Name = "Notes")]
         public string? Notes { get; set; }
 
         // Dropdown options
         public List<SelectListItem> Beneficiaries { get; set; } = new();
+
+        // Dropdown options for programmes
+        public List<SelectListItem> ProgramOptions { get; set; } = new();
     }
 
     public class CaseFormSummaryViewModel

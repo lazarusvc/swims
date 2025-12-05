@@ -17,6 +17,11 @@ namespace SWIMS.Models
 
         public string? program_tag { get; set; }           // e.g. “PublicAssistance”, “Kits”, etc.
 
+        /// <summary>
+        /// FK to ref.SW_programTag.Id (optional for legacy cases).
+        /// </summary>
+        public int? ProgramTagId { get; set; }
+
         public DateTime created_at { get; set; }
 
         public string? created_by { get; set; }            // Identity user id or name

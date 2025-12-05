@@ -31,6 +31,20 @@
                                class="form-control form-control-sm"
                                placeholder="Search case #, title, beneficiary..." />
 
+                        <div class="col-sm-3 col-md-2">
+                            <label class="form-label mb-0" for="cases-program">Programme</label>
+                            <select id="cases-program" name="program" class="form-select">
+                                <option value="">All programmes</option>
+                                @foreach (var opt in Model.ProgramOptions)
+                                {
+                                    <option value="@opt.Value" selected="@(opt.Selected ? "selected" : null)">
+                                        @opt.Text
+                                    </option>
+                                }
+                            </select>
+                        </div>
+
+
                         <select name="status" class="form-select form-select-sm">
                             <option value="">All statuses</option>
                             <option value="Pending" selected="@(Model.StatusFilter == "Pending" ? "selected" : null)">Pending</option>
