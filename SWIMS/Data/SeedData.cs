@@ -56,6 +56,56 @@ namespace SWIMS.Data
                     await roleMgr.AddClaimAsync(role, new Claim(type, value));
             }
 
+            // NEW: generic user helpers for seeding
+            async Task<SwUser> EnsureUserAsync(
+                string userName,
+                string email,
+                string firstName,
+                string lastName,
+                string password)
+            {
+                var user = await userMgr.FindByNameAsync(userName)
+                           ?? await userMgr.FindByEmailAsync(email);
+
+                if (user == null)
+                {
+                    user = new SwUser
+                    {
+                        UserName = userName,
+                        Email = email,
+                        FirstName = firstName,
+                        LastName = lastName
+                    };
+
+                    var create = await userMgr.CreateAsync(user, password);
+                    if (!create.Succeeded)
+                        throw new Exception($"Failed to create user '{userName}': " +
+                            string.Join(", ", create.Errors.Select(e => $"{e.Code}:{e.Description}")));
+
+                    var token = await userMgr.GenerateEmailConfirmationTokenAsync(user);
+                    var confirm = await userMgr.ConfirmEmailAsync(user, token);
+                    if (!confirm.Succeeded)
+                        throw new Exception($"Failed to confirm email for '{userName}': " +
+                            string.Join(", ", confirm.Errors.Select(e => $"{e.Code}:{e.Description}")));
+                }
+
+                return user;
+            }
+
+            async Task EnsureUserInRoleAsync(SwUser user, string roleName)
+            {
+                if (!await userMgr.IsInRoleAsync(user, roleName))
+                {
+                    var res = await userMgr.AddToRoleAsync(user, roleName);
+                    if (!res.Succeeded)
+                        throw new Exception($"Failed adding user '{user.UserName}' to role '{roleName}': " +
+                            string.Join(", ", res.Errors.Select(e => $"{e.Code}:{e.Description}")));
+                }
+            }
+
+
+
+
             // 1) MAIN ROLES (gov context from FRD Appendix I)
             string[] mainRoles = new[]
             {
@@ -139,6 +189,40 @@ namespace SWIMS.Data
             // Admin should be in Admin role only (not SuperAdmin):
             if (!await userMgr.IsInRoleAsync(admin, "Admin"))
                 await userMgr.AddToRoleAsync(admin, "Admin");
+
+            // 2b) TRAINING / DUMMY USERS PER MAIN FRD ROLE
+            // One dummy account per role (except break-glass SuperAdmin)
+            // Naming rules:
+            //   FirstName  = "*" + RoleName        (exact role name + * prefix)
+            //   LastName   = "*TESTUSER"
+            //   UserName   = role name in lowercase (no spaces)
+            //   Email      = {username}@swims.gov.dm
+            //   Password   = "Password1"
+            //   Role       = matching main role
+            var dummyPassword = "Password1";
+
+            foreach (var roleName in mainRoles)
+            {
+                // Avoid creating an extra SuperAdmin credential for safety.
+                if (string.Equals(roleName, "SuperAdmin", StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                var userName = roleName.ToLowerInvariant();            // e.g. "programmanager"
+                var email = $"{userName}@swims.gov.dm";                // e.g. "programmanager@swims.gov.dm"
+                var firstName = $"*{roleName}";                        // e.g. "*ProgramManager"
+                var lastName = "*TESTUSER";
+
+                var dummyUser = await EnsureUserAsync(
+                    userName,
+                    email,
+                    firstName,
+                    lastName,
+                    dummyPassword);
+
+                await EnsureUserInRoleAsync(dummyUser, roleName);
+            }
+
+
 
 
             // 3) SUBROLES (Perm:<Permission>) + attach "permission" claim to each
