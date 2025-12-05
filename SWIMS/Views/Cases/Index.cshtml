@@ -68,14 +68,6 @@
                             <tbody>
                                 @foreach (var c in Model.Cases)
                                 {
-                                    var statusBadge = c.Status switch
-                                    {
-                                        "Active" => "badge-soft-success",
-                                        "Closed" => "badge-soft-secondary",
-                                        "Pending" => "badge-soft-warning",
-                                        _ => "badge-soft-info"
-                                    };
-
                                     <tr>
                                         <td class="fw-semibold">@c.CaseNumber</td>
                                         <td>@c.Title</td>
@@ -86,10 +78,25 @@
                                             </div>
                                         </td>
                                         <td>
-                                            <span class="badge rounded-pill @statusBadge">
-                                                @c.Status
+                                            @{
+                                                var statusText = string.IsNullOrWhiteSpace(c.Status)
+                                                    ? "Pending"
+                                                    : c.Status.Trim();
+
+                                                var statusBadge = statusText switch
+                                                {
+                                                    "Active"  => "bg-success",
+                                                    "Closed"  => "bg-secondary",
+                                                    "Pending" => "bg-warning",
+                                                    _         => "bg-info"
+                                                };
+                                            }
+
+                                            <span class="badge @statusBadge">
+                                                @statusText
                                             </span>
                                         </td>
+
                                         <td>@c.ProgramTag</td>
                                         <td>@c.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
                                         <td class="text-end">

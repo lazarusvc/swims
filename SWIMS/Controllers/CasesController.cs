@@ -310,6 +310,58 @@ namespace SWIMS.Controllers
             return View(vm);
         }
 
+        // POST: /Cases/SetStatus
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SetStatus(int id, string status)
+        {
+            // For v1 we keep the allowed statuses simple and explicit.
+            var allowedStatuses = new[] { "Pending", "Active", "Closed" };
+
+            if (string.IsNullOrWhiteSpace(status) || !allowedStatuses.Contains(status))
+            {
+                TempData["Ok"] = "Invalid status value.";
+                return RedirectToAction(nameof(Details), new { id });
+            }
+
+            var caseEntity = await _cases.SW_cases
+                .FirstOrDefaultAsync(c => c.Id == id);
+
+            if (caseEntity == null)
+            {
+                return NotFound();
+            }
+
+            if (caseEntity.status == status)
+            {
+                TempData["Ok"] = $"Case is already marked as {status}.";
+                return RedirectToAction(nameof(Details), new { id });
+            }
+
+            caseEntity.status = status;
+
+            // Keep closed_at in sync with the flag in a very simple way for v1:
+            if (status == "Closed")
+            {
+                // Only set if it's not already set, so we preserve original close date.
+                if (caseEntity.closed_at == null)
+                {
+                    caseEntity.closed_at = DateTime.UtcNow;
+                }
+            }
+            else
+            {
+                // Any non-closed status clears the closed_at timestamp.
+                caseEntity.closed_at = null;
+            }
+
+            await _cases.SaveChangesAsync();
+
+            TempData["Ok"] = $"Case status updated to {status}.";
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+
         // GET: /Cases/LinkForm/5
         public async Task<IActionResult> LinkForm(int id)
         {

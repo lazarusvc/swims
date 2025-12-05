@@ -21,16 +21,20 @@
                     <p class="fs-12 text-muted mb-0">Case @Model.CaseNumber</p>
                 </div>
                 @{
-                    var statusBadge = Model.Status switch
+                    var statusText = string.IsNullOrWhiteSpace(Model.Status)
+                        ? "Pending"
+                        : Model.Status.Trim();
+
+                    var statusBadge = statusText switch
                     {
-                        "Active" => "badge-soft-success",
-                        "Closed" => "badge-soft-secondary",
-                        "Pending" => "badge-soft-warning",
-                        _ => "badge-soft-info"
+                        "Active"  => "bg-success",
+                        "Closed"  => "bg-secondary",
+                        "Pending" => "bg-warning",
+                        _         => "bg-info"
                     };
                 }
-                <span class="badge rounded-pill @statusBadge">
-                    @Model.Status
+                <span class="badge @statusBadge">
+                    @statusText
                 </span>
             </div>
 
@@ -65,6 +69,54 @@
                     <dd class="col-sm-9">
                         @(!string.IsNullOrWhiteSpace(Model.Notes) ? Model.Notes : "—")
                     </dd>
+
+                    <dt class="col-sm-3">Status actions</dt>
+                    <dd class="col-sm-9">
+                        <div class="d-flex flex-wrap gap-2">
+
+                            @* Mark as Pending *@
+                            @if (Model.Status != "Pending")
+                            {
+                                <form asp-action="SetStatus" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@Model.Id" />
+                                    <input type="hidden" name="status" value="Pending" />
+                                    <button type="submit" class="btn btn-soft-warning btn-sm">
+                                        <i class="ri-time-line align-middle"></i> Mark pending
+                                    </button>
+                                </form>
+                            }
+
+                            @* Mark as Active *@
+                            @if (Model.Status != "Active")
+                            {
+                                <form asp-action="SetStatus" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@Model.Id" />
+                                    <input type="hidden" name="status" value="Active" />
+                                    <button type="submit" class="btn btn-soft-success btn-sm">
+                                        <i class="ri-play-circle-line align-middle"></i> Mark active
+                                    </button>
+                                </form>
+                            }
+
+                            @* Close case *@
+                            @if (Model.Status != "Closed")
+                            {
+                                <form asp-action="SetStatus" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@Model.Id" />
+                                    <input type="hidden" name="status" value="Closed" />
+                                    <button type="submit" class="btn btn-soft-secondary btn-sm">
+                                        <i class="ri-lock-line align-middle"></i> Close case
+                                    </button>
+                                </form>
+                            }
+
+                        </div>
+                    </dd>
+
+
                 </dl>
             </div>
         </div>
