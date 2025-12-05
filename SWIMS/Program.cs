@@ -24,6 +24,8 @@ using Microsoft.Extensions.FileProviders;
 using Serilog;
 using Serilog.Events;
 using SWIMS.Data;
+using SWIMS.Data.Cases;
+using SWIMS.Data.Lookups;
 using SWIMS.Data.Reports;
 using SWIMS.Models;
 using SWIMS.Models.StoredProcs;
@@ -40,21 +42,16 @@ using SWIMS.Services.Notifications.Jobs;
 using SWIMS.Services.Outbox;
 using SWIMS.Services.Outbox.Jobs;
 using SWIMS.Services.Reporting;
+using SWIMS.Services.Setup;
+using SWIMS.Services.SystemSettings;
 using SWIMS.Web.Endpoints;
 using SWIMS.Web.Hubs;
 using SWIMS.Web.Ops;
+using SWIMS.Web.Setup;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Threading;
-using SWIMS.Services.SystemSettings;
-using SWIMS.Services.Setup;
-using SWIMS.Web.Setup;
-using SWIMS.Data.Cases;
-
-
-
-
 using MsLogger = Microsoft.Extensions.Logging;
 
 
@@ -98,6 +95,14 @@ builder.Services.AddDbContext<SwimsCasesDbContext>(options =>
         builder.Configuration.GetConnectionString("DefaultConnection"),
         sql => sql.MigrationsHistoryTable("__EFMigrationsHistory_Cases", "case")
     ));
+
+// Lookup / reference data context (program tags, form types, etc.)
+builder.Services.AddDbContext<SwimsLookupDbContext>(options =>
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        sql => sql.MigrationsHistoryTable("__EFMigrationsHistory_Lookup", "ref")
+    ));
+
 
 builder.Services.AddDbContext<SwimsStoredProcsDbContext>(options =>
     options.UseSqlServer(

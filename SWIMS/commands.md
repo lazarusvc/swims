@@ -7,6 +7,7 @@
 ## Add-Migration "Reporting_Init" -Context SWIMS.Data.Reports.SwimsReportsDbContext -Output Migrations/Reporting
 ## Add-Migration "DbMore_Init" -Context SwimsDb_moreContext -Output Migrations/DbMore
 ## Add-Migration Cases_Init -Context SwimsCasesDbContext -OutputDir "Migrations/Cases"
+## Add-Migration Lookup_Init -Context SwimsLookupDbContext -OutputDir "Migrations/Lookup"
 
 
 # Updating Database
@@ -16,4 +17,5 @@
 ## Update-Database -Context SWIMS.Data.Reports.SwimsReportsDbContext
 ## Update-Database -Context SwimsDb_moreContext
 ## Update-Database -Context SwimsCasesDbContext
+## Update-Database -Context SwimsLookupDbContext
 
