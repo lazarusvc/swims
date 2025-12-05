@@ -111,13 +111,20 @@
                             </li>
                         }
 
-                        @* Applications *@
+                        @* Cases *@
                         @if (await CanAny(Permissions.Applications_View, Permissions.Applications_Edit, Permissions.Applications_Assign))
                         {
                             <li>
                                 <a asp-area="" asp-controller="Cases" asp-action="Index">
                                     <iconify-icon icon="mdi:file-document-edit-outline" class="menu-icon"></iconify-icon>
                                     <span>Cases</span>
+                                </a>
+                            </li>
+
+                            <li>
+                                <a asp-controller="Cases" asp-action="My">
+                                    <iconify-icon icon="mdi:account-multiple-outline" class="menu-icon"></iconify-icon>
+                                    <span>My Cases</span>
                                 </a>
                             </li>
                         }

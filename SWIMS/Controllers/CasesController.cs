@@ -109,6 +109,100 @@ namespace SWIMS.Controllers
             return View(vm);
         }
 
+        // GET: /Cases/My
+        public async Task<IActionResult> My(string? search, string? status)
+        {
+            // Resolve the current logged-in user so we can match assignments.
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return Forbid();
+            }
+
+            var userIdString = user.Id.ToString();
+
+            // Start from cases where this user has an active assignment.
+            var query = _cases.SW_cases
+                .AsNoTracking()
+                .Where(c => _cases.SW_caseAssignments
+                    .Any(a => a.SW_caseId == c.Id &&
+                              a.user_id == userIdString &&
+                              a.is_active));
+
+            // -------------------------------
+            // Reuse the same filters as Index
+            // -------------------------------
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var s = search.Trim();
+
+                // For v1: search within case fields only (no cross-context joins).
+                query = query.Where(c =>
+                    c.case_number.Contains(s) ||
+                    c.title.Contains(s) ||
+                    c.status.Contains(s) ||
+                    (c.program_tag != null && c.program_tag.Contains(s)));
+            }
+
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                query = query.Where(c => c.status == status);
+            }
+
+            var caseEntities = await query
+                .OrderByDescending(c => c.created_at)
+                .ToListAsync();
+
+            var beneficiaryIds = caseEntities
+                .Select(c => c.SW_beneficiaryId)
+                .Distinct()
+                .ToList();
+
+            var beneficiaries = await _core.SW_beneficiaries
+                .AsNoTracking()
+                .Where(b => beneficiaryIds.Contains(b.Id))
+                .ToDictionaryAsync(b => b.Id);
+
+            var listItems = new List<CaseListItemViewModel>();
+
+            foreach (var c in caseEntities)
+            {
+                beneficiaries.TryGetValue(c.SW_beneficiaryId, out var b);
+
+                var name = b != null
+                    ? (!string.IsNullOrWhiteSpace(b.name)
+                        ? b.name
+                        : $"{b.first_name} {b.last_name}".Trim())
+                    : "(no beneficiary)";
+
+                var uuid = b?.uuid ?? string.Empty;
+
+                listItems.Add(new CaseListItemViewModel
+                {
+                    Id = c.Id,
+                    CaseNumber = c.case_number,
+                    Title = c.title,
+                    Status = c.status,
+                    ProgramTag = c.program_tag,
+                    CreatedAt = c.created_at,
+                    CreatedBy = c.created_by,
+                    BeneficiaryName = name,
+                    BeneficiaryUuid = uuid
+                });
+            }
+
+            var vm = new CaseIndexViewModel
+            {
+                Cases = listItems,
+                SearchText = search,
+                StatusFilter = status
+            };
+
+            // Use a dedicated view so the header / filter form can point back to My.
+            return View("My", vm);
+        }
+
+
         // GET: /Cases/Create
         public async Task<IActionResult> Create()
         {
