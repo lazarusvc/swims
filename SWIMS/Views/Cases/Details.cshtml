@@ -147,9 +147,12 @@
         <div class="card mb-3">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="card-title mb-0">Assigned workers</h5>
-                <button type="button" class="btn btn-sm btn-soft-primary" disabled title="Coming soon">
+                <a asp-action="Assign"
+                   asp-route-id="@Model.Id"
+                   class="btn btn-sm btn-soft-primary">
                     <i class="ri-user-add-line align-middle"></i> Assign
-                </button>
+                </a>
+
             </div>
             <div class="card-body">
                 @if (Model.Assignments.Any())
@@ -161,14 +164,40 @@
 
                             <li class="mb-3">
                                 <div class="d-flex justify-content-between">
-                                    <span class="fw-semibold">@a.UserId</span>
+                                    <div class="me-2">
+                                        <div title="@a.UserId">
+                                            <span class="fw-semibold">
+                                                @a.UserDisplayName
+                                            </span>
+
+                                            @if (!string.IsNullOrWhiteSpace(a.SystemRoles))
+                                            {
+                                                <span class="text-muted fs-11 ms-1">
+                                                    (System: @a.SystemRoles)
+                                                </span>
+                                            }
+                                        </div>
+                                    </div>
+
                                     <span class="badge rounded-pill @badge">
                                         @(a.IsActive ? "Active" : "Inactive")
                                     </span>
                                 </div>
+
                                 <div class="d-flex justify-content-between text-muted fs-11">
-                                    <span>@a.RoleOnCase</span>
-                                    <span>@a.AssignedAt.ToLocalTime().ToString("yyyy-MM-dd")</span>
+                                    <span>
+                                        Case role:
+                                        @(
+                                            string.IsNullOrWhiteSpace(a.RoleOnCase)
+                                            ? "—"
+                                            : a.RoleOnCase
+                                            )
+                                    </span>
+                                    <span>
+                                        @(a.AssignedAt.HasValue
+                                            ? a.AssignedAt.Value.ToLocalTime().ToString("yyyy-MM-dd")
+                                            : "-")
+                                    </span>
                                 </div>
                             </li>
                         }
@@ -181,6 +210,7 @@
                     </p>
                 }
             </div>
+
         </div>
     </div>
 </div>

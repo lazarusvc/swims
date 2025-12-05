@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using SWIMS.Data;
 using SWIMS.Data.Cases;
 using SWIMS.Models;
 using SWIMS.Models.ViewModels;
@@ -17,14 +19,21 @@ namespace SWIMS.Controllers
     {
         private readonly SwimsCasesDbContext _cases;
         private readonly SwimsDb_moreContext _core;
+        private readonly SwimsIdentityDbContext _identity;
+        private readonly UserManager<SwUser> _userManager;
 
         public CasesController(
             SwimsCasesDbContext cases,
-            SwimsDb_moreContext core)
+            SwimsDb_moreContext core,
+            SwimsIdentityDbContext identity,
+            UserManager<SwUser> userManager)
         {
             _cases = cases;
             _core = core;
+            _identity = identity;
+            _userManager = userManager;
         }
+
 
         // GET: /Cases
         public async Task<IActionResult> Index(string? search, string? status)
@@ -200,20 +209,80 @@ namespace SWIMS.Controllers
                 })
                 .ToListAsync();
 
-            var assignments = await _cases.SW_caseAssignments
+            // Load raw assignments from the cases DB
+            var assignmentEntities = await _cases.SW_caseAssignments
                 .AsNoTracking()
                 .Where(a => a.SW_caseId == id)
                 .OrderByDescending(a => a.assigned_at)
-                .Select(a => new CaseAssignmentSummaryViewModel
-                {
-                    Id = a.Id,
-                    UserId = a.user_id,
-                    RoleOnCase = a.role_on_case ?? string.Empty,
-                    AssignedAt = a.assigned_at,
-                    UnassignedAt = a.unassigned_at,
-                    IsActive = a.is_active
-                })
                 .ToListAsync();
+
+            // Extract distinct Identity user ids (stored as string in user_id)
+            var userKeyValues = assignmentEntities
+                .Select(a => a.user_id)
+                .Where(uid => !string.IsNullOrWhiteSpace(uid))
+                .Select(uid => int.TryParse(uid, out var parsed) ? (int?)parsed : null)
+                .Where(parsed => parsed.HasValue)
+                .Select(parsed => parsed!.Value)
+                .Distinct()
+                .ToList();
+
+            // Pull the corresponding SwUser records
+            var users = await _userManager.Users
+                .AsNoTracking()
+                .Where(u => userKeyValues.Contains(u.Id))
+                .ToListAsync();
+
+            // Build a lookup of userId -> display name
+            var userDisplayNames = users.ToDictionary(
+                u => u.Id,
+                u =>
+                    !string.IsNullOrWhiteSpace(u.FullName)
+                        ? u.FullName
+                        : $"{u.FirstName} {u.LastName}".Trim()
+            );
+
+            // Build a lookup of userId -> list of system role names
+            var rolesByUser = new Dictionary<int, IList<string>>();
+            foreach (var user in users)
+            {
+                var roles = await _userManager.GetRolesAsync(user);
+                rolesByUser[user.Id] = roles;
+            }
+
+            // Finally, project into the summary view-model
+            var assignments = assignmentEntities
+                .Select(a =>
+                {
+                    var displayName = a.user_id;
+                    var systemRoles = string.Empty;
+
+                    if (int.TryParse(a.user_id, out var userIdInt))
+                    {
+                        if (userDisplayNames.TryGetValue(userIdInt, out var name))
+                        {
+                            displayName = name;
+                        }
+
+                        if (rolesByUser.TryGetValue(userIdInt, out var roleList) && roleList.Count > 0)
+                        {
+                            systemRoles = string.Join(", ", roleList);
+                        }
+                    }
+
+                    return new CaseAssignmentSummaryViewModel
+                    {
+                        Id = a.Id,
+                        UserId = a.user_id,
+                        UserDisplayName = displayName,
+                        SystemRoles = systemRoles,
+                        RoleOnCase = a.role_on_case ?? string.Empty,
+                        AssignedAt = a.assigned_at,
+                        UnassignedAt = a.unassigned_at,
+                        IsActive = a.is_active
+                    };
+                })
+                .ToList();
+
 
             var vm = new CaseDetailsViewModel
             {
@@ -425,6 +494,93 @@ namespace SWIMS.Controllers
                 routeValues: new { dataID = formEntry.Id, uuid = swForm.uuid }
             );
         }
+
+
+        // GET: /Cases/Assign/5
+        [Authorize] // we can refine to a Case.Manage policy later
+        public async Task<IActionResult> Assign(int id)
+        {
+            var @case = await _cases.SW_cases.FindAsync(id);
+            if (@case == null)
+            {
+                return NotFound();
+            }
+
+            // For now: all users, ordered by name. Later we can filter to specific roles.
+            var users = await _identity.SwUsers
+                .OrderBy(u => u.LastName)
+                .ThenBy(u => u.FirstName)
+                .ToListAsync();
+
+            var vm = new CaseAssignViewModel
+            {
+                CaseId = @case.Id,
+                CaseNumber = @case.case_number,
+                CaseTitle = @case.title,
+                AvailableUsers = users.Select(u => new SelectListItem
+                {
+                    Value = u.Id.ToString(),
+                    Text = string.IsNullOrWhiteSpace(u.FullName)
+                        ? (u.UserName ?? $"User {u.Id}")
+                        : u.FullName
+                }).ToList()
+            };
+
+            return View(vm);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize] // same as above
+        public async Task<IActionResult> Assign(CaseAssignViewModel model)
+        {
+            var @case = await _cases.SW_cases.FindAsync(model.CaseId);
+            if (@case == null)
+            {
+                return NotFound();
+            }
+
+            if (!ModelState.IsValid)
+            {
+                // Reload users for the dropdown
+                var users = await _identity.SwUsers
+                    .OrderBy(u => u.LastName)
+                    .ThenBy(u => u.FirstName)
+                    .ToListAsync();
+
+                model.CaseNumber = @case.case_number;
+                model.CaseTitle = @case.title;
+                model.AvailableUsers = users.Select(u => new SelectListItem
+                {
+                    Value = u.Id.ToString(),
+                    Text = string.IsNullOrWhiteSpace(u.FullName)
+                        ? (u.UserName ?? $"User {u.Id}")
+                        : u.FullName
+                }).ToList();
+
+                return View(model);
+            }
+
+            var assignment = new SW_caseAssignment
+            {
+                SW_caseId = model.CaseId,
+                user_id = model.UserId,
+                role_on_case = string.IsNullOrWhiteSpace(model.RoleOnCase)
+                    ? "Social worker"
+                    : model.RoleOnCase,
+                assigned_at = DateTime.UtcNow,
+                is_active = model.IsActive,
+                // unassigned_at stays null for a new assignment
+            };
+
+            _cases.SW_caseAssignments.Add(assignment);
+            await _cases.SaveChangesAsync();
+
+            TempData["Ok"] = "Staff member assigned to case.";
+
+            return RedirectToAction(nameof(Details), new { id = model.CaseId });
+        }
+
 
 
 

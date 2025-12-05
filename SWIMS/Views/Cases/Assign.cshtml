@@ -1,0 +1,77 @@
+﻿@model SWIMS.Models.ViewModels.CaseAssignViewModel
+
+@{
+    ViewData["Title"] = "Assign staff to case";
+}
+
+<div class="row">
+    <div class="col-12">
+        <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+            <h4 class="mb-0">Assign staff to case</h4>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-body">
+
+                <div class="mb-3">
+                    <div class="fw-semibold text-muted fs-12">Case</div>
+                    <div class="fw-semibold">
+                        @Model.CaseNumber
+                        <span class="text-muted">- @Model.CaseTitle</span>
+                    </div>
+                </div>
+
+                <form asp-action="Assign" method="post">
+                    @Html.AntiForgeryToken()
+
+                    <input type="hidden" asp-for="CaseId" />
+                    <input type="hidden" asp-for="CaseNumber" />
+                    <input type="hidden" asp-for="CaseTitle" />
+
+                    <div class="mb-3">
+                        <label asp-for="UserId" class="form-label"></label>
+                        <select asp-for="UserId" asp-items="Model.AvailableUsers" class="form-select">
+                            <option value="">-- Select staff member --</option>
+                        </select>
+                        <span asp-validation-for="UserId" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="RoleOnCase" class="form-label"></label>
+                        <input asp-for="RoleOnCase" class="form-control"
+                               placeholder="e.g. Case worker, Supervisor" />
+                        <span asp-validation-for="RoleOnCase" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <input asp-for="IsActive" class="form-check-input" />
+                        <label asp-for="IsActive" class="form-check-label"></label>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <a asp-action="Details" asp-route-id="@Model.CaseId" class="btn btn-soft-secondary">
+                            <i class="ri-arrow-go-back-line align-middle me-1"></i>
+                            Back to case
+                        </a>
+
+                        <button type="submit" class="btn btn-primary">
+                            <i class="ri-user-add-line align-middle me-1"></i>
+                            Save assignment
+                        </button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

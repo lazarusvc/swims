@@ -84,14 +84,20 @@ namespace SWIMS.Models.ViewModels
     {
         public int Id { get; set; }
 
-        public string UserId { get; set; } = default!;
+        // Raw Identity key (as stored in SW_caseAssignment.user_id)
+        public string UserId { get; set; } = string.Empty;
 
-        public string RoleOnCase { get; set; } = default!;
+        // Friendly display name from SwUser (First + Last / FullName)
+        public string UserDisplayName { get; set; } = string.Empty;
 
-        public DateTime AssignedAt { get; set; }
+        // Comma-separated system roles (e.g. "SocialWorker, Supervisor")
+        public string SystemRoles { get; set; } = string.Empty;
 
+        // Case-specific role (e.g. "Primary Social Worker")
+        public string RoleOnCase { get; set; } = string.Empty;
+
+        public DateTime? AssignedAt { get; set; }
         public DateTime? UnassignedAt { get; set; }
-
         public bool IsActive { get; set; }
     }
 
