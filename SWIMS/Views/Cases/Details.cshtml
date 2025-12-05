@@ -72,9 +72,12 @@
         <div class="card mb-3">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="card-title mb-0">Forms in this case</h5>
-                <button type="button" class="btn btn-sm btn-soft-primary" disabled title="Coming soon">
+                <a asp-action="LinkForm"
+                   asp-route-id="@Model.Id"
+                   class="btn btn-sm btn-soft-primary">
                     <i class="ri-add-line align-middle"></i> Link form
-                </button>
+                </a>
+
             </div>
             <div class="card-body">
                 @if (Model.Forms.Any())
@@ -99,9 +102,31 @@
                                         <td>@(f.LinkedAt?.ToLocalTime().ToString("yyyy-MM-dd HH:mm") ?? "—")</td>
                                         <td>@f.LinkedBy</td>
                                         <td>
-                                            <span class="text-muted">#@f.FormTableDataId</span>
-                                            @* TODO: link to the submitted form entry page *@
+                                            <div class="d-flex justify-content-between align-items-center gap-2">
+                                                <span class="text-xs text-muted">
+                                                    Entry #@f.FormTableDataId
+                                                </span>
+
+                                                <div class="btn-group btn-group-sm" role="group" aria-label="Form actions">
+                                                    <a asp-controller="Cases"
+                                                       asp-action="FormPreview"
+                                                       asp-route-id="@f.Id"
+                                                       class="btn btn-soft-secondary"
+                                                       title="Preview form">
+                                                        <iconify-icon icon="ion:eye-outline" class="text-sm"></iconify-icon>
+                                                    </a>
+
+                                                    <a asp-controller="Cases"
+                                                       asp-action="FormEdit"
+                                                       asp-route-id="@f.Id"
+                                                       class="btn btn-soft-primary"
+                                                       title="Edit form">
+                                                        <iconify-icon icon="lucide:edit-3" class="text-sm"></iconify-icon>
+                                                    </a>
+                                                </div>
+                                            </div>
                                         </td>
+
                                     </tr>
                                 }
                             </tbody>

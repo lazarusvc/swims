@@ -6,9 +6,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using SWIMS.Data.Cases;
 using SWIMS.Models;
 using SWIMS.Models.ViewModels;
-using SWIMS.Data.Cases;
 
 namespace SWIMS.Controllers
 {
@@ -35,7 +35,7 @@ namespace SWIMS.Controllers
             {
                 var s = search.Trim();
 
-                // For v1: limit search to case fields only (no cross-context joins).
+                // For v1: search within case fields only (no cross-context joins).
                 query = query.Where(c =>
                     c.case_number.Contains(s) ||
                     c.title.Contains(s) ||
@@ -169,7 +169,6 @@ namespace SWIMS.Controllers
             return RedirectToAction(nameof(Details), new { id = entity.Id });
         }
 
-
         // GET: /Cases/Details/5
         public async Task<IActionResult> Details(int id)
         {
@@ -242,6 +241,193 @@ namespace SWIMS.Controllers
             return View(vm);
         }
 
+        // GET: /Cases/LinkForm/5
+        public async Task<IActionResult> LinkForm(int id)
+        {
+            var caseEntity = await _cases.SW_cases
+                .AsNoTracking()
+                .FirstOrDefaultAsync(c => c.Id == id);
+
+            if (caseEntity == null)
+            {
+                return NotFound();
+            }
+
+            var vm = new CaseLinkFormViewModel
+            {
+                SW_caseId = caseEntity.Id,
+                CaseNumber = caseEntity.case_number,
+                CaseTitle = caseEntity.title,
+                AvailableForms = await BuildAvailableFormsSelectListAsync()
+            };
+
+            return View(vm);
+        }
+
+        // POST: /Cases/LinkForm
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> LinkForm(CaseLinkFormViewModel vm)
+        {
+            var caseEntity = await _cases.SW_cases
+                .FirstOrDefaultAsync(c => c.Id == vm.SW_caseId);
+
+            if (caseEntity == null)
+            {
+                return NotFound();
+            }
+
+            // First: basic validation (did they pick something at all?)
+            if (!ModelState.IsValid)
+            {
+                vm.AvailableForms = await BuildAvailableFormsSelectListAsync();
+                vm.CaseNumber = caseEntity.case_number;
+                vm.CaseTitle = caseEntity.title;
+                return View(vm);
+            }
+
+            // Ensure the selected form entry actually exists
+            var formEntry = await _core.SW_formTableData
+                .AsNoTracking()
+                .FirstOrDefaultAsync(d => d.Id == vm.SelectedFormTableDatumId);
+
+            if (formEntry == null)
+            {
+                ModelState.AddModelError(nameof(vm.SelectedFormTableDatumId),
+                    "Selected form submission was not found.");
+                vm.AvailableForms = await BuildAvailableFormsSelectListAsync();
+                vm.CaseNumber = caseEntity.case_number;
+                vm.CaseTitle = caseEntity.title;
+                return View(vm);
+            }
+
+            // Avoid duplicate link for the same case + form submission
+            var alreadyLinked = await _cases.SW_caseForms
+                .AnyAsync(cf =>
+                    cf.SW_caseId == vm.SW_caseId &&
+                    cf.SW_formTableDatumId == vm.SelectedFormTableDatumId);
+
+            if (!alreadyLinked)
+            {
+                // If this one is primary, clear any existing primary for this case
+                if (vm.IsPrimaryApplication)
+                {
+                    var existingPrimaries = await _cases.SW_caseForms
+                        .Where(cf => cf.SW_caseId == vm.SW_caseId && cf.is_primary_application)
+                        .ToListAsync();
+
+                    foreach (var cf in existingPrimaries)
+                    {
+                        cf.is_primary_application = false;
+                    }
+                }
+
+                var link = new SW_caseForm
+                {
+                    SW_caseId = vm.SW_caseId,
+                    SW_formTableDatumId = vm.SelectedFormTableDatumId,
+                    form_role = string.IsNullOrWhiteSpace(vm.FormRole)
+                        ? null
+                        : vm.FormRole.Trim(),
+                    is_primary_application = vm.IsPrimaryApplication,
+                    linked_at = DateTime.UtcNow,
+                    linked_by = User?.Identity?.Name
+                };
+
+                _cases.SW_caseForms.Add(link);
+                await _cases.SaveChangesAsync();
+            }
+
+            TempData["Ok"] = "Form linked to case successfully.";
+            return RedirectToAction(nameof(Details), new { id = vm.SW_caseId });
+        }
+
+        // GET: /Cases/FormPreview/5
+        [HttpGet]
+        public async Task<IActionResult> FormPreview(int id)
+        {
+            // id = SW_caseForm.Id
+            var link = await _cases.SW_caseForms
+                .AsNoTracking()
+                .FirstOrDefaultAsync(cf => cf.Id == id);
+
+            if (link == null)
+            {
+                return NotFound("Linked form record not found for this case.");
+            }
+
+            // Look up the underlying form submission
+            var formEntry = await _core.SW_formTableData
+                .AsNoTracking()
+                .FirstOrDefaultAsync(d => d.Id == link.SW_formTableDatumId);
+
+            if (formEntry == null)
+            {
+                return NotFound("Underlying form submission could not be found.");
+            }
+
+            // Resolve the parent form to get its UUID
+            var swForm = await _core.SW_forms
+                .AsNoTracking()
+                .FirstOrDefaultAsync(f => f.Id == formEntry.SW_formsId);
+
+            if (swForm == null || string.IsNullOrWhiteSpace(swForm.uuid))
+            {
+                return NotFound("Parent form definition for this submission could not be found.");
+            }
+
+            // Reuse the existing program-side Preview page
+            return RedirectToAction(
+                actionName: "Preview",
+                controllerName: "form",
+                routeValues: new { dataID = formEntry.Id, uuid = swForm.uuid }
+            );
+        }
+
+        // GET: /Cases/FormEdit/5
+        [HttpGet]
+        public async Task<IActionResult> FormEdit(int id)
+        {
+            // id = SW_caseForm.Id
+            var link = await _cases.SW_caseForms
+                .AsNoTracking()
+                .FirstOrDefaultAsync(cf => cf.Id == id);
+
+            if (link == null)
+            {
+                return NotFound("Linked form record not found for this case.");
+            }
+
+            // Look up the underlying form submission
+            var formEntry = await _core.SW_formTableData
+                .AsNoTracking()
+                .FirstOrDefaultAsync(d => d.Id == link.SW_formTableDatumId);
+
+            if (formEntry == null)
+            {
+                return NotFound("Underlying form submission could not be found.");
+            }
+
+            // Resolve the parent form to get its UUID
+            var swForm = await _core.SW_forms
+                .AsNoTracking()
+                .FirstOrDefaultAsync(f => f.Id == formEntry.SW_formsId);
+
+            if (swForm == null || string.IsNullOrWhiteSpace(swForm.uuid))
+            {
+                return NotFound("Parent form definition for this submission could not be found.");
+            }
+
+            // Reuse the existing program-side Update page
+            return RedirectToAction(
+                actionName: "Update",
+                controllerName: "form",
+                routeValues: new { dataID = formEntry.Id, uuid = swForm.uuid }
+            );
+        }
+
+
+
         // ----------------- helpers -----------------
 
         private async Task<string> GenerateNextCaseNumberAsync()
@@ -284,6 +470,37 @@ namespace SWIMS.Controllers
                     Text = !string.IsNullOrWhiteSpace(b.name)
                         ? b.name
                         : $"{b.first_name} {b.last_name}".Trim()
+                })
+                .ToList();
+        }
+
+        private async Task<List<SelectListItem>> BuildAvailableFormsSelectListAsync()
+        {
+            // For v1: show the most recent 50 form submissions across all forms.
+            var query = _core.SW_formTableData
+                .AsNoTracking()
+                .OrderByDescending(d => d.Id)
+                .Take(50)
+                .Join(
+                    _core.SW_forms.AsNoTracking(),
+                    d => d.SW_formsId,
+                    f => f.Id,
+                    (d, f) => new { Datum = d, Form = f });
+
+            var forms = await query.ToListAsync();
+
+            return forms
+                .Select(x =>
+                {
+                    var label = !string.IsNullOrWhiteSpace(x.Form.name)
+                        ? x.Form.name
+                        : x.Form.uuid;
+
+                    return new SelectListItem
+                    {
+                        Value = x.Datum.Id.ToString(),
+                        Text = $"{x.Datum.Id} - {label}"
+                    };
                 })
                 .ToList();
         }

@@ -49,7 +49,6 @@ namespace SWIMS.Models.ViewModels
         [Display(Name = "Case title (auto-filled from beneficiary)")]
         public string? Title { get; set; }
 
-
         [Required]
         [MaxLength(32)]
         [Display(Name = "Status")]
@@ -131,5 +130,28 @@ namespace SWIMS.Models.ViewModels
 
         public IReadOnlyList<CaseAssignmentSummaryViewModel> Assignments { get; set; }
             = Array.Empty<CaseAssignmentSummaryViewModel>();
+    }
+
+    public class CaseLinkFormViewModel
+    {
+        [Required]
+        public int SW_caseId { get; set; }
+
+        public string? CaseNumber { get; set; } = default!;
+
+        public string? CaseTitle { get; set; } = default!;
+
+        [Range(1, int.MaxValue, ErrorMessage = "Please select a form submission.")]
+        [Display(Name = "Form submission")]
+        public int SelectedFormTableDatumId { get; set; }
+
+
+        [Display(Name = "Form role in this case")]
+        public string? FormRole { get; set; }
+
+        [Display(Name = "Mark as primary application")]
+        public bool IsPrimaryApplication { get; set; }
+
+        public List<SelectListItem> AvailableForms { get; set; } = new();
     }
 }
