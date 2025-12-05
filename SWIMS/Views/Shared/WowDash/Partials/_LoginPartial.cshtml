@@ -1,5 +1,6 @@
 ﻿@using Microsoft.AspNetCore.Identity
 @using SWIMS.Models
+@using System.Collections.Generic
 
 @inject SignInManager<SwUser> SignInManager
 @inject UserManager<SwUser> UserManager
@@ -14,8 +15,44 @@
             <div class="dropdown-menu to-top dropdown-menu-sm">
                 <div class="py-12 px-16 radius-8 bg-primary-50 mb-16 d-flex align-items-center justify-content-between gap-2">
                     <div>
-                        <h6 class="text-lg text-primary-light fw-semibold mb-2">@UserManager.GetUserName(User)!</h6>
-                        <span class="text-secondary-light fw-medium text-sm">*ROLE PLACEHOLDER*</span>
+                        @{
+                            var currentUser = await UserManager.GetUserAsync(User);
+                            string displayName;
+
+                            if (currentUser is null)
+                            {
+                                // Fallback to whatever Identity thinks the username is
+                                displayName = UserManager.GetUserName(User) ?? "User";
+                            }
+                            else if (!string.IsNullOrWhiteSpace(currentUser.FullName))
+                            {
+                                // Prefer FullName if populated
+                                displayName = currentUser.FullName;
+                            }
+                            else
+                            {
+                                // Fallback to FirstName + LastName, then to UserName
+                                var first = currentUser.FirstName ?? string.Empty;
+                                var last = currentUser.LastName ?? string.Empty;
+                                displayName = $"{first} {last}".Trim();
+
+                                if (string.IsNullOrWhiteSpace(displayName))
+                                {
+                                    displayName = currentUser.UserName ?? "User";
+                                }
+                            }
+
+                            var roles = currentUser != null
+                            ? await UserManager.GetRolesAsync(currentUser)
+                            : new List<string>();
+
+                            var roleLabel = (roles != null && roles.Count > 0)
+                            ? string.Join(", ", roles)
+                            : "No role assigned";
+                        }
+                        <h6 class="text-lg text-primary-light fw-semibold mb-2">@displayName</h6>
+                        <span class="text-secondary-light fw-medium text-sm">@roleLabel</span>
+
                     </div>
                     <button type="button" class="hover-text-danger">
                         <iconify-icon icon="radix-icons:cross-1" class="icon text-xl"></iconify-icon>
