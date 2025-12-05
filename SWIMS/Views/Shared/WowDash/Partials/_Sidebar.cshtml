@@ -115,9 +115,9 @@
                         @if (await CanAny(Permissions.Applications_View, Permissions.Applications_Edit, Permissions.Applications_Assign))
                         {
                             <li>
-                                <a asp-controller="Applications" asp-action="Index">
+                                <a asp-area="" asp-controller="Cases" asp-action="Index">
                                     <iconify-icon icon="mdi:file-document-edit-outline" class="menu-icon"></iconify-icon>
-                                    <span>Applications</span>
+                                    <span>Cases</span>
                                 </a>
                             </li>
                         }

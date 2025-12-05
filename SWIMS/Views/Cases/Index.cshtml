@@ -1,0 +1,117 @@
+﻿@model SWIMS.Models.ViewModels.CaseIndexViewModel
+
+@{
+    ViewData["Title"] = "Cases";
+}
+
+@if (TempData["Ok"] is string ok)
+{
+    <div class="alert alert-success alert-dismissible fade show mb-3" role="alert">
+        @ok
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="row">
+    <div class="col-12">
+        <div class="card basic-data-table">
+            <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div>
+                    <h4 class="card-title mb-0">Cases</h4>
+                    <p class="fs-12 text-muted mb-0">
+                        Each case groups applications, assessments and follow-up for one beneficiary.
+                    </p>
+                </div>
+
+                <div class="d-flex flex-wrap gap-2">
+                    <form asp-action="Index" method="get" class="d-flex flex-wrap gap-2">
+                        <input type="text"
+                               name="search"
+                               value="@Model.SearchText"
+                               class="form-control form-control-sm"
+                               placeholder="Search case #, title, beneficiary..." />
+
+                        <select name="status" class="form-select form-select-sm">
+                            <option value="">All statuses</option>
+                            <option value="Pending" selected="@(Model.StatusFilter == "Pending" ? "selected" : null)">Pending</option>
+                            <option value="Active" selected="@(Model.StatusFilter == "Active" ? "selected" : null)">Active</option>
+                            <option value="Closed" selected="@(Model.StatusFilter == "Closed" ? "selected" : null)">Closed</option>
+                        </select>
+
+                        <button type="submit" class="btn btn-sm btn-primary">
+                            <i class="ri-filter-2-line align-middle"></i> Filter
+                        </button>
+                    </form>
+
+                    <a asp-action="Create" class="btn btn-primary btn-sm">
+                        <i class="ri-add-line align-middle"></i> New case
+                    </a>
+                </div>
+            </div>
+
+            <div class="card-body">
+                @if (Model.Cases.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Case #</th>
+                                    <th>Title</th>
+                                    <th>Beneficiary</th>
+                                    <th>Status</th>
+                                    <th>Programme</th>
+                                    <th>Created</th>
+                                    <th class="text-end"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var c in Model.Cases)
+                                {
+                                    var statusBadge = c.Status switch
+                                    {
+                                        "Active" => "badge-soft-success",
+                                        "Closed" => "badge-soft-secondary",
+                                        "Pending" => "badge-soft-warning",
+                                        _ => "badge-soft-info"
+                                    };
+
+                                    <tr>
+                                        <td class="fw-semibold">@c.CaseNumber</td>
+                                        <td>@c.Title</td>
+                                        <td>
+                                            <div class="d-flex flex-column">
+                                                <span>@c.BeneficiaryName</span>
+                                                <span class="text-muted fs-11">@c.BeneficiaryUuid</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge rounded-pill @statusBadge">
+                                                @c.Status
+                                            </span>
+                                        </td>
+                                        <td>@c.ProgramTag</td>
+                                        <td>@c.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
+                                        <td class="text-end">
+                                            <a asp-action="Details"
+                                               asp-route-id="@c.Id"
+                                               class="btn btn-sm btn-soft-primary">
+                                                View
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted mb-0">
+                        No cases found yet.
+                    </p>
+                }
+            </div>
+        </div>
+    </div>
+</div>
