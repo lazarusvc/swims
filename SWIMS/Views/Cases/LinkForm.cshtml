@@ -36,6 +36,12 @@
                             <option value="">-- Select a form submission --</option>
                         </select>
                         <span asp-validation-for="SelectedFormTableDatumId" class="text-danger"></span>
+
+                        @if (ViewBag.FormScopeNote is string scopeNote && !string.IsNullOrWhiteSpace(scopeNote))
+                        {
+                            <div class="form-text">@scopeNote</div>
+                        }
+
                         <div class="form-text">
                             Showing the most recent form submissions. Later we can add filters by form or beneficiary.
                         </div>
@@ -61,6 +67,16 @@
                                 <label asp-for="IsPrimaryApplication" class="form-check-label"></label>
                             </div>
                         </div>
+
+                        <div class="form-check mb-3">
+                            <input asp-for="IncludeLinkedForms" class="form-check-input" />
+                            <label asp-for="IncludeLinkedForms" class="form-check-label"></label>
+                            <div class="form-text">
+                                When checked, any linked child/sub-forms can also be attached to this case
+                                once the linking metadata is wired up.
+                            </div>
+                        </div>
+
                     </div>
 
                     <div class="d-flex justify-content-end gap-2 mt-4">

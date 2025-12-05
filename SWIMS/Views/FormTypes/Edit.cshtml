@@ -1,0 +1,61 @@
+﻿@model SWIMS.Models.SW_formType
+
+@{
+    ViewData["Title"] = "Edit Form Type";
+}
+
+<h1 class="h3 mb-3">Edit Form Type</h1>
+
+<div class="card">
+    <div class="card-body">
+        <form asp-action="Edit" method="post">
+            <input type="hidden" asp-for="Id" />
+
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label asp-for="code" class="form-label"></label>
+                    <input asp-for="code" class="form-control" />
+                    <span asp-validation-for="code" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-8">
+                    <label asp-for="name" class="form-label"></label>
+                    <input asp-for="name" class="form-control" />
+                    <span asp-validation-for="name" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-3">
+                    <label asp-for="sort_order" class="form-label"></label>
+                    <input asp-for="sort_order" class="form-control" type="number" />
+                    <span asp-validation-for="sort_order" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-3 d-flex align-items-center mt-3">
+                    <div class="form-check">
+                        <input asp-for="is_active" class="form-check-input" />
+                        <label asp-for="is_active" class="form-check-label"></label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4 d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="ri-save-line align-bottom me-1"></i>
+                    Save changes
+                </button>
+
+                <a asp-action="Index" class="btn btn-outline-secondary">
+                    Back to list
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

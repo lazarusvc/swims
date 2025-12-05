@@ -20,23 +20,35 @@
                     <h4 class="card-title mb-0">@Model.Title</h4>
                     <p class="fs-12 text-muted mb-0">Case @Model.CaseNumber</p>
                 </div>
+
                 @{
                     var statusText = string.IsNullOrWhiteSpace(Model.Status)
-                        ? "Pending"
-                        : Model.Status.Trim();
+                    ? "Pending"
+                    : Model.Status.Trim();
 
                     var statusBadge = statusText switch
                     {
-                        "Active"  => "bg-success",
-                        "Closed"  => "bg-secondary",
+                        "Active" => "bg-success",
+                        "Closed" => "bg-secondary",
                         "Pending" => "bg-warning",
-                        _         => "bg-info"
+                        _ => "bg-info"
                     };
                 }
-                <span class="badge @statusBadge">
-                    @statusText
-                </span>
+
+                <div class="d-flex align-items-center gap-2">
+                    <a asp-action="Edit"
+                       asp-route-id="@Model.Id"
+                       class="btn btn-soft-secondary btn-sm">
+                        <i class="ri-edit-line align-middle me-1"></i>
+                        Edit
+                    </a>
+
+                    <span class="badge @statusBadge">
+                        @statusText
+                    </span>
+                </div>
             </div>
+
 
             <div class="card-body">
                 <dl class="row mb-0">
@@ -123,14 +135,28 @@
 
         <div class="card mb-3">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="card-title mb-0">Forms in this case</h5>
-                <a asp-action="LinkForm"
-                   asp-route-id="@Model.Id"
-                   class="btn btn-sm btn-soft-primary">
-                    <i class="ri-add-line align-middle"></i> Link form
-                </a>
+                <div>
+                    <h5 class="card-title mb-0">Forms on this case</h5>
+                    <small class="text-muted">Attach existing submissions or start new ones for this beneficiary.</small>
+                </div>
 
+                <div class="btn-group btn-group-sm">
+                    <a asp-action="LinkForm"
+                       asp-route-id="@Model.Id"
+                       class="btn btn-primary">
+                        <i class="mdi mdi-link-variant me-1"></i> Link existing
+                    </a>
+
+                    <a asp-controller="form"
+                       asp-action="Index"
+                       asp-route-caseId="@Model.Id"
+                       asp-route-beneficiaryId="@Model.BeneficiaryId"
+                       class="btn btn-outline-secondary">
+                        <i class="mdi mdi-file-plus-outline me-1"></i> Start new form
+                    </a>
+                </div>
             </div>
+
             <div class="card-body">
                 @if (Model.Forms.Any())
                 {
@@ -175,6 +201,19 @@
                                                        title="Edit form">
                                                         <iconify-icon icon="lucide:edit-3" class="text-sm"></iconify-icon>
                                                     </a>
+
+                                                    <form asp-action="DetachForm"
+                                                          asp-route-id="@f.Id"
+                                                          method="post"
+                                                          class="d-inline">
+                                                        @Html.AntiForgeryToken()
+                                                        <button type="submit"
+                                                                class="btn btn-link btn-sm text-danger p-0 ms-1"
+                                                                onclick="return confirm('Remove this form from the case? The underlying submission will not be deleted.');">
+                                                            Remove
+                                                        </button>
+                                                    </form>
+
                                                 </div>
                                             </div>
                                         </td>
@@ -212,7 +251,10 @@
                     <ul class="list-unstyled mb-0">
                         @foreach (var a in Model.Assignments)
                         {
-                            var badge = a.IsActive ? "badge-soft-success" : "badge-soft-secondary";
+                            // Use standard bg-* badge classes instead of badge-soft-*
+                            var badgeClass = a.IsActive
+                            ? "bg-success"
+                            : "bg-secondary";
 
                             <li class="mb-3">
                                 <div class="d-flex justify-content-between">
@@ -228,31 +270,49 @@
                                                     (System: @a.SystemRoles)
                                                 </span>
                                             }
-                                        </div>
                                     </div>
-
-                                    <span class="badge rounded-pill @badge">
-                                        @(a.IsActive ? "Active" : "Inactive")
-                                    </span>
                                 </div>
 
-                                <div class="d-flex justify-content-between text-muted fs-11">
-                                    <span>
-                                        Case role:
-                                        @(
-                                            string.IsNullOrWhiteSpace(a.RoleOnCase)
-                                            ? "—"
-                                            : a.RoleOnCase
-                                            )
+                                <span class="badge @badgeClass">
+                                    @(a.IsActive ? "Active" : "Inactive")
+                                </span>
+                            </div>
+
+                            <div class="d-flex justify-content-between text-muted fs-11">
+                                <span>
+                                    Case role:
+                                    @(
+                                                                    string.IsNullOrWhiteSpace(a.RoleOnCase)
+                                                                    ? "—"
+                                                                    : a.RoleOnCase
+                                                                    )
                                     </span>
                                     <span>
                                         @(a.AssignedAt.HasValue
-                                            ? a.AssignedAt.Value.ToLocalTime().ToString("yyyy-MM-dd")
-                                            : "-")
+                                                                        ? a.AssignedAt.Value.ToLocalTime().ToString("yyyy-MM-dd")
+                                                                        : "-")
                                     </span>
                                 </div>
+
+                                @if (a.IsActive)
+                                {
+                                    <div class="mt-1">
+                                        <form asp-action="UnassignWorker"
+                                              method="post"
+                                              class="d-inline">
+                                            <input type="hidden" name="id" value="@a.Id" />
+                                            <button type="submit"
+                                                    class="btn btn-link btn-sm text-danger p-0"
+                                                    onclick="return confirm('Remove this worker from the case?');">
+                                                <i class="ri-user-unfollow-line align-middle me-1"></i>
+                                                Remove
+                                            </button>
+                                        </form>
+                                    </div>
+                                }
                             </li>
                         }
+
                     </ul>
                 }
                 else

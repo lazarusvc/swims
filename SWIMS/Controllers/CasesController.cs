@@ -359,6 +359,123 @@ namespace SWIMS.Controllers
             return RedirectToAction(nameof(Details), new { id = entity.Id });
         }
 
+        // GET: /Cases/Edit/5
+        [HttpGet]
+        public async Task<IActionResult> Edit(int id)
+        {
+            var caseEntity = await _cases.SW_cases
+                .AsNoTracking()
+                .FirstOrDefaultAsync(c => c.Id == id);
+
+            if (caseEntity == null)
+            {
+                return NotFound();
+            }
+
+            var vm = new CaseCreateViewModel
+            {
+                Id = caseEntity.Id,
+                CaseNumber = caseEntity.case_number,
+                SW_beneficiaryId = caseEntity.SW_beneficiaryId,
+                Title = caseEntity.title,
+                Status = caseEntity.status ?? "Pending",
+                ProgramTag = caseEntity.program_tag,
+                ProgramTagId = caseEntity.ProgramTagId,
+                Notes = caseEntity.notes
+            };
+
+            vm.Beneficiaries = await BuildBeneficiarySelectListAsync();
+            vm.ProgramOptions = await BuildProgramTagSelectListAsync(caseEntity.ProgramTagId);
+
+            return View(vm);
+        }
+
+        // POST: /Cases/Edit/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, CaseCreateViewModel vm)
+        {
+            if (id != vm.Id)
+            {
+                return BadRequest();
+            }
+
+            if (!ModelState.IsValid)
+            {
+                vm.Beneficiaries = await BuildBeneficiarySelectListAsync();
+                vm.ProgramOptions = await BuildProgramTagSelectListAsync(vm.ProgramTagId);
+                return View(vm);
+            }
+
+            var caseEntity = await _cases.SW_cases
+                .FirstOrDefaultAsync(c => c.Id == id);
+
+            if (caseEntity == null)
+            {
+                return NotFound();
+            }
+
+            // Make sure beneficiary is valid and get a fresh copy for naming
+            var beneficiary = await _core.SW_beneficiaries
+                .AsNoTracking()
+                .FirstOrDefaultAsync(b => b.Id == vm.SW_beneficiaryId);
+
+            if (beneficiary == null)
+            {
+                ModelState.AddModelError(nameof(vm.SW_beneficiaryId), "Selected beneficiary not found.");
+                vm.Beneficiaries = await BuildBeneficiarySelectListAsync();
+                vm.ProgramOptions = await BuildProgramTagSelectListAsync(vm.ProgramTagId);
+                return View(vm);
+            }
+
+            var caseTitle = !string.IsNullOrWhiteSpace(beneficiary.name)
+                ? beneficiary.name
+                : $"{beneficiary.first_name} {beneficiary.last_name}".Trim();
+
+            // Start from existing programme values so we don't accidentally wipe them
+            string resolvedProgramTagString = caseEntity.program_tag;
+            int? resolvedProgramTagId = caseEntity.ProgramTagId;
+
+            if (vm.ProgramTagId.HasValue && vm.ProgramTagId.Value > 0)
+            {
+                var tag = await _lookup.SW_programTags
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(t => t.Id == vm.ProgramTagId.Value && t.is_active);
+
+                if (tag != null)
+                {
+                    resolvedProgramTagId = tag.Id;
+                    // keep using the stable code as backing string
+                    resolvedProgramTagString = tag.code;
+                }
+            }
+            else if (!string.IsNullOrWhiteSpace(vm.ProgramTag))
+            {
+                resolvedProgramTagString = vm.ProgramTag.Trim();
+                resolvedProgramTagId = null;
+            }
+
+            // Apply updates
+            caseEntity.case_number = vm.CaseNumber;
+            caseEntity.SW_beneficiaryId = vm.SW_beneficiaryId;
+            caseEntity.title = caseTitle;
+            caseEntity.status = string.IsNullOrWhiteSpace(vm.Status)
+                ? "Pending"
+                : vm.Status.Trim();
+            caseEntity.ProgramTagId = resolvedProgramTagId;
+            caseEntity.program_tag = resolvedProgramTagString;
+            caseEntity.notes = string.IsNullOrWhiteSpace(vm.Notes)
+                ? null
+                : vm.Notes.Trim();
+
+            await _cases.SaveChangesAsync();
+
+            TempData["Ok"] = "Case updated successfully.";
+            return RedirectToAction(nameof(Details), new { id = caseEntity.Id });
+        }
+
+
+
 
         // GET: /Cases/Details/5
         public async Task<IActionResult> Details(int id)
@@ -483,6 +600,7 @@ namespace SWIMS.Controllers
                         : $"{beneficiary.first_name} {beneficiary.last_name}".Trim())
                     : "(no beneficiary)",
                 BeneficiaryUuid = beneficiary?.uuid ?? string.Empty,
+                BeneficiaryId = caseEntity.SW_beneficiaryId,
                 BeneficiaryPhone = beneficiary?.telephone_number,
                 BeneficiaryIdNumber = beneficiary?.id_number,
                 Forms = forms,
@@ -545,6 +663,7 @@ namespace SWIMS.Controllers
 
 
         // GET: /Cases/LinkForm/5
+        [HttpGet]
         public async Task<IActionResult> LinkForm(int id)
         {
             var caseEntity = await _cases.SW_cases
@@ -561,89 +680,131 @@ namespace SWIMS.Controllers
                 SW_caseId = caseEntity.Id,
                 CaseNumber = caseEntity.case_number,
                 CaseTitle = caseEntity.title,
-                AvailableForms = await BuildAvailableFormsSelectListAsync()
+                IsPrimaryApplication = false,
+                IncludeLinkedForms = true
             };
+
+            vm.AvailableForms = await BuildAvailableFormsSelectListAsync(caseEntity);
 
             return View(vm);
         }
 
-        // POST: /Cases/LinkForm
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> LinkForm(CaseLinkFormViewModel vm)
+        public async Task<IActionResult> LinkForm(int id, CaseLinkFormViewModel vm)
         {
+            if (id != vm.SW_caseId)
+            {
+                return BadRequest();
+            }
+
             var caseEntity = await _cases.SW_cases
-                .FirstOrDefaultAsync(c => c.Id == vm.SW_caseId);
+                .FirstOrDefaultAsync(c => c.Id == id);
 
             if (caseEntity == null)
             {
                 return NotFound();
             }
 
-            // First: basic validation (did they pick something at all?)
-            if (!ModelState.IsValid)
+            if (!ModelState.IsValid || vm.SelectedFormTableDatumId == null)
             {
-                vm.AvailableForms = await BuildAvailableFormsSelectListAsync();
-                vm.CaseNumber = caseEntity.case_number;
-                vm.CaseTitle = caseEntity.title;
-                return View(vm);
-            }
-
-            // Ensure the selected form entry actually exists
-            var formEntry = await _core.SW_formTableData
-                .AsNoTracking()
-                .FirstOrDefaultAsync(d => d.Id == vm.SelectedFormTableDatumId);
-
-            if (formEntry == null)
-            {
-                ModelState.AddModelError(nameof(vm.SelectedFormTableDatumId),
-                    "Selected form submission was not found.");
-                vm.AvailableForms = await BuildAvailableFormsSelectListAsync();
-                vm.CaseNumber = caseEntity.case_number;
-                vm.CaseTitle = caseEntity.title;
-                return View(vm);
-            }
-
-            // Avoid duplicate link for the same case + form submission
-            var alreadyLinked = await _cases.SW_caseForms
-                .AnyAsync(cf =>
-                    cf.SW_caseId == vm.SW_caseId &&
-                    cf.SW_formTableDatumId == vm.SelectedFormTableDatumId);
-
-            if (!alreadyLinked)
-            {
-                // If this one is primary, clear any existing primary for this case
-                if (vm.IsPrimaryApplication)
+                if (vm.SelectedFormTableDatumId == null)
                 {
-                    var existingPrimaries = await _cases.SW_caseForms
-                        .Where(cf => cf.SW_caseId == vm.SW_caseId && cf.is_primary_application)
-                        .ToListAsync();
-
-                    foreach (var cf in existingPrimaries)
-                    {
-                        cf.is_primary_application = false;
-                    }
+                    ModelState.AddModelError(nameof(vm.SelectedFormTableDatumId),
+                        "Please pick a form submission to link.");
                 }
 
-                var link = new SW_caseForm
-                {
-                    SW_caseId = vm.SW_caseId,
-                    SW_formTableDatumId = vm.SelectedFormTableDatumId,
-                    form_role = string.IsNullOrWhiteSpace(vm.FormRole)
-                        ? null
-                        : vm.FormRole.Trim(),
-                    is_primary_application = vm.IsPrimaryApplication,
-                    linked_at = DateTime.UtcNow,
-                    linked_by = User?.Identity?.Name
-                };
-
-                _cases.SW_caseForms.Add(link);
-                await _cases.SaveChangesAsync();
+                vm.CaseNumber = caseEntity.case_number;
+                vm.CaseTitle = caseEntity.title;
+                vm.AvailableForms = await BuildAvailableFormsSelectListAsync(caseEntity);
+                return View(vm);
             }
 
-            TempData["Ok"] = "Form linked to case successfully.";
-            return RedirectToAction(nameof(Details), new { id = vm.SW_caseId });
+            var formData = await _core.SW_formTableData
+                .Include(d => d.SW_forms)
+                .FirstOrDefaultAsync(d => d.Id == vm.SelectedFormTableDatumId.Value);
+
+            if (formData == null)
+            {
+                ModelState.AddModelError(nameof(vm.SelectedFormTableDatumId),
+                    "The selected form submission no longer exists.");
+                vm.CaseNumber = caseEntity.case_number;
+                vm.CaseTitle = caseEntity.title;
+                vm.AvailableForms = await BuildAvailableFormsSelectListAsync(caseEntity);
+                return View(vm);
+            }
+
+            var alreadyLinked = await _cases.SW_caseForms
+        .AnyAsync(cf =>
+            cf.SW_caseId == caseEntity.Id &&
+            cf.SW_formTableDatumId == formData.Id);
+
+            if (alreadyLinked)
+            {
+                TempData["Ok"] = "This form submission is already linked to the case.";
+                return RedirectToAction(nameof(Details), new { id = caseEntity.Id });
+            }
+
+            var link = new SW_caseForm
+            {
+                SW_caseId = caseEntity.Id,
+                SW_formTableDatumId = formData.Id,
+                form_role = string.IsNullOrWhiteSpace(vm.FormRole)
+                    ? null
+                    : vm.FormRole.Trim(),
+                is_primary_application = vm.IsPrimaryApplication,
+                linked_at = DateTime.Now,
+                linked_by = _userManager.GetUserId(User)
+            };
+
+            _cases.SW_caseForms.Add(link);
+
+            // Optional future behaviour (toggle-controlled)
+            if (vm.IncludeLinkedForms)
+            {
+                await AttachLinkedFormsAsync(caseEntity, formData);
+            }
+
+            await _cases.SaveChangesAsync();
+
+            TempData["Ok"] = "Form submission linked to case.";
+            return RedirectToAction(nameof(Details), new { id = caseEntity.Id });
         }
+
+        /// <summary>
+        /// Future hook: attach any child/linked forms that belong to the same logical bundle
+        /// as <paramref name="rootFormData"/>. For now this is a no-op until we stabilise
+        /// the linking data model in the forms module.
+        /// </summary>
+        private Task AttachLinkedFormsAsync(SW_case caseEntity, SW_formTableDatum rootFormData)
+        {
+            // TODO: Use form linking metadata (isLinkingForm / linking tables) once finalised.
+            return Task.CompletedTask;
+        }
+
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DetachForm(int id)
+        {
+            var link = await _cases.SW_caseForms
+                .FirstOrDefaultAsync(cf => cf.Id == id);
+
+            if (link == null)
+            {
+                return NotFound();
+            }
+
+            var caseId = link.SW_caseId;
+
+            _cases.SW_caseForms.Remove(link);
+            await _cases.SaveChangesAsync();
+
+            TempData["Ok"] = "Form detached from case. The form submission itself is unchanged.";
+            return RedirectToAction(nameof(Details), new { id = caseId });
+        }
+
 
         // GET: /Cases/FormPreview/5
         [HttpGet]
@@ -815,6 +976,34 @@ namespace SWIMS.Controllers
             return RedirectToAction(nameof(Details), new { id = model.CaseId });
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UnassignWorker(int id)
+        {
+            var assignment = await _cases.SW_caseAssignments
+                .FirstOrDefaultAsync(a => a.Id == id);
+
+            if (assignment == null)
+            {
+                return NotFound();
+            }
+
+            var caseId = assignment.SW_caseId;
+
+            if (!assignment.is_active)
+            {
+                TempData["Ok"] = "This worker is already removed from the case.";
+                return RedirectToAction(nameof(Details), new { id = caseId });
+            }
+
+            assignment.is_active = false;
+            assignment.unassigned_at = DateTime.Now; // matches your other timestamps
+
+            await _cases.SaveChangesAsync();
+
+            TempData["Ok"] = "Worker removed from case.";
+            return RedirectToAction(nameof(Details), new { id = caseId });
+        }
 
 
 
@@ -884,35 +1073,128 @@ namespace SWIMS.Controllers
         }
 
 
-        private async Task<List<SelectListItem>> BuildAvailableFormsSelectListAsync()
+        private async Task<List<SelectListItem>> BuildAvailableFormsSelectListAsync(SW_case caseEntity)
         {
-            // For v1: show the most recent 50 form submissions across all forms.
-            var query = _core.SW_formTableData
-                .AsNoTracking()
+            // Already-linked submissions for this case
+            var alreadyLinkedIds = await _cases.SW_caseForms
+                .Where(cf => cf.SW_caseId == caseEntity.Id)
+                .Select(cf => cf.SW_formTableDatumId)
+                .ToListAsync();
+
+            var items = new List<SelectListItem>();
+
+            // --- Try to scope by beneficiary first ---
+
+            string? beneficiaryUuid = null;
+
+            // SW_beneficiaryId is non-nullable; treat > 0 as “has beneficiary”
+            if (caseEntity.SW_beneficiaryId > 0)
+            {
+                var beneficiary = await _core.SW_beneficiaries
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(b => b.Id == caseEntity.SW_beneficiaryId);
+
+                beneficiaryUuid = beneficiary?.uuid;
+            }
+
+            if (!string.IsNullOrWhiteSpace(beneficiaryUuid))
+            {
+                // Forms which declare a "beneficiary" field in SW_formTableData_Types
+                var beneficiaryFieldMappings = await _core.SW_formTableData_Types
+                    .Where(t => t.type == "beneficiary")
+                    .ToListAsync();
+
+                if (beneficiaryFieldMappings.Any())
+                {
+                    var formIds = beneficiaryFieldMappings
+                        .Select(t => t.SW_formsId)
+                        .Distinct()
+                        .ToList();
+
+                    var fieldMapByForm = beneficiaryFieldMappings
+                        .GroupBy(t => t.SW_formsId)
+                        .ToDictionary(
+                            g => g.Key,
+                            g => g.Select(t => t.field).ToList());
+
+                    var candidates = await _core.SW_formTableData
+                        .Include(d => d.SW_forms)
+                        .Where(d => formIds.Contains(d.SW_formsId))
+                        .OrderByDescending(d => d.Id)
+                        .ToListAsync();
+
+                    var dataType = typeof(SW_formTableDatum);
+
+                    foreach (var entry in candidates)
+                    {
+                        if (!fieldMapByForm.TryGetValue(entry.SW_formsId, out var fieldsForForm))
+                        {
+                            continue;
+                        }
+
+                        var isMatch = false;
+
+                        foreach (var fieldName in fieldsForForm)
+                        {
+                            var prop = dataType.GetProperty(fieldName);
+                            if (prop == null) continue;
+
+                            var value = prop.GetValue(entry) as string;
+                            if (!string.IsNullOrWhiteSpace(value) && value == beneficiaryUuid)
+                            {
+                                isMatch = true;
+                                break;
+                            }
+                        }
+
+                        if (!isMatch) continue;
+
+                        if (alreadyLinkedIds.Contains(entry.Id)) continue;
+
+                        items.Add(new SelectListItem
+                        {
+                            Value = entry.Id.ToString(),
+                            Text = $"{entry.SW_forms.name} | Submission #{entry.Id}"
+                        });
+
+                        // Hard cap to keep dropdown sane
+                        if (items.Count >= 100)
+                        {
+                            break;
+                        }
+                    }
+
+                    if (items.Any())
+                    {
+                        ViewBag.FormScopeNote =
+                            "Showing forms for this beneficiary (based on forms that declare a beneficiary field).";
+
+                        return items;
+                    }
+                }
+            }
+
+            // --- Fallback: last 50 submissions globally (excluding already linked) ---
+
+            var fallback = await _core.SW_formTableData
+                .Include(d => d.SW_forms)
+                .Where(d => !alreadyLinkedIds.Contains(d.Id))
                 .OrderByDescending(d => d.Id)
                 .Take(50)
-                .Join(
-                    _core.SW_forms.AsNoTracking(),
-                    d => d.SW_formsId,
-                    f => f.Id,
-                    (d, f) => new { Datum = d, Form = f });
+                .ToListAsync();
 
-            var forms = await query.ToListAsync();
+            items = fallback.Select(d => new SelectListItem
+            {
+                Value = d.Id.ToString(),
+                Text = $"{d.SW_forms.name} | Submission #{d.Id}"
+            }).ToList();
 
-            return forms
-                .Select(x =>
-                {
-                    var label = !string.IsNullOrWhiteSpace(x.Form.name)
-                        ? x.Form.name
-                        : x.Form.uuid;
+            ViewBag.FormScopeNote =
+                "Showing the most recent form submissions (no beneficiary-specific mapping could be applied).";
 
-                    return new SelectListItem
-                    {
-                        Value = x.Datum.Id.ToString(),
-                        Text = $"{x.Datum.Id} - {label}"
-                    };
-                })
-                .ToList();
+            return items;
         }
+
+
     }
 }

@@ -42,6 +42,8 @@ namespace SWIMS.Models.ViewModels
 
     public class CaseCreateViewModel
     {
+        public int Id { get; set; }
+
         [Display(Name = "Case number")]
         public string CaseNumber { get; set; } = default!;
 
@@ -137,6 +139,8 @@ namespace SWIMS.Models.ViewModels
 
         public string BeneficiaryUuid { get; set; } = default!;
 
+        public int BeneficiaryId { get; set; }
+
         public string? BeneficiaryPhone { get; set; }
 
         public string? BeneficiaryIdNumber { get; set; }
@@ -149,26 +153,28 @@ namespace SWIMS.Models.ViewModels
             = Array.Empty<CaseAssignmentSummaryViewModel>();
     }
 
-    public class CaseLinkFormViewModel
+    public sealed class CaseLinkFormViewModel
     {
         [Required]
         public int SW_caseId { get; set; }
 
-        public string? CaseNumber { get; set; } = default!;
+        public string CaseNumber { get; set; } = string.Empty;
+        public string CaseTitle { get; set; } = string.Empty;
 
-        public string? CaseTitle { get; set; } = default!;
-
-        [Range(1, int.MaxValue, ErrorMessage = "Please select a form submission.")]
         [Display(Name = "Form submission")]
-        public int SelectedFormTableDatumId { get; set; }
+        [Required(ErrorMessage = "Please pick a form submission to link.")]
+        public int? SelectedFormTableDatumId { get; set; }
 
-
-        [Display(Name = "Form role in this case")]
+        [Display(Name = "Role of form on case")]
         public string? FormRole { get; set; }
 
-        [Display(Name = "Mark as primary application")]
+        [Display(Name = "Primary application?")]
         public bool IsPrimaryApplication { get; set; }
+
+        [Display(Name = "Also attach linked child forms (where available)")]
+        public bool IncludeLinkedForms { get; set; } = true;
 
         public List<SelectListItem> AvailableForms { get; set; } = new();
     }
+
 }

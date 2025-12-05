@@ -1,0 +1,77 @@
+﻿@model IEnumerable<SWIMS.Models.SW_programTag>
+
+@{
+    ViewData["Title"] = "Program Tags";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <h1 class="h3 mb-0">Program Tags</h1>
+
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="ri-add-line align-bottom me-1"></i>
+        New Tag
+    </a>
+</div>
+
+@if (TempData["Ok"] is string ok)
+{
+    <div class="alert alert-success alert-dismissible fade show mb-3" role="alert">
+        @ok
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table align-middle table-striped mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 15%">Code</th>
+                        <th>Name</th>
+                        <th style="width: 15%">Status</th>
+                        <th style="width: 10%">Sort</th>
+                        <th style="width: 12%"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-4">
+                                No program tags defined yet.
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var t in Model)
+                        {
+                            var statusClass = t.is_active ? "bg-success" : "bg-secondary";
+                            var statusText = t.is_active ? "Active" : "Inactive";
+
+                            <tr>
+                                <td class="fw-semibold">@t.code</td>
+                                <td>@t.name</td>
+                                <td>
+                                    <span class="badge @statusClass">
+                                        @statusText
+                                    </span>
+                                </td>
+                                <td>@t.sort_order</td>
+                                <td class="text-end">
+                                    <a asp-action="Edit"
+                                       asp-route-id="@t.Id"
+                                       class="btn btn-sm btn-outline-secondary">
+                                        <i class="ri-edit-line align-bottom me-1"></i>
+                                        Edit
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
