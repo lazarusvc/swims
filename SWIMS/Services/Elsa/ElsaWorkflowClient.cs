@@ -1,76 +1,147 @@
-﻿using System.Net.Http.Json;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Net.Http;
+using System.Net.Http.Json;
 using System.Text.Json;
-using System.Text.Json.Serialization;
+using System.Threading;
+using System.Threading.Tasks;
 
-namespace SWIMS.Services.Elsa;
-
-public class ElsaWorkflowClient : IElsaWorkflowClient
+namespace SWIMS.Services.Elsa
 {
-    private readonly IHttpClientFactory _httpClientFactory;
-    private readonly ILogger<ElsaWorkflowClient> _logger;
-
-    public ElsaWorkflowClient(IHttpClientFactory httpClientFactory, ILogger<ElsaWorkflowClient> logger)
+    public class ElsaWorkflowClient : IElsaWorkflowClient
     {
-        _httpClientFactory = httpClientFactory;
-        _logger = logger;
-    }
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly ILogger<ElsaWorkflowClient> _logger;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ITempDataDictionaryFactory _tempDataFactory;
 
-    private record ElsaLink(
-        [property: JsonPropertyName("href")] string Href,
-        [property: JsonPropertyName("rel")] string Rel,
-        [property: JsonPropertyName("method")] string Method);
-
-    private record ElsaWorkflowDefinitionSummary(
-        [property: JsonPropertyName("id")] string Id,
-        [property: JsonPropertyName("definitionId")] string DefinitionId,
-        [property: JsonPropertyName("name")] string Name,
-        [property: JsonPropertyName("links")] ElsaLink[] Links);
-
-    private record ElsaWorkflowDefinitionList(
-        [property: JsonPropertyName("items")] ElsaWorkflowDefinitionSummary[] Items,
-        [property: JsonPropertyName("totalCount")] int TotalCount);
-
-    public async Task ExecuteByNameAsync(string workflowName, object? input = null, CancellationToken ct = default)
-    {
-        var client = _httpClientFactory.CreateClient("Elsa");
-
-        // 1. Fetch latest defs and find by name
-        var defs = await client.GetFromJsonAsync<ElsaWorkflowDefinitionList>(
-            "workflow-definitions?versionOptions=Latest&Page=0&PageSize=100&OrderDirection=Ascending",
-            ct);
-
-        var wf = defs?.Items?.SingleOrDefault(x => x.Name == workflowName);
-        if (wf is null)
+        public ElsaWorkflowClient(
+            IHttpClientFactory httpClientFactory,
+            ILogger<ElsaWorkflowClient> logger,
+            IHttpContextAccessor httpContextAccessor,
+            ITempDataDictionaryFactory tempDataFactory)
         {
-            _logger.LogWarning("Elsa workflow '{WorkflowName}' not found.", workflowName);
-            return;
+            _httpClientFactory = httpClientFactory;
+            _logger = logger;
+            _httpContextAccessor = httpContextAccessor;
+            _tempDataFactory = tempDataFactory;
         }
 
-        var executeHref = wf.Links.FirstOrDefault(l => l.Rel == "execute")?.Href;
-        if (string.IsNullOrWhiteSpace(executeHref))
+        public async Task ExecuteByNameAsync(string workflowName, object? input = null, CancellationToken ct = default)
         {
-            _logger.LogWarning("Elsa workflow '{WorkflowName}' has no execute link.", workflowName);
-            return;
+            try
+            {
+                var client = _httpClientFactory.CreateClient("Elsa");
+
+                // 1) Lookup workflow definition by name
+                var defId = await ResolveWorkflowDefinitionIdAsync(client, workflowName, ct);
+                if (string.IsNullOrWhiteSpace(defId))
+                {
+                    _logger.LogWarning("Elsa workflow definition not found for name '{WorkflowName}'.", workflowName);
+                    return;
+                }
+
+                // 2) Execute workflow by definition id
+                var payload = new
+                {
+                    WorkflowDefinitionId = defId,
+                    Input = input
+                };
+
+                using var resp = await client.PostAsJsonAsync("/v1/workflow-instances", payload, ct);
+
+                if (!resp.IsSuccessStatusCode)
+                {
+                    _logger.LogWarning(
+                        "Elsa execution returned non-success status {StatusCode} for workflow '{WorkflowName}'.",
+                        (int)resp.StatusCode,
+                        workflowName);
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                HandleElsaUnavailable(ex, workflowName);
+            }
+            catch (TaskCanceledException ex)
+            {
+                HandleElsaUnavailable(ex, workflowName);
+            }
+            catch (Exception ex)
+            {
+                // Fail open, but log it (don’t crash your business action)
+                _logger.LogWarning(ex, "Unexpected error calling Elsa; skipping workflow '{WorkflowName}'.", workflowName);
+                SetElsaWarningOncePerRequest("Workflow/notifications are temporarily unavailable. Your changes were saved.");
+            }
         }
 
-        var relativeUrl = executeHref.TrimStart('/');
-
-        var body = new { input = input ?? new { } };
-
-        _logger.LogInformation("Executing Elsa workflow {WorkflowName} via {Url}.", workflowName, $"{client.BaseAddress}{relativeUrl}");
-
-        var response = await client.PostAsJsonAsync(relativeUrl, body, ct);
-        var content = await response.Content.ReadAsStringAsync(ct);
-
-        if (!response.IsSuccessStatusCode)
+        private async Task<string?> ResolveWorkflowDefinitionIdAsync(HttpClient client, string workflowName, CancellationToken ct)
         {
-            _logger.LogError("Elsa workflow '{WorkflowName}' execution failed: {Status} {Content}",
-                workflowName, (int)response.StatusCode, content);
+            // Elsa endpoint shape varies across versions; we parse loosely:
+            // Expect { items: [ { id: "..." }, ... ] } (case-insensitive)
+            var url = $"/v1/workflow-definitions?name={Uri.EscapeDataString(workflowName)}";
+
+            using var resp = await client.GetAsync(url, ct);
+            if (!resp.IsSuccessStatusCode)
+                return null;
+
+            await using var stream = await resp.Content.ReadAsStreamAsync(ct);
+            using var doc = await JsonDocument.ParseAsync(stream, cancellationToken: ct);
+
+            if (doc.RootElement.ValueKind != JsonValueKind.Object)
+                return null;
+
+            if (!TryGetPropertyIgnoreCase(doc.RootElement, "items", out var items) || items.ValueKind != JsonValueKind.Array)
+                return null;
+
+            if (items.GetArrayLength() == 0)
+                return null;
+
+            var first = items[0];
+            if (first.ValueKind != JsonValueKind.Object)
+                return null;
+
+            if (!TryGetPropertyIgnoreCase(first, "id", out var idEl) || idEl.ValueKind != JsonValueKind.String)
+                return null;
+
+            return idEl.GetString();
         }
-        else
+
+        private static bool TryGetPropertyIgnoreCase(JsonElement element, string name, out JsonElement value)
         {
-            _logger.LogInformation("Elsa workflow '{WorkflowName}' executed successfully. Status={Status}",
-                workflowName, response.StatusCode);
+            foreach (var prop in element.EnumerateObject())
+            {
+                if (string.Equals(prop.Name, name, StringComparison.OrdinalIgnoreCase))
+                {
+                    value = prop.Value;
+                    return true;
+                }
+            }
+
+            value = default;
+            return false;
+        }
+
+        private void HandleElsaUnavailable(Exception ex, string workflowName)
+        {
+            _logger.LogWarning(ex, "Elsa is unavailable; skipping workflow '{WorkflowName}'.", workflowName);
+
+            SetElsaWarningOncePerRequest(
+                "Workflow/notifications are temporarily unavailable (Elsa is offline). Your changes were saved, but automated notifications may not be delivered.");
+        }
+
+        private void SetElsaWarningOncePerRequest(string message)
+        {
+            var http = _httpContextAccessor.HttpContext;
+            if (http == null) return;
+
+            const string itemKey = "__elsa_unavailable_warned";
+            if (http.Items.ContainsKey(itemKey)) return;
+
+            http.Items[itemKey] = true;
+            var tempData = _tempDataFactory.GetTempData(http);
+            tempData["Elsa.Warning"] = message;
         }
     }
 }

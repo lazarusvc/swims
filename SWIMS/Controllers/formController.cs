@@ -6,20 +6,22 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Graph.Models;
 using Microsoft.SqlServer.Server;
 using SWIMS.Data;
+using SWIMS.Data.Lookups;
 using SWIMS.Models;
+using SWIMS.Models.Lookups;
+using SWIMS.Services.Elsa;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Metadata.Ecma335;
+using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using static System.Net.Mime.MediaTypeNames;
-using System.Text.RegularExpressions;
-using System.Security.Claims;
-using SWIMS.Services.Elsa;
 
 
 namespace SWIMS.Controllers
@@ -27,11 +29,13 @@ namespace SWIMS.Controllers
     public class formController : Controller
     {
         private readonly SwimsDb_moreContext _context;
+        private readonly SwimsLookupDbContext _lookup;
         private readonly IElsaWorkflowClient _elsa;
 
-        public formController(SwimsDb_moreContext context, IElsaWorkflowClient elsa)
+        public formController(SwimsDb_moreContext context, SwimsLookupDbContext lookup, IElsaWorkflowClient elsa)
         {
             _context = context;
+            _lookup = lookup;
             _elsa = elsa;
         }
 
@@ -750,6 +754,7 @@ namespace SWIMS.Controllers
             ViewBag.datetime = System.DateTime.UtcNow;
             ViewBag.UUID = GenerateNewUuidAsString();
             ViewData["SW_identityId"] = new SelectList(_context.SW_identities, "Id", "name");
+            PopulateFormClassificationDropdowns();
             return View();
         }
 
@@ -758,7 +763,13 @@ namespace SWIMS.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,uuid,name,desc,form,dateModified,SW_identityId,is_linking,image,header,approvalAmt")] SW_form sW_form, IFormFile image)
+        public async Task<IActionResult> Create(
+            [Bind("Id,uuid,name,desc,form,dateModified,SW_identityId,is_linking,image,header,approvalAmt")] SW_form sW_form,
+            IFormFile image,
+            int? formTypeId,
+            int[] programTagIds
+        )
+
         {
             if (image == null || image.Length == 0)
             {
@@ -784,7 +795,7 @@ namespace SWIMS.Controllers
 
             if (ModelState.IsValid)
             {
-                _context.Add(new SW_form
+                var createdForm = new SW_form
                 {
                     uuid = sW_form.uuid,
                     name = sW_form.name,
@@ -794,22 +805,31 @@ namespace SWIMS.Controllers
                     SW_identityId = sW_form.SW_identityId,
                     is_linking = sW_form.is_linking,
                     image = uniqueFileName,
-                    header = sW_form.header
-                });
+                    header = sW_form.header,
+                    approvalAmt = sW_form.approvalAmt
+                };
+
+                _context.Add(createdForm);
                 await _context.SaveChangesAsync();
+
+                await SaveFormClassificationAsync(createdForm.Id, formTypeId, programTagIds);
 
                 // 🔔 Notify: Form created
                 await NotifyFormEventAsync(
-                    sW_form.Id,
+                    createdForm.Id,
                     "FormCreated",
                     "Form created",
-                    $"Form '{sW_form.name}' was created.",
+                    $"Form '{createdForm.name}' was created.",
                     HttpContext.RequestAborted);
 
-                return RedirectToAction(nameof(Index), new { id = sW_form.Id });
+                return RedirectToAction(nameof(Index));
             }
+
+
             ViewData["SW_identityId"] = new SelectList(_context.SW_identities, "Id", "name", sW_form.SW_identityId);
+            PopulateFormClassificationDropdowns(formTypeId, programTagIds);
             return View(sW_form);
+
         }
 
         public IActionResult Complete(int? id)
@@ -1037,6 +1057,20 @@ namespace SWIMS.Controllers
             ViewBag.img = _context.SW_forms.Where(x => x.Id == id).Select(x => x.image).FirstOrDefault();
             ViewBag.appAmt = _context.SW_forms.Where(x => x.Id == id).Select(x => x.approvalAmt).FirstOrDefault();
             ViewData["SW_identityId"] = new SelectList(_context.SW_identities, "Id", "name", sW_form.SW_identityId);
+
+            var selectedTypeId = await _lookup.SW_formFormTypes
+                .Where(x => x.SW_formsId == sW_form.Id)
+                .Select(x => (int?)x.SW_formTypeId)
+                .SingleOrDefaultAsync();
+
+            var selectedTags = await _lookup.SW_formProgramTags
+                .Where(x => x.SW_formsId == sW_form.Id)
+                .Select(x => x.SW_programTagId)
+                .ToListAsync();
+
+            PopulateFormClassificationDropdowns(selectedTypeId, selectedTags);
+
+
             return View(sW_form);
         }
 
@@ -1045,14 +1079,26 @@ namespace SWIMS.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,uuid,name,desc,form,dateModified,SW_identityId,is_linking,image,header,approvalAmt")] SW_form sW_form)
+        public async Task<IActionResult> Edit(
+            int id,
+            [Bind("Id,uuid,name,desc,form,dateModified,SW_identityId,is_linking,image,header,approvalAmt")] SW_form sW_form,
+            IFormFile image,
+            string formFile,
+            int? formTypeId,
+            int[] programTagIds
+        )
+
         {
+            if (id != sW_form.Id) return NotFound();
+
             if (ModelState.IsValid)
             {
                 try
                 {
                     _context.Update(sW_form);
                     await _context.SaveChangesAsync();
+                    await SaveFormClassificationAsync(sW_form.Id, formTypeId, programTagIds);
+
 
                     // 🔔 Notify: Form updated
                     await NotifyFormEventAsync(
@@ -1076,6 +1122,19 @@ namespace SWIMS.Controllers
                 return RedirectToAction(nameof(Index));
             }
             ViewData["SW_identityId"] = new SelectList(_context.SW_identities, "Id", "name", sW_form.SW_identityId);
+
+            // keep the dropdowns populated on validation errors
+            PopulateFormClassificationDropdowns(formTypeId, programTagIds);
+
+            // (optional but recommended, because Edit.cshtml uses these ViewBags in scripts)
+            ViewBag.frm = sW_form.form;
+            ViewBag.appAmt = sW_form.approvalAmt;
+            ViewBag.img = await _context.SW_forms
+                .Where(x => x.Id == sW_form.Id)
+                .Select(x => x.image)
+                .FirstOrDefaultAsync();
+
+
             return View(sW_form);
         }
 
@@ -1207,6 +1266,15 @@ namespace SWIMS.Controllers
                 .Where(c => c.SW_formsId == id)
                 .ExecuteDeleteAsync();
 
+            var typeLink = await _lookup.SW_formFormTypes.SingleOrDefaultAsync(x => x.SW_formsId == id);
+            if (typeLink != null) _lookup.SW_formFormTypes.Remove(typeLink);
+
+            var tagLinks = await _lookup.SW_formProgramTags.Where(x => x.SW_formsId == id).ToListAsync();
+            if (tagLinks.Count > 0) _lookup.SW_formProgramTags.RemoveRange(tagLinks);
+
+            await _lookup.SaveChangesAsync();
+
+
             // finally remove form
             var sW_form = await _context.SW_forms.FindAsync(id);
             if (sW_form != null)
@@ -1275,6 +1343,60 @@ namespace SWIMS.Controllers
                 name = $"{fallbackPrefix} {indexWithinType:D3}";
             return name;
         }
+
+        private void PopulateFormClassificationDropdowns(int? selectedFormTypeId = null, IEnumerable<int>? selectedProgramTagIds = null)
+        {
+            ViewData["formTypeId"] = new SelectList(
+                _lookup.SW_formTypes.OrderBy(x => x.name),
+                "Id",
+                "name",
+                selectedFormTypeId
+            );
+
+            ViewData["programTagIds"] = new MultiSelectList(
+                _lookup.SW_programTags.OrderBy(x => x.name),
+                "Id",
+                "name",
+                selectedProgramTagIds
+            );
+        }
+
+        private async Task SaveFormClassificationAsync(int formId, int? formTypeId, int[]? programTagIds)
+        {
+            // --- Form Type: 0..1 ---
+            var existingType = await _lookup.SW_formFormTypes.SingleOrDefaultAsync(x => x.SW_formsId == formId);
+            if (existingType != null)
+                _lookup.SW_formFormTypes.Remove(existingType);
+
+            if (formTypeId.HasValue)
+            {
+                _lookup.SW_formFormTypes.Add(new SW_formFormType
+                {
+                    SW_formsId = formId,
+                    SW_formTypeId = formTypeId.Value
+                });
+            }
+
+            // --- Program Tags: many-to-many ---
+            var existingTags = await _lookup.SW_formProgramTags.Where(x => x.SW_formsId == formId).ToListAsync();
+            if (existingTags.Count > 0)
+                _lookup.SW_formProgramTags.RemoveRange(existingTags);
+
+            if (programTagIds != null && programTagIds.Length > 0)
+            {
+                foreach (var tagId in programTagIds.Distinct())
+                {
+                    _lookup.SW_formProgramTags.Add(new SW_formProgramTag
+                    {
+                        SW_formsId = formId,
+                        SW_programTagId = tagId
+                    });
+                }
+            }
+
+            await _lookup.SaveChangesAsync();
+        }
+
 
     }
 }

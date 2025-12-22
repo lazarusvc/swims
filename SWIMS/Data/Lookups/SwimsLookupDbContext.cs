@@ -2,6 +2,7 @@
 
 using Microsoft.EntityFrameworkCore;
 using SWIMS.Models;
+using SWIMS.Models.Lookups;
 
 namespace SWIMS.Data.Lookups
 {
@@ -21,6 +22,10 @@ namespace SWIMS.Data.Lookups
 
         public virtual DbSet<SW_programTag> SW_programTags => Set<SW_programTag>();
         public virtual DbSet<SW_formType> SW_formTypes => Set<SW_formType>();
+
+        public virtual DbSet<SW_formProgramTag> SW_formProgramTags { get; set; } = null!;
+        public virtual DbSet<SW_formFormType> SW_formFormTypes { get; set; } = null!;
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -78,6 +83,45 @@ namespace SWIMS.Data.Lookups
                 b.HasIndex(x => x.code)
                     .IsUnique();
             });
+
+
+            // ----------------------------
+            // SW_formProgramTag
+            // ----------------------------
+            modelBuilder.Entity<SW_formProgramTag>(entity =>
+            {
+                entity.ToTable("SW_formProgramTag", "ref");
+
+                entity.HasKey(e => new { e.SW_formsId, e.SW_programTagId });
+
+                entity.HasIndex(e => e.SW_formsId);
+                entity.HasIndex(e => e.SW_programTagId);
+
+                entity.HasOne(d => d.SW_programTag)
+                    .WithMany()
+                    .HasForeignKey(d => d.SW_programTagId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // ----------------------------
+            // SW_formFormType
+            // ----------------------------
+            modelBuilder.Entity<SW_formFormType>(entity =>
+            {
+                entity.ToTable("SW_formFormType", "ref");
+
+                // PK = SW_formsId => only 1 record per form
+                entity.HasKey(e => e.SW_formsId);
+                entity.Property(e => e.SW_formsId).ValueGeneratedNever();
+
+                entity.HasIndex(e => e.SW_formTypeId);
+
+                entity.HasOne(d => d.SW_formType)
+                    .WithMany()
+                    .HasForeignKey(d => d.SW_formTypeId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
         }
     }
 }
