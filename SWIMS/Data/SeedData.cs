@@ -331,7 +331,7 @@ namespace SWIMS.Data
             // generic runtime access to program/forms workspace
             await UpsertPolicyAsync(Permissions.Forms_Access,
                 Always(Permissions.Forms_Access,
-                       "SocialWorker", "Secretary", "VCCClerk", // workers who touch data
+                       "Admin", "SocialWorker", "Secretary", "VCCClerk", // workers who touch data
                        "Coordinator", "Director",
                        "PermanentSecretary", "Minister",
                        "ProgramManager", "ReadOnly"),

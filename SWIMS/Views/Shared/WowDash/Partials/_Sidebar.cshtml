@@ -90,7 +90,7 @@
 
 
                         @* Intake *@
-                        @if (await CanAny(Permissions.Intake_View, Permissions.Intake_Create, Permissions.Intake_Edit, Permissions.Intake_Assign))
+                        @* @if (await CanAny(Permissions.Intake_View, Permissions.Intake_Create, Permissions.Intake_Edit, Permissions.Intake_Assign))
                         {
                             <li>
                                 <a asp-controller="Intake" asp-action="Index">
@@ -98,10 +98,10 @@
                                     <span>Intake</span>
                                 </a>
                             </li>
-                        }
+                        } *@
 
                         @* Clients *@
-                        @if (await CanAny(Permissions.Clients_View, Permissions.Clients_Create, Permissions.Clients_Edit, Permissions.Clients_Archive))
+                        @* @if (await CanAny(Permissions.Clients_View, Permissions.Clients_Create, Permissions.Clients_Edit, Permissions.Clients_Archive))
                         {
                             <li>
                                 <a asp-controller="Clients" asp-action="Index">
@@ -109,7 +109,7 @@
                                     <span>Clients</span>
                                 </a>
                             </li>
-                        }
+                        } *@
 
                         @* Cases *@
                         @if (await CanAny(Permissions.Applications_View, Permissions.Applications_Edit, Permissions.Applications_Assign))
@@ -130,7 +130,7 @@
                         }
 
                         @* Assessment *@
-                        @if (await Can(Permissions.Assessment_View))
+                        @* @if (await Can(Permissions.Assessment_View))
                         {
                             <li>
                                 <a asp-controller="Assessment" asp-action="Index">
@@ -138,7 +138,7 @@
                                     <span>Assessment</span>
                                 </a>
                             </li>
-                        }
+                        } *@
 
                         @* Approvals (any level L1–L5) *@
                         @if (await CanAny(Permissions.Approvals_L1, Permissions.Approvals_L2, Permissions.Approvals_L3, Permissions.Approvals_L4, Permissions.Approvals_L5))
@@ -152,7 +152,7 @@
                         }
 
                         @* Payments *@
-                        @if (await CanAny(Permissions.Payments_View, Permissions.Payments_Validate, Permissions.Payments_ExportLists, Permissions.Payments_Reconcile))
+                        @* @if (await CanAny(Permissions.Payments_View, Permissions.Payments_Validate, Permissions.Payments_ExportLists, Permissions.Payments_Reconcile))
                         {
                             <li>
                                 <a asp-controller="Payments" asp-action="Index">
@@ -160,7 +160,7 @@
                                     <span>Payments</span>
                                 </a>
                             </li>
-                        }
+                        } *@
 
                         @* Form Design & Admin *@
                         @if (await Can(Permissions.Forms_Builder))
