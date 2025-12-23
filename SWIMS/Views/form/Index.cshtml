@@ -4,15 +4,34 @@
     ViewData["Title"] = "Form Management";
 }
 
+@{
+    var formTypeById = ViewBag.FormTypeByFormId as IDictionary<int, string>
+        ?? new Dictionary<int, string>();
+
+    var programTagsById = ViewBag.ProgramTagsByFormId as IDictionary<int, List<string>>
+        ?? new Dictionary<int, List<string>>();
+}
+
+
 <br />
-<div class="row">
-    <div class="col-md-8">
+<div class="row gy-4" id="formsIndexLayout">
+    <div class="col-md-9" id="formsIndexMain">
         <div class="card basic-data-table">
-            <div class="card-header">
-                <a asp-action="Create" class="btn btn-success">Create New</a>
+            <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-3">
+                <h6 class="text-lg mb-0">Forms</h6>
+
+                <div class="d-flex align-items-center gap-2">
+                    <a class="btn btn-primary-600 radius-8 px-20 py-11" asp-action="Create">Create New Form</a>
+
+                    <button type="button" class="btn btn-outline-secondary btn-sm"
+                            id="btnToggleFormRefs" aria-expanded="true">
+                        Toggle References
+                    </button>
+                </div>
             </div>
-            <div class="card-body" style="overflow-x:scroll;">
-                <table class="table bordered-table mb-0" id="dataTable" data-page-length='10'>
+            <div class="card-body">
+                <div class="table-responsive" id="formsTableScroll">
+                    <table class="table bordered-table mb-0 align-middle w-100" id="dataTable" data-page-length='10'>
                     <thead>
                         <tr>
                             <th scope="col">
@@ -24,11 +43,12 @@
                             <th scope="col">
                                 Form Name:
                             </th>
+                            <th scope="col">Site Identity</th>
+                            <th scope="col">Form Type</th>
+                            <th scope="col">Program Tags</th>
+
                             <th scope="col">
                                 Modified:
-                            </th>
-                            <th scope="col">
-                                Site:
                             </th>
                         </tr>
                     </thead>
@@ -48,20 +68,65 @@
                                 <td>
                                     @item.name
                                 </td>
+                                    <td class="swims-wrap">
+                                    @item.SW_identity?.name
+                                </td>
+
+                                <td>
+                                    @{
+                                        formTypeById.TryGetValue(item.Id, out var ft);
+                                    }
+
+                                    @if (!string.IsNullOrWhiteSpace(ft))
+                                    {
+                                        <span class="badge bg-secondary">@ft</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-light text-dark">—</span>
+                                    }
+                                </td>
+
+                                <td class="swims-wrap">
+                                    @{
+                                        programTagsById.TryGetValue(item.Id, out var tags);
+                                        tags ??= new List<string>();
+                                    }
+
+                                    @if (tags.Count == 0)
+                                    {
+                                        <span class="badge bg-light text-dark">—</span>
+                                    }
+                                    else
+                                    {
+                                        // If you want to limit visual clutter:
+                                        var show = tags.Take(3).ToList();
+                                        var remaining = tags.Count - show.Count;
+
+                                        foreach (var t in show)
+                                        {
+                                            <span class="badge bg-info me-1">@t</span>
+                                        }
+
+                                        if (remaining > 0)
+                                        {
+                                            <span class="badge bg-light text-dark">+@remaining more</span>
+                                        }
+                                    }
+                                </td>
+
                                 <td>
                                     @item.dateModified.ToLocalTime()
-                                </td>
-                                <td>
-                                    @Html.DisplayFor(modelItem => item.SW_identity.name)
                                 </td>
                             </tr>
                         }
                     </tbody>
                 </table>
+                </div>
             </div>
         </div>
     </div>
-    <div class="col-md-4">
+    <div class="col-md-3" id="formsIndexRefs">
         <div class="card basic-data-table">
             <div class="card-header">
                 Form References
@@ -87,11 +152,78 @@
     </div>
 </div>
 
+<style>
+    /* collapsed: hide panel, expand table */
+    #formsIndexRefs.is-collapsed {
+        display: none;
+    }
+</style>
 
 
+@section Scripts {
+   
+    
+
+}
 
 <script src="~/lib/jquery/dist/jquery.js"></script>
 <script src="~/js/datatables.min.js"></script>
 <script type="text/javascript">
-     let table = new DataTable('#dataTable');
+    let table = new DataTable('#dataTable');
+</script>
+
+<script>
+    (function () {
+        const main = document.getElementById("formsIndexMain");
+        const refs = document.getElementById("formsIndexRefs");
+        const btn = document.getElementById("btnToggleFormRefs");
+        if (!main || !refs || !btn) return;
+
+        const key = "swims.forms.index.refsCollapsed";
+
+        function apply(collapsed) {
+            if (collapsed) {
+                refs.classList.add("is-collapsed");
+                main.classList.remove("col-md-8");
+                main.classList.add("col-md-12");
+                btn.setAttribute("aria-expanded", "false");
+            } else {
+                refs.classList.remove("is-collapsed");
+                main.classList.remove("col-md-12");
+                main.classList.add("col-md-8");
+                btn.setAttribute("aria-expanded", "true");
+            }
+            localStorage.setItem(key, collapsed ? "1" : "0");
+        }
+
+        btn.addEventListener("click", function () {
+            apply(!refs.classList.contains("is-collapsed"));
+        });
+
+        // restore last state
+        apply(localStorage.getItem(key) === "1");
+    })();
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const scroll = document.getElementById('formsTableScroll');
+      if (!scroll) return;
+
+      // DataTables v1 uses .dataTables_filter, v2 uses .dt-search
+      const wrapper = scroll.closest('.card') || document;
+      const search = wrapper.querySelector('.dt-search, .dataTables_filter');
+      if (!search) return;
+
+      search.style.willChange = 'transform';
+
+      function sync() {
+        // If it moves the wrong way, flip the sign.
+        search.style.transform = `translateX(${scroll.scrollLeft}px)`;
+      }
+
+      sync();
+      scroll.addEventListener('scroll', sync, { passive: true });
+      window.addEventListener('resize', sync);
+    });
 </script>

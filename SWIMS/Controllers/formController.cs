@@ -725,9 +725,43 @@ namespace SWIMS.Controllers
         // GET: form
         public async Task<IActionResult> Index()
         {
-            var swimsDb_moreContext = _context.SW_forms.Include(s => s.SW_identity);
-            return View(await swimsDb_moreContext.ToListAsync());
+            // main forms list (already used by the view)
+            var forms = await _context.SW_forms
+                .Include(s => s.SW_identity)
+                .AsNoTracking()
+                .ToListAsync();
+
+            var formIds = forms.Select(f => f.Id).ToList();
+
+            // --- Form Type (0..1) display map ---
+            var formTypeByFormId = await _lookup.SW_formFormTypes
+                .Where(x => formIds.Contains(x.SW_formsId))
+                .Join(_lookup.SW_formTypes,
+                    link => link.SW_formTypeId,
+                    type => type.Id,
+                    (link, type) => new { link.SW_formsId, TypeName = type.name })
+                .ToDictionaryAsync(x => x.SW_formsId, x => x.TypeName);
+
+            // --- Program Tags (many-to-many) display map ---
+            var programTagsByFormId = await _lookup.SW_formProgramTags
+                .Where(x => formIds.Contains(x.SW_formsId))
+                .Join(_lookup.SW_programTags,
+                    link => link.SW_programTagId,
+                    tag => tag.Id,
+                    (link, tag) => new { link.SW_formsId, TagName = tag.name })
+                .GroupBy(x => x.SW_formsId)
+                .ToDictionaryAsync(
+                    g => g.Key,
+                    g => g.Select(x => x.TagName).Distinct().OrderBy(n => n).ToList()
+                );
+
+            // pass to view (display only)
+            ViewBag.FormTypeByFormId = formTypeByFormId;
+            ViewBag.ProgramTagsByFormId = programTagsByFormId;
+
+            return View(forms);
         }
+
 
         // GET: form/Details/5
         public async Task<IActionResult> Details(int? id)
