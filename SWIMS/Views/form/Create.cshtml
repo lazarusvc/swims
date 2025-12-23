@@ -55,32 +55,7 @@
                         </div>
                     </div>
 
-                    <div class="row mb-24 gy-3 align-items-center">
-                        <label asp-for="SW_identityId" class="form-label mb-0 col-sm-4">LOCATION:</label>
-                        <div class="col-sm-10">
-                            <select asp-for="SW_identityId" class="form-control" asp-items="ViewBag.SW_identityId" readonly></select>
-                        </div>
-                    </div>
-
-                    <div class="row mb-24 gy-3 align-items-center">
-                        <label  class="form-label mb-0 col-sm-4">FORM TYPE:</label>
-                        <div class="col-sm-10">
-                            <select name="formTypeId" class="form-control" asp-items="ViewBag.formTypeId">
-                                <option value="">-- Select --</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="row mb-24 gy-3 align-items-center">
-                        <label class="form-label mb-0 col-sm-4">PROGRAM TAGS:</label>
-                        <div class="col-sm-10">
-                            <select name="programTagIds" class="form-control" multiple asp-items="ViewBag.programTagIds">
-                                <option value="">-- Select --</option>
-                            </select>
-                            <div class="form-text">Hold Ctrl/⌘ to select multiple.</div>
-                        </div>
-                    </div>
-
+                    @await Html.PartialAsync("Partials/_FormBuilderClassificationDropdowns")
 
                     <div class="row mb-24 gy-3 align-items-center">
                         <label asp-for="image" class="form-label mb-0 col-sm-4">IMAGE:<span style="color:red;">*</span></label>
@@ -135,9 +110,10 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
-}
 
-<link href="~/css/forms-stylesheet.css" rel="stylesheet" />
+    
+
+    <link href="~/css/forms-stylesheet.css" rel="stylesheet" />
 <script src="~/lib/jquery/dist/jquery.min.js"></script>
 <script src="~/lib/formbuilder/form-builder.min.js"></script>
 <script src="~/lib/fb-logic/formbuilder-conditional-logic.umd.js"></script>
@@ -273,3 +249,5 @@
         });
     });
 </script>
+}
+

@@ -1,0 +1,209 @@
+﻿@using System.Linq
+@using Microsoft.AspNetCore.Mvc.Rendering
+
+@{
+    var identityItems = (ViewData["SW_identityId"] as IEnumerable<SelectListItem>) ?? Enumerable.Empty<SelectListItem>();
+    var formTypeItems = (ViewData["formTypeId"] as IEnumerable<SelectListItem>) ?? Enumerable.Empty<SelectListItem>();
+    var programTagItems = (ViewData["programTagIds"] as IEnumerable<SelectListItem>) ?? Enumerable.Empty<SelectListItem>();
+
+    var identitySelectedText = identityItems.FirstOrDefault(x => x.Selected)?.Text ?? "-- Select --";
+    var formTypeSelectedText = formTypeItems.FirstOrDefault(x => x.Selected)?.Text ?? "-- Select --";
+
+    var selectedTagCount = programTagItems.Count(x => x.Selected);
+    var programTagsButtonText = selectedTagCount == 0
+        ? "-- Select --"
+        : selectedTagCount == 1
+            ? (programTagItems.FirstOrDefault(x => x.Selected)?.Text ?? "1 selected")
+            : $"{selectedTagCount} selected";
+}
+
+<style>
+    /* Prevent long selected values from overflowing the "input-like" dropdown button */
+    .swims-dd-btn {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: .5rem;
+    }
+
+    .swims-dd-label {
+        flex: 1 1 auto;
+        min-width: 0; /* required for ellipsis inside flex */
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis; /* shows … */
+        display: block;
+    }
+</style>
+
+<div class="row mb-24 gy-3 align-items-center">
+    <label class="form-label mb-0 col-sm-4">LOCATION:</label>
+    <div class="col-sm-10">
+        <div class="dropdown w-100" data-dd-single>
+            <button class="form-control text-start dropdown-toggle toggle-icon swims-dd-btn"
+                    type="button"
+                    data-bs-toggle="dropdown"
+                    data-bs-auto-close="outside"
+                    aria-expanded="false">
+                <span class="swims-dd-label" data-dd-label title="@identitySelectedText">@identitySelectedText</span>
+            </button>
+
+            <div class="dropdown-menu p-12 border bg-base shadow w-100" style="max-height:260px; overflow:auto;">
+                @foreach (var item in identityItems)
+                {
+                    var id = $"sw_identity_{item.Value}";
+                    <label class="dropdown-item px-16 py-8 rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2"
+                           for="@id"
+                           style="cursor:pointer;">
+                        <input class="form-check-input m-0"
+                               type="radio"
+                               id="@id"
+                               name="SW_identityId"
+                               value="@item.Value"
+                               data-dd-text="@item.Text"
+                               @(item.Selected ? "checked" : null) />
+                        <span>@item.Text</span>
+                    </label>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-24 gy-3 align-items-center">
+    <label class="form-label mb-0 col-sm-4">FORM TYPE:</label>
+    <div class="col-sm-10">
+        <div class="dropdown w-100" data-dd-single>
+            <button class="form-control text-start dropdown-toggle toggle-icon swims-dd-btn"
+                    type="button"
+                    data-bs-toggle="dropdown"
+                    data-bs-auto-close="outside"
+                    aria-expanded="false">
+                <span class="swims-dd-label" data-dd-label title="@formTypeSelectedText">@formTypeSelectedText</span>
+            </button>
+
+            <div class="dropdown-menu p-12 border bg-base shadow w-100" style="max-height:260px; overflow:auto;">
+                <label class="dropdown-item px-16 py-8 rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2"
+                       style="cursor:pointer;">
+                    <input class="form-check-input m-0"
+                           type="radio"
+                           name="formTypeId"
+                           value=""
+                           data-dd-text="-- Select --"
+                           @(formTypeItems.All(x => !x.Selected) ? "checked" : null) />
+                    <span>-- Select --</span>
+                </label>
+
+                @foreach (var item in formTypeItems)
+                {
+                    var id = $"formType_{item.Value}";
+                    <label class="dropdown-item px-16 py-8 rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2"
+                           for="@id"
+                           style="cursor:pointer;">
+                        <input class="form-check-input m-0"
+                               type="radio"
+                               id="@id"
+                               name="formTypeId"
+                               value="@item.Value"
+                               data-dd-text="@item.Text"
+                               @(item.Selected ? "checked" : null) />
+                        <span>@item.Text</span>
+                    </label>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-24 gy-3 align-items-center">
+    <label class="form-label mb-0 col-sm-4">PROGRAM TAGS:</label>
+    <div class="col-sm-10">
+        <div class="dropdown w-100" data-dd-multi>
+            <button class="form-control text-start dropdown-toggle toggle-icon swims-dd-btn"
+                    type="button"
+                    data-bs-toggle="dropdown"
+                    data-bs-auto-close="outside"
+                    aria-expanded="false">
+                <span class="swims-dd-label" data-dd-label title="@programTagsButtonText">@programTagsButtonText</span>
+            </button>
+
+            <div class="dropdown-menu p-12 border bg-base shadow w-100">
+                <input type="text"
+                       class="form-control form-control-sm mb-8"
+                       placeholder="Search tags…"
+                       data-dd-search />
+
+                <div style="max-height:260px; overflow:auto;">
+                    @foreach (var item in programTagItems)
+                    {
+                        var id = $"programTag_{item.Value}";
+                        <label class="dropdown-item px-16 py-8 rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900 d-flex align-items-center gap-2"
+                               for="@id"
+                               data-dd-item
+                               style="cursor:pointer;">
+                            <input class="form-check-input m-0"
+                                   type="checkbox"
+                                   id="@id"
+                                   name="programTagIds"
+                                   value="@item.Value"
+                                   data-dd-text="@item.Text"
+                                   @(item.Selected ? "checked" : null) />
+                            <span>@item.Text</span>
+                        </label>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="form-text">Select one or more tags (no Ctrl/⌘ needed).</div>
+    </div>
+</div>
+
+<script>
+    (function () {
+      // guard: don't register listeners more than once per page load
+      if (window.__swims_dd_init) return;
+      window.__swims_dd_init = true;
+
+      function setLabel(dd, text) {
+        const label = dd.querySelector('[data-dd-label]');
+        if (!label) return;
+        label.textContent = text;
+        label.setAttribute('title', text); // hover shows full value (useful when truncated)
+      }
+
+      function updateSingleLabel(dd) {
+        const checked = dd.querySelector('input[type="radio"]:checked');
+        const text = checked ? (checked.getAttribute('data-dd-text') || checked.value) : '-- Select --';
+        setLabel(dd, text);
+      }
+
+      function updateMultiLabel(dd) {
+        const checks = dd.querySelectorAll('input[type="checkbox"]:checked');
+        if (checks.length === 0) { setLabel(dd, '-- Select --'); return; }
+        if (checks.length === 1) { setLabel(dd, checks[0].getAttribute('data-dd-text') || '1 selected'); return; }
+        setLabel(dd, `${checks.length} selected`);
+      }
+
+      document.querySelectorAll('[data-dd-single]').forEach(dd => {
+        dd.addEventListener('change', () => updateSingleLabel(dd));
+        updateSingleLabel(dd);
+      });
+
+      document.querySelectorAll('[data-dd-multi]').forEach(dd => {
+        dd.addEventListener('change', () => updateMultiLabel(dd));
+        updateMultiLabel(dd);
+
+        const search = dd.querySelector('[data-dd-search]');
+        if (search) {
+          search.addEventListener('input', () => {
+            const q = search.value.trim().toLowerCase();
+            dd.querySelectorAll('[data-dd-item]').forEach(row => {
+              const text = row.innerText.trim().toLowerCase();
+              row.style.display = (!q || text.includes(q)) ? '' : 'none';
+            });
+          });
+        }
+      });
+    })();
+</script>
