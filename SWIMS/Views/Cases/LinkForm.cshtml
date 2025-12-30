@@ -22,11 +22,35 @@
             </div>
 
             <div class="card-body">
-                <form asp-action="LinkForm" method="post">
+                <form asp-action="LinkForm" asp-route-id="@Model.SW_caseId" method="post">
+
                     @Html.AntiForgeryToken()
                     <input type="hidden" asp-for="SW_caseId" />
 
                     <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+                    @if (ViewBag.FormScopeNote != null)
+                    {
+                        <div class="alert alert-info mb-3">@ViewBag.FormScopeNote</div>
+                    }
+
+                    @{
+                        
+                        var hasSelectable =
+                        Model.AvailableForms != null &&
+                        Model.AvailableForms.Any(x => !x.Disabled && !string.IsNullOrWhiteSpace(x.Value));
+                    }
+
+                    @if (!hasSelectable)
+                    {
+                        <div class="alert alert-warning">
+                            No submissions found for this beneficiary.
+                            <br />
+                            If this is unexpected, confirm the submission has a <strong>beneficiary</strong> field and it matches the case beneficiary.
+                        </div>
+                    }
+
+
 
                     <div class="mb-3">
                         <label asp-for="SelectedFormTableDatumId" class="form-label"></label>
@@ -48,19 +72,6 @@
                     </div>
 
                     <div class="row g-3">
-                        <div class="col-md-6">
-                            <label asp-for="FormRole" class="form-label"></label>
-                            <select asp-for="FormRole" class="form-select">
-                                <option value="">(none)</option>
-                                <option value="Application">Application</option>
-                                <option value="Intake">Intake</option>
-                                <option value="Assessment">Assessment</option>
-                                <option value="Dependent">Dependent</option>
-                                <option value="Other">Other</option>
-                            </select>
-                            <span asp-validation-for="FormRole" class="text-danger"></span>
-                        </div>
-
                         <div class="col-md-6 d-flex align-items-center">
                             <div class="form-check mt-3">
                                 <input asp-for="IsPrimaryApplication" class="form-check-input" />
@@ -68,16 +79,18 @@
                             </div>
                         </div>
 
-                        <div class="form-check mb-3">
-                            <input asp-for="IncludeLinkedForms" class="form-check-input" />
-                            <label asp-for="IncludeLinkedForms" class="form-check-label"></label>
-                            <div class="form-text">
-                                When checked, any linked child/sub-forms can also be attached to this case
-                                once the linking metadata is wired up.
+                        <div class="col-md-6">
+                            <div class="form-check mt-3">
+                                <input asp-for="IncludeLinkedForms" class="form-check-input" />
+                                <label asp-for="IncludeLinkedForms" class="form-check-label"></label>
+                                <div class="form-text">
+                                    When checked, any linked child/sub-forms can also be attached to this case
+                                    once the linking metadata is wired up.
+                                </div>
                             </div>
                         </div>
-
                     </div>
+
 
                     <div class="d-flex justify-content-end gap-2 mt-4">
                         <a asp-action="Details"

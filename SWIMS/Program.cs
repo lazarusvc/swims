@@ -79,35 +79,91 @@ builder.Services.AddDbContext<SwimsIdentityDbContext>((sp, options) =>
 {
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection"),
-        sql => sql.MigrationsHistoryTable("__EFMigrationsHistory_Identity", "auth")
+        sql =>
+        {
+            sql.MigrationsHistoryTable("__EFMigrationsHistory_Identity", "auth");
+
+            // ✅ transient fault handling
+            sql.EnableRetryOnFailure(
+                maxRetryCount: 5,
+                maxRetryDelay: TimeSpan.FromSeconds(10),
+                errorNumbersToAdd: null);
+
+            // optional but recommended
+            sql.CommandTimeout(30);
+        }
     );
+
     options.AddInterceptors(sp.GetRequiredService<AuditSaveChangesInterceptor>());
 });
 
 builder.Services.AddDbContext<SwimsDb_moreContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection"),
-        sql => sql.MigrationsHistoryTable("__EFMigrationsHistory_More", "dbo")
+        sql =>
+        {
+            sql.MigrationsHistoryTable("__EFMigrationsHistory_More", "dbo");
+
+            // ✅ transient fault handling
+            sql.EnableRetryOnFailure(
+                maxRetryCount: 5,
+                maxRetryDelay: TimeSpan.FromSeconds(10),
+                errorNumbersToAdd: null);
+
+            sql.CommandTimeout(30);
+        }
     ));
 
 builder.Services.AddDbContext<SwimsCasesDbContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection"),
-        sql => sql.MigrationsHistoryTable("__EFMigrationsHistory_Cases", "case")
+        sql =>
+        {
+            sql.MigrationsHistoryTable("__EFMigrationsHistory_Cases", "case");
+
+            // ✅ transient fault handling
+            sql.EnableRetryOnFailure(
+                maxRetryCount: 5,
+                maxRetryDelay: TimeSpan.FromSeconds(10),
+                errorNumbersToAdd: null);
+
+            sql.CommandTimeout(30);
+        }
     ));
 
 // Lookup / reference data context (program tags, form types, etc.)
 builder.Services.AddDbContext<SwimsLookupDbContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection"),
-        sql => sql.MigrationsHistoryTable("__EFMigrationsHistory_Lookup", "ref")
-    ));
+        sql =>
+        {
+            sql.MigrationsHistoryTable("__EFMigrationsHistory_Lookup", "ref");
 
+            // ✅ transient fault handling
+            sql.EnableRetryOnFailure(
+                maxRetryCount: 5,
+                maxRetryDelay: TimeSpan.FromSeconds(10),
+                errorNumbersToAdd: null);
+
+            sql.CommandTimeout(30);
+        }
+    ));
 
 builder.Services.AddDbContext<SwimsStoredProcsDbContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection"),
-        sql => sql.MigrationsHistoryTable("__EFMigrationsHistory", "sp")
+        sql =>
+        {
+            sql.MigrationsHistoryTable("__EFMigrationsHistory", "sp");
+
+            // ✅ transient fault handling
+            sql.EnableRetryOnFailure(
+                maxRetryCount: 5,
+                maxRetryDelay: TimeSpan.FromSeconds(10),
+                errorNumbersToAdd: null);
+
+            sql.CommandTimeout(30);
+        }
     ));
 
 builder.Services.Configure<StoredProcOptions>(
@@ -116,8 +172,20 @@ builder.Services.Configure<StoredProcOptions>(
 builder.Services.AddDbContext<SwimsReportsDbContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection"),
-        sql => sql.MigrationsHistoryTable("__EFMigrationsHistory_Reports", "rpt")
+        sql =>
+        {
+            sql.MigrationsHistoryTable("__EFMigrationsHistory_Reports", "rpt");
+
+            // ✅ transient fault handling
+            sql.EnableRetryOnFailure(
+                maxRetryCount: 5,
+                maxRetryDelay: TimeSpan.FromSeconds(10),
+                errorNumbersToAdd: null);
+
+            sql.CommandTimeout(30);
+        }
     ));
+
 
 // DI
 builder.Services.AddScoped<ISessionLogger, SessionLogger>();

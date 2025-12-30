@@ -1,17 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Identity;
+﻿using HandlebarsDotNet;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using SWIMS.Data;
 using SWIMS.Data.Cases;
+using SWIMS.Data.Lookups;
 using SWIMS.Models;
 using SWIMS.Models.ViewModels;
-using SWIMS.Data.Lookups;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Reflection;
 
 
 namespace SWIMS.Controllers
@@ -582,6 +584,75 @@ namespace SWIMS.Controllers
                 })
                 .ToList();
 
+            // -------------------------------
+            // Enrich linked case forms with:
+            // FormName, SiteIdentityName, FormTypeName, ProgramTags
+            // -------------------------------
+            var formDataIds = forms.Select(x => x.FormTableDataId).Distinct().ToList();
+
+            var formIdByFormDataId = await _core.SW_formTableData
+                .AsNoTracking()
+                .Where(d => formDataIds.Contains(d.Id))
+                .Select(d => new { d.Id, d.SW_formsId })
+                .ToDictionaryAsync(x => x.Id, x => x.SW_formsId);
+
+            var formIds = formIdByFormDataId.Values.Distinct().ToList();
+
+            var formMetaById = await _core.SW_forms
+                .AsNoTracking()
+                .Include(f => f.SW_identity)
+                .Where(f => formIds.Contains(f.Id))
+                .Select(f => new
+                {
+                    f.Id,
+                    FormName = f.name,
+                    SiteIdentityName = f.SW_identity != null ? f.SW_identity.name : null
+                })
+                .ToDictionaryAsync(x => x.Id);
+
+            var formTypeByFormId = await _lookup.SW_formFormTypes
+                .AsNoTracking()
+                .Where(x => formIds.Contains(x.SW_formsId))
+                .Join(_lookup.SW_formTypes.AsNoTracking(),
+                    link => link.SW_formTypeId,
+                    t => t.Id,
+                    (link, t) => new { link.SW_formsId, TypeName = t.name })
+                .ToDictionaryAsync(x => x.SW_formsId, x => x.TypeName);
+
+            var programTagsByFormId = await _lookup.SW_formProgramTags
+                .AsNoTracking()
+                .Where(x => formIds.Contains(x.SW_formsId))
+                .Join(_lookup.SW_programTags.AsNoTracking(),
+                    link => link.SW_programTagId,
+                    tag => tag.Id,
+                    (link, tag) => new { link.SW_formsId, TagName = tag.name })
+                .GroupBy(x => x.SW_formsId)
+                .ToDictionaryAsync(
+                    g => g.Key,
+                    g => g.Select(x => x.TagName).Distinct().OrderBy(n => n).ToList()
+                );
+
+            foreach (var row in forms)
+            {
+                if (!formIdByFormDataId.TryGetValue(row.FormTableDataId, out var formId))
+                    continue;
+
+                row.FormId = formId;
+
+                if (formMetaById.TryGetValue(formId, out var meta))
+                {
+                    row.FormName = meta.FormName;
+                    row.SiteIdentityName = meta.SiteIdentityName;
+                }
+
+                if (formTypeByFormId.TryGetValue(formId, out var typeName))
+                    row.FormTypeName = typeName;
+
+                if (programTagsByFormId.TryGetValue(formId, out var tags))
+                    row.ProgramTagNames = tags;
+            }
+
+
 
             var vm = new CaseDetailsViewModel
             {
@@ -675,6 +746,16 @@ namespace SWIMS.Controllers
                 return NotFound();
             }
 
+            
+            var beneficiaryUuid = await _core.SW_beneficiaries
+                .AsNoTracking()
+                .Where(b => b.Id == caseEntity.SW_beneficiaryId)
+                .Select(b => b.uuid)
+                .FirstOrDefaultAsync();
+
+            
+            ViewBag.FormScopeNote = "Showing submissions for the selected beneficiary only.";
+
             var vm = new CaseLinkFormViewModel
             {
                 SW_caseId = caseEntity.Id,
@@ -684,7 +765,7 @@ namespace SWIMS.Controllers
                 IncludeLinkedForms = true
             };
 
-            vm.AvailableForms = await BuildAvailableFormsSelectListAsync(caseEntity);
+            vm.AvailableForms = await BuildAvailableFormsSelectListAsync(beneficiaryUuid, caseEntity.SW_beneficiaryId);
 
             return View(vm);
         }
@@ -716,8 +797,20 @@ namespace SWIMS.Controllers
 
                 vm.CaseNumber = caseEntity.case_number;
                 vm.CaseTitle = caseEntity.title;
-                vm.AvailableForms = await BuildAvailableFormsSelectListAsync(caseEntity);
+
+                var beneficiaryUuid = await _core.SW_beneficiaries
+                    .AsNoTracking()
+                    .Where(b => b.Id == caseEntity.SW_beneficiaryId)
+                    .Select(b => b.uuid)
+                    .FirstOrDefaultAsync();
+
+                ViewBag.FormScopeNote = !string.IsNullOrWhiteSpace(beneficiaryUuid)
+                    ? "Showing submissions for the selected beneficiary only."
+                    : "No beneficiary selected on this case — showing all submissions.";
+
+                vm.AvailableForms = await BuildAvailableFormsSelectListAsync(beneficiaryUuid, caseEntity.SW_beneficiaryId);
                 return View(vm);
+
             }
 
             var formData = await _core.SW_formTableData
@@ -730,9 +823,31 @@ namespace SWIMS.Controllers
                     "The selected form submission no longer exists.");
                 vm.CaseNumber = caseEntity.case_number;
                 vm.CaseTitle = caseEntity.title;
-                vm.AvailableForms = await BuildAvailableFormsSelectListAsync(caseEntity);
+
+                var beneficiaryUuid = await _core.SW_beneficiaries
+                    .AsNoTracking()
+                    .Where(b => b.Id == caseEntity.SW_beneficiaryId)
+                    .Select(b => b.uuid)
+                    .FirstOrDefaultAsync();
+
+                ViewBag.FormScopeNote = !string.IsNullOrWhiteSpace(beneficiaryUuid)
+                    ? "Showing submissions for the selected beneficiary only."
+                    : "No beneficiary selected on this case — showing all submissions.";
+
+                vm.AvailableForms = await BuildAvailableFormsSelectListAsync(beneficiaryUuid, caseEntity.SW_beneficiaryId);
                 return View(vm);
+
             }
+
+            var formTypeName = await _lookup.SW_formFormTypes
+                .AsNoTracking()
+                .Where(x => x.SW_formsId == formData.SW_formsId)
+                .Join(_lookup.SW_formTypes.AsNoTracking(),
+                    link => link.SW_formTypeId,
+                    t => t.Id,
+                    (link, t) => t.name)
+                .FirstOrDefaultAsync();
+
 
             var alreadyLinked = await _cases.SW_caseForms
         .AnyAsync(cf =>
@@ -749,39 +864,28 @@ namespace SWIMS.Controllers
             {
                 SW_caseId = caseEntity.Id,
                 SW_formTableDatumId = formData.Id,
-                form_role = string.IsNullOrWhiteSpace(vm.FormRole)
-                    ? null
-                    : vm.FormRole.Trim(),
+
+                form_role = string.IsNullOrWhiteSpace(formTypeName) ? null : formTypeName.Trim(),
+
                 is_primary_application = vm.IsPrimaryApplication,
-                linked_at = DateTime.Now,
+                linked_at = DateTime.UtcNow,
                 linked_by = _userManager.GetUserId(User)
             };
 
+
             _cases.SW_caseForms.Add(link);
 
-            // Optional future behaviour (toggle-controlled)
             if (vm.IncludeLinkedForms)
             {
-                await AttachLinkedFormsAsync(caseEntity, formData);
+                await AttachLinkedFormsAsync(caseEntity.Id, formData.Id, formTypeName);
             }
+
 
             await _cases.SaveChangesAsync();
 
             TempData["Ok"] = "Form submission linked to case.";
             return RedirectToAction(nameof(Details), new { id = caseEntity.Id });
         }
-
-        /// <summary>
-        /// Future hook: attach any child/linked forms that belong to the same logical bundle
-        /// as <paramref name="rootFormData"/>. For now this is a no-op until we stabilise
-        /// the linking data model in the forms module.
-        /// </summary>
-        private Task AttachLinkedFormsAsync(SW_case caseEntity, SW_formTableDatum rootFormData)
-        {
-            // TODO: Use form linking metadata (isLinkingForm / linking tables) once finalised.
-            return Task.CompletedTask;
-        }
-
 
 
         [HttpPost]
@@ -1073,126 +1177,265 @@ namespace SWIMS.Controllers
         }
 
 
-        private async Task<List<SelectListItem>> BuildAvailableFormsSelectListAsync(SW_case caseEntity)
+
+        // ✅ REPLACE ENTIRE METHOD
+        private static readonly PropertyInfo[] _formDataProps =
+            typeof(SW_formTableDatum)
+                .GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                .Where(p => p.Name.StartsWith("FormData", StringComparison.OrdinalIgnoreCase))
+                .ToArray();
+
+        private static string NormalizeRaw(string raw)
         {
-            // Already-linked submissions for this case
-            var alreadyLinkedIds = await _cases.SW_caseForms
-                .Where(cf => cf.SW_caseId == caseEntity.Id)
-                .Select(cf => cf.SW_formTableDatumId)
+            raw = raw.Trim();
+
+            // Handle cases where some older UI stored "id,uuid,name"
+            if (raw.Contains(','))
+            {
+                var parts = raw.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                if (parts.Length >= 2) return parts[1]; // uuid
+                if (parts.Length == 1) return parts[0];
+            }
+
+            return raw;
+        }
+
+        private bool RowMatchesBeneficiary(SW_formTableDatum row, string? beneficiaryUuid, int? beneficiaryId)
+        {
+            var benUuid = string.IsNullOrWhiteSpace(beneficiaryUuid) ? null : beneficiaryUuid.Trim();
+            var benId = beneficiaryId.HasValue ? beneficiaryId.Value.ToString() : null;
+
+            foreach (var prop in _formDataProps)
+            {
+                var rawObj = prop.GetValue(row);
+                if (rawObj == null) continue;
+
+                var raw = rawObj.ToString();
+                if (string.IsNullOrWhiteSpace(raw)) continue;
+
+                var normalized = NormalizeRaw(raw);
+
+                if (benUuid != null &&
+                    string.Equals(normalized, benUuid, StringComparison.OrdinalIgnoreCase))
+                    return true;
+
+                if (benId != null &&
+                    string.Equals(normalized, benId, StringComparison.OrdinalIgnoreCase))
+                    return true;
+            }
+
+            return false;
+        }
+
+        private async Task<List<SelectListItem>> BuildAvailableFormsSelectListAsync(string? beneficiaryUuid, int? beneficiaryId)
+        {
+            var strictScope = !string.IsNullOrWhiteSpace(beneficiaryUuid) || (beneficiaryId.HasValue && beneficiaryId.Value > 0);
+
+            // Keep bounded (adjust if needed)
+            var candidates = await _core.SW_formTableData
+                .AsNoTracking()
+                .Include(d => d.SW_forms)
+                .OrderByDescending(d => d.Id)
+                .Take(750)
                 .ToListAsync();
+
+            if (strictScope)
+            {
+                candidates = candidates
+                    .Where(d => RowMatchesBeneficiary(d, beneficiaryUuid, beneficiaryId))
+                    .ToList();
+            }
+
+            // --- NEW: extract beneficiary tokens from each row so we can display the name ---
+            var tokenBySubmissionId = new Dictionary<int, (int? id, string? uuid, string? inlineName)>();
+            var idKeys = new HashSet<int>();
+            var uuidKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var row in candidates)
+            {
+                var token = ExtractBeneficiaryToken(row);
+                tokenBySubmissionId[row.Id] = token;
+
+                if (token.id.HasValue) idKeys.Add(token.id.Value);
+                if (!string.IsNullOrWhiteSpace(token.uuid)) uuidKeys.Add(token.uuid);
+            }
+
+            // Resolve beneficiary names from DB (only for tokens we found)
+            string MakeName(SW_beneficiary b) =>
+                !string.IsNullOrWhiteSpace(b.name)
+                    ? b.name
+                    : $"{b.first_name} {b.last_name}".Trim();
+
+            var benById = idKeys.Count == 0
+                ? new Dictionary<int, string>()
+                : await _core.SW_beneficiaries
+                    .AsNoTracking()
+                    .Where(b => idKeys.Contains(b.Id))
+                    .ToDictionaryAsync(b => b.Id, b => MakeName(b));
+
+            var benByUuid = uuidKeys.Count == 0
+                ? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                : await _core.SW_beneficiaries
+                    .AsNoTracking()
+                    .Where(b => b.uuid != null && uuidKeys.Contains(b.uuid))
+                    .ToDictionaryAsync(b => b.uuid!, b => MakeName(b), StringComparer.OrdinalIgnoreCase);
 
             var items = new List<SelectListItem>();
 
-            // --- Try to scope by beneficiary first ---
-
-            string? beneficiaryUuid = null;
-
-            // SW_beneficiaryId is non-nullable; treat > 0 as “has beneficiary”
-            if (caseEntity.SW_beneficiaryId > 0)
+            foreach (var row in candidates)
             {
-                var beneficiary = await _core.SW_beneficiaries
-                    .AsNoTracking()
-                    .FirstOrDefaultAsync(b => b.Id == caseEntity.SW_beneficiaryId);
+                var formName = row.SW_forms?.name ?? $"Form {row.SW_formsId}";
 
-                beneficiaryUuid = beneficiary?.uuid;
-            }
+                // --- NEW: build beneficiary label ---
+                tokenBySubmissionId.TryGetValue(row.Id, out var token);
 
-            if (!string.IsNullOrWhiteSpace(beneficiaryUuid))
-            {
-                // Forms which declare a "beneficiary" field in SW_formTableData_Types
-                var beneficiaryFieldMappings = await _core.SW_formTableData_Types
-                    .Where(t => t.type == "beneficiary")
-                    .ToListAsync();
+                string? benName = null;
 
-                if (beneficiaryFieldMappings.Any())
+                // Prefer inline name if it exists (id,uuid,name format)
+                if (!string.IsNullOrWhiteSpace(token.inlineName))
+                    benName = token.inlineName;
+                else if (token.id.HasValue && benById.TryGetValue(token.id.Value, out var byIdName))
+                    benName = byIdName;
+                else if (!string.IsNullOrWhiteSpace(token.uuid) && benByUuid.TryGetValue(token.uuid, out var byUuidName))
+                    benName = byUuidName;
+
+                var benLabel = benName
+                    ?? token.uuid
+                    ?? (token.id?.ToString())
+                    ?? "Unknown";
+
+                items.Add(new SelectListItem
                 {
-                    var formIds = beneficiaryFieldMappings
-                        .Select(t => t.SW_formsId)
-                        .Distinct()
-                        .ToList();
-
-                    var fieldMapByForm = beneficiaryFieldMappings
-                        .GroupBy(t => t.SW_formsId)
-                        .ToDictionary(
-                            g => g.Key,
-                            g => g.Select(t => t.field).ToList());
-
-                    var candidates = await _core.SW_formTableData
-                        .Include(d => d.SW_forms)
-                        .Where(d => formIds.Contains(d.SW_formsId))
-                        .OrderByDescending(d => d.Id)
-                        .ToListAsync();
-
-                    var dataType = typeof(SW_formTableDatum);
-
-                    foreach (var entry in candidates)
-                    {
-                        if (!fieldMapByForm.TryGetValue(entry.SW_formsId, out var fieldsForForm))
-                        {
-                            continue;
-                        }
-
-                        var isMatch = false;
-
-                        foreach (var fieldName in fieldsForForm)
-                        {
-                            var prop = dataType.GetProperty(fieldName);
-                            if (prop == null) continue;
-
-                            var value = prop.GetValue(entry) as string;
-                            if (!string.IsNullOrWhiteSpace(value) && value == beneficiaryUuid)
-                            {
-                                isMatch = true;
-                                break;
-                            }
-                        }
-
-                        if (!isMatch) continue;
-
-                        if (alreadyLinkedIds.Contains(entry.Id)) continue;
-
-                        items.Add(new SelectListItem
-                        {
-                            Value = entry.Id.ToString(),
-                            Text = $"{entry.SW_forms.name} | Submission #{entry.Id}"
-                        });
-
-                        // Hard cap to keep dropdown sane
-                        if (items.Count >= 100)
-                        {
-                            break;
-                        }
-                    }
-
-                    if (items.Any())
-                    {
-                        ViewBag.FormScopeNote =
-                            "Showing forms for this beneficiary (based on forms that declare a beneficiary field).";
-
-                        return items;
-                    }
-                }
+                    Value = row.Id.ToString(),
+                    Text = $"{formName} • Submission #{row.Id} • Beneficiary: {benLabel}"
+                });
             }
 
-            // --- Fallback: last 50 submissions globally (excluding already linked) ---
-
-            var fallback = await _core.SW_formTableData
-                .Include(d => d.SW_forms)
-                .Where(d => !alreadyLinkedIds.Contains(d.Id))
-                .OrderByDescending(d => d.Id)
-                .Take(50)
-                .ToListAsync();
-
-            items = fallback.Select(d => new SelectListItem
+            if (items.Count == 0)
             {
-                Value = d.Id.ToString(),
-                Text = $"{d.SW_forms.name} | Submission #{d.Id}"
-            }).ToList();
-
-            ViewBag.FormScopeNote =
-                "Showing the most recent form submissions (no beneficiary-specific mapping could be applied).";
+                items.Add(new SelectListItem
+                {
+                    Value = "",
+                    Text = strictScope ? "(No submissions found for this beneficiary)" : "(No submissions found)",
+                    Disabled = true
+                });
+            }
 
             return items;
+        }
+
+
+        // ✅ ADD THIS METHOD (it can attach nothing if linking data isn't ready — that's fine)
+        private async Task AttachLinkedFormsAsync(int caseId, int rootSubmissionId, string? rootRole)
+        {
+            var root = await _core.SW_formTableData
+                .AsNoTracking()
+                .FirstOrDefaultAsync(d => d.Id == rootSubmissionId);
+
+            if (root == null) return;
+
+            // Convention:
+            // - children store a group key in isLinkingForm
+            // - or children store root.Id.ToString() in isLinkingForm
+            var groupKey = !string.IsNullOrWhiteSpace(root.isLinkingForm)
+                ? root.isLinkingForm.Trim()
+                : rootSubmissionId.ToString();
+
+            var ids = new HashSet<int> { rootSubmissionId };
+
+            // Add all submissions that point at this group key
+            var linkedIds = await _core.SW_formTableData
+                .AsNoTracking()
+                .Where(d => d.isLinkingForm == groupKey)
+                .Select(d => d.Id)
+                .ToListAsync();
+
+            foreach (var x in linkedIds) ids.Add(x);
+
+            // If groupKey is numeric, include that as a possible group-root submission
+            if (int.TryParse(groupKey, out var groupRootId))
+                ids.Add(groupRootId);
+
+            if (ids.Count <= 1) return;
+
+            // Existing links for this case
+            var existing = await _cases.SW_caseForms
+                .AsNoTracking()
+                .Where(cf => cf.SW_caseId == caseId)
+                .Select(cf => cf.SW_formTableDatumId)
+                .ToHashSetAsync();
+
+            // Root is being added in-memory in the action (not saved yet), treat as linked
+            existing.Add(rootSubmissionId);
+
+            var linkedRole = string.IsNullOrWhiteSpace(rootRole)
+                ? "Linked"
+                : $"Linked: {rootRole.Trim()}";
+
+            var linkedBy = _userManager.GetUserId(User);
+
+            foreach (var submissionId in ids)
+            {
+                if (existing.Contains(submissionId)) continue;
+
+                _cases.SW_caseForms.Add(new SW_caseForm
+                {
+                    SW_caseId = caseId,
+                    SW_formTableDatumId = submissionId,
+                    form_role = linkedRole,
+                    is_primary_application = false,
+                    linked_at = DateTime.UtcNow,
+                    linked_by = linkedBy
+                });
+            }
+        }
+
+        private static bool LooksLikeGuid(string s) => Guid.TryParse(s, out _);
+
+        private static (int? id, string? uuid, string? inlineName) ExtractBeneficiaryToken(SW_formTableDatum row)
+        {
+            foreach (var prop in _formDataProps)
+            {
+                var rawObj = prop.GetValue(row);
+                if (rawObj == null) continue;
+
+                var raw = rawObj.ToString();
+                if (string.IsNullOrWhiteSpace(raw)) continue;
+
+                raw = raw.Trim();
+
+                // If stored as "id,uuid,name" (or similar), parse that first
+                if (raw.Contains(','))
+                {
+                    var parts = raw.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+                    int? id = null;
+                    string? uuid = null;
+                    string? name = null;
+
+                    if (parts.Length >= 1 && int.TryParse(parts[0], out var parsedId))
+                        id = parsedId;
+
+                    if (parts.Length >= 2 && LooksLikeGuid(parts[1]))
+                        uuid = parts[1];
+
+                    if (parts.Length >= 3)
+                        name = parts[2];
+
+                    if (id.HasValue || uuid != null || name != null)
+                        return (id, uuid, name);
+                }
+
+                var normalized = NormalizeRaw(raw);
+
+                if (LooksLikeGuid(normalized))
+                    return (null, normalized, null);
+
+                if (int.TryParse(normalized, out var parsed))
+                    return (parsed, null, null);
+            }
+
+            return (null, null, null);
         }
 
 
