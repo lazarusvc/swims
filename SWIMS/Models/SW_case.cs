@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace SWIMS.Models
 {
@@ -36,5 +37,21 @@ namespace SWIMS.Models
         public ICollection<SW_caseForm> SW_caseForms { get; set; } = new List<SW_caseForm>();
 
         public ICollection<SW_caseAssignment> SW_caseAssignments { get; set; } = new List<SW_caseAssignment>();
+
+
+
+        // Beneficiary / benefit period (computed from primary application approval)
+        public DateTime? benefit_start_at { get; set; }
+        public DateTime? benefit_end_at { get; set; }
+
+        public int? benefit_period_months { get; set; }
+
+        [MaxLength(32)]
+        public string? benefit_period_source { get; set; }
+
+        // Custom overrides (plan-ahead; UI can come later)
+        public int? benefit_period_months_override { get; set; }
+        public DateTime? benefit_start_at_override { get; set; }
+        public DateTime? benefit_end_at_override { get; set; }
     }
 }

@@ -9,11 +9,12 @@ using SWIMS.Data.Cases;
 using SWIMS.Data.Lookups;
 using SWIMS.Models;
 using SWIMS.Models.ViewModels;
+using SWIMS.Services.Cases;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Reflection;
+using System.Threading.Tasks;
 
 
 namespace SWIMS.Controllers
@@ -26,19 +27,22 @@ namespace SWIMS.Controllers
         private readonly SwimsIdentityDbContext _identity;
         private readonly UserManager<SwUser> _userManager;
         private readonly SwimsLookupDbContext _lookup;
+        private readonly ICaseLifecycleService _caseLifecycle;
 
         public CasesController(
             SwimsCasesDbContext cases,
             SwimsDb_moreContext core,
             SwimsIdentityDbContext identity,
             UserManager<SwUser> userManager,
-            SwimsLookupDbContext lookup)
+            SwimsLookupDbContext lookup,
+            ICaseLifecycleService caseLifecycle)
         {
             _cases = cases;
             _core = core;
             _identity = identity;
             _userManager = userManager;
             _lookup = lookup;
+            _caseLifecycle = caseLifecycle;
         }
 
 
@@ -687,7 +691,8 @@ namespace SWIMS.Controllers
         public async Task<IActionResult> SetStatus(int id, string status)
         {
             // For v1 we keep the allowed statuses simple and explicit.
-            var allowedStatuses = new[] { "Pending", "Active", "Closed" };
+            var allowedStatuses = new[] { "Pending", "Active", "Inactive", "Closed" };
+
 
             if (string.IsNullOrWhiteSpace(status) || !allowedStatuses.Contains(status))
             {
@@ -880,12 +885,30 @@ namespace SWIMS.Controllers
                 await AttachLinkedFormsAsync(caseEntity.Id, formData.Id, formTypeName);
             }
 
+            if (vm.IsPrimaryApplication)
+            {
+                var userId = _userManager.GetUserId(User);
+                var result = await _caseLifecycle.RefreshFromPrimaryApplicationAsync(id, userId);
+                TempData["Ok"] = result.Message;
+            }
+
 
             await _cases.SaveChangesAsync();
 
             TempData["Ok"] = "Form submission linked to case.";
             return RedirectToAction(nameof(Details), new { id = caseEntity.Id });
         }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RefreshFromPrimaryApplication(int id)
+        {
+            var userId = _userManager.GetUserId(User);
+            var result = await _caseLifecycle.RefreshFromPrimaryApplicationAsync(id, userId);
+            TempData["Ok"] = result.Message;
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
 
 
         [HttpPost]

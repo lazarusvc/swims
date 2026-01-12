@@ -44,6 +44,7 @@ using SWIMS.Services.Outbox.Jobs;
 using SWIMS.Services.Reporting;
 using SWIMS.Services.Setup;
 using SWIMS.Services.SystemSettings;
+using SWIMS.Services.Cases;
 using SWIMS.Web.Endpoints;
 using SWIMS.Web.Hubs;
 using SWIMS.Web.Ops;
@@ -400,6 +401,9 @@ builder.Services.AddScoped<IElsaWorkflowClient, ElsaWorkflowClient>();
 
 
 builder.Services.AddScoped<ISetupStateService, SetupStateService>();
+
+builder.Services.AddScoped<ICaseLifecycleService, CaseLifecycleService>();
+builder.Services.AddHostedService<CaseBenefitExpiryHostedService>();
 
 
 var app = builder.Build();
