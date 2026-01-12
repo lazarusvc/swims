@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SWIMS.Data.Cases;
 
@@ -11,9 +12,11 @@ using SWIMS.Data.Cases;
 namespace SWIMS.Migrations.Cases
 {
     [DbContext(typeof(SwimsCasesDbContext))]
-    partial class SwimsCasesDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260112180204_Cases_AddBenefitPeriodFields")]
+    partial class Cases_AddBenefitPeriodFields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
