@@ -27,6 +27,16 @@
                             { "BreadcrumbSubTitle", BreadcrumbSubTitle },
                             { "BreadcrumbDescription", BreadcrumbDescription }
                         }' />
+
+            @if (TempData["Elsa.Warning"] is string warn && !string.IsNullOrWhiteSpace(warn))
+            {
+                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                    @warn
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+
+
             @RenderBody()
         </div>
 
@@ -40,7 +50,7 @@
         @Html.Raw(ViewData["script"] as string)
     }
 
-    @RenderSection("Scripts", required: false)
+    @await RenderSectionAsync("Scripts", required: false)
 
     <script>
         if ('serviceWorker' in navigator) {

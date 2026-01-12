@@ -59,25 +59,28 @@
                         </div>
                     </div>
 
-                    <div class="row mb-24 gy-3 align-items-center">
-                        <label asp-for="SW_identityId" class="form-label mb-0 col-sm-4">LOCATION:</label>
-                        <div class="col-sm-10">
-                            <select asp-for="SW_identityId" class="form-control" asp-items="ViewBag.SW_identityId" readonly></select>
-                        </div>
+                    @await Html.PartialAsync("Partials/_FormBuilderClassificationDropdowns")
+
+
+                    <div class="mb-2">
+                        @if (!string.IsNullOrWhiteSpace(Model.image))
+                        {
+                            <img id="imagePreview" src="~/uploads/@Model.image" style="max-width:50%;" />
+                        }
+                        else
+                        {
+                            <img id="imagePreview" class="d-none" style="max-width:50%;" />
+                        }
                     </div>
 
-                    <div class="row mb-24 gy-3 align-items-center">
-                        <div id="storedIMG">
-                            
-                        </div>
-                        <label asp-for="image" class="form-label mb-0 col-sm-4">IMAGE:</label>
-                        <div class="col-sm-10">
-                            <a asp-action="EditUpload" asp-route-id="@Model.Id" type="button" class="btn rounded-pill btn-outline-success-600 radius-8 px-20 py-11 d-flex align-items-center gap-2">
-                                Upload new image <iconify-icon icon="mingcute:square-arrow-right-line" class="text-xl"></iconify-icon>
-                            </a>
-                            <span asp-validation-for="image" class="text-danger"></span>
-                        </div>
-                    </div>
+                    <!-- keep existing filename posted back -->
+                    <input type="hidden" asp-for="image" />
+
+                    <label class="control-label">Update Image (optional)</label>
+                    <input type="file" name="imageFile" class="form-control" accept="image/*" />
+
+                    <small class="text-muted">Leave blank to keep the current image.</small>
+
 
                     <div class="row mb-24 gy-3 align-items-center">
                         <label asp-for="header" class="form-label mb-0 col-sm-4">HEADER:</label>
@@ -110,14 +113,17 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+
 }
 
-<link href="~/css/forms-stylesheet.css" rel="stylesheet" />
+
+    <link href="~/css/forms-stylesheet.css" rel="stylesheet" />
 <script src="~/lib/jquery/dist/jquery.min.js"></script>
 <script src="~/lib/formbuilder/form-builder.min.js"></script>
 <script src="~/lib/fb-logic/formbuilder-conditional-logic.umd.js"></script>
 <link href="~/lib/trumbowyg-editor/ui/trumbowyg.min.css" rel="stylesheet" />
 <script src="~/lib/trumbowyg-editor/trumbowyg.min.js"></script>
+
 
 <script type="text/javascript">
   jQuery(function ($) {
@@ -132,12 +138,18 @@
     window.volumeSlider       = document.getElementById('approvalAmt') || null;
     window.volumeValueDisplay = document.getElementById('volumeValue') || null;
 
-    // ---- Your custom image block (kept)
-    var storedImgHost = document.getElementById("storedIMG");
-    if (storedImgHost) {
-      storedImgHost.innerHTML =
-        "<img src='../../uploads/@ViewBag.img' width='50%' />" +
-        "<input type='hidden' name='image' id='image' value='@ViewBag.img' />";
+    // ---- New Image Edit/Upload
+      const fileInput = document.querySelector('input[name="imageFile"]');
+    const imagePreview = document.getElementById('imagePreview');
+
+    if (fileInput && imagePreview) {
+      fileInput.addEventListener('change', (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+
+        imagePreview.src = URL.createObjectURL(file);
+        imagePreview.classList.remove('d-none');
+      });
     }
 
     // ---- Load saved JSON from the MODEL on Edit

@@ -6,20 +6,22 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Graph.Models;
 using Microsoft.SqlServer.Server;
 using SWIMS.Data;
+using SWIMS.Data.Lookups;
 using SWIMS.Models;
+using SWIMS.Models.Lookups;
+using SWIMS.Services.Elsa;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Metadata.Ecma335;
+using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using static System.Net.Mime.MediaTypeNames;
-using System.Text.RegularExpressions;
-using System.Security.Claims;
-using SWIMS.Services.Elsa;
 
 
 namespace SWIMS.Controllers
@@ -27,11 +29,13 @@ namespace SWIMS.Controllers
     public class formController : Controller
     {
         private readonly SwimsDb_moreContext _context;
+        private readonly SwimsLookupDbContext _lookup;
         private readonly IElsaWorkflowClient _elsa;
 
-        public formController(SwimsDb_moreContext context, IElsaWorkflowClient elsa)
+        public formController(SwimsDb_moreContext context, SwimsLookupDbContext lookup, IElsaWorkflowClient elsa)
         {
             _context = context;
+            _lookup = lookup;
             _elsa = elsa;
         }
 
@@ -721,9 +725,43 @@ namespace SWIMS.Controllers
         // GET: form
         public async Task<IActionResult> Index()
         {
-            var swimsDb_moreContext = _context.SW_forms.Include(s => s.SW_identity);
-            return View(await swimsDb_moreContext.ToListAsync());
+            // main forms list (already used by the view)
+            var forms = await _context.SW_forms
+                .Include(s => s.SW_identity)
+                .AsNoTracking()
+                .ToListAsync();
+
+            var formIds = forms.Select(f => f.Id).ToList();
+
+            // --- Form Type (0..1) display map ---
+            var formTypeByFormId = await _lookup.SW_formFormTypes
+                .Where(x => formIds.Contains(x.SW_formsId))
+                .Join(_lookup.SW_formTypes,
+                    link => link.SW_formTypeId,
+                    type => type.Id,
+                    (link, type) => new { link.SW_formsId, TypeName = type.name })
+                .ToDictionaryAsync(x => x.SW_formsId, x => x.TypeName);
+
+            // --- Program Tags (many-to-many) display map ---
+            var programTagsByFormId = await _lookup.SW_formProgramTags
+                .Where(x => formIds.Contains(x.SW_formsId))
+                .Join(_lookup.SW_programTags,
+                    link => link.SW_programTagId,
+                    tag => tag.Id,
+                    (link, tag) => new { link.SW_formsId, TagName = tag.name })
+                .GroupBy(x => x.SW_formsId)
+                .ToDictionaryAsync(
+                    g => g.Key,
+                    g => g.Select(x => x.TagName).Distinct().OrderBy(n => n).ToList()
+                );
+
+            // pass to view (display only)
+            ViewBag.FormTypeByFormId = formTypeByFormId;
+            ViewBag.ProgramTagsByFormId = programTagsByFormId;
+
+            return View(forms);
         }
+
 
         // GET: form/Details/5
         public async Task<IActionResult> Details(int? id)
@@ -750,6 +788,7 @@ namespace SWIMS.Controllers
             ViewBag.datetime = System.DateTime.UtcNow;
             ViewBag.UUID = GenerateNewUuidAsString();
             ViewData["SW_identityId"] = new SelectList(_context.SW_identities, "Id", "name");
+            PopulateFormClassificationDropdowns();
             return View();
         }
 
@@ -758,7 +797,13 @@ namespace SWIMS.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,uuid,name,desc,form,dateModified,SW_identityId,is_linking,image,header,approvalAmt")] SW_form sW_form, IFormFile image)
+        public async Task<IActionResult> Create(
+            [Bind("Id,uuid,name,desc,form,dateModified,SW_identityId,is_linking,image,header,approvalAmt")] SW_form sW_form,
+            IFormFile image,
+            int? formTypeId,
+            int[] programTagIds
+        )
+
         {
             if (image == null || image.Length == 0)
             {
@@ -784,7 +829,7 @@ namespace SWIMS.Controllers
 
             if (ModelState.IsValid)
             {
-                _context.Add(new SW_form
+                var createdForm = new SW_form
                 {
                     uuid = sW_form.uuid,
                     name = sW_form.name,
@@ -794,22 +839,31 @@ namespace SWIMS.Controllers
                     SW_identityId = sW_form.SW_identityId,
                     is_linking = sW_form.is_linking,
                     image = uniqueFileName,
-                    header = sW_form.header
-                });
+                    header = sW_form.header,
+                    approvalAmt = sW_form.approvalAmt
+                };
+
+                _context.Add(createdForm);
                 await _context.SaveChangesAsync();
+
+                await SaveFormClassificationAsync(createdForm.Id, formTypeId, programTagIds);
 
                 // 🔔 Notify: Form created
                 await NotifyFormEventAsync(
-                    sW_form.Id,
+                    createdForm.Id,
                     "FormCreated",
                     "Form created",
-                    $"Form '{sW_form.name}' was created.",
+                    $"Form '{createdForm.name}' was created.",
                     HttpContext.RequestAborted);
 
-                return RedirectToAction(nameof(Index), new { id = sW_form.Id });
+                return RedirectToAction(nameof(Index));
             }
+
+
             ViewData["SW_identityId"] = new SelectList(_context.SW_identities, "Id", "name", sW_form.SW_identityId);
+            PopulateFormClassificationDropdowns(formTypeId, programTagIds);
             return View(sW_form);
+
         }
 
         public IActionResult Complete(int? id)
@@ -819,6 +873,7 @@ namespace SWIMS.Controllers
             ViewBag.header = _context.SW_forms.Where(x => x.Id == id).Select(x => x.header).FirstOrDefault();
             return View();
         }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Complete(IFormCollection frm)
@@ -866,6 +921,9 @@ namespace SWIMS.Controllers
             // deserialize into a collection
             var formDefinition = JsonSerializer.Deserialize<List<form_FieldAttributes>>(swForm.form);
 
+            if (formDefinition == null || formDefinition.Count == 0)
+                return BadRequest("Form definition empty or invalid JSON");
+
             // --- STATIC field counters seeded from what's already saved for this form ---
             var staticFields = _context.SW_formTableNames
                 .Where(n => n.SW_formsId == fID && n.field != null && n.field.StartsWith("STATIC_"))
@@ -897,7 +955,7 @@ namespace SWIMS.Controllers
             foreach (var def in formDefinition)
             {
                 var t = def.type?.ToLowerInvariant();
-                if (t == "header" || t == "paragraph" || t == "beneficiary" || t == "organization" || t == "city" || t == "financial_institution")
+                if (t == "header" || t == "paragraph")
                 {
                     perTypeCounter.TryGetValue(t, out var idx);
                     idx++; perTypeCounter[t] = idx;
@@ -916,28 +974,87 @@ namespace SWIMS.Controllers
                     }
 
                 }
+                // IMPORTANT: do NOT treat data-ish custom controls as STATIC_* here.
+                // beneficiary / organization / city / financial_institution should keep whatever
+                // naming scheme the builder/runtime expects.
             }
 
-            if (formDefinition == null || !formDefinition.Any())
-                return BadRequest("Form definition empty or invalid JSON");
+            // ---------------------------
+            // UPSERT (dedupe-safe)
+            // ---------------------------
 
-            // ---------------------------
-            // UPSERT instead of AddRange
-            // ---------------------------
-            var incoming = formDefinition.Select(d => new
+            // ✅ CHANGED: Build incoming rows and dedupe by Field (prevents inserting duplicates)
+            var incomingRaw = formDefinition
+                .Where(d => !string.IsNullOrWhiteSpace(d.name))
+                .Select(d => new
+                {
+                    Field = d.name!.Trim(),
+                    DisplayName = (d.label ?? d.name)!.Trim(),
+                    Type = d.type?.Trim().ToLowerInvariant() ?? "text"
+                })
+                .ToList();
+
+            // ✅ CHANGED: Deduplicate incoming by Field (case-insensitive). "Last wins".
+            var incoming = incomingRaw
+                .GroupBy(x => x.Field, StringComparer.OrdinalIgnoreCase)
+                .Select(g => g.Last())
+                .ToList();
+
+            // ✅ CHANGED: Load existing rows as lists (avoids ToDictionary duplicate-key crash)
+            var existingNameList = await _context.SW_formTableNames
+                .Where(n => n.SW_formsId == fID && n.field != null)
+                .ToListAsync();
+
+            var existingTypeList = await _context.SW_formTableData_Types
+                .Where(t => t.SW_formsId == fID && t.field != null)
+                .ToListAsync();
+
+            // ✅ OPTIONAL (recommended): clean existing duplicates in DB so we stop carrying bad state
+            // Keep the lowest Id row for each field; delete the rest.
+            var dupNameIds = existingNameList
+                .GroupBy(n => n.field!, StringComparer.OrdinalIgnoreCase)
+                .Where(g => g.Count() > 1)
+                .SelectMany(g => g.OrderBy(x => x.Id).Skip(1).Select(x => x.Id))
+                .ToList();
+
+            if (dupNameIds.Count > 0)
             {
-                Field = d.name!.Trim(),                                // e.g., FormData07 or STATIC_H_001
-                DisplayName = (d.label ?? d.name)!.Trim(),             // human-friendly name in SW_formTableName
-                Type = d.type?.Trim().ToLowerInvariant() ?? "text"     // stored in SW_formTableData_Types
-            }).ToList();
+                await _context.SW_formTableNames
+                    .Where(n => dupNameIds.Contains(n.Id))
+                    .ExecuteDeleteAsync();
 
-            var existingNames = await _context.SW_formTableNames
-                .Where(n => n.SW_formsId == fID)
-                .ToDictionaryAsync(n => n.field!, StringComparer.OrdinalIgnoreCase);
+                existingNameList = existingNameList
+                    .Where(n => !dupNameIds.Contains(n.Id))
+                    .ToList();
+            }
 
-            var existingTypes = await _context.SW_formTableData_Types
-                .Where(t => t.SW_formsId == fID)
-                .ToDictionaryAsync(t => t.field!, StringComparer.OrdinalIgnoreCase);
+            var dupTypeIds = existingTypeList
+                .GroupBy(t => t.field!, StringComparer.OrdinalIgnoreCase)
+                .Where(g => g.Count() > 1)
+                .SelectMany(g => g.OrderBy(x => x.Id).Skip(1).Select(x => x.Id))
+                .ToList();
+
+            if (dupTypeIds.Count > 0)
+            {
+                await _context.SW_formTableData_Types
+                    .Where(t => dupTypeIds.Contains(t.Id))
+                    .ExecuteDeleteAsync();
+
+                existingTypeList = existingTypeList
+                    .Where(t => !dupTypeIds.Contains(t.Id))
+                    .ToList();
+            }
+
+            // ✅ CHANGED: Build dictionaries from de-duped lists
+            var existingNames = existingNameList
+                .GroupBy(n => n.field!, StringComparer.OrdinalIgnoreCase)
+                .Select(g => g.OrderBy(x => x.Id).First())
+                .ToDictionary(x => x.field!, StringComparer.OrdinalIgnoreCase);
+
+            var existingTypes = existingTypeList
+                .GroupBy(t => t.field!, StringComparer.OrdinalIgnoreCase)
+                .Select(g => g.OrderBy(x => x.Id).First())
+                .ToDictionary(x => x.field!, StringComparer.OrdinalIgnoreCase);
 
             var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
@@ -952,12 +1069,16 @@ namespace SWIMS.Controllers
                 }
                 else
                 {
-                    _context.SW_formTableNames.Add(new SW_formTableName
+                    var newName = new SW_formTableName
                     {
                         SW_formsId = fID,
                         name = x.DisplayName,
                         field = x.Field
-                    });
+                    };
+                    _context.SW_formTableNames.Add(newName);
+
+                    // ✅ CHANGED: update dictionary so duplicates in incoming don't create duplicates in DB
+                    existingNames[x.Field] = newName;
                 }
 
                 // Types: update-or-insert
@@ -967,14 +1088,19 @@ namespace SWIMS.Controllers
                 }
                 else
                 {
-                    _context.SW_formTableData_Types.Add(new SW_formTableData_Type
+                    var newType = new SW_formTableData_Type
                     {
                         SW_formsId = fID,
                         field = x.Field,
                         type = x.Type
-                    });
+                    };
+                    _context.SW_formTableData_Types.Add(newType);
+
+                    // ✅ CHANGED: update dictionary so duplicates in incoming don't create duplicates in DB
+                    existingTypes[x.Field] = newType;
                 }
             }
+
 
             // OPTIONAL: prune rows removed from the builder (keeps DB in sync with current form)
             var prune = true; // set false if you prefer to retain old mappings
@@ -986,9 +1112,13 @@ namespace SWIMS.Controllers
                     .ToList();
 
                 if (staleTypeIds.Count > 0)
-                    await _context.SW_formTableData_Types
+                {
+                    var staleTypes = await _context.SW_formTableData_Types
                         .Where(t => staleTypeIds.Contains(t.Id))
-                        .ExecuteDeleteAsync();
+                        .ToListAsync();
+
+                    _context.SW_formTableData_Types.RemoveRange(staleTypes);
+                }
 
                 var staleNameIds = existingNames.Values
                     .Where(n => !seen.Contains(n.field!))
@@ -996,17 +1126,17 @@ namespace SWIMS.Controllers
                     .ToList();
 
                 if (staleNameIds.Count > 0)
-                    await _context.SW_formTableNames
+                {
+                    var staleNames = await _context.SW_formTableNames
                         .Where(n => staleNameIds.Contains(n.Id))
-                        .ExecuteDeleteAsync();
+                        .ToListAsync();
+
+                    _context.SW_formTableNames.RemoveRange(staleNames);
+                }
             }
 
             // Save atomically
-            using (var tx = await _context.Database.BeginTransactionAsync())
-            {
-                await _context.SaveChangesAsync();
-                await tx.CommitAsync();
-            }
+            await _context.SaveChangesAsync();
 
             // 🔔 Notify: Form published
             await NotifyFormEventAsync(
@@ -1037,47 +1167,123 @@ namespace SWIMS.Controllers
             ViewBag.img = _context.SW_forms.Where(x => x.Id == id).Select(x => x.image).FirstOrDefault();
             ViewBag.appAmt = _context.SW_forms.Where(x => x.Id == id).Select(x => x.approvalAmt).FirstOrDefault();
             ViewData["SW_identityId"] = new SelectList(_context.SW_identities, "Id", "name", sW_form.SW_identityId);
+
+            var selectedTypeId = await _lookup.SW_formFormTypes
+                .Where(x => x.SW_formsId == sW_form.Id)
+                .Select(x => (int?)x.SW_formTypeId)
+                .SingleOrDefaultAsync();
+
+            var selectedTags = await _lookup.SW_formProgramTags
+                .Where(x => x.SW_formsId == sW_form.Id)
+                .Select(x => x.SW_programTagId)
+                .ToListAsync();
+
+            PopulateFormClassificationDropdowns(selectedTypeId, selectedTags);
+
+
             return View(sW_form);
         }
 
         // POST: form/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,uuid,name,desc,form,dateModified,SW_identityId,is_linking,image,header,approvalAmt")] SW_form sW_form)
+        public async Task<IActionResult> Edit(
+            int id,
+            // ✅ Bind only properties that actually exist + are editable
+            [Bind("Id,uuid,name,form,image,approvalAmt,SW_identityId,is_linking,header,desc")]
+    SW_form posted,
+            IFormFile? imageFile,
+            string? formFile,
+            int? formTypeId,
+            int[]? programTagIds
+        )
         {
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(sW_form);
-                    await _context.SaveChangesAsync();
+            if (id != posted.Id) return NotFound();
 
-                    // 🔔 Notify: Form updated
-                    await NotifyFormEventAsync(
-                        sW_form.Id,
-                        "FormUpdated",
-                        "Form updated",
-                        $"Form '{sW_form.name}' was updated.",
-                        HttpContext.RequestAborted);
-                }
-                catch (DbUpdateConcurrencyException)
+            // ✅ Load TRACKED entity so we only update allowed fields
+            var existing = await _context.SW_forms
+                .FirstOrDefaultAsync(f => f.Id == id);
+
+            if (existing == null) return NotFound();
+
+            // Normalize classification inputs
+            if (formTypeId.HasValue && formTypeId.Value <= 0) formTypeId = null;
+
+            programTagIds ??= Array.Empty<int>();
+            programTagIds = programTagIds.Where(x => x > 0).Distinct().ToArray();
+
+            if (!ModelState.IsValid)
+            {
+                PopulateFormClassificationDropdowns(id);
+                ViewBag.SW_identityId = new SelectList(_context.SW_identities, "Id", "name", posted.SW_identityId);
+
+                ViewBag.frm = !string.IsNullOrWhiteSpace(formFile)
+                    ? formFile
+                    : (!string.IsNullOrWhiteSpace(posted.form) ? posted.form : existing.form);
+
+                ViewBag.img = string.IsNullOrWhiteSpace(posted.image) ? existing.image : posted.image;
+                ViewBag.appAmt = posted.approvalAmt;
+
+                return View(posted);
+            }
+
+            // ✅ Update allowed fields only
+            existing.name = posted.name;
+            existing.desc = posted.desc;
+            existing.header = posted.header;
+            existing.SW_identityId = posted.SW_identityId;
+            existing.is_linking = posted.is_linking;
+            existing.approvalAmt = posted.approvalAmt;
+
+            // ✅ Update form JSON safely (prefer formFile if provided)
+            if (!string.IsNullOrWhiteSpace(formFile))
+                existing.form = formFile;
+            else if (!string.IsNullOrWhiteSpace(posted.form))
+                existing.form = posted.form;
+            // else preserve existing.form
+
+            // ✅ Image handling
+            if (imageFile != null && imageFile.Length > 0)
+            {
+                var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+                Directory.CreateDirectory(uploadsFolder);
+
+                var uniqueFileName = Guid.NewGuid() + "_" + Path.GetFileName(imageFile.FileName);
+                var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
                 {
-                    if (!SW_formExists(sW_form.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
+                    await imageFile.CopyToAsync(fileStream);
                 }
+
+                existing.image = uniqueFileName;
+            }
+            else
+            {
+                // preserve existing unless the page explicitly posted something else
+                if (!string.IsNullOrWhiteSpace(posted.image))
+                    existing.image = posted.image;
+            }
+
+            // ✅ IMPORTANT: update modification timestamp
+            existing.dateModified = DateTime.UtcNow;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+
+                // ✅ Save FormType + ProgramTags selection on edit
+                await SaveFormClassificationAsync(existing.Id, formTypeId, programTagIds);
+
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["SW_identityId"] = new SelectList(_context.SW_identities, "Id", "name", sW_form.SW_identityId);
-            return View(sW_form);
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!SW_formExists(existing.Id)) return NotFound();
+                throw;
+            }
         }
+
 
         // GET: form/Edit/5
         public async Task<IActionResult> EditUpload(int? id)
@@ -1207,6 +1413,15 @@ namespace SWIMS.Controllers
                 .Where(c => c.SW_formsId == id)
                 .ExecuteDeleteAsync();
 
+            var typeLink = await _lookup.SW_formFormTypes.SingleOrDefaultAsync(x => x.SW_formsId == id);
+            if (typeLink != null) _lookup.SW_formFormTypes.Remove(typeLink);
+
+            var tagLinks = await _lookup.SW_formProgramTags.Where(x => x.SW_formsId == id).ToListAsync();
+            if (tagLinks.Count > 0) _lookup.SW_formProgramTags.RemoveRange(tagLinks);
+
+            await _lookup.SaveChangesAsync();
+
+
             // finally remove form
             var sW_form = await _context.SW_forms.FindAsync(id);
             if (sW_form != null)
@@ -1275,6 +1490,60 @@ namespace SWIMS.Controllers
                 name = $"{fallbackPrefix} {indexWithinType:D3}";
             return name;
         }
+
+        private void PopulateFormClassificationDropdowns(int? selectedFormTypeId = null, IEnumerable<int>? selectedProgramTagIds = null)
+        {
+            ViewData["formTypeId"] = new SelectList(
+                _lookup.SW_formTypes.OrderBy(x => x.name),
+                "Id",
+                "name",
+                selectedFormTypeId
+            );
+
+            ViewData["programTagIds"] = new MultiSelectList(
+                _lookup.SW_programTags.OrderBy(x => x.name),
+                "Id",
+                "name",
+                selectedProgramTagIds
+            );
+        }
+
+        private async Task SaveFormClassificationAsync(int formId, int? formTypeId, int[]? programTagIds)
+        {
+            // --- Form Type: 0..1 ---
+            var existingType = await _lookup.SW_formFormTypes.SingleOrDefaultAsync(x => x.SW_formsId == formId);
+            if (existingType != null)
+                _lookup.SW_formFormTypes.Remove(existingType);
+
+            if (formTypeId.HasValue)
+            {
+                _lookup.SW_formFormTypes.Add(new SW_formFormType
+                {
+                    SW_formsId = formId,
+                    SW_formTypeId = formTypeId.Value
+                });
+            }
+
+            // --- Program Tags: many-to-many ---
+            var existingTags = await _lookup.SW_formProgramTags.Where(x => x.SW_formsId == formId).ToListAsync();
+            if (existingTags.Count > 0)
+                _lookup.SW_formProgramTags.RemoveRange(existingTags);
+
+            if (programTagIds != null && programTagIds.Length > 0)
+            {
+                foreach (var tagId in programTagIds.Distinct())
+                {
+                    _lookup.SW_formProgramTags.Add(new SW_formProgramTag
+                    {
+                        SW_formsId = formId,
+                        SW_programTagId = tagId
+                    });
+                }
+            }
+
+            await _lookup.SaveChangesAsync();
+        }
+
 
     }
 }

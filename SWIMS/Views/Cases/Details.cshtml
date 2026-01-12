@@ -168,7 +168,18 @@
                                     <th>Primary</th>
                                     <th>Linked at</th>
                                     <th>Linked by</th>
+                                    
+
+                                    <th>Form</th>
                                     <th>Form entry</th>
+
+                                    
+                                    <th>Form Type</th>
+                                    <th>Program Tags</th>
+                                    <th>Site Identity</th>
+                                    
+                                    <th>Actions</th>
+
                                 </tr>
                             </thead>
                             <tbody>
@@ -179,12 +190,65 @@
                                         <td>@(f.IsPrimary ? "Yes" : "No")</td>
                                         <td>@(f.LinkedAt?.ToLocalTime().ToString("yyyy-MM-dd HH:mm") ?? "—")</td>
                                         <td>@f.LinkedBy</td>
+
+                                        <td>
+                                            @if (!string.IsNullOrWhiteSpace(f.FormName))
+                                            {
+                                                @f.FormName
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">—</span>
+                                            }
+                                        </td>
+
+                                        <td>
+                                            <span class="text-xs text-muted">
+                                                Entry #@f.FormTableDataId
+                                            </span>
+                                        </td>
+
+                                        
+
+                                        <td>
+                                            @if (!string.IsNullOrWhiteSpace(f.FormTypeName))
+                                            {
+                                                <span class="badge bg-secondary">@f.FormTypeName</span>
+                                                @* swap to your SWIMS badge classes if different *@
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">—</span>
+                                            }
+                                        </td>
+
+                                        <td>
+                                            @if (f.ProgramTagNames != null && f.ProgramTagNames.Count > 0)
+                                            {
+                                                foreach (var t in f.ProgramTagNames)
+                                                {
+                                                    <span class="badge bg-info me-1">@t</span>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">—</span>
+                                            }
+                                        </td>
+
+                                        <td>
+                                            @if (!string.IsNullOrWhiteSpace(f.SiteIdentityName))
+                                            {
+                                                @f.SiteIdentityName
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">—</span>
+                                            }
+                                        </td>
+                                        
                                         <td>
                                             <div class="d-flex justify-content-between align-items-center gap-2">
-                                                <span class="text-xs text-muted">
-                                                    Entry #@f.FormTableDataId
-                                                </span>
-
                                                 <div class="btn-group btn-group-sm" role="group" aria-label="Form actions">
                                                     <a asp-controller="Cases"
                                                        asp-action="FormPreview"

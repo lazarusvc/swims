@@ -91,6 +91,13 @@ namespace SWIMS.Models.ViewModels
         public string? LinkedBy { get; set; }
 
         public int FormTableDataId { get; set; }
+
+        public int? FormId { get; set; }
+        public string? FormName { get; set; }
+        public string? SiteIdentityName { get; set; }
+        public string? FormTypeName { get; set; }
+        public List<string> ProgramTagNames { get; set; } = new();
+
     }
 
     public class CaseAssignmentSummaryViewModel
@@ -164,9 +171,6 @@ namespace SWIMS.Models.ViewModels
         [Display(Name = "Form submission")]
         [Required(ErrorMessage = "Please pick a form submission to link.")]
         public int? SelectedFormTableDatumId { get; set; }
-
-        [Display(Name = "Role of form on case")]
-        public string? FormRole { get; set; }
 
         [Display(Name = "Primary application?")]
         public bool IsPrimaryApplication { get; set; }
