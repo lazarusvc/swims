@@ -46,6 +46,25 @@
                         Edit
                     </a>
 
+                    <a asp-action="BenefitPeriod"
+                       asp-route-id="@Model.Id"
+                       class="btn btn-soft-info btn-sm">
+                        <i class="ri-timer-line align-middle me-1"></i>
+                        Benefit period
+                    </a>
+
+                    <form asp-action="RefreshFromPrimaryApplication"
+                          asp-route-id="@Model.Id"
+                          method="post"
+                          class="d-inline">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-soft-primary btn-sm">
+                            <i class="ri-refresh-line align-middle me-1"></i>
+                            Refresh
+                        </button>
+                    </form>
+
+
                     <span class="badge @statusBadge">
                         @statusText
                     </span>

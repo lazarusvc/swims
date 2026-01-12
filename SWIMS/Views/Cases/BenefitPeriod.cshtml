@@ -1,0 +1,122 @@
+﻿@model SWIMS.Models.ViewModels.CaseBenefitPeriodEditViewModel
+
+@{
+    ViewData["Title"] = "Benefit period";
+}
+
+@if (TempData["Ok"] is string ok)
+{
+    <div class="alert alert-success alert-dismissible fade show mb-3" role="alert">
+        @ok
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                    <h4 class="card-title mb-0">Benefit period</h4>
+                    <p class="fs-12 text-muted mb-0">
+                        Case @Model.CaseNumber — @Model.Title
+                    </p>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <a asp-action="Details"
+                       asp-route-id="@Model.Id"
+                       class="btn btn-sm btn-soft-secondary">
+                        <i class="ri-arrow-left-line align-middle"></i> Back to case
+                    </a>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <div class="row g-3 mb-3">
+                    <div class="col-md-3">
+                        <div class="form-text mb-1">Status</div>
+                        <div class="fw-semibold">@Model.Status</div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="form-text mb-1">Effective start</div>
+                        <div class="fw-semibold">
+                            @(Model.BenefitStartAt.HasValue? Model.BenefitStartAt.Value.ToLocalTime().ToString("yyyy-MM-dd") : "—")
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="form-text mb-1">Effective end</div>
+                        <div class="fw-semibold">
+                            @(Model.BenefitEndAt.HasValue? Model.BenefitEndAt.Value.ToLocalTime().ToString("yyyy-MM-dd") : "—")
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="form-text mb-1">Months / source</div>
+                        <div class="fw-semibold">
+                            @(Model.BenefitPeriodMonths.HasValue? Model.BenefitPeriodMonths.Value.ToString() : "—")
+                            <span class="text-muted">
+                                @(string.IsNullOrWhiteSpace(Model.BenefitPeriodSource) ? "" : $"({Model.BenefitPeriodSource})")
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="my-3" />
+
+                <form asp-action="BenefitPeriod" asp-route-id="@Model.Id" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="Id" />
+
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label asp-for="BenefitStartAtOverride" class="form-label"></label>
+                            <input asp-for="BenefitStartAtOverride" type="date" class="form-control" />
+                            <span asp-validation-for="BenefitStartAtOverride" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label asp-for="BenefitEndAtOverride" class="form-label"></label>
+                            <input asp-for="BenefitEndAtOverride" type="date" class="form-control" />
+                            <span asp-validation-for="BenefitEndAtOverride" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label asp-for="BenefitPeriodMonthsOverride" class="form-label"></label>
+                            <input asp-for="BenefitPeriodMonthsOverride" type="number" min="1" max="120" class="form-control" />
+                            <div class="form-text">If set, this overrides the computed period months.</div>
+                            <span asp-validation-for="BenefitPeriodMonthsOverride" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="form-check">
+                                <input asp-for="ClearOverrides" class="form-check-input" />
+                                <label asp-for="ClearOverrides" class="form-check-label"></label>
+                            </div>
+                        </div>
+
+                        <div class="col-12 d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="ri-save-line align-middle me-1"></i>
+                                Save overrides
+                            </button>
+
+                            <a asp-action="Details"
+                               asp-route-id="@Model.Id"
+                               class="btn btn-soft-secondary">
+                                Cancel
+                            </a>
+                        </div>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

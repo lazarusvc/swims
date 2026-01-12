@@ -15,6 +15,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using System.Globalization;
+
+
 
 
 namespace SWIMS.Controllers
@@ -1459,6 +1462,168 @@ namespace SWIMS.Controllers
             }
 
             return (null, null, null);
+        }
+
+        // GET: /Cases/BenefitPeriod/5
+        [HttpGet]
+        public async Task<IActionResult> BenefitPeriod(int id)
+        {
+            var caseEntity = await _cases.SW_cases
+                .AsNoTracking()
+                .FirstOrDefaultAsync(c => c.Id == id);
+
+            if (caseEntity == null)
+                return NotFound();
+
+            var vm = new CaseBenefitPeriodEditViewModel
+            {
+                Id = id,
+                CaseNumber = GetString(caseEntity, "case_number") ?? id.ToString(CultureInfo.InvariantCulture),
+                Title = GetString(caseEntity, "title") ?? string.Empty,
+                Status = GetString(caseEntity, "status") ?? "Pending",
+
+                BenefitStartAt = GetDateTime(caseEntity, "benefit_start_at"),
+                BenefitEndAt = GetDateTime(caseEntity, "benefit_end_at"),
+                BenefitPeriodMonths = GetInt(caseEntity, "benefit_period_months"),
+                BenefitPeriodSource = GetString(caseEntity, "benefit_period_source"),
+
+                BenefitStartAtOverride = GetDateTime(caseEntity, "benefit_start_at_override"),
+                BenefitEndAtOverride = GetDateTime(caseEntity, "benefit_end_at_override"),
+                BenefitPeriodMonthsOverride = GetInt(caseEntity, "benefit_period_months_override"),
+            };
+
+            return View(vm);
+        }
+
+        // POST: /Cases/BenefitPeriod/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> BenefitPeriod(int id, CaseBenefitPeriodEditViewModel vm)
+        {
+            if (id != vm.Id)
+                return BadRequest();
+
+            var caseEntity = await _cases.SW_cases
+                .FirstOrDefaultAsync(c => c.Id == id);
+
+            if (caseEntity == null)
+                return NotFound();
+
+            if (!ModelState.IsValid)
+            {
+                // Re-hydrate effective values for redisplay
+                vm.CaseNumber = GetString(caseEntity, "case_number") ?? vm.CaseNumber;
+                vm.Title = GetString(caseEntity, "title") ?? vm.Title;
+                vm.Status = GetString(caseEntity, "status") ?? vm.Status;
+
+                vm.BenefitStartAt = GetDateTime(caseEntity, "benefit_start_at");
+                vm.BenefitEndAt = GetDateTime(caseEntity, "benefit_end_at");
+                vm.BenefitPeriodMonths = GetInt(caseEntity, "benefit_period_months");
+                vm.BenefitPeriodSource = GetString(caseEntity, "benefit_period_source");
+
+                return View(vm);
+            }
+
+            if (vm.ClearOverrides)
+            {
+                SetValue(caseEntity, "benefit_start_at_override", null);
+                SetValue(caseEntity, "benefit_end_at_override", null);
+                SetValue(caseEntity, "benefit_period_months_override", null);
+            }
+            else
+            {
+                SetValue(caseEntity, "benefit_start_at_override", vm.BenefitStartAtOverride);
+                SetValue(caseEntity, "benefit_end_at_override", vm.BenefitEndAtOverride);
+                SetValue(caseEntity, "benefit_period_months_override", vm.BenefitPeriodMonthsOverride);
+            }
+
+            await _cases.SaveChangesAsync();
+
+            // Re-run lifecycle refresh so effective fields + status align with overrides
+            var lifecycle = HttpContext.RequestServices.GetService(typeof(ICaseLifecycleService)) as ICaseLifecycleService;
+            if (lifecycle != null)
+            {
+                await lifecycle.RefreshFromPrimaryApplicationAsync(id, triggeredByUserId: User?.Identity?.Name);
+            }
+
+            TempData["Ok"] = "Benefit period overrides saved.";
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        private static PropertyInfo? GetProp(object o, string name)
+            => o.GetType().GetProperty(name, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
+
+        private static string? GetString(object o, string name)
+        {
+            var p = GetProp(o, name);
+            return p?.GetValue(o) as string;
+        }
+
+        private static int? GetInt(object o, string name)
+        {
+            var p = GetProp(o, name);
+            var v = p?.GetValue(o);
+
+            if (v is null) return null;
+
+            // Nullable<int> boxes as int when not null
+            if (v is int i) return i;
+
+            if (v is long l && l >= int.MinValue && l <= int.MaxValue) return (int)l;
+            if (v is short s) return s;
+            if (v is byte b) return b;
+
+            if (v is decimal dec &&
+                dec >= int.MinValue && dec <= int.MaxValue &&
+                decimal.Truncate(dec) == dec)
+            {
+                return (int)dec;
+            }
+
+            if (v is string str && int.TryParse(str.Trim(), out var parsed))
+                return parsed;
+
+            return null;
+        }
+
+
+        private static DateTime? GetDateTime(object o, string name)
+        {
+            var p = GetProp(o, name);
+            var v = p?.GetValue(o);
+            if (v is null) return null;
+
+            if (v is DateTime dt) return dt;
+            if (v is DateTimeOffset dto) return dto.UtcDateTime;
+
+            if (v is string s && DateTime.TryParse(s, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out var parsed))
+                return parsed;
+
+            return null;
+        }
+
+        private static void SetValue(object target, string propertyName, object? value)
+        {
+            var p = GetProp(target, propertyName);
+            if (p == null || !p.CanWrite) return;
+
+            if (value == null)
+            {
+                p.SetValue(target, null);
+                return;
+            }
+
+            var destType = Nullable.GetUnderlyingType(p.PropertyType) ?? p.PropertyType;
+
+            if (destType.IsInstanceOfType(value))
+            {
+                p.SetValue(target, value);
+                return;
+            }
+
+            // Convert.ChangeType handles ints/strings; DateTime handled by direct assignment above
+            var converted = Convert.ChangeType(value, destType, CultureInfo.InvariantCulture);
+            p.SetValue(target, converted);
         }
 
 
