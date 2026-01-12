@@ -35,8 +35,10 @@
                             <option value="">All statuses</option>
                             <option value="Pending" selected="@(Model.StatusFilter == "Pending" ? "selected" : null)">Pending</option>
                             <option value="Active" selected="@(Model.StatusFilter == "Active" ? "selected" : null)">Active</option>
+                            <option value="Inactive" selected="@(Model.StatusFilter == "Inactive" ? "selected" : null)">Inactive</option>
                             <option value="Closed" selected="@(Model.StatusFilter == "Closed" ? "selected" : null)">Closed</option>
                         </select>
+
 
                         <button type="submit" class="btn btn-sm btn-primary">
                             <i class="ri-filter-2-line align-middle"></i> Filter
@@ -71,10 +73,12 @@
                                     var statusBadge = c.Status switch
                                     {
                                         "Active" => "bg-success",
+                                        "Inactive" => "bg-danger",
                                         "Closed" => "bg-secondary",
                                         "Pending" => "bg-warning",
                                         _ => "bg-info"
                                     };
+
 
                                     <tr>
                                         <td class="fw-semibold">@c.CaseNumber</td>

@@ -49,6 +49,7 @@
                             <option value="">All statuses</option>
                             <option value="Pending" selected="@(Model.StatusFilter == "Pending" ? "selected" : null)">Pending</option>
                             <option value="Active" selected="@(Model.StatusFilter == "Active" ? "selected" : null)">Active</option>
+                            <option value="Inactive" selected="@(Model.StatusFilter == "Inactive" ? "selected" : null)">Inactive</option>
                             <option value="Closed" selected="@(Model.StatusFilter == "Closed" ? "selected" : null)">Closed</option>
                         </select>
 
@@ -99,11 +100,13 @@
 
                                                 var statusBadge = statusText switch
                                                 {
-                                                    "Active"  => "bg-success",
-                                                    "Closed"  => "bg-secondary",
+                                                    "Active" => "bg-success",
+                                                    "Inactive" => "bg-danger",
+                                                    "Closed" => "bg-secondary",
                                                     "Pending" => "bg-warning",
-                                                    _         => "bg-info"
+                                                    _ => "bg-info"
                                                 };
+
                                             }
 
                                             <span class="badge @statusBadge">

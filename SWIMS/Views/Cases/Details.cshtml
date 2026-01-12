@@ -29,10 +29,13 @@
                     var statusBadge = statusText switch
                     {
                         "Active" => "bg-success",
+                        "Inactive" => "bg-danger",
                         "Closed" => "bg-secondary",
                         "Pending" => "bg-warning",
                         _ => "bg-info"
                     };
+
+
                 }
 
                 <div class="d-flex align-items-center gap-2">

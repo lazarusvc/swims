@@ -404,6 +404,7 @@ builder.Services.AddScoped<ISetupStateService, SetupStateService>();
 
 builder.Services.AddScoped<ICaseLifecycleService, CaseLifecycleService>();
 builder.Services.AddHostedService<CaseBenefitExpiryHostedService>();
+builder.Services.AddHostedService<CaseBeneficiaryPeriodSweepHostedService>();
 
 
 var app = builder.Build();
