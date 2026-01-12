@@ -55,6 +55,8 @@ namespace SWIMS.Data.Lookups
 
                 b.Property(x => x.sort_order);
 
+                b.Property(x => x.default_benefit_months);
+
                 b.HasIndex(x => x.code)
                     .IsUnique();
             });

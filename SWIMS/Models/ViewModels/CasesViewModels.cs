@@ -158,6 +158,18 @@ namespace SWIMS.Models.ViewModels
 
         public IReadOnlyList<CaseAssignmentSummaryViewModel> Assignments { get; set; }
             = Array.Empty<CaseAssignmentSummaryViewModel>();
+
+        // Benefit period (effective)
+        public DateTime? BenefitStartAt { get; set; }
+        public DateTime? BenefitEndAt { get; set; }
+        public int? BenefitPeriodMonths { get; set; }
+        public string? BenefitPeriodSource { get; set; }
+
+        // Benefit period overrides (optional display)
+        public DateTime? BenefitStartAtOverride { get; set; }
+        public DateTime? BenefitEndAtOverride { get; set; }
+        public int? BenefitPeriodMonthsOverride { get; set; }
+
     }
 
     public sealed class CaseLinkFormViewModel

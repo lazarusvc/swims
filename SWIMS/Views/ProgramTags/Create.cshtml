@@ -30,6 +30,15 @@
                     <span asp-validation-for="sort_order" class="text-danger"></span>
                 </div>
 
+                <div class="col-md-3">
+                    <label asp-for="default_benefit_months" class="form-label"></label>
+                    <input asp-for="default_benefit_months" class="form-control" type="number" min="1" max="120" />
+                    <div class="form-text">
+                        Optional. Used when no benefit period is captured from the primary application and no case override is set.
+                    </div>
+                    <span asp-validation-for="default_benefit_months" class="text-danger"></span>
+                </div>
+
                 <div class="col-md-3 d-flex align-items-center mt-3">
                     <div class="form-check">
                         <input asp-for="is_active" class="form-check-input" />

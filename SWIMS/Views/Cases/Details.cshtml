@@ -99,6 +99,44 @@
                         @(Model.ClosedAt?.ToLocalTime().ToString("yyyy-MM-dd HH:mm") ?? "—")
                     </dd>
 
+
+                    <dt class="col-sm-3">Benefit period</dt>
+                    <dd class="col-sm-9">
+                        <div class="d-flex flex-column">
+                            <span class="fw-semibold">
+                                @(Model.BenefitStartAt.HasValue? Model.BenefitStartAt.Value.ToLocalTime().ToString("yyyy-MM-dd") : "—")
+                                <span class="text-muted mx-1">→</span>
+                                @(Model.BenefitEndAt.HasValue? Model.BenefitEndAt.Value.ToLocalTime().ToString("yyyy-MM-dd") : "—")
+                            </span>
+
+                            <span class="text-muted fs-11">
+                                Months:
+                                <span class="fw-semibold text-body">
+                                    @(Model.BenefitPeriodMonths?.ToString() ?? "—")
+                                </span>
+                                <span class="mx-1">•</span>
+                                Source:
+                                <span class="fw-semibold text-body">
+                                    @(string.IsNullOrWhiteSpace(Model.BenefitPeriodSource) ? "—" : Model.BenefitPeriodSource)
+                                </span>
+                            </span>
+
+                            @if (Model.BenefitStartAtOverride.HasValue || Model.BenefitEndAtOverride.HasValue || Model.BenefitPeriodMonthsOverride.HasValue)
+                            {
+                                <span class="mt-1">
+                                    <span class="badge bg-info">Overrides applied</span>
+                                    <span class="text-muted fs-11 ms-2">
+                                        @(Model.BenefitStartAtOverride.HasValue ? $"Start: {Model.BenefitStartAtOverride.Value.ToLocalTime():yyyy-MM-dd}" : "")
+                                        @(Model.BenefitEndAtOverride.HasValue ? $" End: {Model.BenefitEndAtOverride.Value.ToLocalTime():yyyy-MM-dd}" : "")
+                                        @(Model.BenefitPeriodMonthsOverride.HasValue ? $" Months: {Model.BenefitPeriodMonthsOverride.Value}" : "")
+                                    </span>
+                                </span>
+                            }
+                        </div>
+                    </dd>
+
+
+
                     <dt class="col-sm-3">Notes</dt>
                     <dd class="col-sm-9">
                         @(!string.IsNullOrWhiteSpace(Model.Notes) ? Model.Notes : "—")

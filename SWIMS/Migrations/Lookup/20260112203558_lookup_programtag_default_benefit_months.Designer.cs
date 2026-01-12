@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SWIMS.Data.Lookups;
 
@@ -10,9 +11,11 @@ using SWIMS.Data.Lookups;
 namespace SWIMS.Migrations.Lookup
 {
     [DbContext(typeof(SwimsLookupDbContext))]
-    partial class SwimsLookupDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260112203558_lookup_programtag_default_benefit_months")]
+    partial class lookup_programtag_default_benefit_months
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

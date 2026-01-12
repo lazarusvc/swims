@@ -672,6 +672,15 @@ namespace SWIMS.Controllers
                 CreatedAt = caseEntity.created_at,
                 CreatedBy = caseEntity.created_by,
                 ClosedAt = caseEntity.closed_at,
+                BenefitStartAt = caseEntity.benefit_start_at,
+                BenefitEndAt = caseEntity.benefit_end_at,
+                BenefitPeriodMonths = caseEntity.benefit_period_months,
+                BenefitPeriodSource = caseEntity.benefit_period_source,
+
+                BenefitStartAtOverride = caseEntity.benefit_start_at_override,
+                BenefitEndAtOverride = caseEntity.benefit_end_at_override,
+                BenefitPeriodMonthsOverride = caseEntity.benefit_period_months_override,
+
                 BeneficiaryName = beneficiary != null
                     ? (!string.IsNullOrWhiteSpace(beneficiary.name)
                         ? beneficiary.name

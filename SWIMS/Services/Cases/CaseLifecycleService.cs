@@ -191,14 +191,17 @@ public sealed class CaseLifecycleService : ICaseLifecycleService
     {
         if (programTagId == null) return null;
 
-        // Plan-ahead: when you add a column like SW_programTag.default_benefit_months, this will pick it up.
-        var tag = await _lookup.SW_programTags.AsNoTracking()
+        var tag = await _lookup.SW_programTags
+            .AsNoTracking()
             .FirstOrDefaultAsync(t => t.Id == programTagId.Value, ct);
 
-        if (tag == null) return null;
+        var months = tag?.default_benefit_months;
+        if (months is int m && m > 0)
+            return m;
 
-        return TryGetInt(tag, "default_benefit_months", "defaultBenefitMonths", "DefaultBenefitMonths");
+        return null;
     }
+
 
     // -----------------------------
     // Approvals (strongly-typed)

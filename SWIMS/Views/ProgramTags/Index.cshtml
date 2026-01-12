@@ -30,6 +30,7 @@
                         <th style="width: 15%">Code</th>
                         <th>Name</th>
                         <th style="width: 15%">Status</th>
+                        <th style="width: 12%">Default (months)</th>
                         <th style="width: 10%">Sort</th>
                         <th style="width: 12%"></th>
                     </tr>
@@ -38,7 +39,7 @@
                     @if (!Model.Any())
                     {
                         <tr>
-                            <td colspan="5" class="text-center text-muted py-4">
+                            <td colspan="6" class="text-center text-muted py-4">
                                 No program tags defined yet.
                             </td>
                         </tr>
@@ -58,6 +59,7 @@
                                         @statusText
                                     </span>
                                 </td>
+                                <td>@(t.default_benefit_months?.ToString() ?? "—")</td>
                                 <td>@t.sort_order</td>
                                 <td class="text-end">
                                     <a asp-action="Edit"
