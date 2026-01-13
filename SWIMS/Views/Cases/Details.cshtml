@@ -4,6 +4,10 @@
     ViewData["Title"] = $"Case {Model.CaseNumber}";
 }
 
+@{
+    var hasPrimaryApplication = Model.Forms?.Any(f => f.IsPrimary) == true;
+}
+
 @if (TempData["Ok"] is string ok)
 {
     <div class="alert alert-success alert-dismissible fade show mb-3" role="alert">
@@ -59,20 +63,24 @@
                           method="post"
                           class="d-inline">
                         @Html.AntiForgeryToken()
-                        <button type="submit" class="btn btn-soft-primary btn-sm">
+
+                        <button type="submit"
+                                class="btn btn-soft-primary btn-sm"
+                                @(hasPrimaryApplication ? "" : "disabled")
+                                aria-disabled="@(hasPrimaryApplication ? "false" : "true")">
                             <i class="ri-refresh-line align-middle me-1"></i>
                             Recalculate
                         </button>
+
+                        <sup class="ms-1">
+                            <i class="ri-information-line text-muted"
+                               role="button"
+                               data-bs-toggle="tooltip"
+                               data-bs-placement="top"
+                               title="Recalculates benefit dates and computed case status from the Primary Application. If no Primary Application is linked, this is disabled. Manual status overrides remain in effect until cleared."></i>
+                        </sup>
                     </form>
 
-                    <sup class="ms-1">
-                        <i class="ri-information-line text-muted"
-                           style="cursor: help;"
-                           data-bs-toggle="tooltip"
-                           data-bs-placement="bottom"
-                           title="Recalculates benefit dates and computed case status from the Primary Application. Manual status overrides remain in effect (use “Clear override” to return to automatic status).">
-                        </i>
-                    </sup>
 
 
                     <span class="badge @statusBadge">

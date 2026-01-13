@@ -807,19 +807,20 @@ namespace SWIMS.Controllers
                 .FirstOrDefaultAsync(c => c.Id == id);
 
             if (caseEntity == null)
-            {
                 return NotFound();
-            }
 
-            
             var beneficiaryUuid = await _core.SW_beneficiaries
                 .AsNoTracking()
                 .Where(b => b.Id == caseEntity.SW_beneficiaryId)
                 .Select(b => b.uuid)
                 .FirstOrDefaultAsync();
 
-            
-            ViewBag.FormScopeNote = "Showing submissions for the selected beneficiary only.";
+            ViewBag.FormScopeNote = !string.IsNullOrWhiteSpace(beneficiaryUuid)
+                ? "Showing submissions for the selected beneficiary only."
+                : "No beneficiary selected on this case — showing all submissions.";
+
+            // We are hiding/parking auto-linking for now.
+            ViewBag.AutoLinkingEnabled = AutoLinkingEnabled;
 
             var vm = new CaseLinkFormViewModel
             {
@@ -827,7 +828,7 @@ namespace SWIMS.Controllers
                 CaseNumber = caseEntity.case_number,
                 CaseTitle = caseEntity.title,
                 IsPrimaryApplication = false,
-                IncludeLinkedForms = true
+                IncludeLinkedForms = false
             };
 
             vm.AvailableForms = await BuildAvailableFormsSelectListAsync(beneficiaryUuid, caseEntity.SW_beneficiaryId);
@@ -835,47 +836,41 @@ namespace SWIMS.Controllers
             return View(vm);
         }
 
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> LinkForm(int id, CaseLinkFormViewModel vm)
         {
             if (id != vm.SW_caseId)
-            {
                 return BadRequest();
-            }
 
             var caseEntity = await _cases.SW_cases
                 .FirstOrDefaultAsync(c => c.Id == id);
 
             if (caseEntity == null)
-            {
                 return NotFound();
-            }
+
+            // Force-disable auto linking no matter what comes from the UI.
+            vm.IncludeLinkedForms = false;
 
             if (!ModelState.IsValid || vm.SelectedFormTableDatumId == null)
             {
-                if (vm.SelectedFormTableDatumId == null)
-                {
-                    ModelState.AddModelError(nameof(vm.SelectedFormTableDatumId),
-                        "Please pick a form submission to link.");
-                }
-
-                vm.CaseNumber = caseEntity.case_number;
-                vm.CaseTitle = caseEntity.title;
-
-                var beneficiaryUuid = await _core.SW_beneficiaries
+                var beneficiaryUuid0 = await _core.SW_beneficiaries
                     .AsNoTracking()
                     .Where(b => b.Id == caseEntity.SW_beneficiaryId)
                     .Select(b => b.uuid)
                     .FirstOrDefaultAsync();
 
-                ViewBag.FormScopeNote = !string.IsNullOrWhiteSpace(beneficiaryUuid)
+                ViewBag.FormScopeNote = !string.IsNullOrWhiteSpace(beneficiaryUuid0)
                     ? "Showing submissions for the selected beneficiary only."
                     : "No beneficiary selected on this case — showing all submissions.";
 
-                vm.AvailableForms = await BuildAvailableFormsSelectListAsync(beneficiaryUuid, caseEntity.SW_beneficiaryId);
-                return View(vm);
+                ViewBag.AutoLinkingEnabled = AutoLinkingEnabled;
 
+                vm.CaseNumber = caseEntity.case_number;
+                vm.CaseTitle = caseEntity.title;
+                vm.AvailableForms = await BuildAvailableFormsSelectListAsync(beneficiaryUuid0, caseEntity.SW_beneficiaryId);
+                return View(vm);
             }
 
             var formData = await _core.SW_formTableData
@@ -886,24 +881,53 @@ namespace SWIMS.Controllers
             {
                 ModelState.AddModelError(nameof(vm.SelectedFormTableDatumId),
                     "The selected form submission no longer exists.");
-                vm.CaseNumber = caseEntity.case_number;
-                vm.CaseTitle = caseEntity.title;
 
-                var beneficiaryUuid = await _core.SW_beneficiaries
+                var beneficiaryUuid1 = await _core.SW_beneficiaries
                     .AsNoTracking()
                     .Where(b => b.Id == caseEntity.SW_beneficiaryId)
                     .Select(b => b.uuid)
                     .FirstOrDefaultAsync();
 
-                ViewBag.FormScopeNote = !string.IsNullOrWhiteSpace(beneficiaryUuid)
+                ViewBag.FormScopeNote = !string.IsNullOrWhiteSpace(beneficiaryUuid1)
                     ? "Showing submissions for the selected beneficiary only."
                     : "No beneficiary selected on this case — showing all submissions.";
 
-                vm.AvailableForms = await BuildAvailableFormsSelectListAsync(beneficiaryUuid, caseEntity.SW_beneficiaryId);
-                return View(vm);
+                ViewBag.AutoLinkingEnabled = AutoLinkingEnabled;
 
+                vm.CaseNumber = caseEntity.case_number;
+                vm.CaseTitle = caseEntity.title;
+                vm.AvailableForms = await BuildAvailableFormsSelectListAsync(beneficiaryUuid1, caseEntity.SW_beneficiaryId);
+                return View(vm);
             }
 
+            // Prevent duplicate link (same submission linked twice to same case).
+            var alreadyLinked = await _cases.SW_caseForms
+                .AnyAsync(x => x.SW_caseId == caseEntity.Id && x.SW_formTableDatumId == formData.Id);
+
+            if (alreadyLinked)
+            {
+                ModelState.AddModelError(nameof(vm.SelectedFormTableDatumId),
+                    "That form submission is already linked to this case.");
+
+                var beneficiaryUuid2 = await _core.SW_beneficiaries
+                    .AsNoTracking()
+                    .Where(b => b.Id == caseEntity.SW_beneficiaryId)
+                    .Select(b => b.uuid)
+                    .FirstOrDefaultAsync();
+
+                ViewBag.FormScopeNote = !string.IsNullOrWhiteSpace(beneficiaryUuid2)
+                    ? "Showing submissions for the selected beneficiary only."
+                    : "No beneficiary selected on this case — showing all submissions.";
+
+                ViewBag.AutoLinkingEnabled = AutoLinkingEnabled;
+
+                vm.CaseNumber = caseEntity.case_number;
+                vm.CaseTitle = caseEntity.title;
+                vm.AvailableForms = await BuildAvailableFormsSelectListAsync(beneficiaryUuid2, caseEntity.SW_beneficiaryId);
+                return View(vm);
+            }
+
+            // Determine the form type name (role) using lookup relationship (SW_formFormTypes -> SW_formTypes)
             var formTypeName = await _lookup.SW_formFormTypes
                 .AsNoTracking()
                 .Where(x => x.SW_formsId == formData.SW_formsId)
@@ -913,56 +937,80 @@ namespace SWIMS.Controllers
                     (link, t) => t.name)
                 .FirstOrDefaultAsync();
 
+            // Store it as the "role" label on the case link
+            formTypeName = string.IsNullOrWhiteSpace(formTypeName) ? null : formTypeName.Trim();
 
-            var alreadyLinked = await _cases.SW_caseForms
-        .AnyAsync(cf =>
-            cf.SW_caseId == caseEntity.Id &&
-            cf.SW_formTableDatumId == formData.Id);
 
-            if (alreadyLinked)
+            await using var tx = await _cases.Database.BeginTransactionAsync();
+
+            try
             {
-                TempData["Ok"] = "This form submission is already linked to the case.";
+                // Primary uniqueness enforcement:
+                // If user is linking a new Primary Application, clear any existing primaries FIRST and save,
+                // so the DB unique filtered index never sees 2 primaries in the same case.
+                if (vm.IsPrimaryApplication)
+                {
+                    await ClearOtherPrimaryApplicationsAsync(caseEntity.Id);
+                    await _cases.SaveChangesAsync();
+                }
+
+                var link = new SW_caseForm
+                {
+                    SW_caseId = caseEntity.Id,
+                    SW_formTableDatumId = formData.Id,
+                    form_role = formTypeName,
+                    is_primary_application = vm.IsPrimaryApplication,
+                    linked_at = DateTime.UtcNow,
+                    linked_by = _userManager.GetUserId(User)
+                };
+
+                _cases.SW_caseForms.Add(link);
+                await _cases.SaveChangesAsync();
+
+                // Auto-linking is parked for now.
+                if (AutoLinkingEnabled && vm.IncludeLinkedForms)
+                {
+                    await AttachLinkedFormsAsync(caseEntity.Id, formData.Id, formTypeName);
+                    await _cases.SaveChangesAsync();
+                }
+
+                if (vm.IsPrimaryApplication)
+                {
+                    string? userId = _userManager.GetUserId(User);
+                    var result = await _caseLifecycle.RefreshFromPrimaryApplicationAsync(caseEntity.Id, userId);
+
+                    TempData["Ok"] = $"Primary application linked. {result.Message}";
+                }
+                else
+                {
+                    TempData["Ok"] = "Form submission linked to case.";
+                }
+
+                await tx.CommitAsync();
                 return RedirectToAction(nameof(Details), new { id = caseEntity.Id });
             }
-
-            var link = new SW_caseForm
+            catch
             {
-                SW_caseId = caseEntity.Id,
-                SW_formTableDatumId = formData.Id,
-
-                form_role = string.IsNullOrWhiteSpace(formTypeName) ? null : formTypeName.Trim(),
-
-                is_primary_application = vm.IsPrimaryApplication,
-                linked_at = DateTime.UtcNow,
-                linked_by = _userManager.GetUserId(User)
-            };
-
-
-            _cases.SW_caseForms.Add(link);
-
-            if (vm.IncludeLinkedForms)
-            {
-                await AttachLinkedFormsAsync(caseEntity.Id, formData.Id, formTypeName);
+                await tx.RollbackAsync();
+                throw;
             }
-
-            if (vm.IsPrimaryApplication)
-            {
-                string? userId = _userManager.GetUserId(User);
-                var result = await _caseLifecycle.RefreshFromPrimaryApplicationAsync(id, userId);
-                TempData["Ok"] = result.Message;
-            }
-
-
-            await _cases.SaveChangesAsync();
-
-            TempData["Ok"] = "Form submission linked to case.";
-            return RedirectToAction(nameof(Details), new { id = caseEntity.Id });
         }
+
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> RefreshFromPrimaryApplication(int id)
         {
+            var hasPrimary = await _cases.SW_caseForms
+                .AsNoTracking()
+                .AnyAsync(x => x.SW_caseId == id && x.is_primary_application);
+
+            if (!hasPrimary)
+            {
+                TempData["Err"] = "No Primary Application is linked to this case yet. Link a Primary Application first, then recalculate.";
+                return RedirectToAction(nameof(Details), new { id });
+            }
+
             var userId = _userManager.GetUserId(User);
             var result = await _caseLifecycle.RefreshFromPrimaryApplicationAsync(id, userId);
             TempData["Ok"] = result.Message;
@@ -1681,6 +1729,22 @@ namespace SWIMS.Controllers
             // Convert.ChangeType handles ints/strings; DateTime handled by direct assignment above
             var converted = Convert.ChangeType(value, destType, CultureInfo.InvariantCulture);
             p.SetValue(target, converted);
+        }
+
+
+        // Temporarily disable Austin's "linked forms auto attach" feature (UI + behavior).
+        private const bool AutoLinkingEnabled = false;
+
+        private async Task ClearOtherPrimaryApplicationsAsync(int caseId, CancellationToken ct = default)
+        {
+            var currentPrimaries = await _cases.SW_caseForms
+                .Where(x => x.SW_caseId == caseId && x.is_primary_application)
+                .ToListAsync(ct);
+
+            if (currentPrimaries.Count == 0) return;
+
+            foreach (var row in currentPrimaries)
+                row.is_primary_application = false;
         }
 
 
