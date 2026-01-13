@@ -5,7 +5,6 @@ using SWIMS.Data.Cases;
 using SWIMS.Data.Lookups;
 using SWIMS.Models;
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
@@ -41,9 +40,14 @@ public sealed class CaseLifecycleService : ICaseLifecycleService
         string? triggeredByUserId = null,
         CancellationToken ct = default)
     {
+        var now = DateTime.UtcNow;
+
         var caseEntity = await _cases.SW_cases.FirstOrDefaultAsync(c => c.Id == caseId, ct);
         if (caseEntity == null)
             return new(false, null, null, "Case not found.");
+
+        // Auto-expire timed overrides (plan-ahead). If override_until is in the past, clear it.
+        var overrideExpired = TryAutoExpireStatusOverride(caseEntity, now);
 
         var primaryLink = await _cases.SW_caseForms
             .AsNoTracking()
@@ -54,158 +58,349 @@ public sealed class CaseLifecycleService : ICaseLifecycleService
         if (primaryLink == null)
             return new(false, caseEntity.status, caseEntity.status, "No primary application form is linked to this case.");
 
-        // DbSet is SW_formTableData, entity type is SW_formTableDatum
-        SW_formTableDatum? formData = await _core.SW_formTableData
+        var formData = await _core.SW_formTableData
             .Include(d => d.SW_forms)
             .FirstOrDefaultAsync(d => d.Id == primaryLink.SW_formTableDatumId, ct);
 
         if (formData == null)
             return new(false, caseEntity.status, caseEntity.status, "Primary application submission not found.");
 
-        // ---- Use real approval fields on SW_formTableDatum (no reflection for approvals)
-        var decision = DeriveApprovalDecision(formData);
+        // ---- Approval decision (defensive)
+        bool? decision = TryExtractApprovalDecision(formData);
+        if (decision == null)
+        {
+            var derived = DeriveCaseStatusFromApprovals(formData);
+            decision = derived.Equals("Active", StringComparison.OrdinalIgnoreCase) ? true
+                     : derived.Equals("Closed", StringComparison.OrdinalIgnoreCase) ? false
+                     : (bool?)null;
+        }
 
-        // Benefit start: when approved, use the "final approval" timestamp (last step in play)
-        var finalApprovalAt = GetFinalApprovalTimestampUtc(formData) ?? DateTime.UtcNow;
-
-        // Optional: allow future "explicit start/end" fields on the submission via reflection
-        // (this is for your planned custom period fields on the form record, NOT for approvals)
-        var explicitStart =
+        // ---- Period inputs
+        var approvalStart =
             TryGetDateTime(formData,
-                "benefit_start_at", "benefit_start_date",
-                "approval_start_date", "approval_start",
-                "approved_start_date", "date_approved", "approved_at");
+                "approval_start_date", "approval_start", "benefit_start_date", "benefit_start_at",
+                "approved_start_date", "date_approved", "approved_at")
+            ?? now;
 
         var explicitEnd =
             TryGetDateTime(formData,
-                "benefit_end_at", "benefit_end_date",
-                "approval_end_date", "approval_end",
+                "approval_end_date", "approval_end", "benefit_end_date", "benefit_end_at",
                 "approved_end_date", "expires_at", "expiry_date");
 
-        // Case-level override (plan-ahead for custom period; properties may not exist yet -> reflection-safe)
+        // Case-level benefit override
         var overrideMonths = TryGetInt(caseEntity, "benefit_period_months_override");
         var overrideStart = TryGetDateTime(caseEntity, "benefit_start_at_override");
         var overrideEnd = TryGetDateTime(caseEntity, "benefit_end_at_override");
 
-        // Start date precedence: Case override -> explicit form field -> final approval timestamp
-        DateTime benefitStart = overrideStart ?? explicitStart ?? finalApprovalAt;
+        var benefitStart = overrideStart ?? approvalStart;
 
-        // Months precedence:
-        // Case override -> form explicit months field -> program default -> fallback
         int? months =
             overrideMonths
-            ?? TryGetInt(formData, "benefit_period_months", "approval_period_months", "months_approved", "period_months")
-            ?? TryParseMonthsFromString(TryGetString(formData, "benefit_period", "approval_period", "approved_period"));
+            ?? TryGetInt(formData, "approval_period_months", "benefit_period_months", "months_approved", "period_months")
+            ?? TryParseMonthsFromString(TryGetString(formData, "approval_period", "benefit_period", "approved_period"));
 
         if (months == null)
             months = await TryGetProgramDefaultMonthsAsync(caseEntity.ProgramTagId, ct) ?? FallbackDefaultMonths;
 
-        // End date precedence: Case override -> explicit form end date -> computed from months
         DateTime? benefitEnd =
             overrideEnd
             ?? explicitEnd
-            ?? (months > 0 ? benefitStart.AddMonths(months.Value) : null);
+            ?? ((months.HasValue && months.Value > 0) ? benefitStart.AddMonths(months.Value) : (DateTime?)null);
 
-        // ---- Decide case status (Pending / Active / Inactive / Closed)
-        var oldStatus = caseEntity.status ?? "Pending";
-        var newStatus = oldStatus;
+        // ---- Computed status
+        var oldStatus = (caseEntity.status ?? "Pending").Trim();
+        var computedStatus = oldStatus;
 
         if (decision == true)
         {
-            // Approved => Active unless already expired => Inactive
-            if (benefitEnd.HasValue && benefitEnd.Value <= DateTime.UtcNow)
-                newStatus = "Inactive";
-            else
-                newStatus = "Active";
+            computedStatus = (benefitEnd.HasValue && benefitEnd.Value <= now) ? "Inactive" : "Active";
         }
         else if (decision == false)
         {
-            // Not approved (rejected/denied) => Closed
-            newStatus = "Closed";
+            computedStatus = "Closed";
         }
         else
         {
-            // Still in progress => Pending
-            newStatus = "Pending";
+            computedStatus = "Pending";
         }
 
-        // ---- Apply updates
+        // ---- Manual override wins (if active)
+        var overrideStatus = (TryGetString(caseEntity, "status_override") ?? "").Trim();
+        var overrideUntil = TryGetDateTime(caseEntity, "status_override_until");
+        var hasActiveManualOverride =
+            !string.IsNullOrWhiteSpace(overrideStatus)
+            && (overrideUntil == null || overrideUntil.Value > now);
+
         var changed = false;
 
-        if (!string.Equals(caseEntity.status, newStatus, StringComparison.OrdinalIgnoreCase))
-        {
-            caseEntity.status = newStatus;
-            changed = true;
-        }
+        // Always keep benefit fields in sync
+        changed |= TrySetValue(caseEntity, "benefit_start_at", benefitStart);
+        changed |= TrySetValue(caseEntity, "benefit_end_at", benefitEnd);
+        changed |= TrySetValue(caseEntity, "benefit_period_months", months);
+        changed |= TrySetValue(caseEntity, "benefit_period_source",
+            (overrideMonths != null || overrideStart != null || overrideEnd != null)
+                ? "CaseOverride"
+                : (explicitEnd != null ? "FormEndDate" : "Computed"));
 
-        // closed_at consistency (your existing behavior)
-        if (string.Equals(newStatus, "Closed", StringComparison.OrdinalIgnoreCase))
+        // Apply status rule
+        if (hasActiveManualOverride)
         {
-            if (caseEntity.closed_at == null)
+            // Ensure the stored status matches the override (prevents drift like in your screenshot)
+            if (!string.Equals(caseEntity.status, overrideStatus, StringComparison.OrdinalIgnoreCase))
             {
-                caseEntity.closed_at = DateTime.UtcNow;
+                caseEntity.status = overrideStatus;
                 changed = true;
+            }
+
+            // Keep closed_at consistent with manual override
+            if (string.Equals(overrideStatus, "Closed", StringComparison.OrdinalIgnoreCase))
+            {
+                if (caseEntity.closed_at == null)
+                {
+                    caseEntity.closed_at = now;
+                    changed = true;
+                }
+            }
+            else
+            {
+                if (caseEntity.closed_at != null)
+                {
+                    caseEntity.closed_at = null;
+                    changed = true;
+                }
             }
         }
         else
         {
-            if (caseEntity.closed_at != null)
+            // No manual override => write computed status
+            if (!string.Equals(caseEntity.status, computedStatus, StringComparison.OrdinalIgnoreCase))
             {
-                caseEntity.closed_at = null;
+                caseEntity.status = computedStatus;
                 changed = true;
             }
-        }
 
-        // Only set benefit fields when approved (keeps pending cases clean)
-        // Uses reflection so it won't break if these columns aren't added yet.
-        if (decision == true)
-        {
-            changed |= TrySetValue(caseEntity, "benefit_start_at", benefitStart);
-            changed |= TrySetValue(caseEntity, "benefit_end_at", benefitEnd);
-            changed |= TrySetValue(caseEntity, "benefit_period_months", months);
-
-            var source =
-                (overrideMonths != null || overrideStart != null || overrideEnd != null) ? "CaseOverride" :
-                (explicitEnd != null || explicitStart != null) ? "FormExplicit" :
-                "Computed";
-
-            changed |= TrySetValue(caseEntity, "benefit_period_source", source);
+            if (string.Equals(computedStatus, "Closed", StringComparison.OrdinalIgnoreCase))
+            {
+                if (caseEntity.closed_at == null)
+                {
+                    caseEntity.closed_at = now;
+                    changed = true;
+                }
+            }
+            else
+            {
+                if (caseEntity.closed_at != null)
+                {
+                    caseEntity.closed_at = null;
+                    changed = true;
+                }
+            }
         }
 
         if (!changed)
-            return new(false, oldStatus, newStatus, "No changes were required.");
+        {
+            return new(false, oldStatus, caseEntity.status, hasActiveManualOverride
+                ? "No changes were required (manual status override is active)."
+                : "No changes were required.");
+        }
 
         await _cases.SaveChangesAsync(ct);
 
-        _logger.LogInformation(
-            "Case {CaseId} refreshed from primary application by {UserId}. Status {Old} -> {New}.",
-            caseId, triggeredByUserId ?? "(system)", oldStatus, newStatus);
+        if (hasActiveManualOverride)
+        {
+            var msg = $"Case refreshed from primary application. Benefit period updated. Manual status override remains in effect ({overrideStatus}).";
+            if (overrideExpired) msg = "Timed status override expired and was cleared. " + msg;
+            return new(true, oldStatus, caseEntity.status, msg);
+        }
 
-        return new(true, oldStatus, newStatus, $"Case refreshed from primary application. Status: {oldStatus} → {newStatus}.");
+        return new(true, oldStatus, computedStatus, $"Case refreshed from primary application. Status: {oldStatus} → {computedStatus}.");
     }
 
-    // -----------------------------
-    // Program default benefit months (plan-ahead)
-    // -----------------------------
     private async Task<int?> TryGetProgramDefaultMonthsAsync(int? programTagId, CancellationToken ct)
     {
         if (programTagId == null) return null;
 
-        var tag = await _lookup.SW_programTags
-            .AsNoTracking()
-            .FirstOrDefaultAsync(t => t.Id == programTagId.Value, ct);
+        var tag = await _lookup.SW_programTags.AsNoTracking().FirstOrDefaultAsync(t => t.Id == programTagId.Value, ct);
+        if (tag == null) return null;
 
-        var months = tag?.default_benefit_months;
-        if (months is int m && m > 0)
-            return m;
+        return TryGetInt(tag, "default_benefit_months", "defaultBenefitMonths", "DefaultBenefitMonths");
+    }
+
+    private static bool TryAutoExpireStatusOverride(object caseEntity, DateTime nowUtc)
+    {
+        var s = (TryGetString(caseEntity, "status_override") ?? "").Trim();
+        if (string.IsNullOrWhiteSpace(s)) return false;
+
+        var until = TryGetDateTime(caseEntity, "status_override_until");
+        if (until == null) return false;
+
+        if (until.Value > nowUtc) return false;
+
+        var changed = false;
+        changed |= TrySetValue(caseEntity, "status_override", null);
+        changed |= TrySetValue(caseEntity, "status_override_reason", null);
+        changed |= TrySetValue(caseEntity, "status_override_until", null);
+        changed |= TrySetValue(caseEntity, "status_override_at", null);
+        changed |= TrySetValue(caseEntity, "status_override_by", null);
+
+        return changed;
+    }
+
+    private static bool? TryExtractApprovalDecision(object formData)
+    {
+        var b = TryGetBool(formData,
+            "is_approved", "approved", "approval_isApproved", "isApproved", "IsApproved",
+            "approvalApproved", "ApprovalApproved");
+        if (b.HasValue) return b.Value;
+
+        var s = TryGetString(formData,
+            "approval_status", "approval_decision", "approval_outcome", "approval_state",
+            "ApprovalStatus", "ApprovalDecision");
+
+        if (string.IsNullOrWhiteSpace(s)) return null;
+
+        s = s.Trim();
+        if (s.Equals("Approved", StringComparison.OrdinalIgnoreCase)) return true;
+        if (s.Equals("Rejected", StringComparison.OrdinalIgnoreCase)) return false;
+        if (s.Equals("Denied", StringComparison.OrdinalIgnoreCase)) return false;
+
+        if (s.IndexOf("approv", StringComparison.OrdinalIgnoreCase) >= 0) return true;
+        if (s.IndexOf("reject", StringComparison.OrdinalIgnoreCase) >= 0) return false;
+        if (s.IndexOf("deny", StringComparison.OrdinalIgnoreCase) >= 0) return false;
 
         return null;
     }
 
+    private static int? TryParseMonthsFromString(string? input)
+    {
+        if (string.IsNullOrWhiteSpace(input)) return null;
 
-    // -----------------------------
-    // Approvals (strongly-typed)
-    // -----------------------------
+        var m = Regex.Match(input, @"(\d+)");
+        if (!m.Success) return null;
+
+        return int.TryParse(m.Groups[1].Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var months)
+            ? months
+            : null;
+    }
+
+    private static bool? TryGetBool(object o, params string[] names)
+    {
+        foreach (var name in names)
+        {
+            var p = GetProp(o, name);
+            if (p == null) continue;
+
+            var v = p.GetValue(o);
+            if (v is bool b) return b;
+
+            if (v is string s && bool.TryParse(s, out var parsed))
+                return parsed;
+        }
+        return null;
+    }
+
+    private static int? TryGetInt(object o, params string[] names)
+    {
+        foreach (var name in names)
+        {
+            var p = GetProp(o, name);
+            if (p == null) continue;
+
+            var parsed = TryGetInt(p.GetValue(o));
+            if (parsed.HasValue) return parsed.Value;
+        }
+        return null;
+    }
+
+    private static DateTime? TryGetDateTime(object o, params string[] names)
+    {
+        foreach (var name in names)
+        {
+            var p = GetProp(o, name);
+            if (p == null) continue;
+
+            var parsed = TryGetDateTime(p.GetValue(o));
+            if (parsed.HasValue) return parsed.Value;
+        }
+        return null;
+    }
+
+    private static int? TryGetInt(object? v)
+    {
+        if (v is null) return null;
+        if (v is int i) return i;
+
+        if (v is long l && l >= int.MinValue && l <= int.MaxValue) return (int)l;
+        if (v is short s) return s;
+        if (v is byte b) return b;
+
+        if (v is decimal dec &&
+            dec >= int.MinValue && dec <= int.MaxValue &&
+            decimal.Truncate(dec) == dec)
+        {
+            return (int)dec;
+        }
+
+        if (v is string str)
+        {
+            str = str.Trim();
+            if (int.TryParse(str, out var parsed)) return parsed;
+        }
+
+        return null;
+    }
+
+    private static DateTime? TryGetDateTime(object? v)
+    {
+        if (v is null) return null;
+        if (v is DateTime dt) return dt;
+
+        if (v is string str)
+        {
+            str = str.Trim();
+            if (DateTime.TryParse(str, out var parsed)) return parsed;
+        }
+
+        return null;
+    }
+
+    private static string? TryGetString(object o, params string[] names)
+    {
+        foreach (var name in names)
+        {
+            var p = GetProp(o, name);
+            if (p == null) continue;
+
+            var v = p.GetValue(o);
+            if (v is string s) return s;
+        }
+        return null;
+    }
+
+    private static bool TrySetValue(object target, string propertyName, object? value)
+    {
+        var p = GetProp(target, propertyName);
+        if (p == null || !p.CanWrite) return false;
+
+        var current = p.GetValue(target);
+        if (Equals(current, value)) return false;
+
+        if (value != null && p.PropertyType != value.GetType())
+        {
+            var underlying = Nullable.GetUnderlyingType(p.PropertyType) ?? p.PropertyType;
+            if (underlying.IsEnum && value is string es)
+                value = Enum.Parse(underlying, es, ignoreCase: true);
+            else
+                value = Convert.ChangeType(value, underlying, CultureInfo.InvariantCulture);
+        }
+
+        p.SetValue(target, value);
+        return true;
+    }
+
+    private static PropertyInfo? GetProp(object o, string name)
+        => o.GetType().GetProperty(name, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
+
     private sealed record ApprovalSlot(
         int Level,
         int? Status,
@@ -229,201 +424,19 @@ public sealed class CaseLifecycleService : ICaseLifecycleService
         new ApprovalSlot(5, d.isApproval_05, d.isApp_dateTime_05, d.isApprover_05, d.isAppComment_05),
     };
 
-    /// <summary>
-    /// Returns:
-    /// true  => fully approved
-    /// null  => still in progress (pending)
-    /// false => terminal not-approved state (only if a non 0/1 value appears)
-    /// </summary>
-    private static bool? DeriveApprovalDecision(SW_formTableDatum d)
+    private static string DeriveCaseStatusFromApprovals(SW_formTableDatum d)
     {
         var slots = GetApprovalSlots(d).Where(s => s.IsInPlay).ToList();
+        if (slots.Count == 0)
+            return "Pending";
 
-        // No approval flow in play => keep case Pending (no decision)
-        if (slots.Count == 0) return null;
-
-        // Convention in SWIMS: 0 = pending, 1 = approved
-        // If any step is missing or 0 => pending
+        // 0 = pending, 1 = approved
         if (slots.Any(s => !s.Status.HasValue || s.Status.Value == 0))
-            return null;
+            return "Pending";
 
-        // If all in-play steps are 1 => approved
         if (slots.All(s => s.Status.Value == 1))
-            return true;
+            return "Active";
 
-        // Any other values => treat as terminal not-approved for now
-        return false;
+        return "Closed";
     }
-
-    private static DateTime? GetFinalApprovalTimestampUtc(SW_formTableDatum d)
-    {
-        var slots = GetApprovalSlots(d)
-            .Where(s => s.IsInPlay)
-            .OrderBy(s => s.Level)
-            .ToList();
-
-        if (slots.Count == 0) return null;
-
-        // Look for the highest-level approved slot with a timestamp
-        var lastApproved = slots
-            .Where(s => s.Status.HasValue && s.Status.Value == 1 && s.At.HasValue)
-            .OrderByDescending(s => s.Level)
-            .FirstOrDefault();
-
-        if (lastApproved?.At == null) return null;
-
-        // Preserve kind if present; otherwise assume local/unspecified and treat as UTC-ish
-        var dt = lastApproved.At.Value;
-        return dt.Kind == DateTimeKind.Utc ? dt : dt.ToUniversalTime();
-    }
-
-    // -----------------------------
-    // Small parsing helpers
-    // -----------------------------
-    private static int? TryParseMonthsFromString(string? input)
-    {
-        if (string.IsNullOrWhiteSpace(input)) return null;
-
-        // "6 months", "6 Months", "6"
-        var m = Regex.Match(input, @"(\d+)");
-        if (!m.Success) return null;
-
-        if (int.TryParse(m.Groups[1].Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var months))
-            return months;
-
-        return null;
-    }
-
-    // -----------------------------
-    // Reflection-based "optional fields" helpers (not used for approvals)
-    // -----------------------------
-    private static bool? TryGetBool(object o, params string[] names)
-    {
-        foreach (var name in names)
-        {
-            var p = GetProp(o, name);
-            if (p == null) continue;
-
-            var v = p.GetValue(o);
-            if (v is bool b) return b;
-
-            if (v is string s && bool.TryParse(s, out var parsed))
-                return parsed;
-        }
-        return null;
-    }
-
-    // Overload: read int from property name(s) using reflection
-    private static int? TryGetInt(object o, params string[] names)
-    {
-        foreach (var name in names)
-        {
-            var p = GetProp(o, name);
-            if (p == null) continue;
-
-            var parsed = TryGetInt(p.GetValue(o));
-            if (parsed.HasValue) return parsed.Value;
-        }
-        return null;
-    }
-
-    // Value parser: supports boxed nullable ints (boxes as int), numerics, and strings
-    private static int? TryGetInt(object? v)
-    {
-        if (v is null) return null;
-
-        // Nullable<int> boxes as int when not null
-        if (v is int i) return i;
-
-        if (v is long l && l >= int.MinValue && l <= int.MaxValue) return (int)l;
-        if (v is short s) return s;
-        if (v is byte b) return b;
-
-        if (v is decimal dec &&
-            dec >= int.MinValue && dec <= int.MaxValue &&
-            decimal.Truncate(dec) == dec)
-        {
-            return (int)dec;
-        }
-
-        if (v is string str)
-        {
-            str = str.Trim();
-            if (int.TryParse(str, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsed))
-                return parsed;
-        }
-
-        return null;
-    }
-
-    // Overload: read DateTime from property name(s) using reflection
-    private static DateTime? TryGetDateTime(object o, params string[] names)
-    {
-        foreach (var name in names)
-        {
-            var p = GetProp(o, name);
-            if (p == null) continue;
-
-            var parsed = TryGetDateTime(p.GetValue(o));
-            if (parsed.HasValue) return parsed.Value;
-        }
-        return null;
-    }
-
-    // Value parser: supports boxed nullable DateTime (boxes as DateTime), and strings
-    private static DateTime? TryGetDateTime(object? v)
-    {
-        if (v is null) return null;
-
-        // Nullable<DateTime> boxes as DateTime when not null
-        if (v is DateTime dt) return dt;
-
-        if (v is string str)
-        {
-            str = str.Trim();
-            if (DateTime.TryParse(str, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out var parsed))
-                return parsed;
-        }
-
-        return null;
-    }
-
-    private static string? TryGetString(object o, params string[] names)
-    {
-        foreach (var name in names)
-        {
-            var p = GetProp(o, name);
-            if (p == null) continue;
-
-            var v = p.GetValue(o);
-            if (v is string s && !string.IsNullOrWhiteSpace(s))
-                return s;
-        }
-        return null;
-    }
-
-    private static bool TrySetValue(object target, string propertyName, object? value)
-    {
-        var p = GetProp(target, propertyName);
-        if (p == null || !p.CanWrite) return false;
-
-        var current = p.GetValue(target);
-        if (Equals(current, value)) return false;
-
-        // Handle nullable conversions
-        if (value != null && p.PropertyType != value.GetType())
-        {
-            var underlying = Nullable.GetUnderlyingType(p.PropertyType) ?? p.PropertyType;
-            if (underlying.IsEnum && value is string es)
-                value = Enum.Parse(underlying, es, ignoreCase: true);
-            else
-                value = Convert.ChangeType(value, underlying, CultureInfo.InvariantCulture);
-        }
-
-        p.SetValue(target, value);
-        return true;
-    }
-
-    private static PropertyInfo? GetProp(object o, string name)
-        => o.GetType().GetProperty(name, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
 }

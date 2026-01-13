@@ -54,25 +54,25 @@
                         Benefit period
                     </a>
 
-                    <div class="d-inline-block">
-                        <form asp-action="RefreshFromPrimaryApplication"
-                              asp-route-id="@Model.Id"
-                              method="post"
-                              class="d-inline">
-                            @Html.AntiForgeryToken()
-                            <button type="submit" class="btn btn-soft-primary btn-sm"
-                                    title="Recalculate benefit dates and computed status from the Primary Application. Manual overrides are preserved.">
-                                <i class="ri-refresh-line align-middle me-1"></i>
-                                Recalculate
-                            </button>
-                        </form>
+                    <form asp-action="RefreshFromPrimaryApplication"
+                          asp-route-id="@Model.Id"
+                          method="post"
+                          class="d-inline">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-soft-primary btn-sm">
+                            <i class="ri-refresh-line align-middle me-1"></i>
+                            Recalculate
+                        </button>
+                    </form>
 
-                        <div class="text-muted fs-11 mt-1">
-                            Recalculates benefit dates and <span class="fw-semibold">computed</span> case status from the Primary Application.
-                            <span class="fw-semibold">Manual status overrides are preserved</span> (use “Clear override” to return to automatic status).
-                        </div>
-                    </div>
-
+                    <sup class="ms-1">
+                        <i class="ri-information-line text-muted"
+                           style="cursor: help;"
+                           data-bs-toggle="tooltip"
+                           data-bs-placement="bottom"
+                           title="Recalculates benefit dates and computed case status from the Primary Application. Manual status overrides remain in effect (use “Clear override” to return to automatic status).">
+                        </i>
+                    </sup>
 
 
                     <span class="badge @statusBadge">
@@ -541,3 +541,15 @@
         </div>
     </div>
 </div>
+
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            if (!window.bootstrap || !bootstrap.Tooltip) return;
+
+            var triggers = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            triggers.forEach(function (el) { new bootstrap.Tooltip(el); });
+        });
+    </script>
+}
