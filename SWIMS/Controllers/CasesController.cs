@@ -941,59 +941,69 @@ namespace SWIMS.Controllers
             formTypeName = string.IsNullOrWhiteSpace(formTypeName) ? null : formTypeName.Trim();
 
 
-            await using var tx = await _cases.Database.BeginTransactionAsync();
+            // Capture values used inside the strategy delegate (avoids accidental re-use of vm/formData objects)
+            var caseId = caseEntity.Id;
+            var formDataId = formData.Id;
+            var isPrimary = vm.IsPrimaryApplication;
+            var role = formTypeName;
+            string? linkedBy = _userManager.GetUserId(User);
 
-            try
+            // IMPORTANT: Auto-linking is parked; keep it off regardless of UI tampering.
+            var includeLinkedForms = false;
+
+            var strategy = _cases.Database.CreateExecutionStrategy();
+
+            await strategy.ExecuteAsync(async () =>
             {
+                await using var tx = await _cases.Database.BeginTransactionAsync();
+
                 // Primary uniqueness enforcement:
-                // If user is linking a new Primary Application, clear any existing primaries FIRST and save,
-                // so the DB unique filtered index never sees 2 primaries in the same case.
-                if (vm.IsPrimaryApplication)
+                // Clear existing primaries BEFORE inserting the new primary.
+                if (isPrimary)
                 {
-                    await ClearOtherPrimaryApplicationsAsync(caseEntity.Id);
+                    await ClearOtherPrimaryApplicationsAsync(caseId);
                     await _cases.SaveChangesAsync();
                 }
 
                 var link = new SW_caseForm
                 {
-                    SW_caseId = caseEntity.Id,
-                    SW_formTableDatumId = formData.Id,
-                    form_role = formTypeName,
-                    is_primary_application = vm.IsPrimaryApplication,
+                    SW_caseId = caseId,
+                    SW_formTableDatumId = formDataId,
+                    form_role = role,
+                    is_primary_application = isPrimary,
                     linked_at = DateTime.UtcNow,
-                    linked_by = _userManager.GetUserId(User)
+                    linked_by = linkedBy
                 };
 
                 _cases.SW_caseForms.Add(link);
                 await _cases.SaveChangesAsync();
 
                 // Auto-linking is parked for now.
-                if (AutoLinkingEnabled && vm.IncludeLinkedForms)
+                if (AutoLinkingEnabled && includeLinkedForms)
                 {
-                    await AttachLinkedFormsAsync(caseEntity.Id, formData.Id, formTypeName);
+                    await AttachLinkedFormsAsync(caseId, formDataId, role);
                     await _cases.SaveChangesAsync();
                 }
 
-                if (vm.IsPrimaryApplication)
-                {
-                    string? userId = _userManager.GetUserId(User);
-                    var result = await _caseLifecycle.RefreshFromPrimaryApplicationAsync(caseEntity.Id, userId);
-
-                    TempData["Ok"] = $"Primary application linked. {result.Message}";
-                }
-                else
-                {
-                    TempData["Ok"] = "Form submission linked to case.";
-                }
-
                 await tx.CommitAsync();
-                return RedirectToAction(nameof(Details), new { id = caseEntity.Id });
-            }
-            catch
+            });
+
+            // Run lifecycle refresh AFTER the DB commit.
+            // Reason: lifecycle service touches other tables/contexts; keep the critical transaction minimal & safe.
+            if (isPrimary)
             {
-                await tx.RollbackAsync();
-                throw;
+                string? userId = _userManager.GetUserId(User);
+                var result = await _caseLifecycle.RefreshFromPrimaryApplicationAsync(caseId, userId);
+
+                TempData["Ok"] = $"Primary application linked. {result.Message}";
             }
+            else
+            {
+                TempData["Ok"] = "Form submission linked to case.";
+            }
+
+            return RedirectToAction(nameof(Details), new { id = caseId });
+
         }
 
 
