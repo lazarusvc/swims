@@ -681,6 +681,17 @@ namespace SWIMS.Controllers
                 BenefitEndAtOverride = caseEntity.benefit_end_at_override,
                 BenefitPeriodMonthsOverride = caseEntity.benefit_period_months_override,
 
+                StatusOverride = caseEntity.status_override,
+                StatusOverrideReason = caseEntity.status_override_reason,
+                StatusOverrideUntil = caseEntity.status_override_until,
+                StatusOverrideAt = caseEntity.status_override_at,
+                StatusOverrideBy = caseEntity.status_override_by,
+
+                IsStatusOverrideActive =
+                    !string.IsNullOrWhiteSpace(caseEntity.status_override)
+                    && (caseEntity.status_override_until == null || caseEntity.status_override_until > DateTime.UtcNow),
+
+
                 BeneficiaryName = beneficiary != null
                     ? (!string.IsNullOrWhiteSpace(beneficiary.name)
                         ? beneficiary.name
@@ -700,11 +711,10 @@ namespace SWIMS.Controllers
         // POST: /Cases/SetStatus
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> SetStatus(int id, string status)
+        public async Task<IActionResult> SetStatus(int id, string status, string? reason = null)
         {
-            // For v1 we keep the allowed statuses simple and explicit.
-            var allowedStatuses = new[] { "Pending", "Active", "Inactive", "Closed" };
-
+            // Keep explicit for now
+            var allowedStatuses = new[] { "Pending", "Active", "Inactive", "Closed", "Suspended" };
 
             if (string.IsNullOrWhiteSpace(status) || !allowedStatuses.Contains(status))
             {
@@ -712,42 +722,80 @@ namespace SWIMS.Controllers
                 return RedirectToAction(nameof(Details), new { id });
             }
 
-            var caseEntity = await _cases.SW_cases
-                .FirstOrDefaultAsync(c => c.Id == id);
-
+            var caseEntity = await _cases.SW_cases.FirstOrDefaultAsync(c => c.Id == id);
             if (caseEntity == null)
-            {
                 return NotFound();
-            }
 
-            if (caseEntity.status == status)
-            {
-                TempData["Ok"] = $"Case is already marked as {status}.";
-                return RedirectToAction(nameof(Details), new { id });
-            }
+            // Manual override: set both the visible status + override fields
+            var now = DateTime.UtcNow;
 
             caseEntity.status = status;
 
-            // Keep closed_at in sync with the flag in a very simple way for v1:
+            caseEntity.status_override = status;
+            caseEntity.status_override_reason = string.IsNullOrWhiteSpace(reason) ? "Manual override" : reason.Trim();
+            caseEntity.status_override_at = now;
+            caseEntity.status_override_by = User?.Identity?.Name ?? "(unknown)";
+            caseEntity.status_override_until = null; // plan-ahead: later we’ll support timed suspensions
+
+            // Keep closed_at consistent with the *manual* status
             if (status == "Closed")
             {
-                // Only set if it's not already set, so we preserve original close date.
                 if (caseEntity.closed_at == null)
-                {
-                    caseEntity.closed_at = DateTime.UtcNow;
-                }
+                    caseEntity.closed_at = now;
             }
             else
             {
-                // Any non-closed status clears the closed_at timestamp.
                 caseEntity.closed_at = null;
             }
 
             await _cases.SaveChangesAsync();
 
-            TempData["Ok"] = $"Case status updated to {status}.";
+            TempData["Ok"] = $"Case status manually overridden to {status}.";
             return RedirectToAction(nameof(Details), new { id });
         }
+
+
+        // POST: /Cases/ClearStatusOverride
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ClearStatusOverride(int id)
+        {
+            var caseEntity = await _cases.SW_cases.FirstOrDefaultAsync(c => c.Id == id);
+            if (caseEntity == null)
+                return NotFound();
+
+            if (string.IsNullOrWhiteSpace(caseEntity.status_override))
+            {
+                TempData["Ok"] = "No manual status override is active for this case.";
+                return RedirectToAction(nameof(Details), new { id });
+            }
+
+            caseEntity.status_override = null;
+            caseEntity.status_override_reason = null;
+            caseEntity.status_override_until = null;
+            caseEntity.status_override_at = null;
+            caseEntity.status_override_by = null;
+
+            await _cases.SaveChangesAsync();
+
+            // Recompute back to automatic behavior (best-effort)
+            try
+            {
+                var userId = _userManager.GetUserId(User) ?? User?.Identity?.Name;
+                var result = await _caseLifecycle.RefreshFromPrimaryApplicationAsync(id, userId);
+
+                // Changed = whether anything needed to update; not a "success/fail" flag
+                TempData["Ok"] = $"Manual override cleared. {result.Message}";
+            }
+            catch
+            {
+                TempData["Ok"] = "Manual override cleared. Automatic recompute failed; use Refresh to recompute.";
+            }
+
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+
 
 
         // GET: /Cases/LinkForm/5
@@ -899,7 +947,7 @@ namespace SWIMS.Controllers
 
             if (vm.IsPrimaryApplication)
             {
-                var userId = _userManager.GetUserId(User);
+                string? userId = _userManager.GetUserId(User);
                 var result = await _caseLifecycle.RefreshFromPrimaryApplicationAsync(id, userId);
                 TempData["Ok"] = result.Message;
             }

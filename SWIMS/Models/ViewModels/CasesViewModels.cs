@@ -170,6 +170,14 @@ namespace SWIMS.Models.ViewModels
         public DateTime? BenefitEndAtOverride { get; set; }
         public int? BenefitPeriodMonthsOverride { get; set; }
 
+        public bool IsStatusOverrideActive { get; set; }
+        public string? StatusOverride { get; set; }
+        public string? StatusOverrideReason { get; set; }
+        public DateTime? StatusOverrideUntil { get; set; }
+        public DateTime? StatusOverrideAt { get; set; }
+        public string? StatusOverrideBy { get; set; }
+
+
     }
 
     public sealed class CaseLinkFormViewModel

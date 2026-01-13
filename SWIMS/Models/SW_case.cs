@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace SWIMS.Models
 {
-    public class SW_case
+    public partial class SW_case
     {
         public int Id { get; set; }
 

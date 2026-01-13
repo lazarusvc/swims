@@ -25,7 +25,6 @@ public sealed class CaseBenefitExpiryHostedService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        // Run every hour; cheap query, simple logic.
         var timer = new PeriodicTimer(TimeSpan.FromHours(1));
 
         while (!stoppingToken.IsCancellationRequested)
@@ -50,21 +49,22 @@ public sealed class CaseBenefitExpiryHostedService : BackgroundService
 
         var now = DateTime.UtcNow;
 
-        // NOTE: requires benefit_end_at column/property to exist.
         var candidates = await db.SW_cases
-            .Where(c => c.status == "Active" && c.benefit_end_at != null && c.benefit_end_at <= now)
+            .Where(c =>
+                c.status == "Active"
+                && c.benefit_end_at != null
+                && c.benefit_end_at <= now
+                && c.status_override == null) // manual override wins
             .ToListAsync(ct);
 
         if (candidates.Count == 0)
             return;
 
         foreach (var c in candidates)
-        {
             c.status = "Inactive";
-        }
 
         await db.SaveChangesAsync(ct);
 
-        _logger.LogInformation("Marked {Count} cases as Inactive due to expired beneficiary period.", candidates.Count);
+        _logger.LogInformation("Marked {Count} cases as Inactive due to expired beneficiary period (manual overrides excluded).", candidates.Count);
     }
 }

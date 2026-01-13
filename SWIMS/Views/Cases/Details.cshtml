@@ -30,6 +30,7 @@
                     {
                         "Active" => "bg-success",
                         "Inactive" => "bg-danger",
+                        "Suspended" => "bg-dark",
                         "Closed" => "bg-secondary",
                         "Pending" => "bg-warning",
                         _ => "bg-info"
@@ -53,16 +54,25 @@
                         Benefit period
                     </a>
 
-                    <form asp-action="RefreshFromPrimaryApplication"
-                          asp-route-id="@Model.Id"
-                          method="post"
-                          class="d-inline">
-                        @Html.AntiForgeryToken()
-                        <button type="submit" class="btn btn-soft-primary btn-sm">
-                            <i class="ri-refresh-line align-middle me-1"></i>
-                            Refresh
-                        </button>
-                    </form>
+                    <div class="d-inline-block">
+                        <form asp-action="RefreshFromPrimaryApplication"
+                              asp-route-id="@Model.Id"
+                              method="post"
+                              class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-soft-primary btn-sm"
+                                    title="Recalculate benefit dates and computed status from the Primary Application. Manual overrides are preserved.">
+                                <i class="ri-refresh-line align-middle me-1"></i>
+                                Recalculate
+                            </button>
+                        </form>
+
+                        <div class="text-muted fs-11 mt-1">
+                            Recalculates benefit dates and <span class="fw-semibold">computed</span> case status from the Primary Application.
+                            <span class="fw-semibold">Manual status overrides are preserved</span> (use “Clear override” to return to automatic status).
+                        </div>
+                    </div>
+
 
 
                     <span class="badge @statusBadge">
@@ -144,6 +154,55 @@
 
                     <dt class="col-sm-3">Status actions</dt>
                     <dd class="col-sm-9">
+
+                        @* Manual override banner (shows even if not active, so you can clear stale overrides) *@
+                        @if (!string.IsNullOrWhiteSpace(Model.StatusOverride))
+                        {
+                            var isActive = Model.IsStatusOverrideActive;
+                            <div class="alert @(isActive ? "alert-warning" : "alert-secondary") py-2 px-3 mb-2">
+                                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                    <div class="fs-12">
+                                        <strong>Manual status override @(isActive ? "active" : "present"):</strong>
+                                        <span class="ms-1">@Model.StatusOverride</span>
+
+                                        @if (!string.IsNullOrWhiteSpace(Model.StatusOverrideReason))
+                                        {
+                                            <span class="text-muted ms-2">— @Model.StatusOverrideReason</span>
+                                        }
+
+                                        @if (Model.StatusOverrideUntil.HasValue)
+                                        {
+                                            <span class="text-muted ms-2">
+                                                (until @Model.StatusOverrideUntil.Value.ToLocalTime().ToString("yyyy-MM-dd"))
+                                            </span>
+                                        }
+
+                                        @if (!string.IsNullOrWhiteSpace(Model.StatusOverrideBy) || Model.StatusOverrideAt.HasValue)
+                                        {
+                                            <span class="text-muted ms-2">
+                                                @if (!string.IsNullOrWhiteSpace(Model.StatusOverrideBy))
+                                                {
+                                                    <span>by @Model.StatusOverrideBy</span>
+                                                }
+                                                @if (Model.StatusOverrideAt.HasValue)
+                                                {
+                                                    <span>@(string.IsNullOrWhiteSpace(Model.StatusOverrideBy) ? "" : ", ")@Model.StatusOverrideAt.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</span>
+                                                }
+                                            </span>
+                                        }
+                                    </div>
+
+                                    <form asp-action="ClearStatusOverride" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@Model.Id" />
+                                        <button type="submit" class="btn btn-sm btn-soft-dark">
+                                            <i class="ri-close-circle-line align-middle"></i> Clear override
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        }
+
                         <div class="d-flex flex-wrap gap-2">
 
                             @* Mark as Pending *@
@@ -153,6 +212,7 @@
                                     @Html.AntiForgeryToken()
                                     <input type="hidden" name="id" value="@Model.Id" />
                                     <input type="hidden" name="status" value="Pending" />
+                                    <input type="hidden" name="reason" value="Manual override via Case Details" />
                                     <button type="submit" class="btn btn-soft-warning btn-sm">
                                         <i class="ri-time-line align-middle"></i> Mark pending
                                     </button>
@@ -166,8 +226,37 @@
                                     @Html.AntiForgeryToken()
                                     <input type="hidden" name="id" value="@Model.Id" />
                                     <input type="hidden" name="status" value="Active" />
+                                    <input type="hidden" name="reason" value="Manual override via Case Details" />
                                     <button type="submit" class="btn btn-soft-success btn-sm">
                                         <i class="ri-play-circle-line align-middle"></i> Mark active
+                                    </button>
+                                </form>
+                            }
+
+                            @* Mark as Inactive *@
+                            @if (Model.Status != "Inactive")
+                            {
+                                <form asp-action="SetStatus" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@Model.Id" />
+                                    <input type="hidden" name="status" value="Inactive" />
+                                    <input type="hidden" name="reason" value="Manual override via Case Details" />
+                                    <button type="submit" class="btn btn-soft-danger btn-sm">
+                                        <i class="ri-stop-circle-line align-middle"></i> Mark inactive
+                                    </button>
+                                </form>
+                            }
+
+                            @* Suspend *@
+                            @if (Model.Status != "Suspended")
+                            {
+                                <form asp-action="SetStatus" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@Model.Id" />
+                                    <input type="hidden" name="status" value="Suspended" />
+                                    <input type="hidden" name="reason" value="Manual override via Case Details" />
+                                    <button type="submit" class="btn btn-soft-dark btn-sm">
+                                        <i class="ri-pause-circle-line align-middle"></i> Suspend
                                     </button>
                                 </form>
                             }
@@ -179,6 +268,7 @@
                                     @Html.AntiForgeryToken()
                                     <input type="hidden" name="id" value="@Model.Id" />
                                     <input type="hidden" name="status" value="Closed" />
+                                    <input type="hidden" name="reason" value="Manual override via Case Details" />
                                     <button type="submit" class="btn btn-soft-secondary btn-sm">
                                         <i class="ri-lock-line align-middle"></i> Close case
                                     </button>
@@ -187,6 +277,7 @@
 
                         </div>
                     </dd>
+
 
 
                 </dl>
