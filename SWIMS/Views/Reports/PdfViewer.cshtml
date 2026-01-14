@@ -1,8 +1,21 @@
 ﻿@{
-    ViewData["Title"] = "Report";
+    ViewData["title"] = "Report (PDF)";
+    ViewData["subTitle"] = "Report (PDF)";
+    ViewData["description"] = "Inline PDF view of the selected report.";
+
+    ViewData["BreadcrumbParentText"] = "Reports";
+    ViewData["BreadcrumbParentArea"] = "";
+    ViewData["BreadcrumbParentController"] = "Reports";
+    ViewData["BreadcrumbParentAction"] = "Index";
+
+    ViewData["BreadcrumbCurrentArea"] = "";
+    ViewData["BreadcrumbCurrentController"] = "Reports";
+    ViewData["BreadcrumbCurrentAction"] = "PdfPage";
+
     var id = (int)ViewBag.Id;
     var format = (string)ViewBag.Format ?? "PDF";
 }
+
 <div class="ratio ratio-16x9 mt-3">
     <iframe src="@Url.Action("Inline", "Reports", new { id, format })"
             width="100%" height="100%" style="border:0;" loading="lazy"></iframe>

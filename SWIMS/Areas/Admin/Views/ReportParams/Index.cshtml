@@ -1,27 +1,107 @@
 ﻿@model IEnumerable<SWIMS.Models.Reports.SwReportParam>
+
 @{
     var rpt = (SWIMS.Models.Reports.SwReport)ViewBag.Report;
-    ViewData["Title"] = "Parameters: " + (rpt.Desc ?? rpt.Name);
-}
-<h2>@ViewData["Title"]</h2>
-<p><a class="btn btn-primary" asp-action="Create" asp-route-reportId="@rpt.Id">New Parameter</a></p>
-<table class="table table-sm">
-    <thead><tr><th>Key</th><th>Value</th><th>Type</th><th></th></tr></thead>
-    <tbody>
-        @foreach (var p in Model)
+
+    ViewData["title"] = "Report Parameters";
+    ViewData["subTitle"] = rpt.Desc ?? rpt.Name;
+    ViewData["description"] = "Manage stored parameters that are automatically applied when this report is run.";
+
+    ViewData["BreadcrumbParentText"] = "Reports (Admin)";
+    ViewData["BreadcrumbParentArea"] = "Admin";
+    ViewData["BreadcrumbParentController"] = "ReportsAdmin";
+    ViewData["BreadcrumbParentAction"] = "Index";
+
+    ViewData["BreadcrumbCurrentArea"] = "Admin";
+    ViewData["BreadcrumbCurrentController"] = "ReportParams";
+    ViewData["BreadcrumbCurrentAction"] = "Index";
+    ViewData["BreadcrumbCurrentRouteValues"] = 
+        new Dictionary<string, string>
         {
-            <tr>
-                <td>@p.ParamKey</td>
-                <td>@p.ParamValue</td>
-                <td>@p.ParamDataType</td>
-                <td class="text-end">
-                    <a class="btn btn-sm btn-outline-secondary" asp-action="Edit" asp-route-id="@p.Id">Edit</a>
-                    <form asp-action="Delete" asp-route-id="@p.Id" method="post" class="d-inline">
-                        @Html.AntiForgeryToken()
-                        <button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
-                    </form>
-                </td>
-            </tr>
+            ["reportId"] = rpt.Id.ToString()
+        };
+
+
+}
+
+<div class="card basic-data-table">
+    <div class="card-header d-flex align-items-center justify-content-between gap-2 flex-wrap">
+        <h5 class="card-title mb-0">Parameters for @((rpt.Desc ?? rpt.Name))</h5>
+
+        <a asp-action="Create"
+           asp-route-reportId="@rpt.Id"
+           class="btn btn-sm btn-primary d-flex align-items-center gap-1">
+            <iconify-icon icon="lucide:plus" class="fs-14"></iconify-icon>
+            <span>Add Parameter</span>
+        </a>
+    </div>
+
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table bordered-table mb-0 align-middle w-100"
+                   id="dataTable"
+                   data-page-length="10">
+                <thead>
+                    <tr>
+                        <th>Key</th>
+                        <th>Value</th>
+                        <th>Type</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var p in Model)
+                    {
+                        <tr>
+                            <td>@p.ParamKey</td>
+                            <td>
+                                @if (string.IsNullOrWhiteSpace(p.ParamValue))
+                                {
+                                    <span class="text-muted">Not set</span>
+                                }
+                                else
+                                {
+                                    <div class="text-wrap text-break" style="max-width: 320px;">
+                                        @p.ParamValue
+                                    </div>
+                                }
+                            </td>
+                            <td>@p.ParamDataType</td>
+                            <td class="text-center align-middle">
+                                <div class="d-flex align-items-center gap-10 justify-content-center">
+                                    <a asp-action="Edit" asp-route-id="@p.Id"
+                                       class="bg-success-focus bg-hover-success-200 text-success-600 fw-medium w-40-px h-40-px d-flex justify-content-center align-items-center rounded-circle"
+                                       title="Edit" aria-label="Edit">
+                                        <iconify-icon icon="lucide:edit"></iconify-icon>
+                                    </a>
+
+                                    <form asp-action="Delete"
+                                          asp-route-id="@p.Id"
+                                          method="post"
+                                          class="d-inline"
+                                          onsubmit="return confirm('Delete this parameter?');">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit"
+                                                class="remove-item-btn bg-danger-focus bg-hover-danger-200 text-danger-600 fw-medium w-40-px h-40-px d-flex justify-content-center align-items-center rounded-circle border-0"
+                                                title="Delete" aria-label="Delete">
+                                            <iconify-icon icon="mingcute:delete-2-line"></iconify-icon>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const reportParamsTable = document.querySelector('#dataTable');
+        if (reportParamsTable) {
+            new DataTable(reportParamsTable);
         }
-    </tbody>
-</table>
+    </script>
+}

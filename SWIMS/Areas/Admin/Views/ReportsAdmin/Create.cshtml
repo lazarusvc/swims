@@ -1,43 +1,58 @@
 ﻿@model SWIMS.Models.Reports.SwReport
+
 @{
-    ViewData["Title"] = "Create Report";
+    ViewData["title"] = "Create Report";
+    ViewData["subTitle"] = "Create Report";
+    ViewData["description"] = "Define a new report and control how it appears in the Reports module.";
+
+    ViewData["BreadcrumbParentText"] = "Reports (Admin)";
+    ViewData["BreadcrumbParentArea"] = "Admin";
+    ViewData["BreadcrumbParentController"] = "ReportsAdmin";
+    ViewData["BreadcrumbParentAction"] = "Index";
+
+    ViewData["BreadcrumbCurrentArea"] = "Admin";
+    ViewData["BreadcrumbCurrentController"] = "ReportsAdmin";
+    ViewData["BreadcrumbCurrentAction"] = "Create";
 }
-<h2>@ViewData["Title"]</h2>
 
-<form asp-action="Create" method="post">
-    @Html.AntiForgeryToken()
-    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+<div class="card">
+    <div class="card-body">
+        <form asp-action="Create" method="post">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-    <div class="mb-3">
-        <label class="form-label">Name (.rdl or logical)</label>
-        <input asp-for="Name" class="form-control" />
-        <span asp-validation-for="Name" class="text-danger"></span>
+            <div class="mb-3">
+                <label class="form-label">Name (.rdl or logical)</label>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Description</label>
+                <input asp-for="Desc" class="form-control" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Path Override (optional)</label>
+                <input asp-for="PathOverride" class="form-control" placeholder="/SWIMS_Report/Subfolder" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Role</label>
+                <select asp-for="RoleId" asp-items="ViewBag.RoleId" class="form-select"></select>
+                <span class="form-text">Only users with this role will see the report.</span>
+            </div>
+
+            <div class="form-check mb-3">
+                <input class="form-check-input" asp-for="ParamCheck" />
+                <label class="form-check-label" asp-for="ParamCheck">Apply stored parameters</label>
+            </div>
+
+            <button class="btn btn-primary" type="submit">Create</button>
+            <a class="btn btn-link" asp-action="Index">Cancel</a>
+        </form>
     </div>
-
-    <div class="mb-3">
-        <label class="form-label">Description</label>
-        <input asp-for="Desc" class="form-control" />
-    </div>
-
-    <div class="mb-3">
-        <label class="form-label">Path Override (optional)</label>
-        <input asp-for="PathOverride" class="form-control" placeholder="/SWIMS_Report/Subfolder" />
-    </div>
-
-    <div class="mb-3">
-        <label class="form-label">Role</label>
-        <select asp-for="RoleId" asp-items="ViewBag.RoleId" class="form-select"></select>
-        <span class="form-text">Only users with this role will see the report.</span>
-    </div>
-
-    <div class="form-check mb-3">
-        <input class="form-check-input" asp-for="ParamCheck" />
-        <label class="form-check-label" asp-for="ParamCheck">Apply stored parameters</label>
-    </div>
-
-    <button class="btn btn-primary" type="submit" asp-action="Create" asp-route-reportId="@Model.Id">Create</button>
-    <a class="btn btn-link" asp-action="Index">Cancel</a>
-</form>
+</div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

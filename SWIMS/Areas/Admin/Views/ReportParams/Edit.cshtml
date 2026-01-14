@@ -1,33 +1,61 @@
 ﻿@model SWIMS.Models.Reports.SwReportParam
+
 @{
-    ViewData["Title"] = "Edit Parameter";
+    ViewData["title"] = "Edit Parameter";
+    ViewData["subTitle"] = "Edit Parameter";
+    ViewData["description"] = "Update a stored parameter used when this report is executed.";
+
+    ViewData["BreadcrumbParentText"] = "Report Parameters";
+    ViewData["BreadcrumbParentArea"] = "Admin";
+    ViewData["BreadcrumbParentController"] = "ReportParams";
+    ViewData["BreadcrumbParentAction"] = "Index";
+    ViewData["BreadcrumbParentRouteValues"] =
+        new Dictionary<string, string>
+        {
+            ["reportId"] = Model.SwReportId.ToString()
+        };
+
+
+    ViewData["BreadcrumbCurrentArea"] = "Admin";
+    ViewData["BreadcrumbCurrentController"] = "ReportParams";
+    ViewData["BreadcrumbCurrentAction"] = "Edit";
+    ViewData["BreadcrumbCurrentRouteValues"] = 
+        new Dictionary<string, string>
+        {
+            ["id"] = Model.Id.ToString()
+        };
+
+
 }
-<h2>@ViewData["Title"]</h2>
 
-<form asp-action="Edit" asp-route-id="@Model.Id" method="post">
-    @Html.AntiForgeryToken()
-    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-    <input type="hidden" asp-for="Id" />
-    <input type="hidden" asp-for="SwReportId" />
+<div class="card">
+    <div class="card-body">
+        <form asp-action="Edit" asp-route-id="@Model.Id" method="post">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="SwReportId" />
 
-    <div class="mb-3">
-        <label class="form-label">Param Key</label>
-        <input asp-for="ParamKey" class="form-control" />
+            <div class="mb-3">
+                <label class="form-label">Param Key</label>
+                <input asp-for="ParamKey" class="form-control" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Param Value</label>
+                <input asp-for="ParamValue" class="form-control" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Data Type</label>
+                <input asp-for="ParamDataType" class="form-control" placeholder="String / Integer / DateTime" />
+            </div>
+
+            <button class="btn btn-primary" type="submit">Save</button>
+            <a class="btn btn-link" asp-action="Index" asp-route-reportId="@Model.SwReportId">Back</a>
+        </form>
     </div>
-
-    <div class="mb-3">
-        <label class="form-label">Param Value</label>
-        <input asp-for="ParamValue" class="form-control" />
-    </div>
-
-    <div class="mb-3">
-        <label class="form-label">Data Type</label>
-        <input asp-for="ParamDataType" class="form-control" placeholder="String / Integer / DateTime" />
-    </div>
-
-    <button class="btn btn-primary" type="submit">Save</button>
-    <a class="btn btn-link" asp-action="Index" asp-route-reportId="@Model.SwReportId">Back</a>
-</form>
+</div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

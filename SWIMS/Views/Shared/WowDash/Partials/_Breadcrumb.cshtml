@@ -17,6 +17,10 @@
     string currentArea = ViewBag.BreadcrumbCurrentArea as string ?? "";
     string currentController = ViewBag.BreadcrumbCurrentController as string ?? "";
     string currentAction = ViewBag.BreadcrumbCurrentAction as string ?? "";
+
+    // Optional route values (generic, used by asp-all-route-data)
+    var parentRouteValues = ViewData["BreadcrumbParentRouteValues"] as IDictionary<string, string>;
+    var currentRouteValues = ViewData["BreadcrumbCurrentRouteValues"] as IDictionary<string, string>;
 }
 
 <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
@@ -49,6 +53,7 @@
                 <a asp-area="@parentArea"
                    asp-controller="@parentController"
                    asp-action="@parentAction"
+                   asp-all-route-data="parentRouteValues"
                    class="hover-text-primary">
                     @parentText
                 </a>
@@ -66,6 +71,7 @@
                     <a asp-area="@currentArea"
                        asp-controller="@currentController"
                        asp-action="@currentAction"
+                       asp-all-route-data="currentRouteValues"
                        class="hover-text-primary">
                         @subTitle
                     </a>
