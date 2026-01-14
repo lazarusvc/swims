@@ -1,36 +1,99 @@
 ﻿@{
-    ViewData["Title"] = "API Dashboard";
-    Layout = "~/Views/Shared/WowDash/_Layout.cshtml"; // adjust if your Areas layout differs
+    ViewData["title"] = "API Dashboard";
+    ViewData["subTitle"] = "API Monitoring";
+    ViewData["description"] = "Live view of mapped /api/v1 endpoints.";
+
+    ViewData["BreadcrumbCurrentArea"] = "Admin";
+    ViewData["BreadcrumbCurrentController"] = "Api";
+    ViewData["BreadcrumbCurrentAction"] = "Dashboard";
 }
 
 <div class="container-fluid">
 
-    <div class="row mb-4">
-        <div class="col-12 d-flex align-items-center justify-content-between">
-            <div>
-                <h3 class="mb-1">API Dashboard</h3>
-                <p class="text-muted mb-0">Live view of mapped /api/v1 endpoints</p>
+    <!-- Summary cards -->
+    <div class="row mb-3">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="text-muted text-uppercase fw-semibold small">Total Endpoints</span>
+                        <span class="badge bg-light text-dark">/api</span>
+                    </div>
+                    <h4 class="mb-0" id="api-summary-total">—</h4>
+                    <p class="text-muted small mb-0">All discovered routes</p>
+                </div>
             </div>
-            <div class="d-flex gap-2">
-                <button id="btn-refresh" class="btn btn-primary">
-                    <iconify-icon icon="mdi:refresh" class="me-1"></iconify-icon>Refresh
-                </button>
-                <button id="btn-check" class="btn btn-outline-secondary">
-                    <iconify-icon icon="mdi:stethoscope" class="me-1"></iconify-icon>Check visible
-                </button>
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="text-muted text-uppercase fw-semibold small">Versioned (v1)</span>
+                        <span class="badge bg-success-subtle text-success">/api/v1</span>
+                    </div>
+                    <h4 class="mb-0" id="api-summary-v1">—</h4>
+                    <p class="text-muted small mb-0">Endpoints under /api/v1</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="text-muted text-uppercase fw-semibold small">Protected</span>
+                        <span class="badge bg-dark-subtle text-dark">Auth</span>
+                    </div>
+                    <h4 class="mb-0" id="api-summary-protected">—</h4>
+                    <p class="text-muted small mb-0">Require authentication</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="text-muted text-uppercase fw-semibold small">Anonymous</span>
+                        <span class="badge bg-secondary-subtle text-secondary">Anon</span>
+                    </div>
+                    <h4 class="mb-0" id="api-summary-anon">—</h4>
+                    <p class="text-muted small mb-0">Allow anonymous access</p>
+                </div>
             </div>
         </div>
     </div>
 
+    <!-- Filters + actions -->
     <div class="row mb-3">
         <div class="col-12">
-            <div class="card shadow-sm">
-                <div class="card-body">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom d-flex align-items-center justify-content-between flex-wrap gap-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <h5 class="mb-0">Filters</h5>
+                        <div class="btn-group btn-group-sm ms-2" role="group" aria-label="View mode">
+                            <button type="button" class="btn btn-outline-secondary active" data-view="table">Table</button>
+                            <button type="button" class="btn btn-outline-secondary" data-view="grid">Grid</button>
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <div class="btn-group btn-group-sm me-2" role="group" aria-label="Filter mode" id="filter-mode-buttons">
+                            <button type="button" class="btn btn-outline-secondary active" data-filter="all">All</button>
+                            <button type="button" class="btn btn-outline-secondary" data-filter="v1">/api/v1</button>
+                            <button type="button" class="btn btn-outline-secondary" data-filter="protected">Protected</button>
+                            <button type="button" class="btn btn-outline-secondary" data-filter="anon">Anonymous</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body bg-light-subtle">
                     <div class="row g-3 align-items-end">
                         <div class="col-md-3">
-                            <label class="form-label">Method</label>
+                            <label class="form-label">HTTP Method</label>
                             <select id="filter-method" class="form-select">
-                                <option value="">All</option>
+                                <option value="">Any</option>
                                 <option>GET</option>
                                 <option>POST</option>
                                 <option>PUT</option>
@@ -39,23 +102,27 @@
                                 <option>HEAD</option>
                             </select>
                         </div>
-                        <div class="col-md-3">
-                            <label class="form-label">Tag</label>
-                            <select id="filter-tag" class="form-select">
-                                <option value="">All</option>
-                            </select>
-                        </div>
+
                         <div class="col-md-3">
                             <label class="form-label">Auth</label>
                             <select id="filter-auth" class="form-select">
-                                <option value="">All</option>
-                                <option value="protected">Protected</option>
-                                <option value="anonymous">Allow Anonymous</option>
+                                <option value="">Any</option>
+                                <option value="protected">Protected only</option>
+                                <option value="anonymous">Anonymous only</option>
                             </select>
                         </div>
+
+
+                        <div class="col-md-3">
+                            <label class="form-label">Tag</label>
+                            <select id="filter-tag" class="form-select">
+                                <option value="">Any</option>
+                            </select>
+                        </div>
+
                         <div class="col-md-3">
                             <label class="form-label">Search</label>
-                            <input id="filter-search" class="form-control" placeholder="Path or name..." />
+                            <input id="filter-search" class="form-control" placeholder="Path or name." />
                         </div>
                     </div>
                 </div>
@@ -67,14 +134,35 @@
 
     <div class="row">
         <div class="col-12">
-            <div class="card shadow-sm">
+            <div class="card basic-data-table">
+                <div class="card-header d-flex align-items-center justify-content-between gap-2 flex-wrap">
+                    <h5 class="card-title mb-0">API Endpoints</h5>
+
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <button id="btn-refresh"
+                                class="btn btn-sm btn-primary d-flex align-items-center gap-1">
+                            <iconify-icon icon="mdi:refresh" class="fs-14"></iconify-icon>
+                            <span>Refresh</span>
+                        </button>
+
+                        <button id="btn-check"
+                                class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1">
+                            <iconify-icon icon="mdi:stethoscope" class="fs-14"></iconify-icon>
+                            <span>Check visible</span>
+                        </button>
+                    </div>
+                </div>
+
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table class="table align-middle" id="api-table">
+                        <table class="table bordered-table mb-0 align-middle w-100"
+                               id="api-table"
+                               data-page-length="10">
                             <thead>
                                 <tr>
                                     <th style="width: 140px;">Method</th>
-                                    <th>Path</th>
+                                    <th style="max-width: 360px;">Path</th>
+
                                     <th>Tags</th>
                                     <th style="width: 120px;">Auth</th>
                                     <th style="width: 240px;">Name</th>
@@ -84,202 +172,345 @@
                             <tbody id="api-tbody"></tbody>
                         </table>
                     </div>
+
                     <div class="text-muted small mt-2" id="api-count"></div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-<script>
-    (function(){
-        const base = (window.__appBasePath || '');
-        const apiUrl = (p) => base + (p.startsWith('/') ? p : '/' + p);
-        const $ = (q) => document.querySelector(q);
 
-        const state = { raw: [], filtered: [] };
+@section Scripts {
+        <script>
+            (function () {
+                const base = (window.__appBasePath || '');
+                const apiUrl = (p) => base + (p.startsWith('/') ? p : '/' + p);
+                const $ = (q) => document.querySelector(q);
 
-        function fetchEndpoints(){
-            const url = apiUrl('/api/v1/meta/endpoints');
-            return fetch(url, { credentials: 'same-origin' }).then(r => {
-                if(!r.ok) throw new Error('meta endpoints http ' + r.status);
-                return r.json();
-            }).then(arr => {
-                // Normalize camelCase/PascalCase from API → JS
-                return (Array.isArray(arr) ? arr : []).map(x => ({
-                    pattern:        x.pattern        ?? x.Pattern        ?? '',
-                    methods:        x.methods        ?? x.Methods        ?? [],
-                    displayName:    x.displayName    ?? x.DisplayName    ?? '',
-                    tags:           x.tags           ?? x.Tags           ?? [],
-                    requiresAuth:   x.requiresAuth   ?? x.RequiresAuth   ?? false,
-                    allowAnonymous: x.allowAnonymous ?? x.AllowAnonymous ?? false,
-                    isApi:          x.isApi          ?? x.IsApi          ?? false,
-                    isV1:           x.isV1           ?? x.IsV1           ?? false,
-                }));
-            });
-        }
+                const state = { raw: [], filtered: [] };
+                let apiTableInstance = null;
 
-        function badge(text, cls){ return `<span class="badge ${cls} me-1 mb-1">${text}</span>`; }
-        function methodBadge(m){
-            const map = { GET:'bg-success', POST:'bg-primary', PUT:'bg-warning text-dark',
-                          DELETE:'bg-danger', PATCH:'bg-info text-dark', HEAD:'bg-secondary' };
-            return badge(m, map[m] || 'bg-secondary');
-        }
-        function authBadge(e){
-            if (e.allowAnonymous) return badge('Anonymous', 'bg-secondary');
-            if (e.requiresAuth)  return badge('Protected', 'bg-dark');
-            return badge('—', 'bg-light text-dark');
-        }
-        const uniq = arr => Array.from(new Set(arr)).sort((a,b)=>a.localeCompare(b));
-
-        function renderFilters(){
-            const tags = uniq(state.raw.flatMap(e => e.tags || []));
-            const sel = $('#filter-tag'); const cur = sel.value || '';
-            sel.innerHTML = '<option value="">All</option>' + tags.map(t => `<option ${t===cur?'selected':''}>${t}</option>`).join('');
-        }
-
-        function renderSummary(){
-            const total = state.filtered.length;
-            const v1 = state.filtered.filter(e => e.isV1).length;
-            const methods = {};
-            state.filtered.forEach(e => e.methods.forEach(m => methods[m]=(methods[m]||0)+1));
-            $('#summary-cards').innerHTML = `
-                <div class="col-md-3"><div class="card"><div class="card-body">
-                    <div class="text-muted">Total endpoints</div><div class="fs-4 fw-bold">${total}</div>
-                </div></div></div>
-                <div class="col-md-3"><div class="card"><div class="card-body">
-                    <div class="text-muted">/api/v1</div><div class="fs-4 fw-bold">${v1}</div>
-                </div></div></div>
-                <div class="col-md-6"><div class="card"><div class="card-body">
-                    <div class="text-muted mb-1">By method</div>
-                    ${Object.keys(methods).sort().map(m => badge(`${m}: ${methods[m]}`, 'bg-light text-dark')).join(' ')}
-                </div></div></div>`;
-        }
-
-        function applyFilters(){
-            const m = $('#filter-method').value.trim();
-            const tag = $('#filter-tag').value.trim();
-            const auth = $('#filter-auth').value.trim();
-            const q = $('#filter-search').value.trim().toLowerCase();
-
-            state.filtered = state.raw.filter(e => {
-                if (!e.isApi) return false;
-                if (!e.isV1) return false;
-                if (m && !(e.methods || []).includes(m)) return false;
-                if (tag && !(e.tags || []).includes(tag)) return false;
-                if (auth === 'protected' && !e.requiresAuth) return false;
-                if (auth === 'anonymous' && !e.allowAnonymous) return false;
-                if (q) {
-                    const hay = (e.pattern + ' ' + (e.displayName || '') + ' ' + (e.tags||[]).join(' ')).toLowerCase();
-                    if (!hay.includes(q)) return false;
+                function fetchEndpoints() {
+                    const url = apiUrl('/api/v1/meta/endpoints');
+                    return fetch(url, { credentials: 'same-origin' })
+                        .then(r => {
+                            if (!r.ok) throw new Error('meta endpoints http ' + r.status);
+                            return r.json();
+                        })
+                        .then(arr => {
+                            // Normalize camelCase/PascalCase from API → JS
+                            return (Array.isArray(arr) ? arr : []).map(x => ({
+                                pattern:        x.pattern        ?? x.Pattern        ?? '',
+                                methods:        x.methods        ?? x.Methods        ?? [],
+                                displayName:    x.displayName    ?? x.DisplayName    ?? '',
+                                tags:           x.tags           ?? x.Tags           ?? [],
+                                requiresAuth:   x.requiresAuth   ?? x.RequiresAuth   ?? false,
+                                allowAnonymous: x.allowAnonymous ?? x.AllowAnonymous ?? false,
+                                isApi:          x.isApi          ?? x.IsApi          ?? false,
+                                isV1:           x.isV1           ?? x.IsV1           ?? false,
+                            }));
+                        });
                 }
-                return true;
-            });
-        }
 
-            function renderTable(){
-              const body = $('#api-tbody');
-              body.innerHTML = state.filtered.map((e,i) => {
-                const methods = (e.methods || []).map(methodBadge).join('');
-                const tags = (e.tags || []).map(t => badge(t, 'bg-light text-dark')).join('');
-                const needsParams = e.pattern.includes("{") || /\/search\b/i.test(e.pattern);
-                const allowsGetOrHead = (e.methods || []).some(x => x === 'GET' || x === 'HEAD');
-                let probeCell = '—';
-                if (!needsParams && allowsGetOrHead) {
-                  probeCell = `<button class="btn btn-sm btn-outline-secondary" data-row="${i}" data-path="${e.pattern}">Check</button>`;
-                } else if (needsParams) {
-                  probeCell = `<span class="text-muted">params</span>`;
+                function badge(text, cls) {
+                    return `<span class="badge ${cls} me-1 mb-1">${text}</span>`;
                 }
-                return `
-                  <tr>
-                    <td>${methods}</td>
-                    <td><code>${e.pattern}</code></td>
-                    <td>${tags || '—'}</td>
-                    <td>${authBadge(e)}</td>
-                    <td>${e.displayName || '—'}</td>
-                    <td class="status-cell" data-row="${i}">${probeCell}</td>
-                  </tr>`;
-              }).join('');
-              $('#api-count').textContent = `${state.filtered.length} shown`;
-            }
 
+                function methodBadge(m) {
+                    const map = {
+                        GET: 'bg-success',
+                        POST: 'bg-primary',
+                        PUT: 'bg-warning text-dark',
+                        DELETE: 'bg-danger',
+                        PATCH: 'bg-info text-dark',
+                        HEAD: 'bg-secondary'
+                    };
+                    return badge(m, map[m] || 'bg-secondary');
+                }
 
-        async function probe(path){
-            const url = apiUrl(path);
-            try {
-                let r = await fetch(url, { method:'HEAD', credentials: 'same-origin' });
-                if (r.ok) return `${r.status}`;
-                r = await fetch(url, { method:'GET', credentials: 'same-origin' });
-                return `${r.status}`;
-            } catch { return 'ERR'; }
-        }
+                function authBadge(e) {
+                    if (e.allowAnonymous) return badge('Anonymous', 'bg-secondary');
+                    if (e.requiresAuth) return badge('Protected', 'bg-dark');
+                    return badge('—', 'bg-light text-dark');
+                }
 
-        async function probeVisible(){
-            const buttons = Array.from(document.querySelectorAll('td.status-cell button[data-path]'));
-            if (!buttons.length) return;
+                const uniq = arr => Array.from(new Set(arr)).sort((a, b) => a.localeCompare(b));
 
-            // Disable while running
-            const btnCheck = document.getElementById('btn-check');
-            btnCheck.disabled = true;
+                function renderFilters() {
+                    const tags = uniq(state.raw.flatMap(e => e.tags || []));
+                    const sel = $('#filter-tag');
+                    if (!sel) return;
 
-            try {
-            // Throttle to avoid overwhelming the server (8 at a time)
-            const batchSize = 8;
-            for (let i = 0; i < buttons.length; i += batchSize) {
-                const slice = buttons.slice(i, i + batchSize);
-                await Promise.all(slice.map(async btn => {
-                const row = btn.getAttribute('data-row');
-                const cell = document.querySelector(`td.status-cell[data-row="${row}"]`);
-                cell.innerHTML = `<span class="spinner-border spinner-border-sm"></span>`;
-                let status = 'ERR';
-                try { status = await probe(btn.getAttribute('data-path')); } catch {}
-                const cls = (status.startsWith('2') || status.startsWith('3')) ? 'bg-success'
-                            : (status === 'ERR' ? 'bg-danger' : 'bg-warning text-dark');
-                cell.innerHTML = badge(status, cls);
-                }));
-            }
-            } finally {
-            btnCheck.disabled = false;
-            }
-        }
+                    const cur = sel.value || '';
+                    sel.innerHTML = '<option value="">Any</option>' +
+                        tags.map(t => `<option ${t === cur ? 'selected' : ''}>${t}</option>`).join('');
+                }
 
+                // Uses your new summary cards: #api-summary-total, -v1, -protected, -anon
+                function renderSummary() {
+                    const total = state.raw.length;
+                    const v1 = state.raw.filter(e => e.isV1).length;
+                    const prot = state.raw.filter(e => e.requiresAuth && !e.allowAnonymous).length;
+                    const anon = state.raw.filter(e => e.allowAnonymous).length;
 
-        function wireEvents(){
-            document.getElementById('btn-refresh').addEventListener('click', refresh);
-            document.getElementById('btn-check').addEventListener('click', probeVisible);
-            ['#filter-method', '#filter-tag', '#filter-auth', '#filter-search'].forEach(sel => {
-                document.querySelector(sel).addEventListener('input', ()=>{ applyFilters(); renderSummary(); renderTable(); });
-            });
-            document.getElementById('api-tbody').addEventListener('click', async (e)=>{
-                const btn = e.target.closest('button[data-path]');
-                if(!btn) return;
-                const row = btn.getAttribute('data-row');
-                const cell = document.querySelector(`td.status-cell[data-row="${row}"]`);
-                cell.innerHTML = `<span class="spinner-border spinner-border-sm"></span>`;
-                const status = await probe(btn.getAttribute('data-path'));
-                const cls = (status.startsWith('2') || status.startsWith('3')) ? 'bg-success' :
+                    const totalEl = document.getElementById('api-summary-total');
+                    if (totalEl) totalEl.textContent = total.toString();
+
+                    const v1El = document.getElementById('api-summary-v1');
+                    if (v1El) v1El.textContent = v1.toString();
+
+                    const protEl = document.getElementById('api-summary-protected');
+                    if (protEl) protEl.textContent = prot.toString();
+
+                    const anonEl = document.getElementById('api-summary-anon');
+                    if (anonEl) anonEl.textContent = anon.toString();
+                }
+
+                function applyFilters() {
+                    const method = ($('#filter-method')?.value || '').trim();
+                    const tag    = ($('#filter-tag')?.value || '').trim();
+                    const auth   = ($('#filter-auth')?.value || '').trim();
+                    const q      = ($('#filter-search')?.value || '').trim().toLowerCase();
+
+                    state.filtered = state.raw.filter(e => {
+                        // Keep behaviour: show only API v1 endpoints
+                        if (!e.isApi) return false;
+                        if (!e.isV1) return false;
+
+                        if (method && !(e.methods || []).includes(method)) return false;
+                        if (tag && !(e.tags || []).includes(tag)) return false;
+
+                        if (auth === 'protected' && !e.requiresAuth) return false;
+                        if (auth === 'anonymous' && !e.allowAnonymous) return false;
+
+                        if (q) {
+                            const hay = (
+                                e.pattern + ' ' +
+                                (e.displayName || '') + ' ' +
+                                (e.tags || []).join(' ')
+                            ).toLowerCase();
+
+                            if (!hay.includes(q)) return false;
+                        }
+
+                        return true;
+                    });
+                }
+
+                function renderTable() {
+                    const table = document.getElementById('api-table');
+                    if (!table) return;
+
+                    const body = table.tBodies[0];
+                    body.innerHTML = state.filtered.map((e, i) => {
+                        const methods = (e.methods || []).map(methodBadge).join('');
+                        const tags    = (e.tags || []).map(t => badge(t, 'bg-light text-dark')).join('');
+
+                        const needsParams = e.pattern.includes('{') || /\/search\b/i.test(e.pattern);
+                        const allowsGetOrHead = (e.methods || []).some(x => x === 'GET' || x === 'HEAD');
+
+                        let probeCell = '—';
+                        if (!needsParams && allowsGetOrHead) {
+                            probeCell = `<button class="btn btn-sm btn-outline-secondary"
+                                                 data-row="${i}"
+                                                 data-path="${e.pattern}">
+                                             Check
+                                         </button>`;
+                        } else if (needsParams) {
+                            probeCell = `<span class="text-muted">params</span>`;
+                        }
+
+                        const pathHtml = `
+                            <div class="text-wrap text-break" style="max-width: 360px;">
+                                <code>${e.pattern}</code>
+                            </div>`;
+
+                        return `
+                            <tr>
+                                <td>${methods}</td>
+                                <td>${pathHtml}</td>
+                                <td>${tags || '—'}</td>
+                                <td>${authBadge(e)}</td>
+                                <td>${e.displayName || '—'}</td>
+                                <td class="status-cell" data-row="${i}">${probeCell}</td>
+                            </tr>`;
+                    }).join('');
+
+                    const count = document.getElementById('api-count');
+                    if (count) {
+                        count.textContent = `${state.filtered.length} of ${state.raw.length} endpoints shown.`;
+                    }
+
+                    // WowDash DataTable hook
+                    if (window.DataTable) {
+                        if (!apiTableInstance) {
+                            apiTableInstance = new DataTable('#api-table');
+                            styleApiDataTable();
+                        } else if (typeof apiTableInstance.refresh === 'function') {
+                            apiTableInstance.refresh();
+                        }
+                    }
+                }
+
+                function styleApiDataTable() {
+                    const table = document.getElementById('api-table');
+                    if (!table) return;
+
+                    const wrapper = table.closest('.dataTable-wrapper');
+                    if (!wrapper) return;
+
+                    const top = wrapper.querySelector('.dataTable-top');
+                    if (!top) return;
+
+                    top.classList.add(
+                        'd-flex',
+                        'align-items-center',
+                        'justify-content-between',
+                        'gap-2',
+                        'flex-wrap'
+                    );
+                    top.style.overflowX = 'auto';
+                }
+
+                async function probe(path) {
+                    const url = apiUrl(path);
+                    try {
+                        let r = await fetch(url, { method: 'HEAD', credentials: 'same-origin' });
+                        if (r.ok) return `${r.status}`;
+
+                        r = await fetch(url, { method: 'GET', credentials: 'same-origin' });
+                        return `${r.status}`;
+                    } catch {
+                        return 'ERR';
+                    }
+                }
+
+                async function probeVisible() {
+                    const buttons = Array.from(
+                        document.querySelectorAll('#api-table td.status-cell button[data-path]')
+                    );
+                    if (!buttons.length) return;
+
+                    const btnCheck = document.getElementById('btn-check');
+                    if (btnCheck) {
+                        btnCheck.disabled = true;
+                    }
+
+                    try {
+                        const batchSize = 8;
+                        for (let i = 0; i < buttons.length; i += batchSize) {
+                            const slice = buttons.slice(i, i + batchSize);
+
+                            await Promise.all(
+                                slice.map(async btn => {
+                                    const row = btn.getAttribute('data-row');
+                                    const cell = document.querySelector(
+                                        `#api-table td.status-cell[data-row="${row}"]`
+                                    );
+                                    if (!cell) return;
+
+                                    cell.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+                                    let status = 'ERR';
+                                    try {
+                                        status = await probe(btn.getAttribute('data-path'));
+                                    } catch { }
+
+                                    const cls =
+                                        (status.startsWith('2') || status.startsWith('3')) ? 'bg-success' :
+                                        (status.startsWith('4') || status.startsWith('5')) ? 'bg-danger' :
+                                        'bg-secondary';
+
+                                    cell.innerHTML = `<span class="badge ${cls}">${status}</span>`;
+                                })
+                            );
+                        }
+                    } finally {
+                        if (btnCheck) {
+                            btnCheck.disabled = false;
+                        }
+                    }
+                }
+
+                            function wireEvents() {
+                const btnRefresh = document.getElementById('btn-refresh');
+                const btnCheck   = document.getElementById('btn-check');
+
+                if (btnRefresh) {
+                    btnRefresh.addEventListener('click', refresh);
+                }
+
+                if (btnCheck) {
+                    btnCheck.addEventListener('click', probeVisible);
+                }
+
+                // Select filters → use `change`
+                ['#filter-method', '#filter-tag', '#filter-auth'].forEach(sel => {
+                    const el = document.querySelector(sel);
+                    if (!el) return;
+
+                    el.addEventListener('change', () => {
+                        applyFilters();
+                        renderSummary();
+                        renderTable();
+                    });
+                });
+
+                // Search box → stays on `input`
+                const searchInput = document.querySelector('#filter-search');
+                if (searchInput) {
+                    searchInput.addEventListener('input', () => {
+                        applyFilters();
+                        renderSummary();
+                        renderTable();
+                    });
+                }
+
+                // Per-row "Check" buttons in the Status column
+                const tbody = document.getElementById('api-tbody');
+                if (tbody) {
+                    tbody.addEventListener('click', async (e) => {
+                        const btn = e.target.closest('button[data-path]');
+                        if (!btn) return;
+
+                        const row = btn.getAttribute('data-row');
+                        const cell = document.querySelector(`td.status-cell[data-row="${row}"]`);
+                        if (!cell) return;
+
+                        cell.innerHTML = `<span class="spinner-border spinner-border-sm"></span>`;
+                        const status = await probe(btn.getAttribute('data-path'));
+                        const cls =
+                            (status.startsWith('2') || status.startsWith('3')) ? 'bg-success' :
                             (status === 'ERR' ? 'bg-danger' : 'bg-warning text-dark');
-                cell.innerHTML = badge(status, cls);
-            });
-        }
 
-        function refresh(){
-            fetchEndpoints()
-              .then(data => {
-                  state.raw = data;
-                  renderFilters();
-                  applyFilters();
-                  renderSummary();
-                  renderTable();
-              })
-              .catch(err => {
-                  console.error(err);
-                  alert('Failed to load /api/v1/meta/endpoints. Check that v1.MapMetaEndpoints() is wired and that you are signed in.');
-              });
-        }
+                        cell.innerHTML = badge(status, cls);
+                    });
+                }
+            }
 
-        wireEvents();
-        refresh();
-    })();
-</script>
+
+
+                function refresh() {
+                    fetchEndpoints()
+                        .then(data => {
+                            state.raw = data;
+                            renderFilters();
+                            applyFilters();
+                            renderSummary();
+                            renderTable();
+                        })
+                        .catch(err => {
+                            console.error(err);
+                            alert('Failed to load /api/v1/meta/endpoints. Check that v1.MapMetaEndpoints() is wired and that you are signed in.');
+                        });
+                }
+
+                wireEvents();
+                refresh();
+            })();
+        </script>
+}
+
+
+
 
