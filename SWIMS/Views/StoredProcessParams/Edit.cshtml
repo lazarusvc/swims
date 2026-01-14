@@ -1,9 +1,24 @@
 ﻿@model SWIMS.Models.ViewModels.StoredProcessParamEditViewModel
+
 @{
-    ViewData["Title"] = "Edit Parameter";
+    ViewData["title"] = "Edit Parameter";
+    ViewData["subTitle"] = "Edit Parameter";
+    ViewData["description"] = "Update a parameter definition for this stored process.";
+
     var proc = (SWIMS.Models.StoredProcess)ViewBag.Process;
+
+    ViewData["BreadcrumbParentText"] = "Parameters";
+    ViewData["BreadcrumbParentArea"] = "";
+    ViewData["BreadcrumbParentController"] = "StoredProcessParams";
+    ViewData["BreadcrumbParentAction"] = "Index";
+
+    ViewData["BreadcrumbCurrentArea"] = "";
+    ViewData["BreadcrumbCurrentController"] = "StoredProcessParams";
+    ViewData["BreadcrumbCurrentAction"] = "Edit";
 }
-<h2>Edit Parameter for: @proc.Name</h2>
+
+<h5 class="mb-3">Edit Parameter for: @proc.Name</h5>
+
 <form asp-action="Edit" method="post">
     @Html.AntiForgeryToken()
     <input type="hidden" asp-for="Id" />

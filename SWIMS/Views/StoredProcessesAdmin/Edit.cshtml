@@ -1,8 +1,20 @@
 ﻿@model SWIMS.Models.ViewModels.StoredProcessEditViewModel
+
 @{
-    ViewData["Title"] = "Edit Stored Process";
+    ViewData["title"] = "Edit Stored Process";
+    ViewData["subTitle"] = "Edit Stored Process";
+    ViewData["description"] = "Update the stored process definition and connection details.";
+
+    ViewData["BreadcrumbParentText"] = "Stored Processes (Admin)";
+    ViewData["BreadcrumbParentArea"] = "";
+    ViewData["BreadcrumbParentController"] = "StoredProcessesAdmin";
+    ViewData["BreadcrumbParentAction"] = "Index";
+
+    ViewData["BreadcrumbCurrentArea"] = "";
+    ViewData["BreadcrumbCurrentController"] = "StoredProcessesAdmin";
+    ViewData["BreadcrumbCurrentAction"] = "Edit";
 }
-<h2>Edit Stored Process</h2>
+
 <p class="text-muted">Current: <code>@Model.ConnectionSummary</code></p>
 <p class="text-muted">To change SQL login, enter new values; leave blank to keep existing.</p>
 

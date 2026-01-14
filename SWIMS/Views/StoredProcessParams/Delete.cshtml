@@ -1,8 +1,20 @@
 ﻿@model SWIMS.Models.StoredProcessParam
+
 @{
-    ViewData["Title"] = "Delete Parameter";
+    ViewData["title"] = "Delete Parameter";
+    ViewData["subTitle"] = "Delete Parameter";
+    ViewData["description"] = "This will delete this parameter from the stored process.";
+
+    ViewData["BreadcrumbParentText"] = "Parameters";
+    ViewData["BreadcrumbParentArea"] = "";
+    ViewData["BreadcrumbParentController"] = "StoredProcessParams";
+    ViewData["BreadcrumbParentAction"] = "Index";
+
+    ViewData["BreadcrumbCurrentArea"] = "";
+    ViewData["BreadcrumbCurrentController"] = "StoredProcessParams";
+    ViewData["BreadcrumbCurrentAction"] = "Delete";
 }
-<h2>Delete Parameter</h2>
+
 <dl class="row">
     <dt class="col-sm-3">Key</dt>
     <dd class="col-sm-9">@Model.Key</dd>
@@ -11,6 +23,7 @@
     <dt class="col-sm-3">Value</dt>
     <dd class="col-sm-9">@Model.Value</dd>
 </dl>
+
 <form asp-action="Delete" method="post">
     @Html.AntiForgeryToken()
     <input type="hidden" name="id" value="@Model.Id" />

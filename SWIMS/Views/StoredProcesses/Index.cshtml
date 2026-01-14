@@ -1,24 +1,73 @@
 ﻿@model IEnumerable<SWIMS.Models.StoredProcess>
+
 @{
-    ViewData["Title"] = "Stored Procedures";
+    ViewData["title"] = "Stored Procedures";
+    ViewData["subTitle"] = "Stored Procedures";
+    ViewData["description"] = "Define a process once, run it with current parameters. Connections can use a named key or per-process server/DB.";
+
+    ViewData["BreadcrumbCurrentArea"] = "";
+    ViewData["BreadcrumbCurrentController"] = "StoredProcesses";
+    ViewData["BreadcrumbCurrentAction"] = "Index";
 }
-<h2>Stored Procedures</h2>
-<p class="">Define a process once, run it with current parameters. Connections can use a named key or per-process server/DB.</p>
-<table class="table table-striped table-sm">
-    <thead>
-        <tr><th>Name</th><th>Description</th><th>Connection</th><th></th></tr>
-    </thead>
-    <tbody>
-        @foreach (var p in Model)
-        {
-            <tr>
-                <td>@p.Name</td>
-                <td>@p.Description</td>
-                <td>@(string.IsNullOrWhiteSpace(p.ConnectionKey) ? $"{p.DataSource}/{p.Database}" : p.ConnectionKey)</td>
-                <td>
-                    <a class="btn btn-primary btn-sm" asp-action="Run" asp-route-id="@p.Id">Run</a>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+
+<div class="card basic-data-table">
+    <div class="card-header d-flex align-items-center justify-content-between gap-2 flex-wrap">
+        <h5 class="card-title mb-0">Stored Procedures</h5>
+    </div>
+
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table bordered-table mb-0 align-middle w-100"
+                   id="dataTable"
+                   data-page-length="10">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th>Connection</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var p in Model)
+                    {
+                        <tr>
+                            <td>@p.Name</td>
+                            <td>
+                                @if (string.IsNullOrWhiteSpace(p.Description))
+                                {
+                                    <span class="text-muted">No description</span>
+                                }
+                                else
+                                {
+                                    <div class="text-wrap text-break" style="max-width: 360px;">
+                                        @p.Description
+                                    </div>
+                                }
+                        </td>
+                        <td>
+                            @(string.IsNullOrWhiteSpace(p.ConnectionKey)
+                                                        ? $"{p.DataSource}/{p.Database}"
+                                                        : p.ConnectionKey)
+                            </td>
+                            <td class="text-end">
+                                <a class="btn btn-sm btn-primary d-inline-flex align-items-center gap-1"
+                                   asp-action="Run"
+                                   asp-route-id="@p.Id">
+                                    <iconify-icon icon="mdi:play-circle-outline" class="fs-14"></iconify-icon>
+                                    <span>Run</span>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const storedProcessesTable = new DataTable('#dataTable');
+    </script>
+}

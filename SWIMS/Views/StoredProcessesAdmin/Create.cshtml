@@ -1,9 +1,23 @@
 ﻿@model SWIMS.Models.ViewModels.StoredProcessEditViewModel
+
 @{
-    ViewData["Title"] = "Create Stored Process";
+    ViewData["title"] = "Create Stored Process";
+    ViewData["subTitle"] = "Create Stored Process";
+    ViewData["description"] = "Provide either a ConnectionKey or a DataSource and Database. SQL credentials will be encrypted on save.";
+
+    ViewData["BreadcrumbParentText"] = "Stored Processes (Admin)";
+    ViewData["BreadcrumbParentArea"] = "";
+    ViewData["BreadcrumbParentController"] = "StoredProcessesAdmin";
+    ViewData["BreadcrumbParentAction"] = "Index";
+
+    ViewData["BreadcrumbCurrentArea"] = "";
+    ViewData["BreadcrumbCurrentController"] = "StoredProcessesAdmin";
+    ViewData["BreadcrumbCurrentAction"] = "Create";
 }
-<h2>Create Stored Process</h2>
-<p class="text-muted">Provide either a <strong>ConnectionKey</strong> or a <strong>DataSource + Database</strong>. If you enter a SQL username/password, they will be encrypted on save.</p>
+
+<p class="text-muted">
+    Provide either a <strong>ConnectionKey</strong> or a <strong>DataSource + Database</strong>. If you enter a SQL username/password, they will be encrypted on save.
+</p>
 
 <form asp-action="Create" method="post">
     @Html.AntiForgeryToken()
