@@ -1,36 +1,74 @@
 ﻿@page "/Portal/Logs/Sessions"
 @{
-    ViewData["Title"] = "Session Logs";
+    ViewData["title"] = "Session Logs";
+    ViewData["subTitle"] = "Monitoring & Observability";
+    ViewData["description"] = "View user sessions, including sign-in, last activity, logout, and active-session diagnostics.";
 }
 
-<div class="card">
+<div class="card basic-data-table">
     <div class="card-header d-flex align-items-center flex-wrap gap-2">
-        <h5 class="mb-0 me-auto">Session Logs</h5>
+        <h5 class="card-title mb-0 me-auto">Session Logs</h5>
 
-        <input id="flt-username" class="form-control form-control-sm" placeholder="Username" style="max-width:180px">
-        <input id="flt-from" type="datetime-local" class="form-control form-control-sm" style="max-width:200px" title="From (UTC)">
-        <input id="flt-to" type="datetime-local" class="form-control form-control-sm" style="max-width:200px" title="To (UTC)">
-        <input id="flt-contains" class="form-control form-control-sm" placeholder="IP / UA contains…" style="max-width:220px">
+        <input id="flt-username"
+               class="form-control form-control-sm"
+               placeholder="Username"
+               style="max-width:180px" />
+
+        <input id="flt-from"
+               type="datetime-local"
+               class="form-control form-control-sm"
+               style="max-width:200px"
+               title="From (UTC)" />
+
+        <input id="flt-to"
+               type="datetime-local"
+               class="form-control form-control-sm"
+               style="max-width:200px"
+               title="To (UTC)" />
+
+        <input id="flt-contains"
+               class="form-control form-control-sm"
+               placeholder="IP / UA contains…"
+               style="max-width:220px" />
+
         <div class="form-check ms-2">
-            <input id="flt-active" class="form-check-input" type="checkbox">
-            <label class="form-check-label" for="flt-active">Active only</label>
+            <input id="flt-active"
+                   class="form-check-input"
+                   type="checkbox" />
+            <label class="form-check-label" for="flt-active">
+                Active only
+            </label>
         </div>
 
-        <select id="flt-take" class="form-select form-select-sm" style="width:90px">
-            <option>25</option>
-            <option>50</option>
-            <option>100</option>
+        <select id="flt-take"
+                class="form-select form-select-sm"
+                style="width:90px">
+            <option value="25">25</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
         </select>
 
-        <button id="btn-apply" class="btn btn-sm btn-primary">Apply</button>
-        <button id="btn-reset" class="btn btn-sm btn-outline-secondary">Reset</button>
-        <a id="btn-csv" class="btn btn-sm btn-outline-primary" href="#">Export CSV</a>
+        <button id="btn-apply"
+                class="btn btn-sm btn-primary">
+            Apply
+        </button>
 
+        <button id="btn-reset"
+                class="btn btn-sm btn-outline-secondary">
+            Reset
+        </button>
+
+        <a id="btn-csv"
+           class="btn btn-sm btn-outline-primary"
+           href="#">
+            Export CSV
+        </a>
     </div>
 
     <div class="card-body">
         <div class="table-responsive">
-            <table class="table align-middle" id="tbl-sessions">
+            <table class="table bordered-table mb-0 align-middle w-100"
+                   id="tbl-sessions">
                 <thead>
                     <tr>
                         <th>User ID</th>
@@ -46,85 +84,113 @@
                 <tbody></tbody>
             </table>
         </div>
-        <div class="d-flex align-items-center gap-3 mt-3">
-            <div id="page-info" class="text-secondary-light small"></div>
-            <div class="ms-auto d-flex gap-2">
-                <button id="sess-prev" class="btn btn-outline-secondary btn-sm">Prev</button>
-                <button id="sess-next" class="btn btn-outline-secondary btn-sm">Next</button>
-            </div>
-        </div>
     </div>
 </div>
 
 @section Scripts {
     <script>
-        (function(){
-          const qS = sel => document.querySelector(sel);
-          const tbody = qS('#tbl-sessions tbody');
-          const info  = qS('#page-info');
+        (function () {
+            const qS = sel => document.querySelector(sel);
+            const tbody = qS('#tbl-sessions tbody');
 
-          const els = {
-            username: qS('#flt-username'),
-            from:     qS('#flt-from'),
-            to:       qS('#flt-to'),
-            contains: qS('#flt-contains'),
-            active:   qS('#flt-active'),
-            take:     qS('#flt-take')
-          };
+            const els = {
+                username: qS('#flt-username'),
+                from:     qS('#flt-from'),
+                to:       qS('#flt-to'),
+                contains: qS('#flt-contains'),
+                active:   qS('#flt-active'),
+                take:     qS('#flt-take')
+            };
 
-          let skip=0, take=25, total=0;
+            let skip = 0;
+            let take = 25;
+            const dtLocalToIso = v => v ? new Date(v).toISOString() : '';
 
-          const dtLocalToIso = v => v ? new Date(v).toISOString() : '';
+            const buildQuery = () => {
+                const p = new URLSearchParams();
+                p.set('skip', skip);
+                p.set('take', take);
 
-          const buildQuery = () => {
-            const p = new URLSearchParams();
-            p.set('skip', skip);
-            p.set('take', take);
-            if (els.username.value) p.set('username', els.username.value);
-            if (els.from.value)     p.set('from', dtLocalToIso(els.from.value));
-            if (els.to.value)       p.set('to', dtLocalToIso(els.to.value));
-            if (els.contains.value) p.set('contains', els.contains.value);
-            if (els.active.checked) p.set('activeOnly', 'true');
-            return p.toString();
-          };
+                if (els.username.value) p.set('username', els.username.value);
+                if (els.from.value)     p.set('from', dtLocalToIso(els.from.value));
+                if (els.to.value)       p.set('to', dtLocalToIso(els.to.value));
+                if (els.contains.value) p.set('contains', els.contains.value);
+                if (els.active.checked) p.set('activeOnly', 'true');
 
-            const csvHref = () => window.apiUrl(`/api/v1/ops/logs/sessions.csv?${buildQuery()}`);
-                qS('#btn-csv').onclick = (e) => { e.preventDefault(); window.location.href = csvHref(); };
+                return p.toString();
+            };
 
+            const load = async () => {
+                const url = window.apiUrl(`/api/v1/ops/logs/sessions?${buildQuery()}`);
+                const r = await fetch(url, { credentials: 'same-origin' });
 
-          const load = async() => {
-            const r = await fetch(window.apiUrl(`/api/v1/ops/logs/sessions?${buildQuery()}`), {credentials:'same-origin'});
-            const d = await r.json(); total = d.total || 0;
+                if (!r.ok) {
+                    console.error('Failed to load sessions', r.status);
+                    tbody.innerHTML = '<tr><td colspan="8" class="text-danger">Failed to load session logs.</td></tr>';
+                    return;
+                }
 
-            tbody.innerHTML = (d.items||[]).map(x=>`
-              <tr>
-                <td>${x.userId??''}</td>
-                <td>${x.username??''}</td>
-                <td>${x.loginUtc? new Date(x.loginUtc).toLocaleString(): ''}</td>
-                <td>${x.lastSeenUtc? new Date(x.lastSeenUtc).toLocaleString(): ''}</td>
-                <td>${x.logoutUtc? new Date(x.logoutUtc).toLocaleString(): ''}</td>
-                <td>${x.ip??''}</td>
-                <td title="${x.userAgent??''}">${(x.userAgent??'').slice(0,40)}${(x.userAgent||'').length>40?'…':''}</td>
-                <td><code>${(x.sessionId??'').slice(0,8)}</code></td>
-              </tr>`).join('');
+                const d = await r.json();
+                const items = d.items || [];
 
-            const from = total===0 ? 0 : (skip+1);
-            const to   = Math.min(skip + (d.items?.length||0), total);
-            info.textContent = `Showing ${from}-${to} of ${total}`;
-          };
+                tbody.innerHTML = items.map(x => {
+                    const ua = x.userAgent ?? '';
+                    const uaShort = ua.length > 40 ? ua.slice(0, 40) + '…' : ua;
+                    const sid = x.sessionId ?? '';
+                    const sidShort = sid.length > 8 ? sid.slice(0, 8) + '…' : sid;
 
-          // events
-          qS('#btn-apply').onclick = () => { skip=0; take=parseInt(els.take.value||'25',10); load(); };
-          qS('#btn-reset').onclick = () => {
-            els.username.value = els.from.value = els.to.value = els.contains.value = '';
-            els.active.checked = false; els.take.value='25';
-            skip=0; take=25; load();
-          };
-          qS('#sess-prev').onclick = () => { skip = Math.max(0, skip - take); load(); };
-          qS('#sess-next').onclick = () => { if (skip + take < total) { skip += take; load(); }};
+                    return `
+                        <tr>
+                            <td>${x.userId ?? ''}</td>
+                            <td>${x.username ?? ''}</td>
+                            <td>${x.loginUtc ? new Date(x.loginUtc).toLocaleString() : ''}</td>
+                            <td>${x.lastSeenUtc ? new Date(x.lastSeenUtc).toLocaleString() : ''}</td>
+                            <td>${x.logoutUtc ? new Date(x.logoutUtc).toLocaleString() : ''}</td>
+                            <td>${x.ip ?? ''}</td>
+                            <td title="${ua}">${uaShort}</td>
+                            <td><code title="${sid}">${sidShort}</code></td>
+                        </tr>`;
+                }).join('');
+            };
 
-          // initial
-          load();
+            const applyBtn = qS('#btn-apply');
+            if (applyBtn) {
+                applyBtn.onclick = () => {
+                    skip = 0;
+                    if (els.take) {
+                        const parsed = parseInt(els.take.value, 10);
+                        take = !Number.isNaN(parsed) && parsed > 0 ? parsed : 25;
+                    }
+                    load();
+                };
+            }
+
+            const resetBtn = qS('#btn-reset');
+            if (resetBtn) {
+                resetBtn.onclick = () => {
+                    els.username.value = '';
+                    els.from.value = '';
+                    els.to.value = '';
+                    els.contains.value = '';
+                    els.active.checked = false;
+                    if (els.take) els.take.value = '25';
+                    skip = 0;
+                    take = 25;
+                    load();
+                };
+            }
+
+            const csvBtn = qS('#btn-csv');
+            if (csvBtn) {
+                csvBtn.onclick = (e) => {
+                    e.preventDefault();
+                    const csvUrl = window.apiUrl(`/api/v1/ops/logs/sessions.csv?${buildQuery()}`);
+                    window.location.href = csvUrl;
+                };
+            }
+
+            // initial
+            load();
         })();
     </script>
 }
