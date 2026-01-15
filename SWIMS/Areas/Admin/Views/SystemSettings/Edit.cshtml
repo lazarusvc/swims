@@ -1,9 +1,24 @@
 ﻿@model SWIMS.Areas.Admin.ViewModels.SystemSettings.SystemSettingsEditViewModel
-@using Microsoft.AspNetCore.Mvc.TagHelpers
-@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 
 @{
     ViewData["Title"] = "Edit Settings - " + Model.DisplayName;
+    ViewData["title"] = "System Settings";
+    ViewData["subTitle"] = "Edit: " + Model.DisplayName;
+    ViewData["description"] = string.IsNullOrWhiteSpace(Model.Description)
+        ? $"Configure values for \"{Model.DisplayName}\" ({Model.Key})."
+        : Model.Description;
+
+    ViewData["BreadcrumbParentText"] = "System Settings";
+    ViewData["BreadcrumbParentArea"] = "Admin";
+    ViewData["BreadcrumbParentController"] = "SystemSettings";
+    ViewData["BreadcrumbParentAction"] = "Index";
+
+    ViewData["BreadcrumbCurrentArea"] = "Admin";
+    ViewData["BreadcrumbCurrentController"] = "SystemSettings";
+    ViewData["BreadcrumbCurrentAction"] = "Edit";
+    ViewData["BreadcrumbCurrentRouteValues"] =
+        new Dictionary<string, string> { ["key"] = Model.Key };
+
     var isDev = (bool?)ViewBag.IsDevelopment ?? false;
 
     // Known modes for Emailing:Mode – adjust if your enum changes
@@ -12,7 +27,6 @@
 
 <div class="row mb-3">
     <div class="col-12">
-        <h2 class="mb-1">Edit Settings: @Model.DisplayName</h2>
         <p class="text-muted mb-0">
             Key: <code>@Model.Key</code>
             @if (!string.IsNullOrWhiteSpace(Model.EnvironmentName))
@@ -22,6 +36,7 @@
                 </span>
             }
         </p>
+
         @if (!string.IsNullOrWhiteSpace(Model.Description))
         {
             <p class="text-muted mt-1">
@@ -51,6 +66,7 @@
     </div>
 </div>
 
+
 <form asp-area="Admin"
       asp-controller="SystemSettings"
       asp-action="Edit"
@@ -60,21 +76,19 @@
     <input type="hidden" asp-for="DisplayName" />
     <input type="hidden" asp-for="EnvironmentName" />
 
-    <div class="card">
-        <div class="card-header">
-            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
-                <h5 class="mb-0">Settings</h5>
-                <div class="d-flex align-items-center gap-2">
-                    <input type="search"
-                           id="settings-search"
-                           class="form-control form-control-sm"
-                           placeholder="Search keys &amp; values..." />
-                </div>
+    <div class="card basic-data-table">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Settings</h5>
+            <div class="d-flex align-items-center gap-2">
+                <input type="search"
+                       id="settings-search"
+                       class="form-control form-control-sm"
+                       placeholder="Search keys &amp; values..." />
             </div>
         </div>
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table align-middle" id="settings-table">
+                <table class="table bordered-table mb-0 align-middle w-100" id="settings-table">
                     <thead>
                         <tr>
                             <th style="width: 30%;">Key</th>

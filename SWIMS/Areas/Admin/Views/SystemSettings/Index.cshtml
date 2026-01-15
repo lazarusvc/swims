@@ -2,15 +2,22 @@
 @using System.Linq
 @{
     ViewData["Title"] = "System Settings";
+    ViewData["title"] = "System Settings";
+    ViewData["subTitle"] = "Configuration & feature flags";
+    ViewData["description"] = "Browse and manage system configuration sections from SWIMS and appsettings.* files.";
+
+    ViewData["BreadcrumbCurrentArea"] = "Admin";
+    ViewData["BreadcrumbCurrentController"] = "SystemSettings";
+    ViewData["BreadcrumbCurrentAction"] = "Index";
 
     var hasFromFile = Model.Sections.Any(s => s.IsFromAppSettings);
     var defaultFilter = hasFromFile ? "file" : "all"; // "file" = only appsettings, "all" = all providers
 }
 
+
 <div class="row mb-3">
     <div class="col-12">
-        <h2 class="mb-1">System Settings</h2>
-        <p class="text-muted mb-0">
+        <p class="text-muted mb-1">
             Environment:
             <strong>@(Model.ActiveEnvironment ?? "Current")</strong>
         </p>
@@ -20,6 +27,7 @@
         }
     </div>
 </div>
+
 
 <div class="row mb-3">
     <div class="col-12">
@@ -120,17 +128,21 @@
 </div>
 
 <div id="sections-table" class="d-none">
-    <div class="card">
-        <div class="card-body p-0">
+    <div class="card basic-data-table">
+        <div class="card-header d-flex align-items-center justify-content-between gap-2 flex-wrap">
+            <h5 class="card-title mb-0">System Settings</h5>
+        </div>
+
+        <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
+                <table class="table bordered-table mb-0 align-middle w-100">
                     <thead>
                         <tr>
                             <th>Section</th>
                             <th>Key</th>
                             <th>Status</th>
                             <th>Source</th>
-                            <th class="text-end">Actions</th>
+                            <th class="text-center">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -149,35 +161,40 @@
                                         <div class="small text-muted">@s.Description</div>
                                     }
                                 </td>
-                                <td><code>@s.Key</code></td>
+                                <td>
+                                    <code>@s.Key</code>
+                                </td>
                                 <td>
                                     @if (s.IsConfigured)
                                     {
-                                        <span class="badge bg-success-subtle text-success">Configured</span>
+                                        <span class="badge bg-success">Configured</span>
                                     }
                                     else
                                     {
-                                        <span class="badge bg-warning-subtle text-warning">Needs attention</span>
+                                        <span class="badge bg-warning">Needs attention</span>
                                     }
                                 </td>
                                 <td>
                                     @if (s.IsFromAppSettings)
                                     {
-                                        <span class="badge bg-primary-subtle text-primary">appsettings</span>
+                                        <span class="badge bg-primary">appsettings</span>
                                     }
                                     else
                                     {
-                                        <span class="badge bg-secondary-subtle text-secondary">other</span>
+                                        <span class="badge bg-secondary">other</span>
                                     }
                                 </td>
-                                <td class="text-end">
-                                    <a asp-area="Admin"
-                                       asp-controller="SystemSettings"
-                                       asp-action="Edit"
-                                       asp-route-key="@s.Key"
-                                       class="btn btn-sm btn-outline-primary">
-                                        Manage
-                                    </a>
+                                <td class="text-center align-middle">
+                                    <div class="d-flex align-items-center gap-10 justify-content-center">
+                                        <a asp-area="Admin"
+                                           asp-controller="SystemSettings"
+                                           asp-action="Edit"
+                                           asp-route-key="@s.Key"
+                                           class="bg-primary-focus bg-hover-primary-200 text-primary-600 fw-medium w-40-px h-40-px d-flex justify-content-center align-items-center rounded-circle"
+                                           title="Manage" aria-label="Manage">
+                                            <iconify-icon icon="lucide:settings-2"></iconify-icon>
+                                        </a>
+                                    </div>
                                 </td>
                             </tr>
                         }
@@ -187,6 +204,8 @@
         </div>
     </div>
 </div>
+
+
 
 @section Scripts {
     <script>
@@ -229,7 +248,11 @@
 
                 items.forEach(function (el) {
                     var fromFile = el.getAttribute('data-fromfile') === 'true';
-                    var text = normalize(el.getAttribute('data-name') + ' ' + el.getAttribute('data-description') + ' ' + el.getAttribute('data-key'));
+                    var text = normalize(
+                        (el.getAttribute('data-name') || '') + ' ' +
+                        (el.getAttribute('data-description') || '') + ' ' +
+                        (el.getAttribute('data-key') || '')
+                    );
 
                     var matchesFilter = (currentFilter === 'all') || fromFile;
                     var matchesSearch = !q || text.indexOf(q) !== -1;
@@ -274,3 +297,4 @@
         })();
     </script>
 }
+
