@@ -1,26 +1,37 @@
 ﻿@model SWIMS.Models.ViewModels.CaseCreateViewModel
+@using System.Collections.Generic
 
 @{
     ViewData["Title"] = "Edit case";
+    ViewData["title"] = "Cases";
+    ViewData["subTitle"] = "Edit case";
+    ViewData["description"] = "Update case details for this beneficiary.";
+
+    ViewData["BreadcrumbParentText"] = "Case details";
+    ViewData["BreadcrumbParentController"] = "Cases";
+    ViewData["BreadcrumbParentAction"] = "Details";
+    ViewData["BreadcrumbParentRouteValues"] = new Dictionary<string, string>
+    {
+        ["id"] = Model.Id.ToString()
+    };
+
+    ViewData["BreadcrumbCurrentController"] = "Cases";
+    ViewData["BreadcrumbCurrentAction"] = "Edit";
 }
 
 <div class="row">
     <div class="col-12">
         <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
+            <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <div>
-                    <h4 class="card-title mb-0">Edit case</h4>
+                    <h5 class="card-title mb-0">Edit case</h5>
                     <p class="fs-12 text-muted mb-0">
                         Update case details for this beneficiary.
                     </p>
-                    <h4 class="card-title mb-0">Edit case</h4>
-                    <p class="fs-12 text-muted mb-0">
-                        Update case details for this beneficiary.
-                    </p>
-
                 </div>
-                <a asp-action="Index" class="btn btn-sm btn-soft-secondary">
-                    <i class="ri-arrow-left-line align-middle"></i> Back to list
+                <a asp-action="Index" class="btn btn-sm btn-soft-secondary d-flex align-items-center gap-1">
+                    <i class="ri-arrow-left-line align-middle"></i>
+                    <span>Back to list</span>
                 </a>
             </div>
 
@@ -45,12 +56,12 @@
                             <span asp-validation-for="Title" class="text-danger"></span>
                         </div>
 
-
                         <div class="col-md-6">
                             <label asp-for="SW_beneficiaryId" class="form-label"></label>
                             <select asp-for="SW_beneficiaryId"
                                     asp-items="Model.Beneficiaries"
-                                    class="form-select">
+                                    class="form-select"
+                                    id="SW_beneficiaryId">
                                 <option value="">-- Select beneficiary --</option>
                             </select>
                             <span asp-validation-for="SW_beneficiaryId" class="text-danger"></span>
@@ -66,7 +77,7 @@
                             <span asp-validation-for="Status" class="text-danger"></span>
                         </div>
 
-                        <div class="mb-3">
+                        <div class="col-12">
                             <label asp-for="ProgramTagId" class="form-label"></label>
                             <select asp-for="ProgramTagId"
                                     asp-items="Model.ProgramOptions"
@@ -75,7 +86,6 @@
                             </select>
                             <span asp-validation-for="ProgramTagId" class="text-danger"></span>
                         </div>
-
 
                         <div class="col-12">
                             <label asp-for="Notes" class="form-label"></label>
@@ -86,8 +96,9 @@
 
                     <div class="d-flex justify-content-end gap-2 mt-4">
                         <a asp-action="Index" class="btn btn-soft-secondary">Cancel</a>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="ri-save-3-line align-middle"></i> Edit case
+                        <button type="submit" class="btn btn-primary d-flex align-items-center gap-1">
+                            <i class="ri-save-3-line align-middle"></i>
+                            <span>Save changes</span>
                         </button>
                     </div>
                 </form>
@@ -116,9 +127,7 @@
             }
 
             beneficiarySelect.addEventListener('change', syncTitleFromBeneficiary);
-            // initial sync on load (in case something is preselected later)
             syncTitleFromBeneficiary();
         })();
     </script>
 }
-

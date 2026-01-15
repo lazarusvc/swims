@@ -1,10 +1,23 @@
 ﻿@model SWIMS.Models.ViewModels.CaseDetailsViewModel
+@using System.Collections.Generic
 
 @{
     ViewData["Title"] = $"Case {Model.CaseNumber}";
-}
+    ViewData["title"] = "Cases";
+    ViewData["subTitle"] = $"Case {Model.CaseNumber}";
+    ViewData["description"] = "View case details, benefit period, linked forms and assigned workers.";
 
-@{
+    ViewData["BreadcrumbParentText"] = "Cases";
+    ViewData["BreadcrumbParentController"] = "Cases";
+    ViewData["BreadcrumbParentAction"] = "Index";
+
+    ViewData["BreadcrumbCurrentController"] = "Cases";
+    ViewData["BreadcrumbCurrentAction"] = "Details";
+    ViewData["BreadcrumbCurrentRouteValues"] = new Dictionary<string, string>
+    {
+        ["id"] = Model.Id.ToString()
+    };
+
     var hasPrimaryApplication = Model.Forms?.Any(f => f.IsPrimary) == true;
 }
 
@@ -19,9 +32,9 @@
 <div class="row">
     <div class="col-12 col-xl-8">
         <div class="card mb-3">
-            <div class="card-header d-flex justify-content-between align-items-center">
+            <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <div>
-                    <h4 class="card-title mb-0">@Model.Title</h4>
+                    <h5 class="card-title mb-0">@Model.Title</h5>
                     <p class="fs-12 text-muted mb-0">Case @Model.CaseNumber</p>
                 </div>
 
@@ -39,23 +52,21 @@
                         "Pending" => "bg-warning",
                         _ => "bg-info"
                     };
-
-
                 }
 
-                <div class="d-flex align-items-center gap-2">
+                <div class="d-flex align-items-center gap-2 flex-wrap">
                     <a asp-action="Edit"
                        asp-route-id="@Model.Id"
-                       class="btn btn-soft-secondary btn-sm">
-                        <i class="ri-edit-line align-middle me-1"></i>
-                        Edit
+                       class="btn btn-soft-secondary btn-sm d-flex align-items-center gap-1">
+                        <i class="ri-edit-line align-middle"></i>
+                        <span>Edit</span>
                     </a>
 
                     <a asp-action="BenefitPeriod"
                        asp-route-id="@Model.Id"
-                       class="btn btn-soft-info btn-sm">
-                        <i class="ri-timer-line align-middle me-1"></i>
-                        Benefit period
+                       class="btn btn-soft-info btn-sm d-flex align-items-center gap-1">
+                        <i class="ri-timer-line align-middle"></i>
+                        <span>Benefit period</span>
                     </a>
 
                     <form asp-action="RefreshFromPrimaryApplication"
@@ -65,11 +76,11 @@
                         @Html.AntiForgeryToken()
 
                         <button type="submit"
-                                class="btn btn-soft-primary btn-sm"
+                                class="btn btn-soft-primary btn-sm d-flex align-items-center gap-1"
                                 @(hasPrimaryApplication ? "" : "disabled")
                                 aria-disabled="@(hasPrimaryApplication ? "false" : "true")">
-                            <i class="ri-refresh-line align-middle me-1"></i>
-                            Recalculate
+                            <i class="ri-refresh-line align-middle"></i>
+                            <span>Recalculate</span>
                         </button>
 
                         <sup class="ms-1">
@@ -81,14 +92,11 @@
                         </sup>
                     </form>
 
-
-
                     <span class="badge @statusBadge">
                         @statusText
                     </span>
                 </div>
             </div>
-
 
             <div class="card-body">
                 <dl class="row mb-0">
@@ -116,7 +124,6 @@
                     <dd class="col-sm-9">
                         @(Model.ClosedAt?.ToLocalTime().ToString("yyyy-MM-dd HH:mm") ?? "—")
                     </dd>
-
 
                     <dt class="col-sm-3">Benefit period</dt>
                     <dd class="col-sm-9">
@@ -153,8 +160,6 @@
                         </div>
                     </dd>
 
-
-
                     <dt class="col-sm-3">Notes</dt>
                     <dd class="col-sm-9">
                         @(!string.IsNullOrWhiteSpace(Model.Notes) ? Model.Notes : "—")
@@ -163,7 +168,7 @@
                     <dt class="col-sm-3">Status actions</dt>
                     <dd class="col-sm-9">
 
-                        @* Manual override banner (shows even if not active, so you can clear stale overrides) *@
+                        @* Manual override banner *@
                         @if (!string.IsNullOrWhiteSpace(Model.StatusOverride))
                         {
                             var isActive = Model.IsStatusOverrideActive;
@@ -212,8 +217,6 @@
                         }
 
                         <div class="d-flex flex-wrap gap-2">
-
-                            @* Mark as Pending *@
                             @if (Model.Status != "Pending")
                             {
                                 <form asp-action="SetStatus" method="post" class="d-inline">
@@ -227,7 +230,6 @@
                                 </form>
                             }
 
-                            @* Mark as Active *@
                             @if (Model.Status != "Active")
                             {
                                 <form asp-action="SetStatus" method="post" class="d-inline">
@@ -241,7 +243,6 @@
                                 </form>
                             }
 
-                            @* Mark as Inactive *@
                             @if (Model.Status != "Inactive")
                             {
                                 <form asp-action="SetStatus" method="post" class="d-inline">
@@ -255,7 +256,6 @@
                                 </form>
                             }
 
-                            @* Suspend *@
                             @if (Model.Status != "Suspended")
                             {
                                 <form asp-action="SetStatus" method="post" class="d-inline">
@@ -269,7 +269,6 @@
                                 </form>
                             }
 
-                            @* Close case *@
                             @if (Model.Status != "Closed")
                             {
                                 <form asp-action="SetStatus" method="post" class="d-inline">
@@ -282,18 +281,14 @@
                                     </button>
                                 </form>
                             }
-
                         </div>
                     </dd>
-
-
-
                 </dl>
             </div>
         </div>
 
-        <div class="card mb-3">
-            <div class="card-header d-flex justify-content-between align-items-center">
+        <div class="card basic-data-table mb-3">
+            <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <div>
                     <h5 class="card-title mb-0">Forms on this case</h5>
                     <small class="text-muted">Attach existing submissions or start new ones for this beneficiary.</small>
@@ -302,16 +297,18 @@
                 <div class="btn-group btn-group-sm">
                     <a asp-action="LinkForm"
                        asp-route-id="@Model.Id"
-                       class="btn btn-primary">
-                        <i class="mdi mdi-link-variant me-1"></i> Link existing
+                       class="btn btn-primary d-flex align-items-center gap-1">
+                        <i class="mdi mdi-link-variant"></i>
+                        <span>Link existing</span>
                     </a>
 
                     <a asp-controller="Home"
                        asp-action="Index"
                        asp-route-caseId="@Model.Id"
                        asp-route-beneficiaryId="@Model.BeneficiaryId"
-                       class="btn btn-outline-secondary">
-                        <i class="mdi mdi-file-plus-outline me-1"></i> Start new form
+                       class="btn btn-outline-secondary d-flex align-items-center gap-1">
+                        <i class="mdi mdi-file-plus-outline"></i>
+                        <span>Start new form</span>
                     </a>
                 </div>
             </div>
@@ -320,25 +317,21 @@
                 @if (Model.Forms.Any())
                 {
                     <div class="table-responsive">
-                        <table class="table align-middle mb-0">
-                            <thead class="table-light">
+                        <table class="table bordered-table mb-0 align-middle w-100"
+                               id="caseFormsTable"
+                               data-page-length="10">
+                            <thead>
                                 <tr>
                                     <th>Role</th>
-                                    <th>Primary</th>
+                                    <th style="width: 80px;">Primary</th>
                                     <th>Linked at</th>
                                     <th>Linked by</th>
-                                    
-
                                     <th>Form</th>
-                                    <th>Form entry</th>
-
-                                    
+                                    <th style="width: 120px;">Form entry</th>
                                     <th>Form Type</th>
                                     <th>Program Tags</th>
                                     <th>Site Identity</th>
-                                    
-                                    <th>Actions</th>
-
+                                    <th class="text-center" style="width: 130px;">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -349,7 +342,6 @@
                                         <td>@(f.IsPrimary ? "Yes" : "No")</td>
                                         <td>@(f.LinkedAt?.ToLocalTime().ToString("yyyy-MM-dd HH:mm") ?? "—")</td>
                                         <td>@f.LinkedBy</td>
-
                                         <td>
                                             @if (!string.IsNullOrWhiteSpace(f.FormName))
                                             {
@@ -360,27 +352,21 @@
                                                 <span class="text-muted">—</span>
                                             }
                                         </td>
-
                                         <td>
                                             <span class="text-xs text-muted">
                                                 Entry #@f.FormTableDataId
                                             </span>
                                         </td>
-
-                                        
-
                                         <td>
                                             @if (!string.IsNullOrWhiteSpace(f.FormTypeName))
                                             {
                                                 <span class="badge bg-secondary">@f.FormTypeName</span>
-                                                @* swap to your SWIMS badge classes if different *@
                                             }
                                             else
                                             {
                                                 <span class="text-muted">—</span>
                                             }
                                         </td>
-
                                         <td>
                                             @if (f.ProgramTagNames != null && f.ProgramTagNames.Count > 0)
                                             {
@@ -394,7 +380,6 @@
                                                 <span class="text-muted">—</span>
                                             }
                                         </td>
-
                                         <td>
                                             @if (!string.IsNullOrWhiteSpace(f.SiteIdentityName))
                                             {
@@ -405,42 +390,39 @@
                                                 <span class="text-muted">—</span>
                                             }
                                         </td>
-                                        
-                                        <td>
-                                            <div class="d-flex justify-content-between align-items-center gap-2">
-                                                <div class="btn-group btn-group-sm" role="group" aria-label="Form actions">
-                                                    <a asp-controller="Cases"
-                                                       asp-action="FormPreview"
-                                                       asp-route-id="@f.Id"
-                                                       class="btn btn-soft-secondary"
-                                                       title="Preview form">
-                                                        <iconify-icon icon="ion:eye-outline" class="text-sm"></iconify-icon>
-                                                    </a>
+                                        <td class="text-center align-middle">
+                                            <div class="d-flex align-items-center gap-10 justify-content-center">
+                                                <a asp-controller="Cases"
+                                                   asp-action="FormPreview"
+                                                   asp-route-id="@f.Id"
+                                                   class="bg-info-focus bg-hover-info-200 text-info-600 fw-medium w-40-px h-40-px d-flex justify-content-center align-items-center rounded-circle"
+                                                   title="Preview form" aria-label="Preview form">
+                                                    <iconify-icon icon="ion:eye-outline"></iconify-icon>
+                                                </a>
 
-                                                    <a asp-controller="Cases"
-                                                       asp-action="FormEdit"
-                                                       asp-route-id="@f.Id"
-                                                       class="btn btn-soft-primary"
-                                                       title="Edit form">
-                                                        <iconify-icon icon="lucide:edit-3" class="text-sm"></iconify-icon>
-                                                    </a>
+                                                <a asp-controller="Cases"
+                                                   asp-action="FormEdit"
+                                                   asp-route-id="@f.Id"
+                                                   class="bg-success-focus bg-hover-success-200 text-success-600 fw-medium w-40-px h-40-px d-flex justify-content-center align-items-center rounded-circle"
+                                                   title="Edit form" aria-label="Edit form">
+                                                    <iconify-icon icon="lucide:edit-3"></iconify-icon>
+                                                </a>
 
-                                                    <form asp-action="DetachForm"
-                                                          asp-route-id="@f.Id"
-                                                          method="post"
-                                                          class="d-inline">
-                                                        @Html.AntiForgeryToken()
-                                                        <button type="submit"
-                                                                class="btn btn-link btn-sm text-danger p-0 ms-1"
-                                                                onclick="return confirm('Remove this form from the case? The underlying submission will not be deleted.');">
-                                                            Remove
-                                                        </button>
-                                                    </form>
-
-                                                </div>
+                                                <form asp-action="DetachForm"
+                                                      asp-route-id="@f.Id"
+                                                      method="post"
+                                                      class="d-inline">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit"
+                                                            class="remove-item-btn bg-danger-focus bg-hover-danger-200 text-danger-600 fw-medium w-40-px h-40-px d-flex justify-content-center align-items-center rounded-circle border-0"
+                                                            title="Remove from case"
+                                                            aria-label="Remove from case"
+                                                            onclick="return confirm('Remove this form from the case? The underlying submission will not be deleted.');">
+                                                        <iconify-icon icon="ri:link-unlink-m"></iconify-icon>
+                                                    </button>
+                                                </form>
                                             </div>
                                         </td>
-
                                     </tr>
                                 }
                             </tbody>
@@ -463,10 +445,10 @@
                 <h5 class="card-title mb-0">Assigned workers</h5>
                 <a asp-action="Assign"
                    asp-route-id="@Model.Id"
-                   class="btn btn-sm btn-soft-primary">
-                    <i class="ri-user-add-line align-middle"></i> Assign
+                   class="btn btn-sm btn-soft-primary d-flex align-items-center gap-1">
+                    <i class="ri-user-add-line align-middle"></i>
+                    <span>Assign</span>
                 </a>
-
             </div>
             <div class="card-body">
                 @if (Model.Assignments.Any())
@@ -474,10 +456,7 @@
                     <ul class="list-unstyled mb-0">
                         @foreach (var a in Model.Assignments)
                         {
-                            // Use standard bg-* badge classes instead of badge-soft-*
-                            var badgeClass = a.IsActive
-                            ? "bg-success"
-                            : "bg-secondary";
+                            var badgeClass = a.IsActive ? "bg-success" : "bg-secondary";
 
                             <li class="mb-3">
                                 <div class="d-flex justify-content-between">
@@ -504,16 +483,12 @@
                             <div class="d-flex justify-content-between text-muted fs-11">
                                 <span>
                                     Case role:
-                                    @(
-                                                                    string.IsNullOrWhiteSpace(a.RoleOnCase)
-                                                                    ? "—"
-                                                                    : a.RoleOnCase
-                                                                    )
-                                    </span>
-                                    <span>
-                                        @(a.AssignedAt.HasValue
-                                                                        ? a.AssignedAt.Value.ToLocalTime().ToString("yyyy-MM-dd")
-                                                                        : "-")
+                                    @(string.IsNullOrWhiteSpace(a.RoleOnCase) ? "—" : a.RoleOnCase)
+                                </span>
+                                <span>
+                                    @(a.AssignedAt.HasValue
+                                                                    ? a.AssignedAt.Value.ToLocalTime().ToString("yyyy-MM-dd")
+                                                                    : "-")
                                     </span>
                                 </div>
 
@@ -535,7 +510,6 @@
                                 }
                             </li>
                         }
-
                     </ul>
                 }
                 else
@@ -545,19 +519,21 @@
                     </p>
                 }
             </div>
-
         </div>
     </div>
 </div>
 
-
 @section Scripts {
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            if (!window.bootstrap || !bootstrap.Tooltip) return;
+            if (window.bootstrap && bootstrap.Tooltip) {
+                var triggers = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+                triggers.forEach(function (el) { new bootstrap.Tooltip(el); });
+            }
 
-            var triggers = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-            triggers.forEach(function (el) { new bootstrap.Tooltip(el); });
+            if (window.DataTable) {
+                const caseFormsTable = new DataTable('#caseFormsTable');
+            }
         });
     </script>
 }

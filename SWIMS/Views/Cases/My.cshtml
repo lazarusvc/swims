@@ -1,7 +1,18 @@
 ﻿@model SWIMS.Models.ViewModels.CaseIndexViewModel
+@using System.Collections.Generic
 
 @{
     ViewData["Title"] = "My cases";
+    ViewData["title"] = "Cases";
+    ViewData["subTitle"] = "My cases";
+    ViewData["description"] = "Cases currently assigned to you. Use filters to narrow down your own queue.";
+
+    ViewData["BreadcrumbParentText"] = "Cases";
+    ViewData["BreadcrumbParentController"] = "Cases";
+    ViewData["BreadcrumbParentAction"] = "Index";
+
+    ViewData["BreadcrumbCurrentController"] = "Cases";
+    ViewData["BreadcrumbCurrentAction"] = "My";
 }
 
 @if (TempData["Ok"] is string ok)
@@ -17,9 +28,9 @@
         <div class="card basic-data-table">
             <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <div>
-                    <h4 class="card-title mb-0">My cases</h4>
-                    <p class="fs-12 text-muted mb-0">
-                        Cases currently assigned to you. Use filters to narrow down your queue.
+                    <h5 class="card-title mb-0">My cases</h5>
+                    <p class="text-muted mb-0 fs-12">
+                        Cases where you are currently assigned. Filter by status or text search.
                     </p>
                 </div>
 
@@ -29,7 +40,7 @@
                                name="search"
                                value="@Model.SearchText"
                                class="form-control form-control-sm"
-                               placeholder="Search case #, title, beneficiary." />
+                               placeholder="Search case #, title, beneficiary..." />
 
                         <select name="status" class="form-select form-select-sm">
                             <option value="">All statuses</option>
@@ -39,14 +50,16 @@
                             <option value="Closed" selected="@(Model.StatusFilter == "Closed" ? "selected" : null)">Closed</option>
                         </select>
 
-
-                        <button type="submit" class="btn btn-sm btn-primary">
-                            <i class="ri-filter-2-line align-middle"></i> Filter
+                        <button type="submit" class="btn btn-sm btn-primary d-flex align-items-center gap-1">
+                            <i class="ri-filter-2-line align-middle"></i>
+                            <span>Filter</span>
                         </button>
                     </form>
 
-                    <a asp-action="Create" class="btn btn-primary btn-sm">
-                        <i class="ri-add-line align-middle"></i> New case
+                    <a asp-action="Create"
+                       class="btn btn-sm btn-primary d-flex align-items-center gap-1">
+                        <iconify-icon icon="lucide:plus" class="fs-14"></iconify-icon>
+                        <span>New case</span>
                     </a>
                 </div>
             </div>
@@ -55,22 +68,28 @@
                 @if (Model.Cases.Any())
                 {
                     <div class="table-responsive">
-                        <table class="table align-middle table-nowrap mb-0">
-                            <thead class="table-light">
+                        <table class="table bordered-table mb-0 align-middle w-100"
+                               id="myCasesTable"
+                               data-page-length="10">
+                            <thead>
                                 <tr>
-                                    <th>Case #</th>
+                                    <th style="width: 110px;">Case #</th>
                                     <th>Title</th>
                                     <th>Beneficiary</th>
-                                    <th>Status</th>
-                                    <th>Program</th>
-                                    <th>Created</th>
-                                    <th class="text-end"></th>
+                                    <th style="width: 110px;">Status</th>
+                                    <th>Programme</th>
+                                    <th style="width: 170px;">Created</th>
+                                    <th class="text-center" style="width: 90px;">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach (var c in Model.Cases)
                                 {
-                                    var statusBadge = c.Status switch
+                                    var statusText = string.IsNullOrWhiteSpace(c.Status)
+                                    ? "Pending"
+                                    : c.Status.Trim();
+
+                                    var statusBadge = statusText switch
                                     {
                                         "Active" => "bg-success",
                                         "Inactive" => "bg-danger",
@@ -78,7 +97,6 @@
                                         "Pending" => "bg-warning",
                                         _ => "bg-info"
                                     };
-
 
                                     <tr>
                                         <td class="fw-semibold">@c.CaseNumber</td>
@@ -90,18 +108,21 @@
                                             </div>
                                         </td>
                                         <td>
-                                            <span class="badge rounded-pill @statusBadge">
-                                                @c.Status
+                                            <span class="badge @statusBadge">
+                                                @statusText
                                             </span>
                                         </td>
                                         <td>@c.ProgramTag</td>
                                         <td>@c.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
-                                        <td class="text-end">
-                                            <a asp-action="Details"
-                                               asp-route-id="@c.Id"
-                                               class="btn btn-sm btn-soft-primary">
-                                                View
-                                            </a>
+                                        <td class="text-center align-middle">
+                                            <div class="d-flex align-items-center gap-10 justify-content-center">
+                                                <a asp-action="Details"
+                                                   asp-route-id="@c.Id"
+                                                   class="bg-primary-focus bg-hover-primary-200 text-primary-600 fw-medium w-40-px h-40-px d-flex justify-content-center align-items-center rounded-circle"
+                                                   title="View case" aria-label="View case">
+                                                    <iconify-icon icon="iconamoon:eye-light"></iconify-icon>
+                                                </a>
+                                            </div>
                                         </td>
                                     </tr>
                                 }
@@ -119,3 +140,9 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        const myCasesTable = new DataTable('#myCasesTable');
+    </script>
+}

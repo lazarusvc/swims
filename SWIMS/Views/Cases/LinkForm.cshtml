@@ -1,29 +1,44 @@
 ﻿@model SWIMS.Models.ViewModels.CaseLinkFormViewModel
+@using System.Collections.Generic
 
 @{
     ViewData["Title"] = "Link form to case";
+    ViewData["title"] = "Cases";
+    ViewData["subTitle"] = "Link form";
+    ViewData["description"] = "Attach an existing form submission to this case.";
+
+    ViewData["BreadcrumbParentText"] = "Case details";
+    ViewData["BreadcrumbParentController"] = "Cases";
+    ViewData["BreadcrumbParentAction"] = "Details";
+    ViewData["BreadcrumbParentRouteValues"] = new Dictionary<string, string>
+    {
+        ["id"] = Model.SW_caseId.ToString()
+    };
+
+    ViewData["BreadcrumbCurrentController"] = "Cases";
+    ViewData["BreadcrumbCurrentAction"] = "LinkForm";
 }
 
 <div class="row">
     <div class="col-12">
         <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
+            <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <div>
-                    <h4 class="card-title mb-0">Link form to case</h4>
+                    <h5 class="card-title mb-0">Link form to case</h5>
                     <p class="fs-12 text-muted mb-0">
                         Case @Model.CaseNumber — @Model.CaseTitle
                     </p>
                 </div>
                 <a asp-action="Details"
                    asp-route-id="@Model.SW_caseId"
-                   class="btn btn-sm btn-soft-secondary">
-                    <i class="ri-arrow-left-line align-middle"></i> Back to case
+                   class="btn btn-sm btn-soft-secondary d-flex align-items-center gap-1">
+                    <i class="ri-arrow-left-line align-middle"></i>
+                    <span>Back to case</span>
                 </a>
             </div>
 
             <div class="card-body">
                 <form asp-action="LinkForm" asp-route-id="@Model.SW_caseId" method="post">
-
                     @Html.AntiForgeryToken()
                     <input type="hidden" asp-for="SW_caseId" />
 
@@ -35,7 +50,6 @@
                     }
 
                     @{
-                        
                         var hasSelectable =
                         Model.AvailableForms != null &&
                         Model.AvailableForms.Any(x => !x.Disabled && !string.IsNullOrWhiteSpace(x.Value));
@@ -49,8 +63,6 @@
                             If this is unexpected, confirm the submission has a <strong>beneficiary</strong> field and it matches the case beneficiary.
                         </div>
                     }
-
-
 
                     <div class="mb-3">
                         <label asp-for="SelectedFormTableDatumId" class="form-label"></label>
@@ -91,15 +103,15 @@
                         </div>
                     </div>
 
-
                     <div class="d-flex justify-content-end gap-2 mt-4">
                         <a asp-action="Details"
                            asp-route-id="@Model.SW_caseId"
                            class="btn btn-soft-secondary">
                             Cancel
                         </a>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="ri-link align-middle"></i> Link form
+                        <button type="submit" class="btn btn-primary d-flex align-items-center gap-1">
+                            <i class="ri-link align-middle"></i>
+                            <span>Link form</span>
                         </button>
                     </div>
                 </form>
