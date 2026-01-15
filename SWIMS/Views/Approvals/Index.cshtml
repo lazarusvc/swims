@@ -1,7 +1,14 @@
 ﻿@model SWIMS.Models.ViewModels.ApprovalsDashboardViewModel
+@using System.Collections.Generic
 
 @{
     ViewData["Title"] = "Approvals";
+    ViewData["title"] = "Approvals";
+    ViewData["subTitle"] = "Approvals dashboard";
+    ViewData["description"] = "Overview of forms that require your approval and quick access to their queues.";
+
+    ViewData["BreadcrumbCurrentController"] = "Approvals";
+    ViewData["BreadcrumbCurrentAction"] = "Index";
 
     // Simple mapping for UX labels. You can tweak the text later.
     var levelLabels = new Dictionary<int, string>
@@ -14,141 +21,144 @@
     };
 }
 
-<div class="row gy-4">
-    <div class="col-12">
-        <div class="card basic-data-table">
-            <div class="card-body p-24">
+<div class="card basic-data-table">
+    <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-2">
+        <h5 class="card-title mb-0">Approvals dashboard</h5>
+    </div>
 
-                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-16">
-                    <div>
-                        <h4 class="mb-4">Approvals dashboard</h4>
-                        <p class="text-sm text-muted mb-0">
-                            Overview of forms that require your approval.
-                            Select a form to jump straight into its approvals queue.
-                        </p>
-                    </div>
-                </div>
+    <div class="card-body p-24">
 
-                @* If user has no approval roles at all *@
-                @if (Model.UserLevels == null || !Model.UserLevels.Any())
+        @* If user has no approval roles at all *@
+        @if (Model.UserLevels == null || !Model.UserLevels.Any())
+        {
+            <div class="alert alert-info mb-0">
+                You don’t currently have any approval roles assigned.
+                If you think this is a mistake, please contact an administrator.
+            </div>
+        }
+        else
+        {
+            <div class="mb-16">
+                <span class="text-sm text-muted me-2">Your approval level(s):</span>
+                @foreach (var lvl in Model.UserLevels)
                 {
-                    <div class="alert alert-info mb-0">
-                        You don’t currently have any approval roles assigned.
-                        If you think this is a mistake, please contact an administrator.
-                    </div>
-                }
-                else
-                {
-                    <div class="mb-16">
-                        <span class="text-sm text-muted me-2">Your approval level(s):</span>
-                        @foreach (var lvl in Model.UserLevels)
-                        {
-                            string label;
-                            if (!levelLabels.TryGetValue(lvl, out label))
-                            {
-                                label = "Level " + lvl;
-                            }
-
-                            <span class="badge rounded-pill bg-primary-subtle text-primary-emphasis me-1">
-                                @label
-                            </span>
-                        }
-                    </div>
-
-                    @if (Model.Forms == null || !Model.Forms.Any())
+                    string label;
+                    if (!levelLabels.TryGetValue(lvl, out label))
                     {
-                        <div class="alert alert-secondary mb-0">
-                            There are no forms configured with approvals yet.
-                        </div>
+                        label = "Level " + lvl;
                     }
-                    else
-                    {
-                        @* Quick jump dropdown *@
-                        <div class="row g-3 align-items-end mb-24">
-                            <div class="col-md-6">
-                                <label for="approval-form-select" class="form-label text-sm mb-1">
-                                    Jump to a form’s approval queue
-                                </label>
-                                <select id="approval-form-select" class="form-select">
-                                    <option value="">Select a form...</option>
-                                    @foreach (var form in Model.Forms)
-                                    {
-                                        var text = form.PendingCount > 0
-                                        ? $"{form.FormName} ({form.PendingCount} pending)"
-                                        : $"{form.FormName} (no pending items)";
 
-                                        <option value="@form.FormUuid">@text</option>
-                                    }
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="table-responsive">
-                            <table class="table align-middle mb-0">
-                                <thead>
-                                    <tr>
-                                        <th>Form</th>
-                                        <th class="text-center">Approval levels</th>
-                                        <th class="text-center">Pending for you</th>
-                                        <th class="text-end">Open queue</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach (var form in Model.Forms)
-                                    {
-                                        <tr>
-                                            <td>
-                                                <div class="fw-medium">@form.FormName</div>
-                                                <div class="text-xs text-muted">
-                                                    UUID: @form.FormUuid
-                                                </div>
-                                            </td>
-                                            <td class="text-center">
-                                                @if (form.ApprovalLevelsConfigured > 0)
-                                                {
-                                                    <span class="badge rounded-pill bg-light text-muted">
-                                                        @form.ApprovalLevelsConfigured level(s)
-                                                    </span>
-                                                }
-                                                else
-                                                {
-                                                    <span class="text-xs text-muted">Not configured</span>
-                                                }
-                                            </td>
-                                            <td class="text-center">
-                                                @if (form.PendingCount > 0)
-                                                {
-                                                    <span class="badge rounded-pill bg-warning">
-                                                        @form.PendingCount pending
-                                                    </span>
-                                                }
-                                                else
-                                                {
-                                                    <span class="text-xs text-muted">None</span>
-                                                }
-                                            </td>
-                                            <td class="text-end">
-                                                <a asp-controller="form"
-                                                   asp-action="Approval"
-                                                   asp-route-uuid="@form.FormUuid"
-                                                   class="btn btn-sm btn-primary">
-                                                    Open approvals
-                                                </a>
-                                            </td>
-                                        </tr>
-                                    }
-                                </tbody>
-                            </table>
-                        </div>
-                    }
+                    <span class="badge rounded-pill bg-primary-subtle text-primary-emphasis me-1">
+                        @label
+                    </span>
                 }
             </div>
-        </div>
+
+            @* Quick jump dropdown – only when we have forms *@
+            @if (Model.Forms != null && Model.Forms.Any())
+            {
+                <div class="row g-3 align-items-end mb-24">
+                    <div class="col-md-6">
+                        <label for="approval-form-select" class="form-label text-sm mb-1">
+                            Jump to a form’s approval queue
+                        </label>
+                        <select id="approval-form-select" class="form-select">
+                            <option value="">Select a form...</option>
+                            @foreach (var form in Model.Forms)
+                            {
+                                var text = form.PendingCount > 0
+                                ? $"{form.FormName} ({form.PendingCount} pending)"
+                                : $"{form.FormName} (no pending items)";
+
+                                <option value="@form.FormUuid">@text</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+            }
+
+            <div class="table-responsive">
+                <table class="table bordered-table mb-0 align-middle w-100"
+                       id="dataTable"
+                       data-page-length="10">
+                    <thead>
+                        <tr>
+                            <th>Form</th>
+                            <th class="text-center">Approval levels</th>
+                            <th class="text-center">Pending for you</th>
+                            <th class="text-center">Queue</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Forms == null || !Model.Forms.Any())
+                        {
+                            <tr>
+                                <td colspan="4" class="text-center text-muted py-4">
+                                    There are no forms configured with approvals yet.
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var form in Model.Forms)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="fw-medium">@form.FormName</div>
+                                        <div class="text-xs text-muted">
+                                            UUID: @form.FormUuid
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        @if (form.ApprovalLevelsConfigured > 0)
+                                        {
+                                            <span class="badge rounded-pill bg-light text-muted">
+                                                @form.ApprovalLevelsConfigured level(s)
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-xs text-muted">Not configured</span>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        @if (form.PendingCount > 0)
+                                        {
+                                            <span class="badge rounded-pill bg-warning">
+                                                @form.PendingCount pending
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-xs text-muted">None</span>
+                                        }
+                                    </td>
+                                    <td class="text-center align-middle">
+                                        <div class="d-flex align-items-center gap-10 justify-content-center">
+                                            <a asp-controller="form"
+                                               asp-action="Approval"
+                                               asp-route-uuid="@form.FormUuid"
+                                               class="bg-primary-focus bg-hover-primary-200 text-primary-600 fw-medium w-40-px h-40-px d-flex justify-content-center align-items-center rounded-circle"
+                                               title="Open approvals" aria-label="Open approvals">
+                                                <iconify-icon icon="lucide:inbox"></iconify-icon>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
     </div>
 </div>
 
 @section Scripts {
     <script>
+        // Standard WowDash DataTable init
+        const approvalsTable = new DataTable('#dataTable');
+
         (function () {
             const select = document.getElementById('approval-form-select');
             if (!select) return;
