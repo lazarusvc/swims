@@ -2,38 +2,48 @@
 
 @{
     ViewData["Title"] = "Program Tags";
+    ViewData["title"] = "Lookups";
+    ViewData["subTitle"] = "Program Tags";
+    ViewData["description"] = "Manage program tag lookups used to group and filter programs.";
+
+    ViewData["BreadcrumbCurrentController"] = "ProgramTags";
+    ViewData["BreadcrumbCurrentAction"] = "Index";
 }
-
-<div class="d-flex align-items-center justify-content-between mb-3">
-    <h1 class="h3 mb-0">Program Tags</h1>
-
-    <a asp-action="Create" class="btn btn-primary">
-        <i class="ri-add-line align-bottom me-1"></i>
-        New Tag
-    </a>
-</div>
 
 @if (TempData["Ok"] is string ok)
 {
-    <div class="alert alert-success alert-dismissible fade show mb-3" role="alert">
+    <div class="alert alert-success alert-dismissible fade show mb-24" role="alert">
         @ok
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 }
 
-<div class="card">
+<div class="card basic-data-table">
+    <div class="card-header d-flex align-items-center justify-content-between gap-2 flex-wrap">
+        <h5 class="card-title mb-0">Program Tags</h5>
+
+        <a asp-action="Create"
+           class="btn btn-sm btn-primary d-flex align-items-center gap-1">
+            <iconify-icon icon="lucide:plus" class="fs-14"></iconify-icon>
+            <span>New Tag</span>
+        </a>
+    </div>
+
     <div class="card-body">
         <div class="table-responsive">
-            <table class="table align-middle table-striped mb-0">
-                <thead class="table-light">
+            <table class="table bordered-table mb-0 align-middle w-100"
+                   id="dataTable"
+                   data-page-length="10">
+                <thead>
                     <tr>
-                        <th style="width: 15%">Code</th>
+                        <th style="width: 140px;">Code</th>
                         <th>Name</th>
-                        <th style="width: 15%">Status</th>
-                        <th style="width: 12%">Default (months)</th>
-                        <th style="width: 10%">Sort</th>
-                        <th style="width: 12%"></th>
+                        <th style="width: 120px;">Status</th>
+                        <th style="width: 140px; white-space: nowrap;">Default (months)</th>
+                        <th style="width: 80px; white-space: nowrap;">Sort</th>
+                        <th class="text-center" style="width: 110px;">Actions</th>
                     </tr>
+
                 </thead>
                 <tbody>
                     @if (!Model.Any())
@@ -61,13 +71,15 @@
                                 </td>
                                 <td>@(t.default_benefit_months?.ToString() ?? "—")</td>
                                 <td>@t.sort_order</td>
-                                <td class="text-end">
-                                    <a asp-action="Edit"
-                                       asp-route-id="@t.Id"
-                                       class="btn btn-sm btn-outline-secondary">
-                                        <i class="ri-edit-line align-bottom me-1"></i>
-                                        Edit
-                                    </a>
+                                <td class="text-center align-middle">
+                                    <div class="d-flex align-items-center gap-10 justify-content-center">
+                                        <a asp-action="Edit"
+                                           asp-route-id="@t.Id"
+                                           class="bg-success-focus bg-hover-success-200 text-success-600 fw-medium w-40-px h-40-px d-flex justify-content-center align-items-center rounded-circle"
+                                           title="Edit" aria-label="Edit">
+                                            <iconify-icon icon="lucide:edit"></iconify-icon>
+                                        </a>
+                                    </div>
                                 </td>
                             </tr>
                         }
@@ -77,3 +89,9 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        const programTagsTable = new DataTable('#dataTable');
+    </script>
+}

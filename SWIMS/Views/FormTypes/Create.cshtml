@@ -2,9 +2,17 @@
 
 @{
     ViewData["Title"] = "New Form Type";
-}
+    ViewData["title"] = "Lookups";
+    ViewData["subTitle"] = "New Form Type";
+    ViewData["description"] = "Create a new form type lookup used to categorize forms.";
 
-<h1 class="h3 mb-3">New Form Type</h1>
+    ViewData["BreadcrumbParentText"] = "Form Types";
+    ViewData["BreadcrumbParentController"] = "FormTypes";
+    ViewData["BreadcrumbParentAction"] = "Index";
+
+    ViewData["BreadcrumbCurrentController"] = "FormTypes";
+    ViewData["BreadcrumbCurrentAction"] = "Create";
+}
 
 <div class="card">
     <div class="card-body">

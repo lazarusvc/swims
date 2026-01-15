@@ -2,9 +2,17 @@
 
 @{
     ViewData["Title"] = "New Program Tag";
-}
+    ViewData["title"] = "Lookups";
+    ViewData["subTitle"] = "New Program Tag";
+    ViewData["description"] = "Create a new program tag lookup used to group and classify programs.";
 
-<h1 class="h3 mb-3">New Program Tag</h1>
+    ViewData["BreadcrumbParentText"] = "Program Tags";
+    ViewData["BreadcrumbParentController"] = "ProgramTags";
+    ViewData["BreadcrumbParentAction"] = "Index";
+
+    ViewData["BreadcrumbCurrentController"] = "ProgramTags";
+    ViewData["BreadcrumbCurrentAction"] = "Create";
+}
 
 <div class="card">
     <div class="card-body">
