@@ -1,0 +1,55 @@
+﻿@{
+    ViewData["title"] = "Programs dashboard";
+    ViewData["subTitle"] = "Programmes & online forms";
+    ViewData["description"] = "Entry points into configured programmes via their primary online forms.";
+}
+
+<div class="row gy-4">
+    <div class="col-12">
+        <div class="card radius-12">
+            <div class="card-body p-24">
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-16">
+                    <div>
+                        <h4 class="mb-4">Programs dashboard</h4>
+                        <p class="text-sm text-muted mb-0">
+                            Select a programme card to open its main form. Use these entry points to start
+                            new applications or intakes.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="row g-3">
+                    @* Each card corresponds to a SW_form record from ViewBag.frmBtn *@
+                    @foreach (var inx in ViewBag.frmBtn)
+                    {
+                        <div class="col-lg-6">
+                            <div class="card radius-12 overflow-hidden h-100 d-flex align-items-center flex-nowrap flex-row">
+                                <div class="d-flex flex-shrink-0 w-170-px h-100">
+                                    <img src="@Url.Content($"~/uploads/{inx.image}")"
+                                         class="h-100 w-100 object-fit-cover"
+                                         loading="lazy"
+                                         alt="">
+                                </div>
+
+                                <div class="card-body p-16 flex-grow-1">
+                                    <h5 class="card-title text-lg text-primary-light mb-6">@inx.name</h5>
+                                    <p class="card-text text-neutral-600 mb-16">@inx.desc</p>
+
+                                    <a asp-action="Program"
+                                       asp-controller="form"
+                                       asp-route-uuid="@inx.uuid"
+                                       type="button"
+                                       class="btn rounded-pill btn-outline-primary-600 radius-8 px-20 py-11 d-flex align-items-center gap-2">
+                                        <iconify-icon icon="mingcute:square-arrow-right-line" class="text-xl"></iconify-icon>
+                                        FORM ID:- @inx.uuid.Substring(0, 5).
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>

@@ -46,6 +46,19 @@ namespace SWIMS.Controllers
         /// Displays the privacy policy page.
         /// </summary>
         /// <returns>A <see cref="ViewResult"/> for the Privacy view.</returns>
+        /// 
+
+        public IActionResult ProgramDashboard()
+        {
+            // Reuse the same source as the original Index:
+            ViewBag.frmBtn = _context.SW_forms
+                .AsNoTracking()
+                .ToList();
+
+            return View();
+        }
+
+
         public IActionResult Privacy()
         {
             return View();

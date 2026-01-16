@@ -42,6 +42,16 @@
     <div class="sidebar-menu-area">
         <ul class="sidebar-menu" id="sidebar-menu">
 
+            <li>
+                <a asp-area=""
+                   asp-controller="Home"
+                   asp-action="Index">
+                    <iconify-icon icon="lucide:home" class="menu-icon"></iconify-icon>
+                    <span>Home</span>
+                </a>
+            </li>
+
+
             @* ───────────── Messenger ───────────── *@
             @if (User.Identity?.IsAuthenticated ?? false)
             {
@@ -81,7 +91,7 @@
                                             Permissions.Payments_View))
                         {
                             <li>
-                                <a asp-area="" asp-controller="Home" asp-action="Index">
+                                <a asp-area="" asp-controller="Home" asp-action="ProgramDashboard">
                                     <iconify-icon icon="mdi:view-dashboard-outline" class="menu-icon"></iconify-icon>
                                     <span>Programs Dashboard</span>
                                 </a>
