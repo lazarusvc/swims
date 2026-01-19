@@ -1,8 +1,12 @@
 ﻿@page "/Portal/Messenger/Chat"
 @model SWIMS.Areas.Portal.Pages.Messages.ChatModel
+
 @{
-    ViewData["Title"] = "Messenger";
+    ViewData["title"] = "Messenger";
+    ViewData["subTitle"] = "Chat";
+    ViewData["description"] = "Start and continue conversations with other SWIMS users inside the SWIMS portal.";
 }
+
 
 <!-- Expose current user id for JS (used to style inbound/outbound bubbles) -->
 <meta name="swims-user-id" content="@Model.MeUserId" />
