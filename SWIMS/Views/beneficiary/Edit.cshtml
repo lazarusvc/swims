@@ -1,103 +1,142 @@
 ﻿@model SWIMS.Models.SW_beneficiary
 
 @{
-    ViewData["Title"] = "SW_beneficiary | EDIT";
+    ViewData["title"] = "Edit beneficiary";
+    ViewData["subTitle"] = "Update details for this beneficiary.";
+    ViewData["description"] = "Modify beneficiary information used across applications, cases and programme enrolments. Changes here may affect how the person appears in other modules.";
 }
-<hr />
+
 <div class="row">
-<div class="col-md-12">
-<div class="card">
-<div class="card-header">
-<a asp-action="Index" class="bg-primary-light text-primary-600 d-inline-flex align-items-center justify-content-center" style="padding: 10px;"> SW_beneficiary listings</a>
-</div>
-<div class="card-body">
-        <form asp-action="Edit">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="Id" />
-            <div class="row mb-24 gy-3 align-items-center">
-                <label asp-for="uuid"  class="form-label mb-0 col-sm-4"></label>
-                <div class="col-sm-10">
-                <input asp-for="uuid" class="form-control" />
-                <span asp-validation-for="uuid" class="text-danger"></span>
+    <div class="col-xl-8 col-lg-9">
+        <div class="card radius-12">
+            <div class="card-header d-flex align-items-center justify-content-between gap-2 flex-wrap">
+                <h5 class="card-title mb-0">Edit beneficiary</h5>
+
+                <div class="d-flex flex-wrap gap-2">
+                    <a asp-action="Details"
+                       asp-route-id="@Model.Id"
+                       class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1">
+                        <iconify-icon icon="lucide:info" class="fs-14"></iconify-icon>
+                        <span>View details</span>
+                    </a>
+
+                    <a asp-action="Index"
+                       class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1">
+                        <iconify-icon icon="lucide:list" class="fs-14"></iconify-icon>
+                        <span>Back to list</span>
+                    </a>
                 </div>
             </div>
-            <div class="row mb-24 gy-3 align-items-center">
-                <label asp-for="first_name"  class="form-label mb-0 col-sm-4"></label>
-                <div class="col-sm-10">
-                <input asp-for="first_name" class="form-control" />
-                <span asp-validation-for="first_name" class="text-danger"></span>
-                </div>
-            </div>
-            <div class="row mb-24 gy-3 align-items-center">
-                <label asp-for="middle_name"  class="form-label mb-0 col-sm-4"></label>
-                <div class="col-sm-10">
-                <input asp-for="middle_name" class="form-control" />
-                <span asp-validation-for="middle_name" class="text-danger"></span>
-                </div>
-            </div>
-            <div class="row mb-24 gy-3 align-items-center">
-                <label asp-for="last_name"  class="form-label mb-0 col-sm-4"></label>
-                <div class="col-sm-10">
-                <input asp-for="last_name" class="form-control" />
-                <span asp-validation-for="last_name" class="text-danger"></span>
-                </div>
-            </div>
-            <div class="row mb-24 gy-3 align-items-center">
-                <label asp-for="dob"  class="form-label mb-0 col-sm-4"></label>
-                <div class="col-sm-10">
-                <input asp-for="dob" class="form-control" />
-                <span asp-validation-for="dob" class="text-danger"></span>
-                </div>
-            </div>
-            <div class="row mb-24 gy-3 align-items-center">
-                <label asp-for="gender"  class="form-label mb-0 col-sm-4"></label>
-                <div class="col-sm-10">
-                <input asp-for="gender" class="form-control" />
-                <span asp-validation-for="gender" class="text-danger"></span>
-                </div>
-            </div>
-            <div class="row mb-24 gy-3 align-items-center">
-                <label asp-for="martial_status"  class="form-label mb-0 col-sm-4"></label>
-                <div class="col-sm-10">
-                <input asp-for="martial_status" class="form-control" />
-                <span asp-validation-for="martial_status" class="text-danger"></span>
-                </div>
-            </div>
-            <div class="row mb-24 gy-3 align-items-center">
-                <label asp-for="id_number"  class="form-label mb-0 col-sm-4"></label>
-                <div class="col-sm-10">
-                <input asp-for="id_number" class="form-control" />
-                <span asp-validation-for="id_number" class="text-danger"></span>
-                </div>
-            </div>
-            <div class="row mb-24 gy-3 align-items-center">
-                <label asp-for="telephone_number"  class="form-label mb-0 col-sm-4"></label>
-                <div class="col-sm-10">
-                <input asp-for="telephone_number" class="form-control" />
-                <span asp-validation-for="telephone_number" class="text-danger"></span>
-                </div>
-            </div>
-            <div class="row mb-24 gy-3 align-items-center">
-                <label asp-for="status"  class="form-label mb-0 col-sm-4"></label>
-                <div class="col-sm-10">
-                <input asp-for="status" class="form-control" />
-                <span asp-validation-for="status" class="text-danger"></span>
-                </div>
-            </div>
-            <div class="row mb-24 gy-3 align-items-center">
-                <label asp-for="approved_amount"  class="form-label mb-0 col-sm-4"></label>
-                <div class="col-sm-10">
-                <input asp-for="approved_amount" class="form-control" />
-                <span asp-validation-for="approved_amount" class="text-danger"></span>
-                </div>
-            </div>
-                <input type="submit" value="Save" class="btn btn-primary" />
-        </form>
+
+            <div class="card-body">
+                <form asp-action="Edit" method="post">
+                    <input type="hidden" asp-for="Id" />
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <div class="mb-3 row">
+                        <label asp-for="uuid" class="col-sm-3 col-form-label"></label>
+                        <div class="col-sm-9">
+                            <input asp-for="uuid" class="form-control" />
+                            <span asp-validation-for="uuid" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3 row">
+                        <label asp-for="first_name" class="col-sm-3 col-form-label"></label>
+                        <div class="col-sm-9">
+                            <input asp-for="first_name" class="form-control" />
+                            <span asp-validation-for="first_name" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3 row">
+                        <label asp-for="middle_name" class="col-sm-3 col-form-label"></label>
+                        <div class="col-sm-9">
+                            <input asp-for="middle_name" class="form-control" />
+                            <span asp-validation-for="middle_name" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3 row">
+                        <label asp-for="last_name" class="col-sm-3 col-form-label"></label>
+                        <div class="col-sm-9">
+                            <input asp-for="last_name" class="form-control" />
+                            <span asp-validation-for="last_name" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3 row">
+                        <label asp-for="dob" class="col-sm-3 col-form-label"></label>
+                        <div class="col-sm-9">
+                            <input asp-for="dob" class="form-control" />
+                            <span asp-validation-for="dob" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3 row">
+                        <label asp-for="gender" class="col-sm-3 col-form-label"></label>
+                        <div class="col-sm-9">
+                            <input asp-for="gender" class="form-control" />
+                            <span asp-validation-for="gender" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3 row">
+                        <label asp-for="martial_status" class="col-sm-3 col-form-label"></label>
+                        <div class="col-sm-9">
+                            <input asp-for="martial_status" class="form-control" />
+                            <span asp-validation-for="martial_status" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3 row">
+                        <label asp-for="id_number" class="col-sm-3 col-form-label"></label>
+                        <div class="col-sm-9">
+                            <input asp-for="id_number" class="form-control" />
+                            <span asp-validation-for="id_number" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3 row">
+                        <label asp-for="telephone_number" class="col-sm-3 col-form-label"></label>
+                        <div class="col-sm-9">
+                            <input asp-for="telephone_number" class="form-control" />
+                            <span asp-validation-for="telephone_number" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3 row">
+                        <label asp-for="status" class="col-sm-3 col-form-label"></label>
+                        <div class="col-sm-9">
+                            <input asp-for="status" class="form-control" />
+                            <span asp-validation-for="status" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3 row">
+                        <label asp-for="approved_amount" class="col-sm-3 col-form-label"></label>
+                        <div class="col-sm-9">
+                            <input asp-for="approved_amount" class="form-control" />
+                            <span asp-validation-for="approved_amount" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 mt-3">
+                        <a asp-action="Index" class="btn btn-outline-secondary">
+                            Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            Save changes
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }
