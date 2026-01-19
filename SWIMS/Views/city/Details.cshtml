@@ -1,24 +1,43 @@
 ﻿@model SWIMS.Models.SW_city
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["title"] = "City details";
+    ViewData["subTitle"] = "View configuration for this city.";
+    ViewData["description"] = "Review the name of this city as stored in the SWIMS reference data.";
 }
 
-<br />
-<div class="card basic-data-table">
-    <div class="card-header">
-        <a asp-action="Index" class="bg-primary-light text-primary-600 d-inline-flex align-items-center justify-content-center" style="padding: 10px;"> SW_city listings</a>
-    </div>
-    <div class="card-body" style="overflow-y:scroll; max-height: 250px;">
-     <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.name).ToUpper():
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.name)
-        </dd>
-    </dl>
+<div class="row">
+    <div class="col-xl-5 col-lg-6">
+        <div class="card radius-12">
+            <div class="card-header d-flex align-items-center justify-content-between gap-2 flex-wrap">
+                <h5 class="card-title mb-0">City details</h5>
 
+                <div class="d-flex flex-wrap gap-2">
+                    <a asp-action="Edit"
+                       asp-route-id="@Model.Id"
+                       class="btn btn-sm btn-outline-primary d-flex align-items-center gap-1">
+                        <iconify-icon icon="lucide:edit" class="fs-14"></iconify-icon>
+                        <span>Edit</span>
+                    </a>
+
+                    <a asp-action="Index"
+                       class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1">
+                        <iconify-icon icon="lucide:list" class="fs-14"></iconify-icon>
+                        <span>Back to list</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4 text-muted text-uppercase small fw-semibold">
+                        @Html.DisplayNameFor(model => model.name)
+                    </dt>
+                    <dd class="col-sm-8">
+                        @Html.DisplayFor(model => model.name)
+                    </dd>
+                </dl>
+            </div>
+        </div>
     </div>
 </div>
-
