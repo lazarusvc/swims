@@ -1,5 +1,22 @@
 ﻿@using System.Text.Json
 
+@{
+    ViewData["title"] = "Program – " + ViewBag.formName;
+    ViewData["subTitle"] = "Expanded view of submissions for this form.";
+    ViewData["description"] = "Review and filter individual entries for the selected form, open submissions, and access linked forms or approval history as needed.";
+
+
+    var uid = ViewBag.uuid;
+
+    // List of forms that are linking
+    // ______________________________
+    //
+    var linkOption = "<option>--select--</option>";
+    @foreach (var inx in ViewBag.formLINK)
+    {
+        linkOption += "<option value=" + inx.uuid + ">" + inx.name + "</option>";
+    }
+}
 
 <!-- BACK BUTTON -->
 <div style="width: 110px;">
@@ -11,19 +28,7 @@
     <br />
 </div>
 <!-- ----------------------------------------------- -->
-@{
-    ViewData["Title"] = "Program - " + @ViewBag.formName;
-    var uid = ViewBag.uuid;
 
-    // List of forms that are linking
-    // ______________________________
-    //
-    var linkOption = "<option>--select--</option>";
-    @foreach (var inx in ViewBag.formLINK)
-    {
-        linkOption += "<option value=" + inx.uuid + ">" + inx.name + "</option>";
-}
-}
 
 <div class="row">
     <div class="col-sm-12">

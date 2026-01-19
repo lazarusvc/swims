@@ -3,6 +3,13 @@
 @model SWIMS.Models.SW_formTableDatum
 @inject UserManager<SwUser> UserManager
 
+@{
+    ViewData["title"] = "Approvals & recommendations";
+    ViewData["subTitle"] = "Review submissions that require approvals or recommendations.";
+    ViewData["description"] = "Use this workspace to step through pending items, preview the submitted form data, and route each entry with an approval, deferral or other recommendation as configured for the programme.";
+}
+
+
 <!-- BACK BUTTON -->
 <div style="width: 110px;">
     <a href="##" onClick="history.go(-1); return false;"
@@ -13,9 +20,6 @@
     <br />
 </div>
 <!-- ----------------------------------------------- -->
-@{
-    ViewData["Title"] = "Approvals / Recommendations";
-}
 
 <div class="row">
     <div class="col-sm-6">

@@ -1,8 +1,11 @@
 ﻿@model IEnumerable<SWIMS.Models.SW_form>
 
 @{
-    ViewData["Title"] = "Form Management";
+    ViewData["title"] = "Form catalogue";
+    ViewData["subTitle"] = "Manage forms across programmes and environments.";
+    ViewData["description"] = "Browse all forms configured in SWIMS, filter by programme tags and types, jump into design, approvals and programme dashboards, or create new forms as required.";
 }
+
 
 @{
     var formTypeById = ViewBag.FormTypeByFormId as IDictionary<int, string>

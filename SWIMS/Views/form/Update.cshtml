@@ -1,18 +1,13 @@
 ﻿@model SWIMS.Models.SW_formTableDatum
 
-<!-- BACK BUTTON -->
-<div style="width: 110px;">
-    <a href="##" onClick="history.go(-1); return false;"
-       class="btn rounded-pill btn-outline-dark-1 radius-8 px-20 py-11 d-flex align-items-center gap-2">
-        <iconify-icon icon="ion:return-up-back-sharp"></iconify-icon> Back
-    </a>
-    <br />
-    <br />
-</div>
-<!-- ----------------------------------------------- -->
 @{
-    ViewData["Title"] = "Program - " + @ViewBag.formName;
- }
+    ViewData["title"] = "Update submission – " + ViewBag.formName;
+    ViewData["subTitle"] = "Edit an existing entry for this form.";
+    ViewData["description"] = "Use this page to review the rendered form and update responses for the selected submission. Changes will be saved back to the underlying record for this programme.";
+}
+
+
+
 <link href="~/css/forms-stylesheet.css" rel="stylesheet" />
 <script src="~/lib/jquery/dist/jquery.min.js"></script>
 
@@ -25,6 +20,19 @@
         }
     });
 </script>
+
+<!-- BACK BUTTON -->
+<div style="width: 110px;">
+    <a href="##" onClick="history.go(-1); return false;"
+       class="btn rounded-pill btn-outline-dark-1 radius-8 px-20 py-11 d-flex align-items-center gap-2">
+        <iconify-icon icon="ion:return-up-back-sharp"></iconify-icon> Back
+    </a>
+    <br />
+    <br />
+</div>
+<!-- ----------------------------------------------- -->
+
+
 
 <div class="row">
     <div class="col-sm-12">

@@ -2,6 +2,13 @@
 @inject UserManager<SwUser> UserManager
 @model SWIMS.Models.SW_formTableDatum
 
+@{
+    ViewData["title"] = "Approval / recommendation – Entry#: " + ViewBag.dataID;
+    ViewData["subTitle"] = "Capture your decision and comments for this specific submission.";
+    ViewData["description"] = "Review the form details, record your recommendation or decision, and then submit to move this entry forward in the approval chain.";
+}
+
+
 <!-- BACK BUTTON -->
 <div style="width: 110px;">
     <a href="##" onClick="history.go(-1); return false;"
@@ -12,9 +19,6 @@
     <br />
 </div>
 <!-- ----------------------------------------------- -->
-@{
-    ViewData["Title"] = "Approval / Recommendation for - Entry#: " + ViewBag.dataID;
-}
 
 <!-- PREVIEW MODAL ____________________________________________ -->
 <div id="ex1" class="modal">
