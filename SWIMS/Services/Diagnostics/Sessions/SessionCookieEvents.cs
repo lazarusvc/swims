@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authentication.Cookies;
+﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
 using SWIMS.Services.Diagnostics.Auditing;
 using SWIMS.Services.Diagnostics.Sessions;
@@ -65,5 +66,77 @@ public sealed class SessionCookieEvents : CookieAuthenticationEvents
 
         await base.SigningOut(context);
     }
+
+    public override Task RedirectToLogin(RedirectContext<CookieAuthenticationOptions> context)
+    {
+        // For API/static/non-HTML calls, don't 302 to the login page.
+        // Return 401 so fetch() / assets don’t trigger mixed-content redirects.
+        if (IsNonHtmlOrApiRequest(context.Request))
+        {
+            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            return Task.CompletedTask;
+        }
+
+        // Build a RELATIVE redirect so the browser keeps the current scheme (https)
+        var returnUrl = context.Request.PathBase + context.Request.Path + context.Request.QueryString;
+
+        var loginPath = context.Options.LoginPath.HasValue
+            ? context.Options.LoginPath.Value
+            : "/Identity/Account/Login";
+
+        var redirectUrl =
+            context.Request.PathBase
+            + loginPath
+            + QueryString.Create(context.Options.ReturnUrlParameter, returnUrl);
+
+        context.Response.Redirect(redirectUrl);
+        return Task.CompletedTask;
+    }
+
+    public override Task RedirectToAccessDenied(RedirectContext<CookieAuthenticationOptions> context)
+    {
+        if (IsNonHtmlOrApiRequest(context.Request))
+        {
+            context.Response.StatusCode = StatusCodes.Status403Forbidden;
+            return Task.CompletedTask;
+        }
+
+        var returnUrl = context.Request.PathBase + context.Request.Path + context.Request.QueryString;
+
+        var deniedPath = context.Options.AccessDeniedPath.HasValue
+            ? context.Options.AccessDeniedPath.Value
+            : "/Identity/Account/AccessDenied";
+
+        var redirectUrl =
+            context.Request.PathBase
+            + deniedPath
+            + QueryString.Create(context.Options.ReturnUrlParameter, returnUrl);
+
+        context.Response.Redirect(redirectUrl);
+        return Task.CompletedTask;
+    }
+
+    private static bool IsNonHtmlOrApiRequest(HttpRequest request)
+    {
+        // API
+        if (request.Path.StartsWithSegments("/api"))
+            return true;
+
+        // If the browser tells us it's not a document navigation, treat as non-HTML
+        var fetchDest = request.Headers["Sec-Fetch-Dest"].ToString();
+        if (!string.IsNullOrWhiteSpace(fetchDest) &&
+            !fetchDest.Equals("document", StringComparison.OrdinalIgnoreCase) &&
+            !fetchDest.Equals("iframe", StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        // If caller doesn't accept HTML, don't redirect to HTML login
+        var accept = request.Headers["Accept"].ToString();
+        if (!string.IsNullOrWhiteSpace(accept) &&
+            !accept.Contains("text/html", StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        return false;
+    }
+
 }
 

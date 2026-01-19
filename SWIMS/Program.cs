@@ -600,7 +600,11 @@ app.UseHangfireDashboard("/ops/hangfire", new DashboardOptions
     IsReadOnlyFunc = _ => false
 });
 
-app.MapStaticAssets();
+
+var staticAssets = app.MapStaticAssets();
+// Static assets must never be auth-gated; otherwise CSS/JS/images 302→Login when anonymous
+staticAssets.AllowAnonymous();
+
 
 app.MapControllers();
 
