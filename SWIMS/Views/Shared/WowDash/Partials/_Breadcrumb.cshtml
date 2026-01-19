@@ -1,86 +1,128 @@
-﻿@*
-    WowDash - Breadcrumb with description + multi-level clickable trail
-*@
+﻿@{
+    // Titles / text
+    var title = ViewData["BreadcrumbTitle"] as string ?? ViewData["title"] as string ?? "";
+    var subTitle = ViewData["BreadcrumbSubTitle"] as string ?? ViewData["subTitle"] as string ?? "";
+    var description = ViewData["BreadcrumbDescription"] as string
+                      ?? ViewData["description"] as string
+                      ?? "";
 
-@{
-    string title = ViewBag.BreadcrumbTitle as string ?? "";
-    string description = ViewBag.BreadcrumbDescription as string ?? "";
-    string subTitle = ViewBag.BreadcrumbSubTitle as string ?? "";
+    // Root crumb
+    var rootTitle = ViewData["BreadcrumbRootTitle"] as string ?? "SWIMS";
+    var rootArea = ViewData["BreadcrumbRootArea"] as string ?? "";
+    var rootController = ViewData["BreadcrumbRootController"] as string ?? "Home";
+    var rootAction = ViewData["BreadcrumbRootAction"] as string ?? "Index";
+    var rootRouteValues = ViewData["BreadcrumbRootRouteValues"];
 
-    // Optional parent crumb (e.g. index/list page for CRUD screens)
-    string parentText = ViewBag.BreadcrumbParentText as string ?? "";
-    string parentArea = ViewBag.BreadcrumbParentArea as string ?? "";
-    string parentController = ViewBag.BreadcrumbParentController as string ?? "";
-    string parentAction = ViewBag.BreadcrumbParentAction as string ?? "";
+    // Parent crumb (optional)
+    var parentTitle = ViewData["BreadcrumbParentTitle"] as string;
+    var parentArea = ViewData["BreadcrumbParentArea"] as string;
+    var parentController = ViewData["BreadcrumbParentController"] as string;
+    var parentAction = ViewData["BreadcrumbParentAction"] as string ?? "Index";
+    var parentRouteValues = ViewData["BreadcrumbParentRouteValues"];
 
-    // Route for the current crumb (used to make current page clickable)
-    string currentArea = ViewBag.BreadcrumbCurrentArea as string ?? "";
-    string currentController = ViewBag.BreadcrumbCurrentController as string ?? "";
-    string currentAction = ViewBag.BreadcrumbCurrentAction as string ?? "";
+    // Current crumb (defaults to current route if not explicitly set)
+    var currentTitle = ViewData["BreadcrumbCurrentTitle"] as string ?? title;
+    var currentArea = ViewData["BreadcrumbCurrentArea"] as string
+                      ?? (ViewContext.RouteData.Values["area"] as string ?? "");
+    var currentController = ViewData["BreadcrumbCurrentController"] as string
+                            ?? (ViewContext.RouteData.Values["controller"]?.ToString() ?? "");
+    var currentAction = ViewData["BreadcrumbCurrentAction"] as string
+                        ?? (ViewContext.RouteData.Values["action"]?.ToString() ?? "");
+    var currentRouteValues = ViewData["BreadcrumbCurrentRouteValues"];
 
-    // Optional route values (generic, used by asp-all-route-data)
-    var parentRouteValues = ViewData["BreadcrumbParentRouteValues"] as IDictionary<string, string>;
-    var currentRouteValues = ViewData["BreadcrumbCurrentRouteValues"] as IDictionary<string, string>;
+    // Helper to choose routeValues object (either provided or just area)
+    object RootRoute() => rootRouteValues ?? (string.IsNullOrEmpty(rootArea) ? null : new { area = rootArea });
+    object ParentRoute() => parentRouteValues ?? (string.IsNullOrEmpty(parentArea) ? null : new { area = parentArea });
+    object CurrentRoute() => currentRouteValues ?? (string.IsNullOrEmpty(currentArea) ? null : new { area = currentArea });
+
+    string rootUrl = null;
+    if (!string.IsNullOrEmpty(rootController) && !string.IsNullOrEmpty(rootAction))
+    {
+        rootUrl = Url.Action(rootAction, rootController, RootRoute());
+    }
+
+    string parentUrl = null;
+    if (!string.IsNullOrEmpty(parentTitle) && !string.IsNullOrEmpty(parentController))
+    {
+        parentUrl = Url.Action(parentAction, parentController, ParentRoute());
+    }
+
+    string currentUrl = null;
+    if (!string.IsNullOrEmpty(currentController) && !string.IsNullOrEmpty(currentAction))
+    {
+        currentUrl = Url.Action(currentAction, currentController, CurrentRoute());
+    }
 }
 
-<div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
-    <div>
-        <h6 class="fw-semibold mb-1">@title</h6>
+<div class="mb-24">
+    <!-- Title area + breadcrumb on the same row -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+        <div>
+            @* Subtitle as small eyebrow label above the title *@
+            @if (!string.IsNullOrEmpty(subTitle))
+            {
+                <p class="mb-1 text-uppercase text-muted fs-12 fw-semibold">
+                    @subTitle
+                </p>
+            }
 
-        @if (!string.IsNullOrWhiteSpace(description))
-        {
-            <p class="mb-0 text-sm text-muted">
-                @description
-            </p>
-        }
+            @if (!string.IsNullOrEmpty(title))
+            {
+                <h4 class="mb-0">@title</h4>
+            }
+        </div>
+
+        <div class="d-flex align-items-center gap-1 text-muted fs-14">
+            <iconify-icon icon="lucide:layout-dashboard" class="fs-16 me-1"></iconify-icon>
+
+            @* Root *@
+            @if (!string.IsNullOrEmpty(rootTitle))
+            {
+                if (!string.IsNullOrEmpty(rootUrl))
+                {
+                    <a href="@rootUrl" class="text-muted text-decoration-none fw-semibold">@rootTitle</a>
+                }
+                else
+                {
+                    <span class="fw-semibold">@rootTitle</span>
+                }
+            }
+
+            @* Parent (optional) *@
+            @if (!string.IsNullOrEmpty(parentTitle))
+            {
+                <span class="mx-1">/</span>
+                @if (!string.IsNullOrEmpty(parentUrl))
+                {
+                    <a href="@parentUrl" class="text-muted text-decoration-none">@parentTitle</a>
+                }
+                else
+                {
+                    <span>@parentTitle</span>
+                }
+            }
+
+            @* Current *@
+            @if (!string.IsNullOrEmpty(currentTitle))
+            {
+                <span class="mx-1">/</span>
+                @if (!string.IsNullOrEmpty(currentUrl))
+                {
+                    <a href="@currentUrl" class="text-muted text-decoration-none">@currentTitle</a>
+                }
+                else
+                {
+                    <span>@currentTitle</span>
+                }
+            }
+        </div>
     </div>
 
-    <ul class="d-flex align-items-center gap-2">
-        <!-- Root: SWIMS → Home -->
-        <li class="fw-medium">
-            <a asp-area="" asp-controller="Home" asp-action="Index"
-               class="d-flex align-items-center gap-1 hover-text-primary">
-                <iconify-icon icon="solar:home-smile-angle-outline" class="icon text-lg"></iconify-icon>
-                SWIMS
-            </a>
-        </li>
-
-        @* Optional parent crumb, e.g. "Public Endpoints" index for Create/Edit pages *@
-        @if (!string.IsNullOrWhiteSpace(parentText))
-        {
-            <li>-</li>
-            <li class="fw-medium">
-                <a asp-area="@parentArea"
-                   asp-controller="@parentController"
-                   asp-action="@parentAction"
-                   asp-all-route-data="parentRouteValues"
-                   class="hover-text-primary">
-                    @parentText
-                </a>
-            </li>
-        }
-
-        @* Current page crumb – clickable if we have route info *@
-        @if (!string.IsNullOrWhiteSpace(subTitle))
-        {
-            <li>-</li>
-
-            @if (!string.IsNullOrWhiteSpace(currentController) || !string.IsNullOrWhiteSpace(currentAction))
-            {
-                <li class="fw-medium">
-                    <a asp-area="@currentArea"
-                       asp-controller="@currentController"
-                       asp-action="@currentAction"
-                       asp-all-route-data="currentRouteValues"
-                       class="hover-text-primary">
-                        @subTitle
-                    </a>
-                </li>
-            }
-            else
-            {
-                <li class="fw-medium">@subTitle</li>
-            }
-        }
-    </ul>
+    @* Description always gets its own full-width row under the title + breadcrumb *@
+    @if (!string.IsNullOrEmpty(description))
+    {
+        <p class="text-sm text-muted mb-0 mt-1">
+            @description
+        </p>
+    }
 </div>
