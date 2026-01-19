@@ -1,7 +1,7 @@
 ﻿@{
     ViewData["title"] = "Programs dashboard";
     ViewData["subTitle"] = "Programmes & online forms";
-    ViewData["description"] = "Entry points into configured programmes via their primary online forms.";
+    ViewData["description"] = "Launch online forms that are linked to configured social assistance programmes. This dashboard is the main starting point for new applications and other programme workflows.";
 }
 
 <div class="row gy-4">
@@ -10,13 +10,14 @@
             <div class="card-body p-24">
                 <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-16">
                     <div>
-                        <h4 class="mb-4">Programs dashboard</h4>
+                        @* Removed the H4 to avoid duplicate title; breadcrumb already shows "Programs dashboard" *@
                         <p class="text-sm text-muted mb-0">
-                            Select a programme card to open its main form. Use these entry points to start
-                            new applications or intakes.
+                            Choose a programme card to open its main online form. From there you can start new applications,
+                            screenings or follow-up forms, depending on your access.
                         </p>
                     </div>
                 </div>
+
 
                 <div class="row g-3">
                     @* Each card corresponds to a SW_form record from ViewBag.frmBtn *@
