@@ -1,176 +1,193 @@
-﻿@{
-    ViewData["title"] = "Social Welfare Information Management System (SWIMS)";
-    ViewData["subTitle"] = "Home";
-    ViewData["description"] = "Overview of the SWIMS project and entry points into the main modules.";
+﻿@using System.Security.Claims
+
+@{
+    // Browser tab title only; no breadcrumb title/subTitle/description
+    ViewData["Title"] = "SWIMS Home";
+
+    var isAuthenticated = User?.Identity?.IsAuthenticated == true;
 }
 
 <div class="row gy-4">
-
-    <!-- Hero / project overview -->
     <div class="col-12">
-        <div class="card radius-12">
-            <div class="card-body p-24">
-                <div class="row g-4 align-items-center">
-                    <div class="col-lg-8">
-                        <p class="text-uppercase text-muted fs-12 mb-2">Project overview</p>
-                        <h2 class="mb-3">Welcome to SWIMS</h2>
+        <div class="card basic-data-table">
+            <!-- Hero header area (inspired by Faqs.cshtml) -->
+            <div class="card-header p-0 border-0">
+                <div class="responsive-padding-40-150 bg-light-pink">
+                    <div class="row gy-4 align-items-center">
+                        <div class="col-xl-7">
+                            <h4 class="mb-20">Welcome to the Social Welfare Information Management System (SWIMS)</h4>
+                            <p class="mb-0 text-secondary-light max-w-634-px text-xl">
+                                SWIMS is Dominica’s evolving platform for managing social assistance programmes, cases and payments
+                                in a single, integrated system. It is designed to move social welfare delivery away from paper files
+                                and scattered spreadsheets into a structured, traceable and data-driven workflow that better supports
+                                households and the people who work with them.
+                            </p>
+                        </div>
+                        <div class="col-xl-5 d-xl-block d-none">
+                            @* You can replace this image with a SWIMS-specific illustration later *@
+                            <img src="~/uploads/group-hug.jpg"
+                                 alt="SWIMS overview illustration"
+                                 class="img-fluid rounded-4 shadow-sm" />
+                        </div>
 
-                        <p class="text-muted mb-3">
-                            SWIMS is Dominica’s integrated Social Welfare Information Management System. It is being built
-                            to digitize the full social assistance lifecycle – from intake and registration through
-                            assessment, approval, payments, case management and reporting.
-                        </p>
-
-                        <ul class="list-unstyled mb-0 small">
-                            <li class="d-flex gap-2 mb-2">
-                                <span class="mt-1 text-primary">
-                                    <iconify-icon icon="lucide:check-circle" class="fs-16"></iconify-icon>
-                                </span>
-                                <span>
-                                    Single, shared view of programmes and beneficiaries across ISSU / DSS.
-                                </span>
-                            </li>
-                            <li class="d-flex gap-2 mb-2">
-                                <span class="mt-1 text-primary">
-                                    <iconify-icon icon="lucide:check-circle" class="fs-16"></iconify-icon>
-                                </span>
-                                <span>
-                                    Structured workflows for applications, approvals and payments, aligned with the FRD.
-                                </span>
-                            </li>
-                            <li class="d-flex gap-2 mb-2">
-                                <span class="mt-1 text-primary">
-                                    <iconify-icon icon="lucide:check-circle" class="fs-16"></iconify-icon>
-                                </span>
-                                <span>
-                                    Case management and monitoring tools to support social workers in the field.
-                                </span>
-                            </li>
-                            <li class="d-flex gap-2">
-                                <span class="mt-1 text-primary">
-                                    <iconify-icon icon="lucide:check-circle" class="fs-16"></iconify-icon>
-                                </span>
-                                <span>
-                                    Reporting foundations for accountability to Government and development partners.
-                                </span>
-                            </li>
-                        </ul>
                     </div>
+                </div>
+            </div>
 
+            <!-- Main content area (tabs + accordions) -->
+            <div class="card-body bg-base responsive-padding-40-150">
+                <div class="row gy-4">
                     <div class="col-lg-4">
-                        <div class="border rounded-3 p-16 bg-light-subtle small h-100">
-                            <p class="fw-semibold mb-1">Current environment</p>
-                            <p class="text-muted mb-2">
-                                This instance is for configuration and internal user testing. Data and flows may change
-                                as the project moves through design, piloting and rollout.
-                            </p>
+                        <div class="active-text-tab nav flex-column nav-pills bg-base shadow py-0 px-24 radius-12 border"
+                             id="home-info-tabs" role="tablist" aria-orientation="vertical">
 
-                            <p class="mb-2">
-                                <span class="badge bg-primary-subtle text-primary">
-                                    MVP – Case &amp; forms modules
-                                </span>
-                            </p>
+                            <button class="nav-link text-secondary-light fw-semibold text-xl px-0 py-16 border-bottom active"
+                                    id="tab-about-swims"
+                                    data-bs-toggle="pill"
+                                    data-bs-target="#pane-about-swims"
+                                    type="button"
+                                    role="tab"
+                                    aria-controls="pane-about-swims"
+                                    aria-selected="true">
+                                About SWIMS
+                            </button>
 
-                            <p class="mb-0 text-muted">
-                                Signed in as <strong>@User.Identity?.Name</strong>
-                            </p>
+                            <button class="nav-link text-secondary-light fw-semibold text-xl px-0 py-16"
+                                    id="tab-governance"
+                                    data-bs-toggle="pill"
+                                    data-bs-target="#pane-governance"
+                                    type="button"
+                                    role="tab"
+                                    aria-controls="pane-governance"
+                                    aria-selected="false">
+                                Governance &amp; data
+                            </button>
                         </div>
                     </div>
-                </div>
 
-                <hr class="my-4" />
+                    <div class="col-lg-8">
+                        <div class="tab-content" id="home-info-tab-content">
 
-                <!-- Quick actions -->
-                <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
-                    <div>
-                        <p class="fw-semibold mb-1">Quick actions</p>
-                        <p class="text-muted mb-0 small">
-                            Use these shortcuts to jump straight into the main working areas of the system.
-                        </p>
-                    </div>
+                            <!-- ABOUT SWIMS -->
+                            <div class="tab-pane fade show active"
+                                 id="pane-about-swims"
+                                 role="tabpanel"
+                                 aria-labelledby="tab-about-swims"
+                                 tabindex="0">
 
-                    <div class="d-flex flex-wrap gap-2">
-                        <a asp-controller="Home"
-                           asp-action="ProgramDashboard"
-                           class="btn btn-primary btn-sm">
-                            <iconify-icon icon="mdi:view-dashboard-outline" class="me-1"></iconify-icon>
-                            Programs dashboard
-                        </a>
+                                <div class="accordion" id="accordionAboutSwims">
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header">
+                                            <button class="accordion-button text-primary-light text-xl"
+                                                    type="button"
+                                                    data-bs-toggle="collapse"
+                                                    data-bs-target="#about-q1"
+                                                    aria-expanded="true"
+                                                    aria-controls="about-q1">
+                                                What is SWIMS?
+                                            </button>
+                                        </h2>
+                                        <div id="about-q1"
+                                             class="accordion-collapse collapse show"
+                                             data-bs-parent="#accordionAboutSwims">
+                                            <div class="accordion-body">
+                                                SWIMS is the <strong>Social Welfare Information Management System</strong>,
+                                                a platform designed to support Dominica’s social protection system.
+                                                It brings together programmes, beneficiaries, cases and payments into a
+                                                more integrated, transparent and auditable environment.
+                                            </div>
+                                        </div>
+                                    </div>
 
-                        <a asp-controller="Cases"
-                           asp-action="Index"
-                           class="btn btn-outline-primary btn-sm">
-                            <iconify-icon icon="mdi:briefcase-outline" class="me-1"></iconify-icon>
-                            Case module
-                        </a>
+                                    @* Removed “Who is leading the project?” per your request *@
 
-                        <a asp-controller="Reports"
-                           asp-action="Index"
-                           class="btn btn-outline-secondary btn-sm">
-                            <iconify-icon icon="mdi:chart-bar" class="me-1"></iconify-icon>
-                            Reports
-                        </a>
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header">
+                                            <button class="accordion-button text-primary-light text-xl collapsed"
+                                                    type="button"
+                                                    data-bs-toggle="collapse"
+                                                    data-bs-target="#about-q3"
+                                                    aria-expanded="false"
+                                                    aria-controls="about-q3">
+                                                What stage is this environment?
+                                            </button>
+                                        </h2>
+                                        <div id="about-q3"
+                                             class="accordion-collapse collapse"
+                                             data-bs-parent="#accordionAboutSwims">
+                                            <div class="accordion-body">
+                                                This environment represents an <strong>MVP and testing build</strong>.
+                                                It is used for ongoing user acceptance testing and refinement
+                                                ahead of full production launch. Screens, data and workflows may change
+                                                as feedback is incorporated.
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
 
-                        <a asp-controller="Setup"
-                           asp-action="Index"
-                           class="btn btn-soft-secondary btn-sm">
-                            <iconify-icon icon="mdi:cog-outline" class="me-1"></iconify-icon>
-                            System setup
-                        </a>
+                            <!-- GOVERNANCE & DATA -->
+                            <div class="tab-pane fade"
+                                 id="pane-governance"
+                                 role="tabpanel"
+                                 aria-labelledby="tab-governance"
+                                 tabindex="0">
+
+                                <div class="accordion" id="accordionGovernance">
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header">
+                                            <button class="accordion-button text-primary-light text-xl"
+                                                    type="button"
+                                                    data-bs-toggle="collapse"
+                                                    data-bs-target="#gov-q1"
+                                                    aria-expanded="true"
+                                                    aria-controls="gov-q1">
+                                                Who can access SWIMS?
+                                            </button>
+                                        </h2>
+                                        <div id="gov-q1"
+                                             class="accordion-collapse collapse show"
+                                             data-bs-parent="#accordionGovernance">
+                                            <div class="accordion-body">
+                                                Access to SWIMS is role-based. Programme staff, social workers, managers
+                                                and system administrators have different permissions and responsibilities.
+                                                Guest users may see this landing page, but cannot access operational
+                                                modules without an authorized account.
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header">
+                                            <button class="accordion-button text-primary-light text-xl collapsed"
+                                                    type="button"
+                                                    data-bs-toggle="collapse"
+                                                    data-bs-target="#gov-q2"
+                                                    aria-expanded="false"
+                                                    aria-controls="gov-q2">
+                                                How is data handled?
+                                            </button>
+                                        </h2>
+                                        <div id="gov-q2"
+                                             class="accordion-collapse collapse"
+                                             data-bs-parent="#accordionGovernance">
+                                            <div class="accordion-body">
+                                                SWIMS is designed to support secure handling of beneficiary and
+                                                programme data. The final hosting, data protection and integration
+                                                arrangements are defined by Government policy and project agreements.
+                                                This environment may use sample or test data depending on the phase.
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    @* Removed “Where can I learn more?” per your request *@
+                                </div>
+                            </div>
+
+                        </div> <!-- /tab-content -->
                     </div>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- High-level flow explanation -->
-    <div class="col-12">
-        <div class="card radius-12">
-            <div class="card-body p-24">
-                <div class="row g-3">
-                    <div class="col-xl-4 col-lg-6">
-                        <div class="border rounded-3 p-16 h-100">
-                            <p class="text-xs text-muted text-uppercase mb-1">1. Configure</p>
-                            <h5 class="mb-2">Organisations, sites &amp; teams</h5>
-                            <p class="text-sm text-muted mb-0">
-                                Define organisations, offices and user roles so that approvals, payments and cases
-                                reflect the real-world structure of ISSU / DSS.
-                            </p>
-                        </div>
-                    </div>
-
-                    <div class="col-xl-4 col-lg-6">
-                        <div class="border rounded-3 p-16 h-100">
-                            <p class="text-xs text-muted text-uppercase mb-1">2. Design</p>
-                            <h5 class="mb-2">Programmes &amp; forms</h5>
-                            <p class="text-sm text-muted mb-0">
-                                Configure programme tags and form types, and design online forms for intake,
-                                application, assessment and monitoring using the form builder.
-                            </p>
-                        </div>
-                    </div>
-
-                    <div class="col-xl-4 col-lg-6">
-                        <div class="border rounded-3 p-16 h-100">
-                            <p class="text-xs text-muted text-uppercase mb-1">3. Operate</p>
-                            <h5 class="mb-2">Applications, cases &amp; payments</h5>
-                            <p class="text-sm text-muted mb-0">
-                                Use the Programs dashboard to launch forms, create cases, manage approvals
-                                and trigger payment instructions for approved beneficiaries.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="mt-4 border-top pt-3">
-                    <p class="text-xs text-muted mb-1">Need a deeper dive?</p>
-                    <p class="text-sm text-muted mb-0">
-                        Refer to the Concept Note and Functional Requirements Document (FRD) for full details on scope,
-                        roles and data flows. This home page is intended as a quick orientation for day-to-day users.
-                    </p>
-                </div>
-            </div>
-        </div>
-    </div>
-
 </div>
