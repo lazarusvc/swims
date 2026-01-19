@@ -600,7 +600,7 @@ app.UseHangfireDashboard("/ops/hangfire", new DashboardOptions
     IsReadOnlyFunc = _ => false
 });
 
-app.MapStaticAssets();
+app.MapStaticAssets().AllowAnonymous();
 
 app.MapControllers();
 

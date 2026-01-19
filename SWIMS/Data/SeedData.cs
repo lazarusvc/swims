@@ -500,6 +500,42 @@ namespace SWIMS.Data
             await UpsertPublicEndpointAsync(MatchTypes.ControllerAction, area: null, controller: "Home", action: "Index", priority: 10, notes: "Home page public by default");
             await UpsertPublicEndpointAsync(MatchTypes.ControllerAction, area: null, controller: "Home", action: "Privacy", priority: 10, notes: "Privacy page public");
 
+            // Static assets + PWA/public files (must be public even when anonymous)
+
+            // /WowDash/* (theme assets)
+            await UpsertPublicEndpointAsync(
+                MatchTypes.Regex,
+                regex: @"^/WowDash(/|$)",
+                priority: 1,
+                notes: "Public static assets (WowDash theme)");
+
+            // /uploads/* (public images / files you serve directly)
+            await UpsertPublicEndpointAsync(
+                MatchTypes.Regex,
+                regex: @"^/uploads(/|$)",
+                priority: 1,
+                notes: "Public uploaded assets");
+
+            // PWA files
+            await UpsertPublicEndpointAsync(
+                MatchTypes.Path,
+                path: "/manifest.webmanifest",
+                priority: 1,
+                notes: "PWA manifest");
+
+            await UpsertPublicEndpointAsync(
+                MatchTypes.Path,
+                path: "/sw.js",
+                priority: 1,
+                notes: "Service worker");
+
+            // Favicon (covers default browser request)
+            await UpsertPublicEndpointAsync(
+                MatchTypes.Path,
+                path: "/favicon.ico",
+                priority: 1,
+                notes: "Favicon");
+
             // Identity UI public pages (Razor Pages under Area = "Identity")
             await UpsertPublicEndpointAsync(MatchTypes.RazorPage, area: "Identity", page: "/Account/Login", priority: 5, notes: "Identity Login");
             await UpsertPublicEndpointAsync(MatchTypes.RazorPage, area: "Identity", page: "/Account/Register", priority: 5, notes: "Identity Register");
