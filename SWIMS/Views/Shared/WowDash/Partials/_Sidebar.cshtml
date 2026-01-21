@@ -70,6 +70,8 @@
 
             @* ───────────── Programs & Forms ───────────── *@
             @if (await CanAny(
+                        Permissions.Programs_View, Permissions.Forms_Access,
+                        Permissions.Cases_View, Permissions.Cases_Manage,
                         Permissions.Intake_View, Permissions.Intake_Create, Permissions.Intake_Edit, Permissions.Intake_Assign,
                         Permissions.Clients_View, Permissions.Clients_Create, Permissions.Clients_Edit, Permissions.Clients_Archive,
                         Permissions.Applications_View, Permissions.Applications_Edit, Permissions.Applications_Assign,
@@ -77,6 +79,8 @@
                         Permissions.Approvals_L1, Permissions.Approvals_L2, Permissions.Approvals_L3, Permissions.Approvals_L4, Permissions.Approvals_L5,
                         Permissions.Payments_View, Permissions.Payments_Validate, Permissions.Payments_ExportLists, Permissions.Payments_Reconcile,
                         Permissions.Forms_Builder, Permissions.Forms_Submit))
+
+
             {
                 <li class="dropdown">
                     <a href="javascript:void(0)">
@@ -85,10 +89,8 @@
                     </a>
                     <ul class="sidebar-submenu">
                         @* Programs Dashboard (overview) *@
-                        @if (await CanAny(
-                                            Permissions.Intake_View, Permissions.Clients_View, Permissions.Applications_View, Permissions.Assessment_View,
-                                            Permissions.Approvals_L1, Permissions.Approvals_L2, Permissions.Approvals_L3, Permissions.Approvals_L4, Permissions.Approvals_L5,
-                                            Permissions.Payments_View))
+                        @if (await CanAny(Permissions.Programs_View, Permissions.Forms_Access))
+
                         {
                             <li>
                                 <a asp-area="" asp-controller="Home" asp-action="ProgramDashboard">
@@ -122,7 +124,7 @@
                         } *@
 
                         @* Cases *@
-                        @if (await CanAny(Permissions.Applications_View, Permissions.Applications_Edit, Permissions.Applications_Assign))
+                        @if (await CanAny(Permissions.Cases_View, Permissions.Cases_Manage))
                         {
                             <li>
                                 <a asp-area="" asp-controller="Cases" asp-action="Index">

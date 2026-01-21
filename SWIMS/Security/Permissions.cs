@@ -41,6 +41,13 @@ public static class Permissions
     // Assessment & Recommendations
     public const string Assessment_View = "Assessment.View";
 
+    // Cases
+    public const string Cases_View = "Cases.View";
+    public const string Cases_Manage = "Cases.Manage"; // create/edit/close/reopen/link forms/etc.
+
+    // Approvals (dashboard aggregator)
+    public const string Approvals_View = "Approvals.View";
+
     // Approvals
     public const string Approvals_L1 = "Approvals.Level1"; // Social Worker
     public const string Approvals_L2 = "Approvals.Level2"; // Coordinator

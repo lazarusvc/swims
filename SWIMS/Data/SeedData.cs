@@ -232,12 +232,21 @@ namespace SWIMS.Data
                 Permissions.Reports_View, Permissions.Reports_Admin, Permissions.Forms_Builder, Permissions.Forms_Submit,
                 Permissions.Programs_View, Permissions.Forms_Manage, Permissions.Forms_Access,
 
-                // NEW: Intake/Clients/Applications/Assessment
+                // NEW: Intake/Clients/Cases/Assessment/Approvals (Applications kept as legacy)
                 Permissions.Intake_View, Permissions.Intake_Create, Permissions.Intake_Edit, Permissions.Intake_Assign,
                 Permissions.Clients_View, Permissions.Clients_Create, Permissions.Clients_Edit, Permissions.Clients_Archive,
+
+                // Canonical (current system)
+                Permissions.Cases_View, Permissions.Cases_Manage,
+
+                // Legacy (older naming; keep temporarily so existing data/assignments don’t break)
                 Permissions.Applications_View, Permissions.Applications_Edit, Permissions.Applications_Assign,
-                Permissions.Assessment_View, Permissions.Approvals_L1, Permissions.Approvals_L2, Permissions.Approvals_L3,
+
+                // Assessment & approvals
+                Permissions.Assessment_View, Permissions.Approvals_View,
+                Permissions.Approvals_L1, Permissions.Approvals_L2, Permissions.Approvals_L3,
                 Permissions.Approvals_L4, Permissions.Approvals_L5,
+
 
                 // Payments
                 Permissions.Payments_View, Permissions.Payments_Validate, Permissions.Payments_ExportLists, Permissions.Payments_Reconcile,
@@ -377,13 +386,45 @@ namespace SWIMS.Data
             // Applications
             await UpsertPolicyAsync(Permissions.Applications_View,
                 Always(Permissions.Applications_View, "SocialWorker", "Secretary", "Coordinator", "ReadOnly"),
-                description: "View applications");
+                description: "LEGACY: replaced by Cases.View");
             await UpsertPolicyAsync(Permissions.Applications_Edit,
                 Always(Permissions.Applications_Edit, "SocialWorker"),
-                description: "Edit application details");
+                description: "LEGACY: replaced by Cases.Manage");
             await UpsertPolicyAsync(Permissions.Applications_Assign,
                 Always(Permissions.Applications_Assign, "Secretary", "Coordinator"),
-                description: "Assign applications");
+                description: "LEGACY: replaced by Cases.Manage");
+
+            // Approvals dashboard (aggregate view)
+            await UpsertPolicyAsync(Permissions.Approvals_View,
+                Always(Permissions.Approvals_View,
+                       "SocialWorker", "Coordinator", "Director", "PermanentSecretary", "Minister",
+                       "Admin", "ReadOnly"),
+                description: "View approvals dashboard");
+
+            // Cases (canonical; replaced "Applications" in the UI/workflows)
+            await UpsertPolicyAsync(Permissions.Cases_View,
+                Always(Permissions.Cases_View,
+                       // Core operational roles (what used to be Applications.View)
+                       "SocialWorker", "Secretary", "Coordinator", "ReadOnly",
+
+                       // Supervisory / oversight (usually need to view to approve / review)
+                       "Director", "PermanentSecretary", "Minister",
+
+                       // Admin/report buckets
+                       "Admin", "ProgramManager"),
+                description: "View cases module");
+
+            await UpsertPolicyAsync(Permissions.Cases_Manage,
+                Always(Permissions.Cases_Manage,
+                       // Union of what used to be Applications.Edit + Applications.Assign
+                       "SocialWorker", "Secretary", "Coordinator",
+
+                       // Oversight + admin
+                       "Director", "Admin", "ProgramManager"),
+
+                description: "Create/edit/manage cases");
+
+
 
             // Assessment & approvals (5 levels: SW, Coord, Dir, PS, Minister)
             await UpsertPolicyAsync(Permissions.Assessment_View,
@@ -653,8 +694,14 @@ namespace SWIMS.Data
             // --- Core app surfaces ---
 
             // Programs dashboard (overview page)
-            await UpsertEndpointPolicyAsync(Permissions.Programs_View, MatchTypes.Controller,
-                controller: "Programs", priority: 100, notes: "Programs overview");
+            await UpsertEndpointPolicyAsync(
+                Permissions.Programs_View,
+                MatchTypes.ControllerAction,
+                controller: "Home",
+                action: "ProgramDashboard",
+                priority: 100,
+                notes: "Primary dashboard (program selection)");
+
 
             // Intake
             await UpsertEndpointPolicyAsync(Permissions.Intake_View, MatchTypes.Controller, controller: "Intake", priority: 100);
@@ -668,13 +715,48 @@ namespace SWIMS.Data
             await UpsertEndpointPolicyAsync(Permissions.Clients_Edit, MatchTypes.ControllerAction, controller: "Clients", action: "Edit", priority: 50);
             await UpsertEndpointPolicyAsync(Permissions.Clients_Archive, MatchTypes.ControllerAction, controller: "Clients", action: "Archive", priority: 50);
 
-            // Applications
-            await UpsertEndpointPolicyAsync(Permissions.Applications_View, MatchTypes.Controller, controller: "Applications", priority: 100);
-            await UpsertEndpointPolicyAsync(Permissions.Applications_Edit, MatchTypes.ControllerAction, controller: "Applications", action: "Edit", priority: 50);
-            await UpsertEndpointPolicyAsync(Permissions.Applications_Assign, MatchTypes.ControllerAction, controller: "Applications", action: "Assign", priority: 50);
-
+            
             // Assessment & Approvals
             await UpsertEndpointPolicyAsync(Permissions.Assessment_View, MatchTypes.Controller, controller: "Assessment", priority: 100);
+
+            // Approvals dashboard (new controller)
+            await UpsertEndpointPolicyAsync(
+                Permissions.Approvals_View,
+                MatchTypes.Controller,
+                controller: "Approvals",
+                priority: 100,
+                notes: "Approvals dashboard");
+
+            // Cases module
+            await UpsertEndpointPolicyAsync(
+                Permissions.Cases_View,
+                MatchTypes.Controller,
+                controller: "Cases",
+                priority: 100,
+                notes: "Cases module");
+
+            // Tighten write operations (override controller-wide view permission)
+            await UpsertEndpointPolicyAsync(Permissions.Cases_Manage, MatchTypes.ControllerAction, controller: "Cases", action: "Create", priority: 50);
+            await UpsertEndpointPolicyAsync(Permissions.Cases_Manage, MatchTypes.ControllerAction, controller: "Cases", action: "Edit", priority: 50);
+
+            // Case lifecycle / overrides (mutating)
+            await UpsertEndpointPolicyAsync(Permissions.Cases_Manage, MatchTypes.ControllerAction, controller: "Cases", action: "SetStatus", priority: 50);
+            await UpsertEndpointPolicyAsync(Permissions.Cases_Manage, MatchTypes.ControllerAction, controller: "Cases", action: "ClearStatusOverride", priority: 50);
+            await UpsertEndpointPolicyAsync(Permissions.Cases_Manage, MatchTypes.ControllerAction, controller: "Cases", action: "RefreshFromPrimaryApplication", priority: 50);
+
+            // Linking / detaching forms (mutating)
+            await UpsertEndpointPolicyAsync(Permissions.Cases_Manage, MatchTypes.ControllerAction, controller: "Cases", action: "LinkForm", priority: 50);
+            await UpsertEndpointPolicyAsync(Permissions.Cases_Manage, MatchTypes.ControllerAction, controller: "Cases", action: "DetachForm", priority: 50);
+
+            // Assignments (mutating)
+            await UpsertEndpointPolicyAsync(Permissions.Cases_Manage, MatchTypes.ControllerAction, controller: "Cases", action: "Assign", priority: 50);
+            await UpsertEndpointPolicyAsync(Permissions.Cases_Manage, MatchTypes.ControllerAction, controller: "Cases", action: "UnassignWorker", priority: 50);
+
+            // Benefit period override screen saves into case (mutating)
+            // (gating the action name covers BOTH GET+POST since they share the same action name)
+            await UpsertEndpointPolicyAsync(Permissions.Cases_Manage, MatchTypes.ControllerAction, controller: "Cases", action: "BenefitPeriod", priority: 50);
+
+
 
             // Approvals: gate ApprovalAction per approval level via appCnt in querystring
             // Regex runs against the full path + query string, e.g.
