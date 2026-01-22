@@ -1,0 +1,164 @@
+﻿@model SWIMS.Models.ViewModels.ApprovalBlockedViewModel
+
+@{
+    ViewData["title"] = Model.StatusCode.ToString();
+    ViewData["subTitle"] = Model.Title;
+
+    var homeUrl = Url.Content("~/");
+    var queueUrl = !string.IsNullOrWhiteSpace(Model.ApprovalsDashboardUrl)
+        ? Model.ApprovalsDashboardUrl
+        : Url.Action("Index", "Approvals");
+
+    var returnUrl = Model.ApprovalsReturnUrl;
+
+    var imageUrl = !string.IsNullOrWhiteSpace(Model.ImagePath)
+        ? Url.Content(Model.ImagePath!)
+        : Url.Content("~/WowDash/images/error-img.png");
+}
+
+<div class="card basic-data-table mb-24">
+    <div class="card-body py-48 px-32 text-center">
+        <img src="@imageUrl" alt="" class="mb-24">
+
+        <h6 class="mb-16">@Model.StatusCode - @Model.Title</h6>
+        <p class="text-secondary-light mb-24">@Model.Message</p>
+
+        @if (!string.IsNullOrWhiteSpace(Model.Hint))
+        {
+            <div class="alert alert-warning d-inline-block text-start mb-24" role="alert">
+                <span class="fw-semibold">Tip:</span> @Model.Hint
+            </div>
+        }
+
+        <div class="d-flex flex-wrap gap-12 justify-content-center">
+            @if (!string.IsNullOrWhiteSpace(queueUrl))
+            {
+                <a href="@queueUrl" class="btn btn-primary-600 radius-8 px-20 py-11">Back to Approvals</a>
+            }
+            @if (!string.IsNullOrWhiteSpace(returnUrl))
+            {
+                <a href="@returnUrl" class="btn btn-outline-primary radius-8 px-20 py-11">Back to Form</a>
+            }
+            <a href="@homeUrl" class="btn btn-outline-secondary radius-8 px-20 py-11">Home</a>
+        </div>
+
+        @if (Model.ShowRequestId)
+        {
+            <div class="mt-24 text-secondary-light text-sm">
+                <span class="fw-semibold">Request ID:</span>
+                <span>@Model.RequestId</span>
+            </div>
+        }
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12 col-lg-5">
+        <div class="card mb-24">
+            <div class="card-header">
+                <h6 class="card-title mb-0">Approval details</h6>
+            </div>
+            <div class="card-body">
+                <div class="d-flex flex-column gap-10">
+                    <div class="d-flex justify-content-between">
+                        <span class="text-secondary-light">Form</span>
+                        <span class="fw-semibold">@(!string.IsNullOrWhiteSpace(Model.FormName) ? Model.FormName : "—")</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span class="text-secondary-light">Submission ID</span>
+                        <span class="fw-semibold">@(Model.DataId?.ToString() ?? "—")</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span class="text-secondary-light">Configured levels</span>
+                        <span class="fw-semibold">@Model.ApprovalLevelsConfigured</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span class="text-secondary-light">Current active level</span>
+                        <span class="fw-semibold">
+                            @(Model.ActiveApprovalLevel?.ToString() ?? (Model.IsFullyApproved ? "Fully approved" : "—"))
+                        </span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span class="text-secondary-light">Attempted level</span>
+                        <span class="fw-semibold">@(Model.AttemptedApprovalLevel?.ToString() ?? "—")</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span class="text-secondary-light">Your access level(s)</span>
+                        <span class="fw-semibold">
+                            @((Model.UserApprovalLevels?.Count ?? 0) > 0 ? string.Join(", ", Model.UserApprovalLevels) : "None")
+                        </span>
+                    </div>
+                </div>
+
+                <hr />
+
+                <details class="text-secondary-light">
+                    <summary class="fw-semibold">Technical details</summary>
+                    <div class="mt-10">
+                        <div><span class="fw-semibold">Original path:</span> @Model.OriginalPath</div>
+                        <div><span class="fw-semibold">Original query:</span> @Model.OriginalQueryString</div>
+                    </div>
+                </details>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-7">
+        <div class="card mb-24">
+            <div class="card-header">
+                <h6 class="card-title mb-0">Approval steps</h6>
+            </div>
+            <div class="card-body">
+                @if (Model.Steps is null || Model.Steps.Count == 0)
+                {
+                    <p class="text-secondary-light mb-0">No approval steps found for this item.</p>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table basic-table mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Level</th>
+                                    <th>Status</th>
+                                    <th>Approver</th>
+                                    <th>Approved</th>
+                                    <th>Comment</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var s in Model.Steps)
+                                {
+                                    var isActive = Model.ActiveApprovalLevel.HasValue && s.Level == Model.ActiveApprovalLevel.Value && !s.IsComplete;
+
+                                    <tr>
+                                        <td><span class="fw-semibold">@s.Level</span></td>
+                                        <td>
+                                            @if (s.IsComplete)
+                                            {
+                                                <span class="badge bg-success-focus text-success-main">Complete</span>
+                                            }
+                                            else if (isActive)
+                                            {
+                                                <span class="badge bg-warning-focus text-warning-main">Active</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-neutral-200 text-neutral-600">Pending</span>
+                                            }
+                                        </td>
+                                        <td>@(!string.IsNullOrWhiteSpace(s.Approver) ? s.Approver : "—")</td>
+                                        <td>@(s.ApprovedAt.HasValue? s.ApprovedAt.Value.ToString("yyyy-MM-dd HH:mm") : "—")</td>
+                                        <td class="text-wrap" style="max-width: 260px;">
+                                            @(!string.IsNullOrWhiteSpace(s.Comment) ? s.Comment : "—")
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
