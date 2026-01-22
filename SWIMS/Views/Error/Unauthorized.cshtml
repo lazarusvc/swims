@@ -1,0 +1,8 @@
+﻿@model SWIMS.Models.ViewModels.ErrorPageViewModel
+
+@{
+    ViewData["title"] = Model.StatusCode.ToString();
+    ViewData["subTitle"] = Model.Title;
+}
+
+<partial name="_ErrorCard" model="Model" />

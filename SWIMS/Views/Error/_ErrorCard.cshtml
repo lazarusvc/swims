@@ -1,0 +1,29 @@
+﻿@model SWIMS.Models.ViewModels.ErrorPageViewModel
+@{
+    // keep layout controlled by _ViewStart so your sidebar/chrome stays intact
+    var homeUrl = Url.Action("ProgramDashboard", "Home") ?? Url.Content("~/");
+    var imageUrl = !string.IsNullOrWhiteSpace(Model.ImagePath)
+        ? Url.Content(Model.ImagePath!)
+        : Url.Content("~/WowDash/images/error-img.png");
+}
+
+<div class="card basic-data-table">
+    <div class="card-body py-80 px-32 text-center">
+        <img src="@imageUrl" alt="" class="mb-24">
+
+        <!-- Only change: include StatusCode as visible text -->
+        <h6 class="mb-16">@Model.StatusCode - @Model.Title</h6>
+
+        <p class="text-secondary-light">@Model.Message</p>
+
+        <a href="@homeUrl" class="btn btn-primary-600 radius-8 px-20 py-11">Back to Home</a>
+
+        @if (Model.ShowRequestId)
+        {
+            <div class="mt-24 text-secondary-light text-sm">
+                <span class="fw-semibold">Request ID:</span>
+                <span>@Model.RequestId</span>
+            </div>
+        }
+    </div>
+</div>

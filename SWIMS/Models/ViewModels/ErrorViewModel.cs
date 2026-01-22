@@ -1,9 +1,7 @@
 namespace SWIMS.Models.ViewModels
 {
-    public class ErrorViewModel
+    // Keeps compatibility if any older views still reference ErrorViewModel
+    public class ErrorViewModel : ErrorPageViewModel
     {
-        public string? RequestId { get; set; }
-
-        public bool ShowRequestId => !string.IsNullOrEmpty(RequestId);
     }
 }

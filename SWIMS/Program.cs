@@ -283,7 +283,7 @@ builder.Services.AddSingleton<StoredProcedureRunner>();
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = "/Identity/Account/Login";
-    options.AccessDeniedPath = "/Identity/Account/AccessDenied";
+    options.AccessDeniedPath = "/Error/403/";
 });
 
 
@@ -538,9 +538,7 @@ using (var scope = app.Services.CreateScope())
 // ------------------------------------------------------
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for
-    // production scenarios, see https://aka.ms/aspnetcore-hsts.
+    app.UseExceptionHandler("/Error/");
     app.UseHsts();
 }
 
@@ -579,6 +577,10 @@ app.UseFileServer(new FileServerOptions
 
 app.UseRouting();
 
+// This is what makes /Error/403/, /Error/404/, etc. render your custom pages
+// (also keep the trailing slash)
+app.UseStatusCodePagesWithReExecute("/Error/{0}/");
+
 // Moodle-style entry: redirect to /Setup when app is not fully configured
 app.UseSetupGuard();
 
@@ -602,7 +604,7 @@ app.UseHangfireDashboard("/ops/hangfire", new DashboardOptions
 
 app.MapStaticAssets().AllowAnonymous();
 
-app.MapControllers();
+//app.MapControllers();
 
 app.MapControllerRoute(
     name: "areas",
