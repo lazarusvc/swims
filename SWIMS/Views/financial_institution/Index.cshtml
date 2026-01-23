@@ -1,9 +1,11 @@
 ﻿@model IEnumerable<SWIMS.Models.SW_financial_institution>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["title"] = "Financial institutions";
+    ViewData["subTitle"] = "Banks and payment partners.";
+    ViewData["description"] = "Manage the list of financial institutions used by SWIMS for payments, transfers and programme delivery.";
 }
-<br />
+
 <div class="card basic-data-table">
 <div class="card-header">
 <a asp-action="Create" class="btn btn-success">Create New</a>
