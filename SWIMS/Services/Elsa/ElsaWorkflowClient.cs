@@ -43,14 +43,15 @@ namespace SWIMS.Services.Elsa
                     return;
                 }
 
-                // 2) Execute workflow by definition id
-                var payload = new
+                // 2) Execute workflow by definition id (Elsa 3)
+                var requestBody = new
                 {
-                    WorkflowDefinitionId = defId,
-                    Input = input
+                    input // NOTE: property name matches Elsa's expected "input"
                 };
 
-                using var resp = await client.PostAsJsonAsync("/v1/workflow-instances", payload, ct);
+                var relativeUrl = $"workflow-definitions/{defId}/execute";
+                using var resp = await client.PostAsJsonAsync(relativeUrl, requestBody, ct);
+
 
                 if (!resp.IsSuccessStatusCode)
                 {
@@ -80,7 +81,8 @@ namespace SWIMS.Services.Elsa
         {
             // Elsa endpoint shape varies across versions; we parse loosely:
             // Expect { items: [ { id: "..." }, ... ] } (case-insensitive)
-            var url = $"/v1/workflow-definitions?name={Uri.EscapeDataString(workflowName)}";
+            var url = $"workflow-definitions?name={Uri.EscapeDataString(workflowName)}&versionOptions=Published&Page=0&PageSize=1&OrderDirection=Ascending";
+
 
             using var resp = await client.GetAsync(url, ct);
             if (!resp.IsSuccessStatusCode)
