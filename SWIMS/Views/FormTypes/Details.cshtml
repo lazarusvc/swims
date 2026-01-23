@@ -1,0 +1,71 @@
+﻿@model SWIMS.Models.SW_formType
+
+@{
+    ViewData["title"] = "Form type details";
+    ViewData["subTitle"] = "View configuration for this form classification.";
+    ViewData["description"] = "Review the code, label, status and sort order for this form type as used across SWIMS.";
+}
+
+<div class="row">
+    <div class="col-xl-7 col-lg-8">
+        <div class="card radius-12">
+            <div class="card-header d-flex align-items-center justify-content-between gap-2 flex-wrap">
+                <h5 class="card-title mb-0">Form type details</h5>
+
+                <div class="d-flex flex-wrap gap-2">
+                    <a asp-action="Edit"
+                       asp-route-id="@Model.Id"
+                       class="btn btn-sm btn-outline-primary d-flex align-items-center gap-1">
+                        <iconify-icon icon="lucide:edit" class="fs-14"></iconify-icon>
+                        <span>Edit</span>
+                    </a>
+
+                    <a asp-action="Index"
+                       class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1">
+                        <iconify-icon icon="lucide:list" class="fs-14"></iconify-icon>
+                        <span>Back to list</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-3 text-muted text-uppercase small fw-semibold">
+                        @Html.DisplayNameFor(m => m.code)
+                    </dt>
+                    <dd class="col-sm-9">
+                        @Html.DisplayFor(m => m.code)
+                    </dd>
+
+                    <dt class="col-sm-3 text-muted text-uppercase small fw-semibold">
+                        @Html.DisplayNameFor(m => m.name)
+                    </dt>
+                    <dd class="col-sm-9">
+                        @Html.DisplayFor(m => m.name)
+                    </dd>
+
+                    <dt class="col-sm-3 text-muted text-uppercase small fw-semibold">
+                        Status
+                    </dt>
+                    <dd class="col-sm-9">
+                        @if (Model.is_active)
+                        {
+                            <span class="badge bg-success-subtle text-success">Active</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary-subtle text-secondary">Inactive</span>
+                        }
+                    </dd>
+
+                    <dt class="col-sm-3 text-muted text-uppercase small fw-semibold">
+                        @Html.DisplayNameFor(m => m.sort_order)
+                    </dt>
+                    <dd class="col-sm-9">
+                        @Html.DisplayFor(m => m.sort_order)
+                    </dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+</div>

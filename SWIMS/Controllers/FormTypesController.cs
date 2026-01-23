@@ -118,5 +118,52 @@ namespace SWIMS.Controllers
 
             return View(model);
         }
+
+        // GET: /FormTypes/Details/5
+        public async Task<IActionResult> Details(int id)
+        {
+            var type = await _lookup.SW_formTypes
+                .AsNoTracking()
+                .FirstOrDefaultAsync(t => t.Id == id);
+
+            if (type == null)
+                return NotFound();
+
+            return View(type);
+        }
+
+        // GET: /FormTypes/Delete/5
+        public async Task<IActionResult> Delete(int id)
+        {
+            var type = await _lookup.SW_formTypes
+                .AsNoTracking()
+                .FirstOrDefaultAsync(t => t.Id == id);
+
+            if (type == null)
+                return NotFound();
+
+            return View(type);
+        }
+
+        // POST: /FormTypes/Delete/5
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            var type = await _lookup.SW_formTypes
+                .FirstOrDefaultAsync(t => t.Id == id);
+
+            if (type == null)
+                return NotFound();
+
+            _lookup.SW_formTypes.Remove(type);
+            await _lookup.SaveChangesAsync();
+
+            TempData["Ok"] = "Form type deleted.";
+            return RedirectToAction(nameof(Index));
+        }
+
+
+
     }
 }

@@ -71,14 +71,33 @@
                                 <td>@t.sort_order</td>
                                 <td class="text-center align-middle">
                                     <div class="d-flex align-items-center gap-10 justify-content-center">
-                                        <a asp-action="Edit"
-                                           asp-route-id="@t.Id"
+                                        <a asp-action="Details" asp-route-id="@t.Id"
+                                           class="bg-info-focus bg-hover-info-200 text-info-600 fw-medium w-40-px h-40-px d-flex justify-content-center align-items-center rounded-circle"
+                                           title="Details" aria-label="Details">
+                                            <iconify-icon icon="iconamoon:eye-light"></iconify-icon>
+                                        </a>
+
+                                        <a asp-action="Edit" asp-route-id="@t.Id"
                                            class="bg-success-focus bg-hover-success-200 text-success-600 fw-medium w-40-px h-40-px d-flex justify-content-center align-items-center rounded-circle"
                                            title="Edit" aria-label="Edit">
                                             <iconify-icon icon="lucide:edit"></iconify-icon>
                                         </a>
+
+                                        <form asp-action="Delete"
+                                              asp-route-id="@t.Id"
+                                              method="post"
+                                              class="d-inline"
+                                              onsubmit="return confirm('Delete this form type?');">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit"
+                                                    class="remove-item-btn bg-danger-focus bg-hover-danger-200 text-danger-600 fw-medium w-40-px h-40-px d-flex justify-content-center align-items-center rounded-circle border-0"
+                                                    title="Delete" aria-label="Delete">
+                                                <iconify-icon icon="mingcute:delete-2-line"></iconify-icon>
+                                            </button>
+                                        </form>
                                     </div>
                                 </td>
+
                             </tr>
                         }
                     }

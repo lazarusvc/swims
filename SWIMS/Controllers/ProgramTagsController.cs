@@ -159,5 +159,52 @@ namespace SWIMS.Controllers
                     modelState.AddModelError(nameof(model.default_benefit_months), "Default benefit months must be between 1 and 120.");
             }
         }
+
+        // GET: /ProgramTags/Details/5
+        public async Task<IActionResult> Details(int id)
+        {
+            var tag = await _lookup.SW_programTags
+                .AsNoTracking()
+                .FirstOrDefaultAsync(t => t.Id == id);
+
+            if (tag == null)
+                return NotFound();
+
+            return View(tag);
+        }
+
+        // GET: /ProgramTags/Delete/5
+        public async Task<IActionResult> Delete(int id)
+        {
+            var tag = await _lookup.SW_programTags
+                .AsNoTracking()
+                .FirstOrDefaultAsync(t => t.Id == id);
+
+            if (tag == null)
+                return NotFound();
+
+            return View(tag);
+        }
+
+        // POST: /ProgramTags/Delete/5
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            var tag = await _lookup.SW_programTags
+                .FirstOrDefaultAsync(t => t.Id == id);
+
+            if (tag == null)
+                return NotFound();
+
+            _lookup.SW_programTags.Remove(tag);
+            await _lookup.SaveChangesAsync();
+
+            TempData["Ok"] = "Program tag deleted.";
+            return RedirectToAction(nameof(Index));
+        }
+
+
+
     }
 }
