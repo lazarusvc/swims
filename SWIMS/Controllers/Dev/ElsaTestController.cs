@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace YourSwimsNamespace.Controllers.Dev
@@ -41,12 +42,17 @@ namespace YourSwimsNamespace.Controllers.Dev
         {
             var client = _httpClientFactory.CreateClient("Elsa");
 
+            var recipient =
+                User?.FindFirstValue(ClaimTypes.NameIdentifier) // preferred: int userId as string
+                ?? User?.Identity?.Name                          // fallback: username (if your app sets it)
+                ?? "1";                                          // last resort fallback (replace with a known userId)
+
             var requestBody = new
             {
                 input = new
                 {
-                    Channel = "Test",
-                    Recipient = "dev-user",
+                    Channel = "InApp",
+                    Recipient = recipient,
                     Subject = $"Dynamic Elsa → SWIMS ({DateTime.UtcNow:O})",
                     Body = $"Hello from SWIMS at {DateTime.UtcNow:O}",
                     MetadataJson = "{\"source\":\"swims-dev\",\"event\":\"ManualTest\"}"

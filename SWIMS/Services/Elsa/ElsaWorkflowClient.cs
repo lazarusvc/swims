@@ -35,13 +35,26 @@ namespace SWIMS.Services.Elsa
             {
                 var client = _httpClientFactory.CreateClient("Elsa");
 
-                // 1) Lookup workflow definition by name
-                var defId = await ResolveWorkflowDefinitionIdAsync(client, workflowName, ct);
+                // 1) Lookup workflow definition by name.
+                // Prefer Published (launch-safe). Fall back to Latest to help you catch “not published” workflows during dev.
+                var defId =
+                    await ResolveWorkflowDefinitionIdAsync(client, workflowName, versionOptions: "Published", ct)
+                    ?? await ResolveWorkflowDefinitionIdAsync(client, workflowName, versionOptions: "Latest", ct);
+
+
                 if (string.IsNullOrWhiteSpace(defId))
                 {
-                    _logger.LogWarning("Elsa workflow definition not found for name '{WorkflowName}'.", workflowName);
+                    _logger.LogWarning(
+                        "Elsa workflow definition not found for name '{WorkflowName}' (Published/Latest). Base={BaseAddress}",
+                        workflowName,
+                        client.BaseAddress?.ToString() ?? "(null)");
+
+                    SetElsaWarningOncePerRequest(
+                        "Workflow/notifications are temporarily unavailable. Your changes were saved.");
+
                     return;
                 }
+
 
                 // 2) Execute workflow by definition id (Elsa 3)
                 var requestBody = new
@@ -55,11 +68,20 @@ namespace SWIMS.Services.Elsa
 
                 if (!resp.IsSuccessStatusCode)
                 {
+                    var body = await resp.Content.ReadAsStringAsync(ct);
+
                     _logger.LogWarning(
-                        "Elsa execution returned non-success status {StatusCode} for workflow '{WorkflowName}'.",
+                        "Elsa execution failed ({StatusCode}) for workflow '{WorkflowName}'. Base={BaseAddress} Url={Url} Body={Body}",
                         (int)resp.StatusCode,
-                        workflowName);
+                        workflowName,
+                        client.BaseAddress?.ToString() ?? "(null)",
+                        relativeUrl,
+                        body);
+
+                    SetElsaWarningOncePerRequest(
+                        "Workflow/notifications are temporarily unavailable. Your changes were saved.");
                 }
+
             }
             catch (HttpRequestException ex)
             {
@@ -77,16 +99,32 @@ namespace SWIMS.Services.Elsa
             }
         }
 
-        private async Task<string?> ResolveWorkflowDefinitionIdAsync(HttpClient client, string workflowName, CancellationToken ct)
+        private async Task<string?> ResolveWorkflowDefinitionIdAsync(
+    HttpClient client,
+    string workflowName,
+    string versionOptions,
+    CancellationToken ct)
         {
-            // Elsa endpoint shape varies across versions; we parse loosely:
-            // Expect { items: [ { id: "..." }, ... ] } (case-insensitive)
-            var url = $"workflow-definitions?name={Uri.EscapeDataString(workflowName)}&versionOptions=Published&Page=0&PageSize=1&OrderDirection=Ascending";
-
+            // We DO NOT trust server-side filtering to return an exact match.
+            // Fetch a page and match by name locally.
+            var url =
+                $"workflow-definitions?versionOptions={Uri.EscapeDataString(versionOptions)}" +
+                $"&Page=0&PageSize=50&OrderDirection=Descending";
 
             using var resp = await client.GetAsync(url, ct);
+
             if (!resp.IsSuccessStatusCode)
+            {
+                var body = await resp.Content.ReadAsStringAsync(ct);
+                _logger.LogWarning(
+                    "Elsa definition lookup failed ({StatusCode}). Base={BaseAddress} Url={Url} Body={Body}",
+                    (int)resp.StatusCode,
+                    client.BaseAddress?.ToString() ?? "(null)",
+                    url,
+                    body);
+
                 return null;
+            }
 
             await using var stream = await resp.Content.ReadAsStreamAsync(ct);
             using var doc = await JsonDocument.ParseAsync(stream, cancellationToken: ct);
@@ -97,18 +135,75 @@ namespace SWIMS.Services.Elsa
             if (!TryGetPropertyIgnoreCase(doc.RootElement, "items", out var items) || items.ValueKind != JsonValueKind.Array)
                 return null;
 
-            if (items.GetArrayLength() == 0)
+            JsonElement? bestMatch = null;
+
+            foreach (var item in items.EnumerateArray())
+            {
+                if (item.ValueKind != JsonValueKind.Object)
+                    continue;
+
+                if (!TryGetPropertyIgnoreCase(item, "name", out var nameEl) || nameEl.ValueKind != JsonValueKind.String)
+                    continue;
+
+                var name = nameEl.GetString();
+                if (!string.Equals(name, workflowName, StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                // If Elsa provides isPublished/isLatest, use them to prefer the best candidate.
+                var isPublished = TryGetBoolIgnoreCase(item, "isPublished");
+                var isLatest = TryGetBoolIgnoreCase(item, "isLatest");
+
+                // Prefer published when asking for Published.
+                if (string.Equals(versionOptions, "Published", StringComparison.OrdinalIgnoreCase) && isPublished != true)
+                    continue;
+
+                // Prefer "latest" version if multiple entries exist.
+                if (bestMatch == null)
+                {
+                    bestMatch = item;
+                }
+                else
+                {
+                    var bestIsLatest = TryGetBoolIgnoreCase(bestMatch.Value, "isLatest");
+                    if (bestIsLatest != true && isLatest == true)
+                        bestMatch = item;
+                }
+            }
+
+            if (bestMatch == null)
                 return null;
 
-            var first = items[0];
-            if (first.ValueKind != JsonValueKind.Object)
-                return null;
+            // IMPORTANT:
+            // - Execute endpoint expects definitionId: /workflow-definitions/{definitionId}/execute
+            // - id is definitionVersionId (version record)
+            if (TryGetPropertyIgnoreCase(bestMatch.Value, "definitionId", out var defIdEl) && defIdEl.ValueKind == JsonValueKind.String)
+                return defIdEl.GetString();
 
-            if (!TryGetPropertyIgnoreCase(first, "id", out var idEl) || idEl.ValueKind != JsonValueKind.String)
-                return null;
+            // Fallback (should not be used with your Elsa responses)
+            if (TryGetPropertyIgnoreCase(bestMatch.Value, "id", out var idEl) && idEl.ValueKind == JsonValueKind.String)
+                return idEl.GetString();
 
-            return idEl.GetString();
+            return null;
         }
+
+        private static bool? TryGetBoolIgnoreCase(JsonElement element, string name)
+        {
+            foreach (var prop in element.EnumerateObject())
+            {
+                if (!string.Equals(prop.Name, name, StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                if (prop.Value.ValueKind == JsonValueKind.True) return true;
+                if (prop.Value.ValueKind == JsonValueKind.False) return false;
+
+                return null;
+            }
+
+            return null;
+        }
+
+
+
 
         private static bool TryGetPropertyIgnoreCase(JsonElement element, string name, out JsonElement value)
         {
