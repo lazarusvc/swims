@@ -1,4 +1,5 @@
-﻿@*
+﻿@using System.Text.Json
+@*
     WowDash - ASP.Net Core 8 & Bootstrap Admin Dashboard Multipurpose Template design by Parv Infotech
 *@
 
@@ -28,20 +29,28 @@
                             { "BreadcrumbDescription", BreadcrumbDescription }
                         }' />
 
-            @if (TempData["Elsa.Warning"] is string warn && !string.IsNullOrWhiteSpace(warn))
-            {
-                <div class="alert alert-warning alert-dismissible fade show" role="alert">
-                    @warn
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
+            @{
+                var elsaWarning = TempData["Elsa.Warning"] as string; // already used today :contentReference[oaicite:5]{index=5}
             }
 
+            @if (!string.IsNullOrWhiteSpace(elsaWarning))
+            {
+                <script>
+                    window.__swimsInitialToasts = window.__swimsInitialToasts || [];
+                    window.__swimsInitialToasts.push({
+                        kind: "warning",
+                        title: "Workflow",
+                        message: @Html.Raw(JsonSerializer.Serialize(elsaWarning))
+                    });
+                </script>
+            }
 
             @RenderBody()
         </div>
 
         <partial name="~/Views/Shared/WowDash/Partials/_Footer.cshtml" />
     </main>
+    <partial name="~/Views/Shared/WowDash/Partials/_ToastHost.cshtml" />
     <partial name="~/Views/Shared/WowDash/Partials/_Scripts.cshtml" />
     
     @* Render the script if it exists in ViewData *@

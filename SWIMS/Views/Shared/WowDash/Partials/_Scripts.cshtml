@@ -33,6 +33,9 @@
 <!-- main js -->
 <script src="~/WowDash/js/app.js"></script>
 
+<script src="~/WowDash/js/swims-toasts.js"></script>
+
+
 @if (User?.Identity?.IsAuthenticated ?? false)
 {
     <script src="~/lib/signalr/signalr.min.js"></script>
@@ -41,13 +44,28 @@
 
     <script>
         (function () {
-          const conn = new signalR.HubConnectionBuilder()
+            const conn = new signalR.HubConnectionBuilder()
             .withUrl(window.apiUrl('/hubs/notifs'), { withCredentials: true })
             .withAutomaticReconnect()
             .build();
 
-          conn.on("notif", n => console.log("🔔 notif:", n));
-          conn.start().catch(console.error);
+            conn.on("notif", n => {
+                const title = n?.title || "Notification";
+                const message = n?.message || n?.body || "";
+                const url = n?.url || n?.linkUrl || null;
+
+                window.SwimsToasts?.show({
+                kind: (n?.kind || n?.severity || "info"),
+                title,
+                message,
+                url,
+                urlLabel: "View",
+                timeoutMs: 7000
+                });
+            });
+
+
+            conn.start().catch(console.error);
         })();
     </script>
 }
