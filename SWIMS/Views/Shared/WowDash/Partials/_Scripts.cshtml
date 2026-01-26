@@ -50,17 +50,23 @@
             .build();
 
             conn.on("notif", n => {
-                const title = n?.title || "Notification";
-                const message = n?.message || n?.body || "";
-                const url = n?.url || n?.linkUrl || null;
+                // SignalR payload is: { id, type, payloadJson, createdUtc }
+                const p = (typeof n?.payloadJson === "string") ? (JSON.parse(n.payloadJson) || {}) : (n?.payloadJson || {});
+                const typeText = (n?.type ? String(n.type) : "");
+                const title = p?.subject || (typeText ? typeText : "Notification");
+
+                // Prefer snippet for toast UX
+                const message = p?.snippet || p?.message || "";
 
                 window.SwimsToasts?.show({
-                kind: (n?.kind || n?.severity || "info"),
+                kind: "info",
                 title,
                 message,
-                url,
-                urlLabel: "View",
-                timeoutMs: 7000
+                timeText: (window.SwimsToasts && n?.createdUtc) ? (function () { return " "; })() : undefined, // filled by JS show() via formatRelativeTime if you prefer passing createdUtc instead
+                url: p?.url || null,
+                actionLabel: p?.actionLabel || "Open",
+                timeoutMs: 7500,
+                onOpen: window.SwimsToasts?.openNotifDropdown
                 });
             });
 
