@@ -1,6 +1,53 @@
 ﻿(function () {
     const HOST_ID = "swims-toast-stack";
 
+    const STORAGE_KEY = "swims_toast_replay";
+    const PERSIST_WINDOW_MS = 5000; // only replay if reload happens within 5s
+
+    function persistForReload(opts) {
+        try {
+            const item = {
+                id: opts?.id ?? null,
+                kind: opts?.kind ?? "info",
+                title: opts?.title ?? "Notification",
+                message: opts?.message ?? "",
+                timeText: opts?.timeText ?? null,
+                url: opts?.url ?? null,
+                actionLabel: opts?.actionLabel ?? null,
+                timeoutMs: opts?.timeoutMs ?? 6500,
+                openDropdown: typeof opts?.onOpen === "function",
+                storedAt: Date.now(),
+                expiresAt: Date.now() + PERSIST_WINDOW_MS
+            };
+
+            const existing = JSON.parse(sessionStorage.getItem(STORAGE_KEY) || "[]");
+            const deduped = existing.filter(x => (item.id && x.id) ? x.id !== item.id : true);
+            deduped.push(item);
+
+            sessionStorage.setItem(STORAGE_KEY, JSON.stringify(deduped.slice(-5)));
+        } catch { /* ignore */ }
+    }
+
+    function flushReloadToasts(showFn) {
+        try {
+            const items = JSON.parse(sessionStorage.getItem(STORAGE_KEY) || "[]");
+            sessionStorage.removeItem(STORAGE_KEY);
+
+            const now = Date.now();
+            items
+                .filter(x => x.expiresAt && x.expiresAt >= now)
+                .forEach(x => {
+                    showFn({
+                        ...x,
+                        // restore onOpen if it was “open dropdown”
+                        onOpen: x.openDropdown ? window.SwimsToasts?.openNotifDropdown : undefined,
+                        _replay: true // prevent re-persist
+                    });
+                });
+        } catch { /* ignore */ }
+    }
+
+
     function safeJsonParse(s) {
         try { return JSON.parse(s); } catch { return null; }
     }
@@ -37,7 +84,7 @@
 
         const rect = el.getBoundingClientRect();
         // rect.bottom is the “bottom edge” in viewport coords
-        const top = Math.max(rect.bottom, 0) + 12;
+        const top = Math.max(rect.bottom, 0) + 6;
         document.documentElement.style.setProperty("--swims-toast-top", `${top}px`);
     }
 
@@ -166,6 +213,10 @@
     }
 
     function show(opts) {
+        if (opts?.persistForReload && !opts?._replay) {
+            persistForReload(opts);
+        }
+
         const built = buildToastEl(opts || {});
         if (!built) return;
 
@@ -184,6 +235,7 @@
     }
 
     window.SwimsToasts = { show, openNotifDropdown };
+    flushReloadToasts(show);
 
     // Init offset calc
     if (document.readyState === "complete" || document.readyState === "interactive") initToastOffset();

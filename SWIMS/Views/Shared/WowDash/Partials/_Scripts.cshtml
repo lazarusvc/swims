@@ -50,25 +50,23 @@
             .build();
 
             conn.on("notif", n => {
-                // SignalR payload is: { id, type, payloadJson, createdUtc }
-                const p = (typeof n?.payloadJson === "string") ? (JSON.parse(n.payloadJson) || {}) : (n?.payloadJson || {});
-                const typeText = (n?.type ? String(n.type) : "");
-                const title = p?.subject || (typeText ? typeText : "Notification");
-
-                // Prefer snippet for toast UX
-                const message = p?.snippet || p?.message || "";
+                const p = (typeof n?.payloadJson === "string")
+                ? (JSON.parse(n.payloadJson) || {})
+                : (n?.payloadJson || {});
 
                 window.SwimsToasts?.show({
+                id: n?.id,
                 kind: "info",
-                title,
-                message,
-                timeText: (window.SwimsToasts && n?.createdUtc) ? (function () { return " "; })() : undefined, // filled by JS show() via formatRelativeTime if you prefer passing createdUtc instead
+                title: p?.subject || n?.type || "Notification",
+                message: p?.snippet || p?.message || "",
                 url: p?.url || null,
                 actionLabel: p?.actionLabel || "Open",
                 timeoutMs: 7500,
-                onOpen: window.SwimsToasts?.openNotifDropdown
+                onOpen: window.SwimsToasts?.openNotifDropdown,
+                persistForReload: true
                 });
             });
+
 
 
             conn.start().catch(console.error);
