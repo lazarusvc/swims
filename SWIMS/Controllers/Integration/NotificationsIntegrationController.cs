@@ -39,21 +39,27 @@ public class NotificationsIntegrationController : ControllerBase
             return BadRequest(new { error });
         }
 
-        // 2) Build a stable type for preferences + email templates
-        //    For now just one bucket. Later you can use more specific types like "CaseAssigned", "ApplicationSubmitted", etc.
-        var type = "WorkflowNotification";
+        // 2) Preferences "type" should be stable & small (module/category-level).
+        //    Default remains backward-compatible.
+        const string defaultType = "WorkflowNotification";
 
-        // 3) Build payload object (this becomes Notification.PayloadJson)
-        object payload = BuildPayload(type, request);
+        // 3) Extract metadata (best-effort) and derive type/eventKey/url for auditing + deep links.
+        var parsed = ParseMetadata(request.MetadataJson, defaultType);
+        var type = parsed.Type;
+        var eventKey = parsed.EventKey;
+        var url = parsed.Url;
 
-        // 4) Let the existing notifier pipeline handle in-app + email + push based on prefs
+        // 4) Build payload object (this becomes Notification.PayloadJson)
+        object payload = BuildPayload(type, eventKey, url, request, parsed.Metadata);
+
+        // 5) Let the existing notifier pipeline handle in-app + email + push based on prefs
         await _notifier.NotifyUserAsync(userId, username, type, payload);
 
         _logger.LogInformation(
-            "Elsa notification delivered. Type={Type}, Channel={Channel}, Recipient={Recipient}",
-            type, request.Channel, request.Recipient);
+            "Elsa notification delivered. Type={Type}, EventKey={EventKey}, Channel={Channel}, Recipient={Recipient}",
+            type, eventKey, request.Channel, request.Recipient);
 
-        return Ok(new { received = true, userId });
+        return Ok(new { received = true, userId, type, eventKey });
     }
 
     private bool TryParseUser(
@@ -106,33 +112,83 @@ public class NotificationsIntegrationController : ControllerBase
         return true;
     }
 
-    private static object BuildPayload(string type, SwimsNotificationRequest request)
+    private sealed record ParsedMetadata(
+        string Type,
+        string? EventKey,
+        string? Url,
+        object? Metadata);
+
+    private static ParsedMetadata ParseMetadata(string? metadataJson, string defaultType)
+    {
+        if (string.IsNullOrWhiteSpace(metadataJson))
+            return new ParsedMetadata(defaultType, null, null, null);
+
+        try
+        {
+            using var doc = JsonDocument.Parse(metadataJson);
+            var root = doc.RootElement;
+
+            if (root.ValueKind != JsonValueKind.Object)
+                return new ParsedMetadata(defaultType, null, null, metadataJson);
+
+            var type = defaultType;
+            if (root.TryGetProperty("type", out var typeProp) && typeProp.ValueKind == JsonValueKind.String)
+            {
+                var s = typeProp.GetString();
+                if (!string.IsNullOrWhiteSpace(s))
+                    type = s!;
+            }
+
+            string? eventKey = null;
+            if (root.TryGetProperty("eventKey", out var eventProp) && eventProp.ValueKind == JsonValueKind.String)
+                eventKey = eventProp.GetString();
+
+            string? url = null;
+            if (root.TryGetProperty("url", out var urlProp) && urlProp.ValueKind == JsonValueKind.String)
+                url = urlProp.GetString();
+
+            // Clone the JsonElement so it survives after JsonDocument is disposed.
+            var metadata = root.Clone();
+
+            return new ParsedMetadata(type, eventKey, url, metadata);
+        }
+        catch
+        {
+            // Raw string fallback if JSON is invalid
+            return new ParsedMetadata(defaultType, null, null, metadataJson);
+        }
+    }
+
+    private static object BuildPayload(
+        string type,
+        string? eventKey,
+        string? url,
+        SwimsNotificationRequest request,
+        object? metadata)
     {
         // Optional: limit snippet length
         var body = request.Body ?? "";
         var snippet = body.Length > 160 ? body[..160] + "…" : body;
 
-        // Best-effort pass-through of metadata
-        object? metadata = null;
-        if (!string.IsNullOrWhiteSpace(request.MetadataJson))
-        {
-            try
-            {
-                metadata = JsonSerializer.Deserialize<JsonElement>(request.MetadataJson);
-            }
-            catch
-            {
-                metadata = request.MetadataJson; // raw string fallback
-            }
-        }
-
         return new
         {
+            // Helpful for audit/search even if your DB has a Type column too.
+            type,
+
+            // Fine-grained audit key (e.g. "Swims.Events.Cases.Assigned")
+            eventKey,
+
             subject = request.Subject,
             message = body,
             snippet,
-            url = (string?)null,              // later: put deep-link here
-            actionLabel = "Open in SWIMS",   // button label for email
+
+            // Allow deep-linking from dropdown/toast/email when SWIMS supplies it.
+            url,
+
+            // Button label for email templates if/when re-enabled
+            actionLabel = "Open in SWIMS",
+
+            // Metadata passthrough (json object or raw string)
             metadata
         };
     }
