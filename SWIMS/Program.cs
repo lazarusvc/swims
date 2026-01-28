@@ -211,6 +211,8 @@ builder.Services.AddScoped<INotificationEmailComposer, NotificationEmailComposer
 
 builder.Services.AddScoped<NotificationDigestJobs>();
 
+builder.Services.AddScoped<INotificationDispatcher, NotificationDispatcher>();
+
 builder.Services.AddHangfire(cfg =>
 {
     cfg.SetDataCompatibilityLevel(Hangfire.CompatibilityLevel.Version_180)

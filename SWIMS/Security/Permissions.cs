@@ -13,6 +13,8 @@ public static class Permissions
     public const string Admin_ApiDashboard = "Admin.ApiDashboard";
     public const string Admin_SessionLog = "Admin.SessionLogs";
     public const string Admin_AuditLogs = "Admin.AuditLogs";
+    public const string Admin_NotificationsRouting = "Admin.NotificationsRouting";
+
 
     // Forms
     public const string Programs_View = "Programs.View";   // programs dashboard

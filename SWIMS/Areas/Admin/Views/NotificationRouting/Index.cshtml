@@ -1,0 +1,50 @@
+﻿@model List<SWIMS.Models.Notifications.NotificationRoute>
+
+@{
+    ViewData["Title"] = "Notification Routing";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <h4 class="mb-0">Notification Routing</h4>
+    <a class="btn btn-primary" asp-action="Create">Create Route</a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-sm align-middle">
+                <thead>
+                    <tr>
+                        <th>Event Key</th>
+                        <th>Type</th>
+                        <th>Enabled</th>
+                        <th>Roles</th>
+                        <th>Users</th>
+                        <th>Updated</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var r in Model)
+                    {
+                        <tr>
+                            <td class="text-break">@r.EventKey</td>
+                            <td>@r.Type</td>
+                            <td>@(r.IsEnabled ? "Yes" : "No")</td>
+                            <td>@r.Roles.Count</td>
+                            <td>@r.Users.Count</td>
+                            <td>@r.UpdatedAtUtc.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
+                            <td class="text-end">
+                                <a class="btn btn-sm btn-outline-primary" asp-action="Edit" asp-route-id="@r.Id">Edit</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="text-muted small mt-2">
+            SuperAdmin is always notified for every event (hard rule).
+        </div>
+    </div>
+</div>

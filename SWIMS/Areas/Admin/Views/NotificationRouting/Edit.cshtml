@@ -1,0 +1,181 @@
+﻿@model SWIMS.Areas.Admin.ViewModels.Notifications.NotificationRouteEditViewModel
+
+@{
+    ViewData["Title"] = Model.Id.HasValue ? "Edit Notification Route" : "Create Notification Route";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <h4 class="mb-0">@ViewData["Title"]</h4>
+    <a class="btn btn-outline-secondary" asp-action="Index">Back</a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form asp-action="Save" method="post">
+            @Html.AntiForgeryToken()
+            @if (Model.Id.HasValue)
+            {
+                <input type="hidden" name="Id" value="@Model.Id.Value" />
+            }
+
+            <div class="row g-3">
+                <div class="col-12">
+                    <label class="form-label">Event Key</label>
+                    <input class="form-control" name="EventKey" value="@Model.EventKey" placeholder="Swims.Events.Forms.FormSubmitted" />
+                    <div class="form-text">Must match MetadataJson.eventKey coming from Elsa → SWIMS.</div>
+                    @Html.ValidationMessageFor(m => m.EventKey, "", new { @class = "text-danger small" })
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">Type (module bucket)</label>
+                    <select class="form-select" name="Type">
+                        <option value="System" selected="@(Model.Type == "System")">System</option>
+                        <option value="Forms" selected="@(Model.Type == "Forms")">Forms</option>
+                        <option value="Cases" selected="@(Model.Type == "Cases")">Cases</option>
+                    </select>
+                    @Html.ValidationMessageFor(m => m.Type, "", new { @class = "text-danger small" })
+                </div>
+
+                <div class="col-md-4 d-flex align-items-end">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="IsEnabled" value="true" @(Model.IsEnabled ? "checked" : "") />
+                        <input type="hidden" name="IsEnabled" value="false" />
+                        <label class="form-check-label">Enabled</label>
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label">Description (optional)</label>
+                    <input class="form-control" name="Description" value="@Model.Description" />
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Notify Roles</label>
+                    <div class="border rounded p-2" style="max-height: 260px; overflow:auto;">
+                        @foreach (var role in Model.AllRoles)
+                        {
+                            var isChecked = Model.SelectedRoleIds.Contains(role.Id);
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox"
+                                       name="SelectedRoleIds"
+                                       value="@role.Id"
+                                       @(isChecked ? "checked" : "") />
+                                <label class="form-check-label">@role.Name</label>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Notify Users</label>
+
+                    <div class="input-group mb-2">
+                        <input id="userSearchInput" type="text" class="form-control" placeholder="Search users (username/email)..." />
+                        <button id="userSearchBtn" class="btn btn-outline-primary" type="button">Search</button>
+                    </div>
+
+                    <div id="userSearchResults" class="list-group mb-2" style="max-height: 180px; overflow:auto;"></div>
+
+                    <div class="small text-muted mb-2">Selected users:</div>
+                    <div id="selectedUsers" class="d-flex flex-wrap gap-2">
+                        @foreach (var u in Model.SelectedUsers)
+                        {
+                            <span class="badge bg-secondary" data-user-id="@u.Id">
+                                @u.Label
+                                <button type="button" class="btn btn-sm btn-link text-white p-0 ms-2 remove-user" aria-label="Remove">×</button>
+                            </span>
+                            <input type="hidden" name="SelectedUserIds" value="@u.Id" />
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4 d-flex gap-2">
+                <button class="btn btn-primary" type="submit">Save</button>
+                <a class="btn btn-outline-secondary" asp-action="Index">Cancel</a>
+            </div>
+
+            <div class="mt-3 small text-muted">
+                SuperAdmin is always notified for every event (hard rule).
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    (function () {
+        const input = document.getElementById('userSearchInput');
+        const btn = document.getElementById('userSearchBtn');
+        const results = document.getElementById('userSearchResults');
+        const selected = document.getElementById('selectedUsers');
+
+        function addUser(id, label) {
+            // Prevent duplicates
+            if (selected.querySelector('[data-user-id="' + id + '"]')) return;
+
+            const badge = document.createElement('span');
+            badge.className = 'badge bg-secondary';
+            badge.setAttribute('data-user-id', id);
+            badge.innerHTML = `
+                ${label}
+                <button type="button" class="btn btn-sm btn-link text-white p-0 ms-2 remove-user" aria-label="Remove">×</button>
+            `;
+
+            const hidden = document.createElement('input');
+            hidden.type = 'hidden';
+            hidden.name = 'SelectedUserIds';
+            hidden.value = id;
+
+            selected.appendChild(badge);
+            selected.appendChild(hidden);
+        }
+
+        function removeUser(id) {
+            const badge = selected.querySelector('[data-user-id="' + id + '"]');
+            if (badge) badge.remove();
+
+            const hiddens = selected.querySelectorAll('input[type="hidden"][name="SelectedUserIds"]');
+            for (const h of hiddens) {
+                if (h.value === id) h.remove();
+            }
+        }
+
+        selected.addEventListener('click', function (e) {
+            const btn = e.target.closest('.remove-user');
+            if (!btn) return;
+            const badge = btn.closest('[data-user-id]');
+            if (!badge) return;
+            removeUser(badge.getAttribute('data-user-id'));
+        });
+
+        async function searchUsers() {
+            const q = (input.value || '').trim();
+            results.innerHTML = '';
+            if (q.length < 2) return;
+
+            const res = await fetch(`@Url.Action("UserSearch", "NotificationRouting", new { area = "Admin" })?q=${encodeURIComponent(q)}`);
+            const items = await res.json();
+
+            for (const it of items) {
+                const a = document.createElement('button');
+                a.type = 'button';
+                a.className = 'list-group-item list-group-item-action';
+                a.textContent = it.label;
+                a.addEventListener('click', () => {
+                    addUser(String(it.id), it.label);
+                    results.innerHTML = '';
+                    input.value = '';
+                });
+                results.appendChild(a);
+            }
+        }
+
+        btn.addEventListener('click', searchUsers);
+        input.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                searchUsers();
+            }
+        });
+    })();
+</script>

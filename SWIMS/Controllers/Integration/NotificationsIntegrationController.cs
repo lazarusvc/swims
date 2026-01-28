@@ -1,10 +1,10 @@
-﻿using System.Text.Json;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SWIMS.Data;
 using SWIMS.Models.Notifications;
 using SWIMS.Services.Notifications;
+using System.Text.Json;
 
 namespace SWIMS.Controllers.Integration;
 
@@ -16,51 +16,27 @@ public class NotificationsIntegrationController : ControllerBase
     private readonly ILogger<NotificationsIntegrationController> _logger;
     private readonly SwimsIdentityDbContext _db;
     private readonly INotifier _notifier;
+    private readonly INotificationDispatcher _dispatcher;
 
     public NotificationsIntegrationController(
         ILogger<NotificationsIntegrationController> logger,
         SwimsIdentityDbContext db,
-        INotifier notifier)
+        INotifier notifier,
+        INotificationDispatcher dispatcher)
     {
         _logger = logger;
         _db = db;
         _notifier = notifier;
+        _dispatcher = dispatcher; ;
     }
 
-    [HttpPost]
-    public async Task<IActionResult> Receive(
-        [FromBody] SwimsNotificationRequest request,
-        CancellationToken ct)
+    [HttpPost("receive")]
+    public async Task<IActionResult> Receive([FromBody] SwimsNotificationRequest request, CancellationToken ct)
     {
-        // 1) Resolve user by Id OR login (username/email)
-        if (!TryParseUser(request.Recipient, out var userId, out var username, out var error))
-        {
-            _logger.LogWarning("Elsa notification: {Error}. Recipient={Recipient}", error, request.Recipient);
-            return BadRequest(new { error });
-        }
-
-        // 2) Preferences "type" should be stable & small (module/category-level).
-        //    Default remains backward-compatible.
-        const string defaultType = "WorkflowNotification";
-
-        // 3) Extract metadata (best-effort) and derive type/eventKey/url for auditing + deep links.
-        var parsed = ParseMetadata(request.MetadataJson, defaultType);
-        var type = parsed.Type;
-        var eventKey = parsed.EventKey;
-        var url = parsed.Url;
-
-        // 4) Build payload object (this becomes Notification.PayloadJson)
-        object payload = BuildPayload(type, eventKey, url, request, parsed.Metadata);
-
-        // 5) Let the existing notifier pipeline handle in-app + email + push based on prefs
-        await _notifier.NotifyUserAsync(userId, username, type, payload);
-
-        _logger.LogInformation(
-            "Elsa notification delivered. Type={Type}, EventKey={EventKey}, Channel={Channel}, Recipient={Recipient}",
-            type, eventKey, request.Channel, request.Recipient);
-
-        return Ok(new { received = true, userId, type, eventKey });
+        await _dispatcher.DispatchAsync(request, ct);
+        return Ok(new { ok = true });
     }
+
 
     private bool TryParseUser(
         string recipient,

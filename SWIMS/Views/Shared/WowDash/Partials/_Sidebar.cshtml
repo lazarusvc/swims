@@ -265,7 +265,7 @@
 
 
             @* ---------- Admin (Users / Roles / Settings) ---------- *@
-            @if (await CanAny(Permissions.Admin_Users, Permissions.Admin_Roles, Permissions.Admin_Settings))
+            @if (await CanAny(Permissions.Admin_Users, Permissions.Admin_Roles, Permissions.Admin_NotificationsRouting, Permissions.Admin_Settings))
             {
                 <li class="dropdown">
                     <a href="javascript:void(0)">
@@ -287,6 +287,15 @@
                             <li>
                                 <a asp-area="" asp-controller="Roles" asp-action="Index">
                                     <iconify-icon icon="tabler:shield-lock" class="menu-icon"></iconify-icon> Role Management
+                                </a>
+                            </li>
+                        }
+
+                        @if (await Can(Permissions.Admin_NotificationsRouting))
+                        {
+                            <li>
+                                <a asp-area="Admin" asp-controller="NotificationRouting" asp-action="Index">
+                                    <iconify-icon icon="tabler:bell-ringing" class="menu-icon"></iconify-icon> Notification Routing
                                 </a>
                             </li>
                         }

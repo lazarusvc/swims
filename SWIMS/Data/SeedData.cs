@@ -255,7 +255,7 @@ namespace SWIMS.Data
                 Permissions.RefData_Manage, Permissions.SP_Run, Permissions.SP_Manage, Permissions.SP_Params,
 
                 // Admin and API
-                Permissions.Admin_Users, Permissions.Admin_Roles, Permissions.Admin_Settings,
+                Permissions.Admin_Users, Permissions.Admin_Roles, Permissions.Admin_Settings, Permissions.Admin_NotificationsRouting,
                 Permissions.Admin_Policies, Permissions.Admin_Endpoints, Permissions.Admin_PublicEndpoints,
                 Permissions.Admin_RouteInspector, Permissions.Admin_AuditLogs,
                 Permissions.Admin_Hangfire, Permissions.Admin_ApiDashboard, Permissions.Admin_SessionLog,
@@ -487,6 +487,13 @@ namespace SWIMS.Data
                 isSystem: true, description: "View sessions & admin activity");
             await UpsertPolicyAsync(Permissions.Admin_AuditLogs, Always(Permissions.Admin_AuditLogs, "Admin","Auditor"), isSystem: true, description: "Audit logs");
 
+            await UpsertPolicyAsync(
+                Permissions.Admin_NotificationsRouting,
+                Always(Permissions.Admin_NotificationsRouting, "Admin"),
+                isSystem: true,
+                description: "Admin access to notification routing configuration");
+
+
             // API
             await UpsertPolicyAsync(Permissions.Admin_ApiDashboard,
                 Always(Permissions.Admin_ApiDashboard, "Admin"),
@@ -689,6 +696,13 @@ namespace SWIMS.Data
             await UpsertEndpointPolicyAsync(Permissions.RefData_Manage, MatchTypes.Controller, controller: "organization", priority: 100);
             await UpsertEndpointPolicyAsync(Permissions.RefData_Manage, MatchTypes.Controller, controller: "financial_institution", priority: 100);
 
+            // Admin: Notification routing
+            await UpsertEndpointPolicyAsync(
+                Permissions.Admin_NotificationsRouting,
+                MatchTypes.Controller,
+                controller: "NotificationRouting",
+                priority: 100,
+                notes: "Admin: configure notification routing rules");
 
 
             // --- Core app surfaces ---

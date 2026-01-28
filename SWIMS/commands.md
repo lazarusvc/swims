@@ -19,3 +19,11 @@
 ## Update-Database -Context SwimsCasesDbContext
 ## Update-Database -Context SwimsLookupDbContext
 
+
+# Good to Know
+
+## Get-Migration -Context SwimsIdentityDbContext
+## Update-Database <PreviousMigrationId> -Context SwimsIdentityDbContext   # rollback if needed
+## Remove-Migration -Context SwimsIdentityDbContext                        # removes last migration + updates snapshot
+
+
