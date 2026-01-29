@@ -17,22 +17,36 @@ public class NotificationsIntegrationController : ControllerBase
     private readonly SwimsIdentityDbContext _db;
     private readonly INotifier _notifier;
     private readonly INotificationDispatcher _dispatcher;
+    private readonly IConfiguration _config;
 
     public NotificationsIntegrationController(
         ILogger<NotificationsIntegrationController> logger,
         SwimsIdentityDbContext db,
         INotifier notifier,
-        INotificationDispatcher dispatcher)
+        INotificationDispatcher dispatcher,
+        IConfiguration config)
     {
         _logger = logger;
         _db = db;
         _notifier = notifier;
-        _dispatcher = dispatcher; ;
+        _dispatcher = dispatcher;
+        _config = config;
     }
 
     [HttpPost("receive")]
     public async Task<IActionResult> Receive([FromBody] SwimsNotificationRequest request, CancellationToken ct)
     {
+        var expected = _config["Integration:NotificationsKey"];
+
+        if (!string.IsNullOrWhiteSpace(expected))
+        {
+            if (!Request.Headers.TryGetValue("X-SWIMS-INTEGRATION-KEY", out var provided) ||
+                !string.Equals(provided.ToString(), expected, StringComparison.Ordinal))
+            {
+                return Unauthorized(new { ok = false, error = "invalid integration key" });
+            }
+        }
+
         await _dispatcher.DispatchAsync(request, ct);
         return Ok(new { ok = true });
     }

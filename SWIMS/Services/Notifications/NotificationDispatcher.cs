@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+
 using SWIMS.Data;
 using SWIMS.Models;
 using SWIMS.Models.Notifications;
@@ -9,12 +11,12 @@ namespace SWIMS.Services.Notifications;
 
 public class NotificationDispatcher : INotificationDispatcher
 {
+    private const string SuperAdminRoleName = "SuperAdmin";
+
     private readonly SwimsIdentityDbContext _db;
     private readonly UserManager<SwUser> _userManager;
     private readonly RoleManager<SwRole> _roleManager;
     private readonly INotifier _notifier;
-
-    private static readonly JsonSerializerOptions _json = new(JsonSerializerDefaults.Web);
 
     public NotificationDispatcher(
         SwimsIdentityDbContext db,
@@ -31,72 +33,252 @@ public class NotificationDispatcher : INotificationDispatcher
     public async Task DispatchAsync(SwimsNotificationRequest request, CancellationToken ct = default)
     {
         if (request is null) return;
-        if (string.IsNullOrWhiteSpace(request.Recipient)) return;
 
-        // Resolve recipient (supports userId, username, email)
-        var user = await ResolveUserAsync(request.Recipient);
-        if (user is null) return;
+        // Parse envelope: { type, eventKey, url, metadata:{...} }
+        var defaultType = NotificationTypes.System;
+        var (type, eventKey, url, innerMetadata, rawMetadataNode) = ParseEnvelope(request.MetadataJson, defaultType);
 
-        var (type, payloadJson) = BuildTypeAndPayloadJson(request);
+        // Collect recipients (dedupe)
+        var recipientIds = new HashSet<int>();
 
-        var username = user.UserName
-            ?? user.Email
-            ?? request.Recipient;
+        // Primary recipient (actor / explicit recipient)
+        if (!string.IsNullOrWhiteSpace(request.Recipient))
+        {
+            var primaryId = await ResolveRecipientUserIdAsync(request.Recipient);
+            if (primaryId.HasValue)
+                recipientIds.Add(primaryId.Value);
+        }
 
-        // IMPORTANT: Notifier signature is (userId, username, type, payload)
-        await _notifier.NotifyUserAsync(user.Id, username, type, payloadJson);
+        // Default extras (your requested pattern)
+        foreach (var id in ExtractTargetUserIds(innerMetadata, rawMetadataNode))
+        recipientIds.Add(id);
+
+        // Fan-out from routing table (only if we have an eventKey)
+        if (!string.IsNullOrWhiteSpace(eventKey))
+        {
+            await AddRouteRecipientsAsync(eventKey!, recipientIds, ct);
+            await AddSuperAdminRecipientsAsync(recipientIds, ct);
+        }
+
+        if (recipientIds.Count == 0)
+            return;
+
+        // Resolve usernames for all recipients (so persisted notifications have correct Username)
+        var userNameMap = await _db.Users
+            .AsNoTracking()
+            .Where(u => recipientIds.Contains(u.Id))
+            .Select(u => new
+            {
+                u.Id,
+                Name = u.UserName ?? u.Email ?? $"User {u.Id}"
+            })
+            .ToDictionaryAsync(x => x.Id, x => x.Name, ct);
+
+        // Send once per resolved recipient
+        foreach (var userId in recipientIds)
+        {
+            var (finalType, payloadJson) = BuildPayloadJson(
+                type: type,
+                eventKey: eventKey,
+                url: url,
+                request: request,
+                metadata: innerMetadata ?? rawMetadataNode,
+                recipient: userId.ToString());
+
+            var username = userNameMap.TryGetValue(userId, out var name)
+                 ? name
+                 : $"User {userId}";
+            
+            await _notifier.NotifyUserAsync(
+                userId: userId,
+                username: username,
+                type: finalType,
+                payload: payloadJson);
+        }
     }
 
-    private async Task<SwUser?> ResolveUserAsync(string recipient)
+    private async Task<int?> ResolveRecipientUserIdAsync(string recipient)
     {
         if (int.TryParse(recipient, out var id))
-            return await _userManager.FindByIdAsync(id.ToString());
+        {
+            var exists = await _db.Users.AsNoTracking().AnyAsync(u => u.Id == id);
+            return exists ? id : null;
+        }
 
-        return await _userManager.FindByNameAsync(recipient)
-            ?? await _userManager.FindByEmailAsync(recipient);
+        var norm = recipient.Trim().ToUpperInvariant();
+        var user = await _db.Users.AsNoTracking()
+            .Where(u => u.NormalizedUserName == norm || u.NormalizedEmail == norm)
+            .Select(u => new { u.Id })
+            .FirstOrDefaultAsync();
+
+        return user?.Id;
     }
 
-    private static (string type, string payloadJson) BuildTypeAndPayloadJson(SwimsNotificationRequest request)
+    private static (string Type, string? EventKey, string? Url, JsonNode? InnerMetadata, JsonNode? RawNode)
+        ParseEnvelope(string? metadataJson, string defaultType)
     {
-        // Default type if metadata doesn't provide one yet.
-        var type = "General";
+        if (string.IsNullOrWhiteSpace(metadataJson))
+            return (defaultType, null, null, null, null);
 
-        JsonObject obj = new();
-
-        if (!string.IsNullOrWhiteSpace(request.MetadataJson))
+        try
         {
+            var node = JsonNode.Parse(metadataJson);
+
+            if (node is not JsonObject obj)
+                return (defaultType, null, null, node, node);
+
+            var type = ReadString(obj, "type") ?? defaultType;
+            var eventKey = ReadString(obj, "eventKey");
+            var url = ReadString(obj, "url");
+
+            // Prefer inner "metadata" object, but don’t require it.
+            obj.TryGetPropertyValue("metadata", out var inner);
+
+            return (type, eventKey, url, inner, node);
+        }
+        catch
+        {
+            // Invalid JSON: keep as raw
+            return (defaultType, null, null, null, JsonValue.Create(metadataJson));
+        }
+
+        static string? ReadString(JsonObject obj, string prop)
+        {
+            if (!obj.TryGetPropertyValue(prop, out var n) || n is null) return null;
+            try { return n.GetValue<string>(); } catch { return null; }
+        }
+    }
+
+    private static IEnumerable<int> ExtractTargetUserIds(JsonNode? inner, JsonNode? raw)
+    {
+        // We look in both inner metadata and raw root (back-compat / safety),
+        // but your canonical location should be: root.metadata.targetUserId(s)
+        foreach (var id in ExtractFromNode(inner))
+            yield return id;
+
+        foreach (var id in ExtractFromNode(raw))
+            yield return id;
+
+        static IEnumerable<int> ExtractFromNode(JsonNode? node)
+        {
+            if (node is not JsonObject obj) yield break;
+
+            // targetUserId
+            if (TryReadInt(obj, "targetUserId", out var single))
+                yield return single;
+
+            // targetUserIds
+            if (obj.TryGetPropertyValue("targetUserIds", out var idsNode) && idsNode is JsonArray arr)
+            {
+                foreach (var item in arr)
+                {
+                    if (TryParseIntNode(item, out var v))
+                        yield return v;
+                }
+            }
+        }
+
+        static bool TryReadInt(JsonObject obj, string prop, out int value)
+        {
+            value = 0;
+            if (!obj.TryGetPropertyValue(prop, out var n) || n is null) return false;
+            return TryParseIntNode(n, out value);
+        }
+
+        static bool TryParseIntNode(JsonNode? node, out int value)
+        {
+            value = 0;
+            if (node is null) return false;
+
             try
             {
-                var node = JsonNode.Parse(request.MetadataJson);
-
-                if (node is JsonObject jo)
-                    obj = jo;
-                else if (node is not null)
-                    obj["data"] = node;
+                // number
+                value = node.GetValue<int>();
+                return true;
             }
-            catch
+            catch { /* ignore */ }
+
+            try
             {
-                obj["rawMetadata"] = request.MetadataJson;
+                // string
+                var s = node.GetValue<string>();
+                return int.TryParse(s, out value);
             }
-        }
+            catch { /* ignore */ }
 
-        // Allow metadata to drive the module-level notification Type (Cases, Forms, etc.)
-        if (obj.TryGetPropertyValue("type", out var typeNode))
+            return false;
+        }
+    }
+
+    private async Task AddRouteRecipientsAsync(string eventKey, HashSet<int> recipients, CancellationToken ct)
+    {
+        var route = await _db.NotificationRoutes
+            .Include(r => r.Users)
+            .Include(r => r.Roles)
+            .AsNoTracking()
+            .FirstOrDefaultAsync(r => r.EventKey == eventKey, ct);
+
+        if (route is null || !route.IsEnabled)
+            return;
+
+        foreach (var u in route.Users)
+            recipients.Add(u.UserId);
+
+        var roleIds = route.Roles.Select(r => r.RoleId).Distinct().ToList();
+        if (roleIds.Count == 0) return;
+
+        var roleUserIds = await _db.UserRoles
+            .AsNoTracking()
+            .Where(ur => roleIds.Contains(ur.RoleId))
+            .Select(ur => ur.UserId)
+            .Distinct()
+            .ToListAsync(ct);
+
+        foreach (var id in roleUserIds)
+            recipients.Add(id);
+    }
+
+    private async Task AddSuperAdminRecipientsAsync(HashSet<int> recipients, CancellationToken ct)
+    {
+        var superRole = await _roleManager.FindByNameAsync(SuperAdminRoleName);
+        if (superRole is null) return;
+
+        var superIds = await _db.Set<IdentityUserRole<int>>()
+            .AsNoTracking()
+            .Where(ur => ur.RoleId == superRole.Id)
+            .Select(ur => ur.UserId)
+            .Distinct()
+            .ToListAsync(ct);
+
+        foreach (var id in superIds)
+            recipients.Add(id);
+    }
+
+
+    private static (string Type, string PayloadJson) BuildPayloadJson(
+        string type,
+        string? eventKey,
+        string? url,
+        SwimsNotificationRequest request,
+        JsonNode? metadata,
+        string recipient)
+    {
+        var body = request.Body ?? "";
+        var snippet = body.Length > 160 ? body[..160] + "…" : body;
+
+        var payloadObj = new
         {
-            var t = typeNode?.GetValue<string?>();
-            if (!string.IsNullOrWhiteSpace(t))
-                type = t!;
-        }
+            type,
+            eventKey,
+            recipient,
+            subject = request.Subject,
+            message = body,
+            snippet,
+            url,
+            actionLabel = "Open in SWIMS",
+            metadata
+        };
 
-        // Ensure we always persist consistent fields for UI + email composer.
-        obj["channel"] = request.Channel;
-        obj["recipient"] = request.Recipient;
-        obj["subject"] = request.Subject ?? "SWIMS update";
-        obj["message"] = request.Body;
-
-        // If your workflows include "url" and "eventKey" in MetadataJson, those will remain intact in obj.
-
-        var payloadJson = obj.ToJsonString(_json);
-        return (type, payloadJson);
+        return (type, JsonSerializer.Serialize(payloadObj));
     }
 }
