@@ -18,7 +18,6 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using static System.Net.Mime.MediaTypeNames;
@@ -850,11 +849,21 @@ namespace SWIMS.Controllers
 
                 // 🔔 Notify: Form created
                 await NotifyFormEventAsync(
-                    createdForm.Id,
-                    "FormCreated",
-                    "Form created",
-                    $"Form '{createdForm.name}' was created.",
-                    HttpContext.RequestAborted);
+                    formId: createdForm.Id,
+                    eventKey: "Swims.Events.Forms.FormCreated",
+                    subject: "Form created",
+                    body: $"Form '{createdForm.name}' was created.",
+                    ct: HttpContext.RequestAborted,
+                    url: Url.Action(nameof(Details), new { id = createdForm.Id }),
+                    extraMeta: new
+                    {
+                        formUuid = createdForm.uuid,
+                        formName = createdForm.name,
+                        identityId = createdForm.SW_identityId
+                    }
+                );
+                // 🔔 Notify: Form created (end)
+
 
                 return RedirectToAction(nameof(Index));
             }
@@ -1140,11 +1149,20 @@ namespace SWIMS.Controllers
 
             // 🔔 Notify: Form published
             await NotifyFormEventAsync(
-                fID, // resolved formId in this method
-                "FormPublished",
-                "Form published",
-                $"Form with ID {fID} was published.",
-                HttpContext.RequestAborted);
+                formId: fID,
+                eventKey: "Swims.Events.Forms.FormPublished",
+                subject: "Form published",
+                body: $"Form with ID {fID} was published.",
+                ct: HttpContext.RequestAborted,
+                url: Url.Action(nameof(Program), new { uuid = swForm.uuid }),
+                extraMeta: new
+                {
+                    formUuid = swForm.uuid,
+                    formName = swForm.name
+                }
+            );
+            // 🔔 Notify: Form published (end)
+
 
             // After successful publish, go to the Program page for this form
             return RedirectToAction(nameof(Program), new { uuid = swForm.uuid });
@@ -1275,6 +1293,26 @@ namespace SWIMS.Controllers
                 // ✅ Save FormType + ProgramTags selection on edit
                 await SaveFormClassificationAsync(existing.Id, formTypeId, programTagIds);
 
+                // 🔔 Notify: Form updated
+                await NotifyFormEventAsync(
+                    formId: existing.Id,
+                    eventKey: "Swims.Events.Forms.FormUpdated",
+                    subject: "Form updated",
+                    body: $"Form '{existing.name}' was updated.",
+                    ct: HttpContext.RequestAborted,
+                    url: Url.Action(nameof(Details), new { id = existing.Id }),
+                    extraMeta: new
+                    {
+                        formUuid = existing.uuid,
+                        formName = existing.name,
+                        identityId = existing.SW_identityId,
+                        updatedImage = imageFile != null
+                    }
+                );
+                // 🔔 Notify: Form updated (end)
+
+
+
                 return RedirectToAction(nameof(Index));
             }
             catch (DbUpdateConcurrencyException)
@@ -1346,6 +1384,25 @@ namespace SWIMS.Controllers
                 {
                     _context.Update(sW_form);
                     await _context.SaveChangesAsync();
+
+                    // 🔔 Notify: Form image updated
+                    await NotifyFormEventAsync(
+                        formId: sW_form.Id,
+                        eventKey: "Swims.Events.Forms.FormImageUpdated",
+                        subject: "Form image updated",
+                        body: $"Form '{sW_form.name}' image was updated.",
+                        ct: HttpContext.RequestAborted,
+                        url: Url.Action(nameof(Details), new { id = sW_form.Id }),
+                        extraMeta: new
+                        {
+                            formUuid = sW_form.uuid,
+                            formName = sW_form.name,
+                            newImage = sW_form.image
+                        }
+                    );
+                    // 🔔 Notify: Form image updated (end)
+
+
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -1434,45 +1491,76 @@ namespace SWIMS.Controllers
             // 🔔 Notify: Form deleted
             var formName = sW_form?.name ?? $"ID {id}";
             await NotifyFormEventAsync(
-                id,
-                "FormDeleted",
-                "Form deleted",
-                $"Form '{formName}' was deleted.",
-                HttpContext.RequestAborted);
+                formId: id,
+                eventKey: "Swims.Events.Forms.FormDeleted",
+                subject: "Form deleted",
+                body: $"Form '{formName}' was deleted.",
+                ct: HttpContext.RequestAborted,
+                url: Url.Action(nameof(Index)),
+                extraMeta: new
+                {
+                    formUuid = sW_form?.uuid,
+                    formName
+                }
+            );
+            // 🔔 Notify: Form deleted (end)
+
 
             return RedirectToAction(nameof(Index));
         }
 
         private async Task NotifyFormEventAsync(
-            int formId,
-            string eventType,
-            string subject,
-            string body,
-            CancellationToken ct = default)
+    int formId,
+    string eventKey,
+    string subject,
+    string body,
+    CancellationToken ct = default,
+    string? url = null,
+    object? extraMeta = null,
+    string? recipientOverride = null)
         {
-            // Resolve current userId as int
-            var userIdString = User?.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (!int.TryParse(userIdString, out var userId))
-                return; // no logged-in user, skip
-
-            var payload = new
+            try
             {
-                Recipient = userId.ToString(), // Elsa → SWIMS resolves this to the user
-                Channel = "InApp",
-                Subject = subject,
-                Body = body,
-                MetadataJson = JsonSerializer.Serialize(new
-                {
-                    formId,
-                    eventType
-                })
-            };
+                var recipient = recipientOverride
+                    ?? User?.FindFirstValue(ClaimTypes.NameIdentifier)
+                    ?? User?.Identity?.Name;
 
-            await _elsa.ExecuteByNameAsync(
-                "Swims.Notifications.DirectInApp",
-                payload,
-                ct);
+                if (string.IsNullOrWhiteSpace(recipient))
+                    return;
+
+                var payload = new
+                {
+                    Recipient = recipient,
+                    Channel = "InApp",
+                    Subject = subject,
+                    Body = body,
+                    MetadataJson = JsonSerializer.Serialize(new
+                    {
+                        // ✅ unified envelope (matches “new stuff”)
+                        type = "Forms",
+                        eventKey,
+                        url,
+
+                        // ✅ stable identifiers
+                        formId,
+
+                        // ✅ dynamic routing inputs (if/when your router uses them)
+                        actorUserId = User?.FindFirstValue(ClaimTypes.NameIdentifier),
+                        actorUserName = User?.Identity?.Name,
+
+                        // ✅ anything action-specific
+                        extra = extraMeta
+                    })
+                };
+
+                await _elsa.ExecuteByNameAsync("Swims.Notifications.DirectInApp", payload, ct);
+            }
+            catch
+            {
+                // notifications must never break the primary action
+            }
         }
+
 
 
         private bool SW_formExists(int id)
