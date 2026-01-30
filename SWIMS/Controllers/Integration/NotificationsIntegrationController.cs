@@ -9,8 +9,8 @@ using System.Text.Json;
 namespace SWIMS.Controllers.Integration;
 
 [ApiController]
+[AllowAnonymous]
 [Route("api/integration/notifications")]
-[AllowAnonymous] // dev-only – later we’ll lock this down with an internal key
 public class NotificationsIntegrationController : ControllerBase
 {
     private readonly ILogger<NotificationsIntegrationController> _logger;
@@ -33,8 +33,16 @@ public class NotificationsIntegrationController : ControllerBase
         _config = config;
     }
 
+    [HttpPost]
+    public Task<IActionResult> ReceiveBase([FromBody] SwimsNotificationRequest request, CancellationToken ct)
+    => ReceiveCoreAsync(request, ct);
+
     [HttpPost("receive")]
-    public async Task<IActionResult> Receive([FromBody] SwimsNotificationRequest request, CancellationToken ct)
+    public Task<IActionResult> Receive([FromBody] SwimsNotificationRequest request, CancellationToken ct)
+        => ReceiveCoreAsync(request, ct);
+
+
+    private async Task<IActionResult> ReceiveCoreAsync(SwimsNotificationRequest request, CancellationToken ct)
     {
         var expected = _config["Integration:NotificationsKey"];
 
