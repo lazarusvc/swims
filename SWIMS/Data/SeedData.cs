@@ -335,7 +335,7 @@ namespace SWIMS.Data
             // Forms / Form Builder
             await UpsertPolicyAsync(Permissions.Programs_View,
                 Always(Permissions.Programs_View,
-                       "SocialWorker", "Secretary", "Coordinator", "Director", "PermanentSecretary", "Minister", "ProgramManager", "ReadOnly"),
+                       "SocialWorker", "Secretary", "Coordinator", "Director", "PermanentSecretary", "Minister", "ProgramManager", "Admin", "ReadOnly"),
                 description: "View Programs dashboard");
             // generic runtime access to program/forms workspace
             await UpsertPolicyAsync(Permissions.Forms_Access,
