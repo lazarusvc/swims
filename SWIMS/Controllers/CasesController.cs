@@ -10,6 +10,7 @@ using SWIMS.Data.Lookups;
 using SWIMS.Models;
 using SWIMS.Models.ViewModels;
 using SWIMS.Services.Cases;
+using SWIMS.Services.Notifications;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -377,7 +378,7 @@ namespace SWIMS.Controllers
             // 🔔 Notify: Case created
             await NotifyCaseEventAsync(
                 caseId: entity.Id,
-                eventKey: "Swims.Events.Cases.CaseCreated",
+                eventKey: SwimsEventKeys.Cases.Created,
                 subject: "Case created",
                 body: $"Case {entity.case_number} was created for {entity.title}.",
                 ct: HttpContext.RequestAborted,
@@ -801,9 +802,9 @@ namespace SWIMS.Controllers
             // 🔔 Notify: Case status overridden
             await NotifyCaseEventAsync(
                 caseId: caseEntity.Id,
-                eventKey: "Swims.Events.Cases.StatusOverridden",
-                subject: "Case status overridden",
-                body: $"Case {caseEntity.case_number} status overridden to '{status}'.",
+                eventKey: SwimsEventKeys.Cases.StatusChanged,
+                subject: "Case status changed",
+                body: $"Case {caseEntity.case_number} status changed to '{status}'.",
                 ct: HttpContext.RequestAborted,
                 url: Url.Action(nameof(Details), new { id }),
                 extraMeta: new
@@ -847,8 +848,8 @@ namespace SWIMS.Controllers
             // 🔔 Notify: Case status override cleared
             await NotifyCaseEventAsync(
                 caseId: caseEntity.Id,
-                eventKey: "Swims.Events.Cases.StatusOverrideCleared",
-                subject: "Case status override cleared",
+                eventKey: SwimsEventKeys.Cases.StatusChanged,
+                subject: "Case status changed",
                 body: $"Manual status override was cleared for case {caseEntity.case_number}.",
                 ct: HttpContext.RequestAborted,
                 url: Url.Action(nameof(Details), new { id }),
@@ -1087,9 +1088,7 @@ namespace SWIMS.Controllers
             // 🔔 Notify: Case form linked
             await NotifyCaseEventAsync(
                 caseId: caseId,
-                eventKey: isPrimary
-                    ? "Swims.Events.Cases.PrimaryApplicationLinked"
-                    : "Swims.Events.Cases.FormLinked",
+                eventKey: SwimsEventKeys.Cases.FormLinked,
                 subject: isPrimary ? "Primary application linked" : "Form linked to case",
                 body: isPrimary
                     ? $"Primary application was linked to case {caseEntity.case_number}."
@@ -1102,12 +1101,11 @@ namespace SWIMS.Controllers
                     formTableDataId = formDataId,
                     role,
                     isPrimary,
-                    linkedBy,
-                    // dynamic recipient hints for routing (actor + “subject”)
-                    targetUserId = linkedBy // (who linked it) – keep for audit/routing rules
+                    linkedBy
                 }
             );
             // 🔔 Notify: Case form linked (end)
+
 
 
             return RedirectToAction(nameof(Details), new { id = caseId });
@@ -1135,7 +1133,7 @@ namespace SWIMS.Controllers
             // 🔔 Notify: Case refreshed from primary application
             await NotifyCaseEventAsync(
                 caseId: id,
-                eventKey: "Swims.Events.Cases.RefreshedFromPrimaryApplication",
+                eventKey: SwimsEventKeys.Cases.RefreshedFromPrimaryApplication,
                 subject: "Case refreshed",
                 body: $"Case lifecycle refresh from primary application ran. {result.Message}",
                 ct: HttpContext.RequestAborted,
@@ -1174,7 +1172,7 @@ namespace SWIMS.Controllers
             // 🔔 Notify: Case form detached
             await NotifyCaseEventAsync(
                 caseId: caseId,
-                eventKey: "Swims.Events.Cases.FormDetached",
+                eventKey: SwimsEventKeys.Cases.FormDetached,
                 subject: "Form detached from case",
                 body: $"A form link was detached from case {caseId}.",
                 ct: HttpContext.RequestAborted,
@@ -1362,8 +1360,12 @@ namespace SWIMS.Controllers
             try
             {
                 string? assignedDisplayName = null;
+                int? targetId = null;
+
                 if (int.TryParse(model.UserId, out var assignedIdInt))
                 {
+                    targetId = assignedIdInt;
+
                     var u = await _identity.SwUsers
                         .AsNoTracking()
                         .FirstOrDefaultAsync(x => x.Id == assignedIdInt);
@@ -1373,26 +1375,27 @@ namespace SWIMS.Controllers
 
                 await NotifyCaseEventAsync(
                     caseId: model.CaseId,
-                    eventKey: "Cases.Assigned",
+                    eventKey: SwimsEventKeys.Cases.Assigned,
                     subject: "Case assignment updated",
                     body: assignedDisplayName != null
                         ? $"{assignedDisplayName} was assigned to this case."
                         : "A staff member was assigned to this case.",
+                    ct: HttpContext.RequestAborted,
+                    url: Url.Action(nameof(Details), new { id = model.CaseId }),
                     extraMeta: new
                     {
                         CaseId = model.CaseId,
                         AssignedUserId = model.UserId,
                         AssignedUserName = assignedDisplayName,
-                        RoleOnCase = assignment.role_on_case,
-
-                        // 👇 routing fanout hints (actor + target)
-                        targetUserId = model.UserId,
-                        targetUserIds = new[] { model.UserId }
-                    }
+                        RoleOnCase = assignment.role_on_case
+                    },
+                    targetUserId: targetId,
+                    targetUserIds: targetId.HasValue ? new[] { targetId.Value } : null
                 );
             }
             catch { }
             // 🔔 Notify: END
+
 
 
 
@@ -1430,25 +1433,30 @@ namespace SWIMS.Controllers
             // 🔔 Notify: Case unassignment
             try
             {
+                int? targetId = null;
+                if (int.TryParse(assignment.user_id, out var removedId))
+                    targetId = removedId;
+
                 await NotifyCaseEventAsync(
                     caseId: caseId,
-                    eventKey: "Cases.Unassigned",
+                    eventKey: SwimsEventKeys.Cases.Unassigned,
                     subject: "Case assignment removed",
                     body: "A staff member was removed from this case.",
+                    ct: HttpContext.RequestAborted,
+                    url: Url.Action(nameof(Details), new { id = caseId }),
                     extraMeta: new
                     {
                         CaseId = caseId,
                         RemovedUserId = assignment.user_id,
-                        RoleOnCase = assignment.role_on_case,
-
-                        // 👇 routing fanout hints
-                        targetUserId = assignment.user_id,
-                        targetUserIds = new[] { assignment.user_id }
-                    }
+                        RoleOnCase = assignment.role_on_case
+                    },
+                    targetUserId: targetId,
+                    targetUserIds: targetId.HasValue ? new[] { targetId.Value } : null
                 );
             }
             catch { }
             // 🔔 Notify: END
+
 
 
 
@@ -1997,45 +2005,52 @@ namespace SWIMS.Controllers
             CancellationToken ct = default,
             string? url = null,
             object? extraMeta = null,
-            string? recipientOverride = null)
+            string? recipientOverride = null,
+            int? targetUserId = null,
+            IEnumerable<int>? targetUserIds = null)
         {
-            try
+            // Primary recipient (actor / explicit recipient)
+            var recipient =
+                recipientOverride
+                ?? User?.FindFirstValue(ClaimTypes.NameIdentifier)
+                ?? _userManager.GetUserId(User)
+                ?? User?.Identity?.Name;
+
+            if (string.IsNullOrWhiteSpace(recipient))
+                return;
+
+            var payload = new
             {
-                var recipient = recipientOverride
-                    ?? User?.FindFirstValue(ClaimTypes.NameIdentifier)
-                    ?? User?.Identity?.Name;
+                Recipient = recipient,
+                Channel = "InApp",
+                Subject = subject,
+                Body = body,
 
-                if (string.IsNullOrWhiteSpace(recipient))
-                    return;
-
-                var payload = new
+                // ✅ canonical envelope shape for the dispatcher:
+                // { type, eventKey, url, metadata:{...} }
+                MetadataJson = JsonSerializer.Serialize(new
                 {
-                    Recipient = recipient,
-                    Channel = "InApp",
-                    Subject = subject,
-                    Body = body,
-                    MetadataJson = JsonSerializer.Serialize(new
+                    type = "Cases",
+                    eventKey,
+                    url,
+                    metadata = new
                     {
-                        type = "Cases",
-                        eventKey,
-                        url,
-
                         caseId,
-
                         actorUserId = User?.FindFirstValue(ClaimTypes.NameIdentifier),
                         actorUserName = User?.Identity?.Name,
 
-                        extra = extraMeta
-                    })
-                };
+                        // ✅ THIS is where the dispatcher actually looks
+                        targetUserId,
+                        targetUserIds = targetUserIds?.ToArray(),
 
-                await _elsa.ExecuteByNameAsync("Swims.Notifications.DirectInApp", payload, ct);
-            }
-            catch
-            {
-                // notifications must never break the primary action
-            }
+                        extra = extraMeta
+                    }
+                })
+            };
+
+            await _elsa.ExecuteByNameAsync("Swims.Notifications.DirectInApp", payload, ct);
         }
+
 
 
     }

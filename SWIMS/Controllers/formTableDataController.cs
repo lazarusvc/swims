@@ -9,6 +9,7 @@ using System.Security.Cryptography;
 using System.Threading.Tasks;
 using System.Text.Json;
 using SWIMS.Services.Elsa;
+using SWIMS.Services.Notifications;
 using System.Security.Claims;
 
 
@@ -72,31 +73,55 @@ namespace SWIMS.Controllers
                 _context.Add(sW_formTableDatum);
                 await _context.SaveChangesAsync();
 
-                // 🔔 Fire Elsa workflow for in-app notification
-                var userIdString = User?.FindFirstValue(ClaimTypes.NameIdentifier);
-                if (int.TryParse(userIdString, out var userId))
+                // 🔔 Fire Elsa workflow for in-app notification (ENVELOPE SHAPE)
+                try
                 {
-                    var payload = new
-                    {
-                        // Send the int user Id as a string – TryParseUser will catch this path first.
-                        Recipient = userId.ToString(),
-                        Channel = "InApp",
-                        Subject = "Form submitted",
-                        Body = $"Your form entry #{sW_formTableDatum.Id} was submitted.",
-                        MetadataJson = JsonSerializer.Serialize(new
-                        {
-                            formId = sW_formTableDatum.SW_formsId,
-                            entryId = sW_formTableDatum.Id
-                        })
-                    };
+                    var userIdString = User?.FindFirstValue(ClaimTypes.NameIdentifier);
 
-                    await _elsa.ExecuteByNameAsync("Swims.Notifications.DirectInApp", payload);
+                    // Your dispatcher can resolve Recipient as int string (preferred).
+                    if (int.TryParse(userIdString, out var userId))
+                    {
+                        // Get the form UUID for a useful URL (same destination you already redirect to)
+                        var formUuid = await _context.SW_forms
+                            .AsNoTracking()
+                            .Where(x => x.Id == sW_formTableDatum.SW_formsId)
+                            .Select(x => x.uuid)
+                            .FirstOrDefaultAsync();
+
+                        var payload = new
+                        {
+                            Recipient = userId.ToString(),
+                            Channel = "InApp",
+                            Subject = "Form submitted",
+                            Body = $"Your form entry #{sW_formTableDatum.Id} was submitted.",
+
+                            // ✅ Dispatcher expects: { type, eventKey, url, metadata:{...} }
+                            MetadataJson = JsonSerializer.Serialize(new
+                            {
+                                type = "Forms",
+                                eventKey = SwimsEventKeys.Forms.EntryCreated, // must exist in your SwimsEventKeys
+                                url = string.IsNullOrWhiteSpace(formUuid)
+                                    ? null
+                                    : Url.Action("Program", "form", new { uuid = formUuid }),
+
+                                metadata = new
+                                {
+                                    formId = sW_formTableDatum.SW_formsId,
+                                    entryId = sW_formTableDatum.Id,
+                                    actorUserId = userIdString,
+                                    actorUserName = User?.Identity?.Name
+                                }
+                            })
+                        };
+
+                        await _elsa.ExecuteByNameAsync("Swims.Notifications.DirectInApp", payload);
+                    }
                 }
-                else
+                catch
                 {
-                    // Optional: log this for debugging
-                    // _logger.LogWarning("Could not resolve current user ID for notifications.");
+                    // Optional: add logging later (keeping your current pattern)
                 }
+
 
 
                 // update form data table row to look for fields with type: `file` from inputs

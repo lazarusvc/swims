@@ -10,6 +10,7 @@ using SWIMS.Data.Lookups;
 using SWIMS.Models;
 using SWIMS.Models.Lookups;
 using SWIMS.Services.Elsa;
+using SWIMS.Services.Notifications;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -850,7 +851,7 @@ namespace SWIMS.Controllers
                 // 🔔 Notify: Form created
                 await NotifyFormEventAsync(
                     formId: createdForm.Id,
-                    eventKey: "Swims.Events.Forms.FormCreated",
+                    eventKey: SwimsEventKeys.Forms.DefinitionCreated,
                     subject: "Form created",
                     body: $"Form '{createdForm.name}' was created.",
                     ct: HttpContext.RequestAborted,
@@ -1150,7 +1151,7 @@ namespace SWIMS.Controllers
             // 🔔 Notify: Form published
             await NotifyFormEventAsync(
                 formId: fID,
-                eventKey: "Swims.Events.Forms.FormPublished",
+                eventKey: SwimsEventKeys.Forms.DefinitionPublished,
                 subject: "Form published",
                 body: $"Form with ID {fID} was published.",
                 ct: HttpContext.RequestAborted,
@@ -1296,7 +1297,7 @@ namespace SWIMS.Controllers
                 // 🔔 Notify: Form updated
                 await NotifyFormEventAsync(
                     formId: existing.Id,
-                    eventKey: "Swims.Events.Forms.FormUpdated",
+                    eventKey: SwimsEventKeys.Forms.DefinitionUpdated,
                     subject: "Form updated",
                     body: $"Form '{existing.name}' was updated.",
                     ct: HttpContext.RequestAborted,
@@ -1388,7 +1389,7 @@ namespace SWIMS.Controllers
                     // 🔔 Notify: Form image updated
                     await NotifyFormEventAsync(
                         formId: sW_form.Id,
-                        eventKey: "Swims.Events.Forms.FormImageUpdated",
+                        eventKey: SwimsEventKeys.Forms.DefinitionUpdated,
                         subject: "Form image updated",
                         body: $"Form '{sW_form.name}' image was updated.",
                         ct: HttpContext.RequestAborted,
@@ -1492,7 +1493,7 @@ namespace SWIMS.Controllers
             var formName = sW_form?.name ?? $"ID {id}";
             await NotifyFormEventAsync(
                 formId: id,
-                eventKey: "Swims.Events.Forms.FormDeleted",
+                eventKey: SwimsEventKeys.Forms.DefinitionDeleted,
                 subject: "Form deleted",
                 body: $"Form '{formName}' was deleted.",
                 ct: HttpContext.RequestAborted,
@@ -1510,56 +1511,52 @@ namespace SWIMS.Controllers
         }
 
         private async Task NotifyFormEventAsync(
-    int formId,
-    string eventKey,
-    string subject,
-    string body,
-    CancellationToken ct = default,
-    string? url = null,
-    object? extraMeta = null,
-    string? recipientOverride = null)
+            int formId,
+            string eventKey,
+            string subject,
+            string body,
+            CancellationToken ct = default,
+            string? url = null,
+            object? extraMeta = null,
+            string? recipientOverride = null,
+            int? targetUserId = null,
+            IEnumerable<int>? targetUserIds = null)
         {
-            try
+            var recipient =
+                recipientOverride
+                ?? User?.FindFirstValue(ClaimTypes.NameIdentifier)
+                ?? User?.Identity?.Name;
+
+            if (string.IsNullOrWhiteSpace(recipient))
+                return;
+
+            var payload = new
             {
-                var recipient = recipientOverride
-                    ?? User?.FindFirstValue(ClaimTypes.NameIdentifier)
-                    ?? User?.Identity?.Name;
+                Recipient = recipient,
+                Channel = "InApp",
+                Subject = subject,
+                Body = body,
 
-                if (string.IsNullOrWhiteSpace(recipient))
-                    return;
-
-                var payload = new
+                MetadataJson = JsonSerializer.Serialize(new
                 {
-                    Recipient = recipient,
-                    Channel = "InApp",
-                    Subject = subject,
-                    Body = body,
-                    MetadataJson = JsonSerializer.Serialize(new
+                    type = "Forms",
+                    eventKey,
+                    url,
+                    metadata = new
                     {
-                        // ✅ unified envelope (matches “new stuff”)
-                        type = "Forms",
-                        eventKey,
-                        url,
-
-                        // ✅ stable identifiers
                         formId,
-
-                        // ✅ dynamic routing inputs (if/when your router uses them)
                         actorUserId = User?.FindFirstValue(ClaimTypes.NameIdentifier),
                         actorUserName = User?.Identity?.Name,
-
-                        // ✅ anything action-specific
+                        targetUserId,
+                        targetUserIds = targetUserIds?.ToArray(),
                         extra = extraMeta
-                    })
-                };
+                    }
+                })
+            };
 
-                await _elsa.ExecuteByNameAsync("Swims.Notifications.DirectInApp", payload, ct);
-            }
-            catch
-            {
-                // notifications must never break the primary action
-            }
+            await _elsa.ExecuteByNameAsync("Swims.Notifications.DirectInApp", payload, ct);
         }
+
 
 
 
