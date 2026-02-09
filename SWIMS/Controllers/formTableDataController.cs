@@ -215,6 +215,50 @@ namespace SWIMS.Controllers
                 {
                     _context.Update(sW_formTableDatum);
                     await _context.SaveChangesAsync();
+
+                    try
+                    {
+                        var userIdStr = User?.FindFirstValue(ClaimTypes.NameIdentifier)
+                            ?? User?.Identity?.Name;
+
+                        if (int.TryParse(userIdStr, out var userId))
+                        {
+                            var actorName = User?.Identity?.Name ?? $"User {userId}";
+                            var formId = sW_formTableDatum.SW_formsId;
+
+                            var payload = new
+                            {
+                                Recipient = userId.ToString(),
+                                Channel = "InApp",
+                                Subject = "Form entry updated",
+                                Body = $"{actorName} updated a form entry.",
+                                MetadataJson = JsonSerializer.Serialize(new
+                                {
+                                    type = "Forms",
+                                    eventKey = SwimsEventKeys.Forms.EntryUpdated,
+                                    url = Url.Action("Details", "formController", new { id = formId }),
+                                    metadata = new
+                                    {
+                                        formId,
+                                        entryId = sW_formTableDatum.Id,
+                                        actorUserId = User?.FindFirstValue(ClaimTypes.NameIdentifier),
+                                        actorUserName = User?.Identity?.Name,
+                                        texts = new
+                                        {
+                                            actor = new { subject = "Form entry updated", body = "You updated a form entry." },
+                                            routed = new { subject = "Form entry updated", body = $"{actorName} updated a form entry." },
+                                            superadmin = new { subject = "Form entry updated", body = $"{actorName} updated a form entry." }
+                                        }
+                                    }
+                                })
+                            };
+
+                            await _elsa.ExecuteByNameAsync("Swims.Notifications.DirectInApp", payload, HttpContext.RequestAborted);
+                        }
+                    }
+                    catch { }
+
+
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -258,15 +302,65 @@ namespace SWIMS.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var sW_formTableDatum = await _context.SW_formTableData.FindAsync(id);
-            if (sW_formTableDatum != null)
+            var entry = await _context.SW_formTableData
+                .Include(x => x.SW_forms)
+                .FirstOrDefaultAsync(x => x.Id == id);
+
+            if (entry == null)
             {
-                _context.SW_formTableData.Remove(sW_formTableDatum);
+                return RedirectToAction(nameof(Index));
             }
 
+            var formId = entry.SW_formsId;
+            _context.SW_formTableData.Remove(entry);
             await _context.SaveChangesAsync();
+
+            // 🔔 Notify: Entry deleted
+            try
+            {
+                var userIdStr = User?.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier)
+                    ?? User?.Identity?.Name;
+
+                if (int.TryParse(userIdStr, out var userId))
+                {
+                    var actorName = User?.Identity?.Name ?? $"User {userId}";
+
+                    var payload = new
+                    {
+                        Recipient = userId.ToString(),
+                        Channel = "InApp",
+                        Subject = "Form entry deleted",
+                        Body = $"{actorName} deleted a form entry.",
+                        MetadataJson = System.Text.Json.JsonSerializer.Serialize(new
+                        {
+                            type = "Forms",
+                            eventKey = SWIMS.Services.Notifications.SwimsEventKeys.Forms.EntryDeleted,
+                            url = Url.Action("Details", "formController", new { id = formId }),
+                            metadata = new
+                            {
+                                formId,
+                                entryId = id,
+                                actorUserId = User?.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier),
+                                actorUserName = User?.Identity?.Name,
+                                texts = new
+                                {
+                                    actor = new { subject = "Form entry deleted", body = "You deleted a form entry." },
+                                    routed = new { subject = "Form entry deleted", body = $"{actorName} deleted a form entry." },
+                                    superadmin = new { subject = "Form entry deleted", body = $"{actorName} deleted a form entry." }
+                                }
+                            }
+                        })
+                    };
+
+                    await _elsa.ExecuteByNameAsync("Swims.Notifications.DirectInApp", payload, HttpContext.RequestAborted);
+                }
+            }
+            catch { }
+            // 🔔 END
+
             return RedirectToAction(nameof(Index));
         }
+
 
         private bool SW_formTableDatumExists(int id)
         {

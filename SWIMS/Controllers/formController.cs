@@ -1520,7 +1520,8 @@ namespace SWIMS.Controllers
             object? extraMeta = null,
             string? recipientOverride = null,
             int? targetUserId = null,
-            IEnumerable<int>? targetUserIds = null)
+            IEnumerable<int>? targetUserIds = null,
+            object? texts = null)
         {
             var recipient =
                 recipientOverride
@@ -1549,6 +1550,7 @@ namespace SWIMS.Controllers
                         actorUserName = User?.Identity?.Name,
                         targetUserId,
                         targetUserIds = targetUserIds?.ToArray(),
+                        texts = texts,
                         extra = extraMeta
                     }
                 })

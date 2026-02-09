@@ -1373,13 +1373,14 @@ namespace SWIMS.Controllers
                     assignedDisplayName = u?.FullName ?? u?.UserName;
                 }
 
+                var actorName = User?.Identity?.Name ?? "A user";
+                var assignedName = assignedDisplayName ?? "a staff member";
+
                 await NotifyCaseEventAsync(
                     caseId: model.CaseId,
                     eventKey: SwimsEventKeys.Cases.Assigned,
                     subject: "Case assignment updated",
-                    body: assignedDisplayName != null
-                        ? $"{assignedDisplayName} was assigned to this case."
-                        : "A staff member was assigned to this case.",
+                    body: $"{actorName} assigned {assignedName} to this case.",
                     ct: HttpContext.RequestAborted,
                     url: Url.Action(nameof(Details), new { id = model.CaseId }),
                     extraMeta: new
@@ -1390,8 +1391,16 @@ namespace SWIMS.Controllers
                         RoleOnCase = assignment.role_on_case
                     },
                     targetUserId: targetId,
-                    targetUserIds: targetId.HasValue ? new[] { targetId.Value } : null
+                    targetUserIds: targetId.HasValue ? new[] { targetId.Value } : null,
+                    texts: new
+                    {
+                        actor = new { subject = "Case assignment updated", body = $"You assigned {assignedName} to this case." },
+                        target = new { subject = "Assigned to case", body = $"{actorName} assigned you to a case." },
+                        routed = new { subject = "Case assignment updated", body = $"{actorName} assigned {assignedName} to this case." },
+                        superadmin = new { subject = "Case assignment updated", body = $"{actorName} assigned {assignedName} to this case." }
+                    }
                 );
+
             }
             catch { }
             // 🔔 Notify: END
@@ -1437,22 +1446,42 @@ namespace SWIMS.Controllers
                 if (int.TryParse(assignment.user_id, out var removedId))
                     targetId = removedId;
 
+                var actorName = User?.Identity?.Name ?? "A user";
+
+                string removedName = "a staff member";
+                if (targetId.HasValue)
+                {
+                    var u = await _identity.SwUsers
+                        .AsNoTracking()
+                        .FirstOrDefaultAsync(x => x.Id == targetId.Value);
+                    removedName = u?.FullName ?? u?.UserName ?? removedName;
+                }
+
                 await NotifyCaseEventAsync(
                     caseId: caseId,
                     eventKey: SwimsEventKeys.Cases.Unassigned,
                     subject: "Case assignment removed",
-                    body: "A staff member was removed from this case.",
+                    body: $"{actorName} removed {removedName} from this case.",
                     ct: HttpContext.RequestAborted,
                     url: Url.Action(nameof(Details), new { id = caseId }),
                     extraMeta: new
                     {
                         CaseId = caseId,
                         RemovedUserId = assignment.user_id,
+                        RemovedUserName = removedName,
                         RoleOnCase = assignment.role_on_case
                     },
                     targetUserId: targetId,
-                    targetUserIds: targetId.HasValue ? new[] { targetId.Value } : null
+                    targetUserIds: targetId.HasValue ? new[] { targetId.Value } : null,
+                    texts: new
+                    {
+                        actor = new { subject = "Case assignment removed", body = $"You removed {removedName} from this case." },
+                        target = new { subject = "Removed from case", body = $"{actorName} removed you from a case." },
+                        routed = new { subject = "Case assignment removed", body = $"{actorName} removed {removedName} from this case." },
+                        superadmin = new { subject = "Case assignment removed", body = $"{actorName} removed {removedName} from this case." }
+                    }
                 );
+
             }
             catch { }
             // 🔔 Notify: END
@@ -1533,8 +1562,6 @@ namespace SWIMS.Controllers
         }
 
 
-
-        // ✅ REPLACE ENTIRE METHOD
         private static readonly PropertyInfo[] _formDataProps =
             typeof(SW_formTableDatum)
                 .GetProperties(BindingFlags.Public | BindingFlags.Instance)
@@ -1680,8 +1707,6 @@ namespace SWIMS.Controllers
             return items;
         }
 
-
-        // ✅ ADD THIS METHOD (it can attach nothing if linking data isn't ready — that's fine)
         private async Task AttachLinkedFormsAsync(int caseId, int rootSubmissionId, string? rootRole)
         {
             var root = await _core.SW_formTableData
@@ -1881,9 +1906,9 @@ namespace SWIMS.Controllers
             {
                 await NotifyCaseEventAsync(
                     caseId: id,
-                    eventKey: "Cases.BenefitPeriodOverridesSaved",
+                    eventKey: SwimsEventKeys.Cases.BenefitPeriodOverridesSaved,
                     subject: "Benefit period overrides saved",
-                    body: "Benefit period overrides were saved for this case.",
+                    body: $"{User?.Identity?.Name ?? "A user"} updated benefit period overrides for this case.",
                     extraMeta: new
                     {
                         CaseId = id,
@@ -2007,7 +2032,8 @@ namespace SWIMS.Controllers
             object? extraMeta = null,
             string? recipientOverride = null,
             int? targetUserId = null,
-            IEnumerable<int>? targetUserIds = null)
+            IEnumerable<int>? targetUserIds = null,
+            object? texts = null)
         {
             // Primary recipient (actor / explicit recipient)
             var recipient =
@@ -2043,6 +2069,7 @@ namespace SWIMS.Controllers
                         targetUserId,
                         targetUserIds = targetUserIds?.ToArray(),
 
+                        texts = texts,
                         extra = extraMeta
                     }
                 })
