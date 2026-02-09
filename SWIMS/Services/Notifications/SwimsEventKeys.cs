@@ -29,7 +29,6 @@ public static class SwimsEventKeys
         public const string DefinitionCompleted = "Swims.Events.Forms.DefinitionCompleted";
 
         public const string EntryCreated = "Swims.Events.Forms.EntryCreated";
-
         public const string EntryUpdated = "Swims.Events.Forms.EntryUpdated";
         public const string EntryDeleted = "Swims.Events.Forms.EntryDeleted";
     }

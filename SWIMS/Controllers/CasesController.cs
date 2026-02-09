@@ -375,23 +375,42 @@ namespace SWIMS.Controllers
             _cases.SW_cases.Add(entity);
             await _cases.SaveChangesAsync();
 
+            var actorName = User?.Identity?.Name ?? "A user";
+
             // 🔔 Notify: Case created
             await NotifyCaseEventAsync(
                 caseId: entity.Id,
                 eventKey: SwimsEventKeys.Cases.Created,
                 subject: "Case created",
-                body: $"Case {entity.case_number} was created for {entity.title}.",
+                body: $"You created case {entity.case_number} for {entity.title}.",
                 ct: HttpContext.RequestAborted,
                 url: Url.Action(nameof(Details), new { id = entity.Id }),
+                caseNumber: entity.case_number,
+                caseTitle: entity.title,
                 extraMeta: new
                 {
-                    caseNumber = entity.case_number,
-                    beneficiaryId = entity.SW_beneficiaryId,
-                    programTag = entity.program_tag,
-                    programTagId = entity.ProgramTagId
+                    beneficiaryId = entity.SW_beneficiaryId
+                },
+                texts: new
+                {
+                    actor = new
+                    {
+                        subject = "Case created",
+                        body = $"You created case {entity.case_number} for {entity.title}."
+                    },
+                    routed = new
+                    {
+                        subject = "Case created",
+                        body = $"{actorName} created case {entity.case_number} for {entity.title}."
+                    },
+                    superadmin = new
+                    {
+                        subject = "Case created",
+                        body = $"{actorName} created case {entity.case_number} for {entity.title}."
+                    }
                 }
             );
-            // 🔔 Notify: Case created (end)
+
 
 
             TempData["Ok"] = "Case created successfully.";
@@ -509,23 +528,30 @@ namespace SWIMS.Controllers
 
             await _cases.SaveChangesAsync();
 
+            var actorName = User?.Identity?.Name ?? "A user";
+
             // 🔔 Notify: Case updated
             await NotifyCaseEventAsync(
                 caseId: caseEntity.Id,
-                eventKey: "Swims.Events.Cases.CaseUpdated",
+                eventKey: SwimsEventKeys.Cases.Updated,
                 subject: "Case updated",
-                body: $"Case {caseEntity.case_number} was updated.",
+                body: $"You updated case {caseEntity.case_number}.",
                 ct: HttpContext.RequestAborted,
                 url: Url.Action(nameof(Details), new { id = caseEntity.Id }),
+                caseNumber: caseEntity.case_number,
+                caseTitle: caseEntity.title,
                 extraMeta: new
                 {
-                    caseNumber = caseEntity.case_number,
-                    beneficiaryId = caseEntity.SW_beneficiaryId,
-                    programTag = caseEntity.program_tag,
-                    programTagId = caseEntity.ProgramTagId
+                    updatedFields = "Case details updated"
+                },
+                texts: new
+                {
+                    actor = new { subject = "Case updated", body = $"You updated case {caseEntity.case_number}." },
+                    routed = new { subject = "Case updated", body = $"{actorName} updated case {caseEntity.case_number}." },
+                    superadmin = new { subject = "Case updated", body = $"{actorName} updated case {caseEntity.case_number}." }
                 }
             );
-            // 🔔 Notify: Case updated (end)
+
 
 
             TempData["Ok"] = "Case updated successfully.";
@@ -799,22 +825,31 @@ namespace SWIMS.Controllers
 
             await _cases.SaveChangesAsync();
 
-            // 🔔 Notify: Case status overridden
+            var actorName = User?.Identity?.Name ?? "A user";
+
+            // 🔔 Notify: Case status changed (override)
             await NotifyCaseEventAsync(
                 caseId: caseEntity.Id,
                 eventKey: SwimsEventKeys.Cases.StatusChanged,
-                subject: "Case status changed",
-                body: $"Case {caseEntity.case_number} status changed to '{status}'.",
+                subject: "Case status updated",
+                body: $"You changed status of case {caseEntity.case_number} to '{status}'.",
                 ct: HttpContext.RequestAborted,
                 url: Url.Action(nameof(Details), new { id }),
+                caseNumber: caseEntity.case_number,
+                caseTitle: caseEntity.title,
                 extraMeta: new
                 {
-                    caseNumber = caseEntity.case_number,
-                    overriddenStatus = status,
-                    reason = caseEntity.status_override_reason
+                    status,
+                    mode = "ManualOverride"
+                },
+                texts: new
+                {
+                    actor = new { subject = "Case status updated", body = $"You changed status of case {caseEntity.case_number} to '{status}'." },
+                    routed = new { subject = "Case status updated", body = $"{actorName} changed status of case {caseEntity.case_number} to '{status}'." },
+                    superadmin = new { subject = "Case status updated", body = $"{actorName} changed status of case {caseEntity.case_number} to '{status}'." }
                 }
             );
-            // 🔔 Notify: Case status overridden (end)
+
 
 
             TempData["Ok"] = $"Case status manually overridden to {status}.";
@@ -845,20 +880,30 @@ namespace SWIMS.Controllers
 
             await _cases.SaveChangesAsync();
 
-            // 🔔 Notify: Case status override cleared
+            var actorName = User?.Identity?.Name ?? "A user";
+
+            // 🔔 Notify: Case status updated (override cleared)
             await NotifyCaseEventAsync(
                 caseId: caseEntity.Id,
                 eventKey: SwimsEventKeys.Cases.StatusChanged,
-                subject: "Case status changed",
-                body: $"Manual status override was cleared for case {caseEntity.case_number}.",
+                subject: "Case status updated",
+                body: $"You cleared the manual status override for case {caseEntity.case_number}.",
                 ct: HttpContext.RequestAborted,
                 url: Url.Action(nameof(Details), new { id }),
+                caseNumber: caseEntity.case_number,
+                caseTitle: caseEntity.title,
                 extraMeta: new
                 {
-                    caseNumber = caseEntity.case_number
+                    mode = "OverrideCleared"
+                },
+                texts: new
+                {
+                    actor = new { subject = "Case status updated", body = $"You cleared the manual status override for case {caseEntity.case_number}." },
+                    routed = new { subject = "Case status updated", body = $"{actorName} cleared the manual status override for case {caseEntity.case_number}." },
+                    superadmin = new { subject = "Case status updated", body = $"{actorName} cleared the manual status override for case {caseEntity.case_number}." }
                 }
             );
-            // 🔔 Notify: Case status override cleared (end)
+
 
 
             // Recompute back to automatic behavior (best-effort)
@@ -1085,26 +1130,45 @@ namespace SWIMS.Controllers
                 TempData["Ok"] = "Form submission linked to case.";
             }
 
+            var actorName = User?.Identity?.Name ?? "A user";
+            var what = isPrimary ? "primary application" : "form submission";
+
             // 🔔 Notify: Case form linked
             await NotifyCaseEventAsync(
                 caseId: caseId,
                 eventKey: SwimsEventKeys.Cases.FormLinked,
                 subject: isPrimary ? "Primary application linked" : "Form linked to case",
-                body: isPrimary
-                    ? $"Primary application was linked to case {caseEntity.case_number}."
-                    : $"A form submission was linked to case {caseEntity.case_number}.",
+                body: $"You linked a {what} (entry #{formDataId}) to case {caseEntity.case_number}.",
                 ct: HttpContext.RequestAborted,
                 url: Url.Action(nameof(Details), new { id = caseId }),
+                caseNumber: caseEntity.case_number,
+                caseTitle: caseEntity.title,
                 extraMeta: new
                 {
-                    caseNumber = caseEntity.case_number,
                     formTableDataId = formDataId,
                     role,
-                    isPrimary,
-                    linkedBy
+                    isPrimary
+                },
+                texts: new
+                {
+                    actor = new
+                    {
+                        subject = isPrimary ? "Primary application linked" : "Form linked to case",
+                        body = $"You linked a {what} (entry #{formDataId}) to case {caseEntity.case_number}."
+                    },
+                    routed = new
+                    {
+                        subject = isPrimary ? "Primary application linked" : "Form linked to case",
+                        body = $"{actorName} linked a {what} (entry #{formDataId}) to case {caseEntity.case_number}."
+                    },
+                    superadmin = new
+                    {
+                        subject = isPrimary ? "Primary application linked" : "Form linked to case",
+                        body = $"{actorName} linked a {what} (entry #{formDataId}) to case {caseEntity.case_number}."
+                    }
                 }
             );
-            // 🔔 Notify: Case form linked (end)
+
 
 
 
@@ -1130,20 +1194,35 @@ namespace SWIMS.Controllers
             var userId = _userManager.GetUserId(User);
             var result = await _caseLifecycle.RefreshFromPrimaryApplicationAsync(id, userId);
 
+            var caseInfo = await _cases.SW_cases
+                .AsNoTracking()
+                .Where(c => c.Id == id)
+                .Select(c => new { c.case_number, c.title })
+                .FirstOrDefaultAsync();
+
+
+            var actorName = User?.Identity?.Name ?? "A user";
+            var caseNo = caseInfo?.case_number ?? id.ToString();
+
             // 🔔 Notify: Case refreshed from primary application
             await NotifyCaseEventAsync(
                 caseId: id,
                 eventKey: SwimsEventKeys.Cases.RefreshedFromPrimaryApplication,
                 subject: "Case refreshed",
-                body: $"Case lifecycle refresh from primary application ran. {result.Message}",
+                body: $"You refreshed case {caseNo} from the primary application. {result.Message}",
                 ct: HttpContext.RequestAborted,
                 url: Url.Action(nameof(Details), new { id }),
-                extraMeta: new
+                caseNumber: caseInfo?.case_number,
+                caseTitle: caseInfo?.title,
+                extraMeta: new { message = result.Message },
+                texts: new
                 {
-                    message = result.Message
+                    actor = new { subject = "Case refreshed", body = $"You refreshed case {caseNo} from the primary application. {result.Message}" },
+                    routed = new { subject = "Case refreshed", body = $"{actorName} refreshed case {caseNo} from the primary application. {result.Message}" },
+                    superadmin = new { subject = "Case refreshed", body = $"{actorName} refreshed case {caseNo} from the primary application. {result.Message}" }
                 }
             );
-            // 🔔 Notify: Case refreshed from primary application (end)
+
 
 
             TempData["Ok"] = result.Message;
@@ -1169,21 +1248,35 @@ namespace SWIMS.Controllers
             _cases.SW_caseForms.Remove(link);
             await _cases.SaveChangesAsync();
 
+            var caseInfo = await _cases.SW_cases
+                .AsNoTracking()
+                .Where(c => c.Id == caseId)
+                .Select(c => new { c.case_number, c.title })
+                .FirstOrDefaultAsync();
+
+
+            var actorName = User?.Identity?.Name ?? "A user";
+            var caseNo = caseInfo?.case_number ?? caseId.ToString();
+
             // 🔔 Notify: Case form detached
             await NotifyCaseEventAsync(
                 caseId: caseId,
                 eventKey: SwimsEventKeys.Cases.FormDetached,
                 subject: "Form detached from case",
-                body: $"A form link was detached from case {caseId}.",
+                body: $"You detached a form submission link from case {caseNo}.",
                 ct: HttpContext.RequestAborted,
                 url: Url.Action(nameof(Details), new { id = caseId }),
-                extraMeta: new
+                caseNumber: caseInfo?.case_number,
+                caseTitle: caseInfo?.title,
+                extraMeta: new { caseFormId = id, detachedLinkId = id },
+                texts: new
                 {
-                    caseFormId = id,
-                    detachedLinkId = id
+                    actor = new { subject = "Form detached from case", body = $"You detached a form submission link from case {caseNo}." },
+                    routed = new { subject = "Form detached from case", body = $"{actorName} detached a form submission link from case {caseNo}." },
+                    superadmin = new { subject = "Form detached from case", body = $"{actorName} detached a form submission link from case {caseNo}." }
                 }
             );
-            // 🔔 Notify: Case form detached (end)
+
 
 
             TempData["Ok"] = "Form detached from case. The form submission itself is unchanged.";
@@ -1373,16 +1466,35 @@ namespace SWIMS.Controllers
                     assignedDisplayName = u?.FullName ?? u?.UserName;
                 }
 
-                var actorName = User?.Identity?.Name ?? "A user";
                 var assignedName = assignedDisplayName ?? "a staff member";
 
+                var actorName = User?.Identity?.Name ?? "A user";
+
+                var caseInfo = await _cases.SW_cases
+                    .AsNoTracking()
+                    .Where(c => c.Id == model.CaseId)
+                    .Select(c => new { c.case_number, c.title })
+                    .FirstOrDefaultAsync();
+
+                var caseNo = caseInfo?.case_number ?? model.CaseId.ToString();
+
+                //int? targetId = null;
+                if (int.TryParse(model.UserId, out var tid)) targetId = tid;
+
+                // 🔔 Notify: Case assignment updated
                 await NotifyCaseEventAsync(
                     caseId: model.CaseId,
                     eventKey: SwimsEventKeys.Cases.Assigned,
                     subject: "Case assignment updated",
-                    body: $"{actorName} assigned {assignedName} to this case.",
+                    body: assignedDisplayName != null
+                        ? $"You assigned {assignedDisplayName} to case {caseNo}."
+                        : $"You assigned a staff member to case {caseNo}.",
                     ct: HttpContext.RequestAborted,
                     url: Url.Action(nameof(Details), new { id = model.CaseId }),
+                    caseNumber: caseInfo?.case_number,
+                    caseTitle: caseInfo?.title,
+                    targetUserId: targetId,
+                    targetUserIds: targetId.HasValue ? new[] { targetId.Value } : null,
                     extraMeta: new
                     {
                         CaseId = model.CaseId,
@@ -1390,16 +1502,37 @@ namespace SWIMS.Controllers
                         AssignedUserName = assignedDisplayName,
                         RoleOnCase = assignment.role_on_case
                     },
-                    targetUserId: targetId,
-                    targetUserIds: targetId.HasValue ? new[] { targetId.Value } : null,
                     texts: new
                     {
-                        actor = new { subject = "Case assignment updated", body = $"You assigned {assignedName} to this case." },
-                        target = new { subject = "Assigned to case", body = $"{actorName} assigned you to a case." },
-                        routed = new { subject = "Case assignment updated", body = $"{actorName} assigned {assignedName} to this case." },
-                        superadmin = new { subject = "Case assignment updated", body = $"{actorName} assigned {assignedName} to this case." }
+                        actor = new
+                        {
+                            subject = "Case assignment updated",
+                            body = assignedDisplayName != null
+                                ? $"You assigned {assignedDisplayName} to case {caseNo}."
+                                : $"You assigned a staff member to case {caseNo}."
+                        },
+                        target = new
+                        {
+                            subject = "Assigned to case",
+                            body = $"You were assigned to case {caseNo} by {actorName}."
+                        },
+                        routed = new
+                        {
+                            subject = "Case assignment updated",
+                            body = assignedDisplayName != null
+                                ? $"{actorName} assigned {assignedDisplayName} to case {caseNo}."
+                                : $"{actorName} assigned a staff member to case {caseNo}."
+                        },
+                        superadmin = new
+                        {
+                            subject = "Case assignment updated",
+                            body = assignedDisplayName != null
+                                ? $"{actorName} assigned {assignedDisplayName} to case {caseNo}."
+                                : $"{actorName} assigned a staff member to case {caseNo}."
+                        }
                     }
                 );
+
 
             }
             catch { }
@@ -1442,32 +1575,52 @@ namespace SWIMS.Controllers
             // 🔔 Notify: Case unassignment
             try
             {
+                // Parse removed user id (assignment.user_id is string in this table)
                 int? targetId = null;
                 if (int.TryParse(assignment.user_id, out var removedId))
                     targetId = removedId;
 
                 var actorName = User?.Identity?.Name ?? "A user";
 
+                var caseInfo = await _cases.SW_cases
+                    .AsNoTracking()
+                    .Where(c => c.Id == caseId)
+                    .Select(c => new { c.case_number, c.title })
+                    .FirstOrDefaultAsync(HttpContext.RequestAborted);
+
+                var caseNo = caseInfo?.case_number ?? caseId.ToString();
+                var caseTitle = caseInfo?.title;
+
+                var caseLabel = string.IsNullOrWhiteSpace(caseTitle)
+                    ? $"case {caseNo}"
+                    : $"case {caseNo} — {caseTitle}";
+
                 string removedName = "a staff member";
                 if (targetId.HasValue)
                 {
-                    var u = await _identity.SwUsers
+                    var removedUser = await _identity.SwUsers
                         .AsNoTracking()
-                        .FirstOrDefaultAsync(x => x.Id == targetId.Value);
-                    removedName = u?.FullName ?? u?.UserName ?? removedName;
+                        .Where(u => u.Id == targetId.Value)
+                        .Select(u => new { u.FullName, u.UserName })
+                        .FirstOrDefaultAsync(HttpContext.RequestAborted);
+
+                    removedName = removedUser?.FullName ?? removedUser?.UserName ?? removedName;
                 }
 
                 await NotifyCaseEventAsync(
                     caseId: caseId,
                     eventKey: SwimsEventKeys.Cases.Unassigned,
                     subject: "Case assignment removed",
-                    body: $"{actorName} removed {removedName} from this case.",
+                    body: $"You removed {removedName} from {caseLabel}.",
                     ct: HttpContext.RequestAborted,
                     url: Url.Action(nameof(Details), new { id = caseId }),
                     extraMeta: new
                     {
                         CaseId = caseId,
-                        RemovedUserId = assignment.user_id,
+                        CaseNumber = caseInfo?.case_number,
+                        CaseTitle = caseTitle,
+                        RemovedUserId = assignment.user_id,       // original string
+                        RemovedUserIdInt = targetId,             // parsed int (if available)
                         RemovedUserName = removedName,
                         RoleOnCase = assignment.role_on_case
                     },
@@ -1475,17 +1628,31 @@ namespace SWIMS.Controllers
                     targetUserIds: targetId.HasValue ? new[] { targetId.Value } : null,
                     texts: new
                     {
-                        actor = new { subject = "Case assignment removed", body = $"You removed {removedName} from this case." },
-                        target = new { subject = "Removed from case", body = $"{actorName} removed you from a case." },
-                        routed = new { subject = "Case assignment removed", body = $"{actorName} removed {removedName} from this case." },
-                        superadmin = new { subject = "Case assignment removed", body = $"{actorName} removed {removedName} from this case." }
+                        actor = new
+                        {
+                            subject = "Case assignment removed",
+                            body = $"You removed {removedName} from {caseLabel}."
+                        },
+                        target = new
+                        {
+                            subject = "Removed from case",
+                            body = $"You were removed from {caseLabel} by {actorName}."
+                        },
+                        routed = new
+                        {
+                            subject = "Case assignment removed",
+                            body = $"{actorName} removed {removedName} from {caseLabel}."
+                        },
+                        superadmin = new
+                        {
+                            subject = "Case assignment removed",
+                            body = $"{actorName} removed {removedName} from {caseLabel}."
+                        }
                     }
                 );
-
             }
             catch { }
             // 🔔 Notify: END
-
 
 
 
@@ -1904,20 +2071,41 @@ namespace SWIMS.Controllers
             // 🔔 Notify: Benefit period overrides saved
             try
             {
+                var caseInfo = await _cases.SW_cases
+                    .AsNoTracking()
+                    .Where(c => c.Id == id)
+                    .Select(c => new { c.case_number, c.title })
+                    .FirstOrDefaultAsync();
+
+
+                var actorName = User?.Identity?.Name ?? "A user";
+                var caseNo = caseInfo?.case_number ?? id.ToString();
+
+                // 🔔 Notify: Benefit period overrides saved
                 await NotifyCaseEventAsync(
                     caseId: id,
                     eventKey: SwimsEventKeys.Cases.BenefitPeriodOverridesSaved,
                     subject: "Benefit period overrides saved",
-                    body: $"{User?.Identity?.Name ?? "A user"} updated benefit period overrides for this case.",
+                    body: $"You saved benefit period overrides for case {caseNo}.",
+                    ct: HttpContext.RequestAborted,
+                    url: Url.Action(nameof(Details), new { id }),
+                    caseNumber: caseInfo?.case_number,
+                    caseTitle: caseInfo?.title,
                     extraMeta: new
                     {
-                        CaseId = id,
                         ClearOverrides = vm.ClearOverrides,
                         BenefitStartAtOverride = vm.BenefitStartAtOverride,
                         BenefitEndAtOverride = vm.BenefitEndAtOverride,
                         BenefitPeriodMonthsOverride = vm.BenefitPeriodMonthsOverride
+                    },
+                    texts: new
+                    {
+                        actor = new { subject = "Benefit period overrides saved", body = $"You saved benefit period overrides for case {caseNo}." },
+                        routed = new { subject = "Benefit period overrides saved", body = $"{actorName} saved benefit period overrides for case {caseNo}." },
+                        superadmin = new { subject = "Benefit period overrides saved", body = $"{actorName} saved benefit period overrides for case {caseNo}." }
                     }
                 );
+
             }
             catch { }
             // 🔔 Notify: END
@@ -2023,60 +2211,63 @@ namespace SWIMS.Controllers
 
 
         private async Task NotifyCaseEventAsync(
-            int caseId,
-            string eventKey,
-            string subject,
-            string body,
-            CancellationToken ct = default,
-            string? url = null,
-            object? extraMeta = null,
-            string? recipientOverride = null,
-            int? targetUserId = null,
-            IEnumerable<int>? targetUserIds = null,
-            object? texts = null)
+    int caseId,
+    string eventKey,
+    string subject,
+    string body,
+    CancellationToken ct = default,
+    string? url = null,
+    object? extraMeta = null,
+    string? recipientOverride = null,
+    int? targetUserId = null,
+    IEnumerable<int>? targetUserIds = null,
+    object? texts = null,
+    string? caseNumber = null,
+    string? caseTitle = null)
         {
-            // Primary recipient (actor / explicit recipient)
-            var recipient =
-                recipientOverride
-                ?? User?.FindFirstValue(ClaimTypes.NameIdentifier)
-                ?? _userManager.GetUserId(User)
-                ?? User?.Identity?.Name;
-
-            if (string.IsNullOrWhiteSpace(recipient))
-                return;
-
-            var payload = new
+            try
             {
-                Recipient = recipient,
-                Channel = "InApp",
-                Subject = subject,
-                Body = body,
+                var recipient = recipientOverride
+                    ?? User?.FindFirstValue(ClaimTypes.NameIdentifier)
+                    ?? User?.Identity?.Name;
 
-                // ✅ canonical envelope shape for the dispatcher:
-                // { type, eventKey, url, metadata:{...} }
-                MetadataJson = JsonSerializer.Serialize(new
+                if (string.IsNullOrWhiteSpace(recipient))
+                    return;
+
+                var payload = new
                 {
-                    type = "Cases",
-                    eventKey,
-                    url,
-                    metadata = new
+                    Recipient = recipient,
+                    Channel = "InApp",
+                    Subject = subject,
+                    Body = body,
+                    MetadataJson = JsonSerializer.Serialize(new
                     {
-                        caseId,
-                        actorUserId = User?.FindFirstValue(ClaimTypes.NameIdentifier),
-                        actorUserName = User?.Identity?.Name,
+                        type = "Cases",
+                        eventKey,
+                        url,
+                        metadata = new
+                        {
+                            caseId,
+                            caseNumber,
+                            caseTitle,
 
-                        // ✅ THIS is where the dispatcher actually looks
-                        targetUserId,
-                        targetUserIds = targetUserIds?.ToArray(),
+                            actorUserId = User?.FindFirstValue(ClaimTypes.NameIdentifier),
+                            actorUserName = User?.Identity?.Name,
 
-                        texts = texts,
-                        extra = extraMeta
-                    }
-                })
-            };
+                            targetUserId,
+                            targetUserIds = targetUserIds?.ToArray(),
 
-            await _elsa.ExecuteByNameAsync("Swims.Notifications.DirectInApp", payload, ct);
+                            texts, // actor/target/routed/superadmin
+                            extra = extraMeta
+                        }
+                    })
+                };
+
+                await _elsa.ExecuteByNameAsync("Swims.Notifications.DirectInApp", payload, ct);
+            }
+            catch { }
         }
+
 
 
 

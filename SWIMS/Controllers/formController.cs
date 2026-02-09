@@ -848,22 +848,27 @@ namespace SWIMS.Controllers
 
                 await SaveFormClassificationAsync(createdForm.Id, formTypeId, programTagIds);
 
-                // 🔔 Notify: Form created
+                var actorName = User?.Identity?.Name ?? "A user";
+
+                // 🔔 Notify: Form Created
                 await NotifyFormEventAsync(
                     formId: createdForm.Id,
                     eventKey: SwimsEventKeys.Forms.DefinitionCreated,
                     subject: "Form created",
-                    body: $"Form '{createdForm.name}' was created.",
+                    body: $"You created form '{createdForm.name}'.",
                     ct: HttpContext.RequestAborted,
                     url: Url.Action(nameof(Details), new { id = createdForm.Id }),
-                    extraMeta: new
+                    formUuid: createdForm.uuid,
+                    formName: createdForm.name,
+                    extraMeta: new { identityId = createdForm.SW_identityId },
+                    texts: new
                     {
-                        formUuid = createdForm.uuid,
-                        formName = createdForm.name,
-                        identityId = createdForm.SW_identityId
+                        actor = new { subject = "Form created", body = $"You created form '{createdForm.name}'." },
+                        routed = new { subject = "Form created", body = $"{actorName} created form '{createdForm.name}'." },
+                        superadmin = new { subject = "Form created", body = $"{actorName} created form '{createdForm.name}'." }
                     }
                 );
-                // 🔔 Notify: Form created (end)
+
 
 
                 return RedirectToAction(nameof(Index));
@@ -1148,18 +1153,24 @@ namespace SWIMS.Controllers
             // Save atomically
             await _context.SaveChangesAsync();
 
+            var actorName = User?.Identity?.Name ?? "A user";
+
             // 🔔 Notify: Form published
             await NotifyFormEventAsync(
                 formId: fID,
                 eventKey: SwimsEventKeys.Forms.DefinitionPublished,
                 subject: "Form published",
-                body: $"Form with ID {fID} was published.",
+                body: $"You published form '{swForm.name}'.",
                 ct: HttpContext.RequestAborted,
                 url: Url.Action(nameof(Program), new { uuid = swForm.uuid }),
-                extraMeta: new
+                formUuid: swForm.uuid,
+                formName: swForm.name,
+                extraMeta: new { published = true },
+                texts: new
                 {
-                    formUuid = swForm.uuid,
-                    formName = swForm.name
+                    actor = new { subject = "Form published", body = $"You published form '{swForm.name}'." },
+                    routed = new { subject = "Form published", body = $"{actorName} published form '{swForm.name}'." },
+                    superadmin = new { subject = "Form published", body = $"{actorName} published form '{swForm.name}'." }
                 }
             );
             // 🔔 Notify: Form published (end)
@@ -1295,21 +1306,30 @@ namespace SWIMS.Controllers
                 await SaveFormClassificationAsync(existing.Id, formTypeId, programTagIds);
 
                 // 🔔 Notify: Form updated
+                var actorName = User?.Identity?.Name ?? "A user";
+
                 await NotifyFormEventAsync(
                     formId: existing.Id,
                     eventKey: SwimsEventKeys.Forms.DefinitionUpdated,
                     subject: "Form updated",
-                    body: $"Form '{existing.name}' was updated.",
+                    body: $"You updated form '{existing.name}'.",
                     ct: HttpContext.RequestAborted,
                     url: Url.Action(nameof(Details), new { id = existing.Id }),
+                    formUuid: existing.uuid,
+                    formName: existing.name,
                     extraMeta: new
                     {
-                        formUuid = existing.uuid,
-                        formName = existing.name,
                         identityId = existing.SW_identityId,
                         updatedImage = imageFile != null
+                    },
+                    texts: new
+                    {
+                        actor = new { subject = "Form updated", body = $"You updated form '{existing.name}'." },
+                        routed = new { subject = "Form updated", body = $"{actorName} updated form '{existing.name}'." },
+                        superadmin = new { subject = "Form updated", body = $"{actorName} updated form '{existing.name}'." }
                     }
                 );
+
                 // 🔔 Notify: Form updated (end)
 
 
@@ -1387,20 +1407,26 @@ namespace SWIMS.Controllers
                     await _context.SaveChangesAsync();
 
                     // 🔔 Notify: Form image updated
+                    var actorName = User?.Identity?.Name ?? "A user";
+
                     await NotifyFormEventAsync(
                         formId: sW_form.Id,
                         eventKey: SwimsEventKeys.Forms.DefinitionUpdated,
                         subject: "Form image updated",
-                        body: $"Form '{sW_form.name}' image was updated.",
+                        body: $"You updated the image for form '{sW_form.name}'.",
                         ct: HttpContext.RequestAborted,
                         url: Url.Action(nameof(Details), new { id = sW_form.Id }),
-                        extraMeta: new
+                        formUuid: sW_form.uuid,
+                        formName: sW_form.name,
+                        extraMeta: new { updatedImage = true },
+                        texts: new
                         {
-                            formUuid = sW_form.uuid,
-                            formName = sW_form.name,
-                            newImage = sW_form.image
+                            actor = new { subject = "Form image updated", body = $"You updated the image for form '{sW_form.name}'." },
+                            routed = new { subject = "Form image updated", body = $"{actorName} updated the image for form '{sW_form.name}'." },
+                            superadmin = new { subject = "Form image updated", body = $"{actorName} updated the image for form '{sW_form.name}'." }
                         }
                     );
+
                     // 🔔 Notify: Form image updated (end)
 
 
@@ -1490,75 +1516,94 @@ namespace SWIMS.Controllers
             await _context.SaveChangesAsync();
 
             // 🔔 Notify: Form deleted
-            var formName = sW_form?.name ?? $"ID {id}";
+            var actorName = User?.Identity?.Name ?? "A user";
+
+            var formName = sW_form?.name ?? $"Form #{id}";
+            var formUuid = sW_form?.uuid;
+
             await NotifyFormEventAsync(
                 formId: id,
                 eventKey: SwimsEventKeys.Forms.DefinitionDeleted,
                 subject: "Form deleted",
-                body: $"Form '{formName}' was deleted.",
+                body: $"You deleted form '{formName}'.",
                 ct: HttpContext.RequestAborted,
                 url: Url.Action(nameof(Index)),
-                extraMeta: new
+                formUuid: formUuid,
+                formName: formName,
+                extraMeta: new { deleted = true },
+                texts: new
                 {
-                    formUuid = sW_form?.uuid,
-                    formName
+                    actor = new { subject = "Form deleted", body = $"You deleted form '{formName}'." },
+                    routed = new { subject = "Form deleted", body = $"{actorName} deleted form '{formName}'." },
+                    superadmin = new { subject = "Form deleted", body = $"{actorName} deleted form '{formName}'." }
                 }
             );
+
             // 🔔 Notify: Form deleted (end)
+
 
 
             return RedirectToAction(nameof(Index));
         }
 
         private async Task NotifyFormEventAsync(
-            int formId,
-            string eventKey,
-            string subject,
-            string body,
-            CancellationToken ct = default,
-            string? url = null,
-            object? extraMeta = null,
-            string? recipientOverride = null,
-            int? targetUserId = null,
-            IEnumerable<int>? targetUserIds = null,
-            object? texts = null)
+      int formId,
+      string eventKey,
+      string subject,
+      string body,
+      CancellationToken ct = default,
+      string? url = null,
+      object? extraMeta = null,
+      string? recipientOverride = null,
+      int? targetUserId = null,
+      IEnumerable<int>? targetUserIds = null,
+      object? texts = null,
+      string? formUuid = null,
+      string? formName = null)
         {
-            var recipient =
-                recipientOverride
-                ?? User?.FindFirstValue(ClaimTypes.NameIdentifier)
-                ?? User?.Identity?.Name;
-
-            if (string.IsNullOrWhiteSpace(recipient))
-                return;
-
-            var payload = new
+            try
             {
-                Recipient = recipient,
-                Channel = "InApp",
-                Subject = subject,
-                Body = body,
+                var recipient = recipientOverride
+                    ?? User?.FindFirstValue(ClaimTypes.NameIdentifier)
+                    ?? User?.Identity?.Name;
 
-                MetadataJson = JsonSerializer.Serialize(new
+                if (string.IsNullOrWhiteSpace(recipient))
+                    return;
+
+                var payload = new
                 {
-                    type = "Forms",
-                    eventKey,
-                    url,
-                    metadata = new
+                    Recipient = recipient,
+                    Channel = "InApp",
+                    Subject = subject,
+                    Body = body,
+
+                    MetadataJson = JsonSerializer.Serialize(new
                     {
-                        formId,
-                        actorUserId = User?.FindFirstValue(ClaimTypes.NameIdentifier),
-                        actorUserName = User?.Identity?.Name,
-                        targetUserId,
-                        targetUserIds = targetUserIds?.ToArray(),
-                        texts = texts,
-                        extra = extraMeta
-                    }
-                })
-            };
+                        type = "Forms",
+                        eventKey,
+                        url,
+                        metadata = new
+                        {
+                            formId,
+                            formUuid,
+                            formName,
 
-            await _elsa.ExecuteByNameAsync("Swims.Notifications.DirectInApp", payload, ct);
+                            actorUserId = User?.FindFirstValue(ClaimTypes.NameIdentifier),
+                            actorUserName = User?.Identity?.Name,
+
+                            targetUserId,
+                            targetUserIds = targetUserIds?.ToArray(),
+
+                            texts = texts,
+                            extra = extraMeta
+                        }
+                    })
+                };
+
+                await _elsa.ExecuteByNameAsync("Swims.Notifications.DirectInApp", payload, ct);
+            }
+            catch { }
         }
-
 
 
 
