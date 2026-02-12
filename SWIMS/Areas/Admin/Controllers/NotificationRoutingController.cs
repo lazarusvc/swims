@@ -3,9 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SWIMS.Areas.Admin.ViewModels.Notifications;
 using SWIMS.Data;
-using SWIMS.Models;
 using SWIMS.Models.Notifications;
 using SWIMS.Security;
+using System.Reflection;
 
 namespace SWIMS.Areas.Admin.Controllers;
 
@@ -25,6 +25,7 @@ public class NotificationRoutingController : Controller
     {
         var routes = await _db.NotificationRoutes
             .Include(r => r.Roles)
+            .Include(r => r.Permissions)
             .Include(r => r.Users)
             .AsNoTracking()
             .OrderBy(r => r.EventKey)
@@ -66,6 +67,7 @@ public class NotificationRoutingController : Controller
         {
             route = await _db.NotificationRoutes
                 .Include(r => r.Roles)
+                .Include(r => r.Permissions)
                 .Include(r => r.Users)
                 .FirstOrDefaultAsync(r => r.Id == model.Id.Value, ct);
 
@@ -85,8 +87,10 @@ public class NotificationRoutingController : Controller
 
         // Replace lists (MMVP)
         route.Roles.Clear();
+        route.Permissions.Clear();
         route.Users.Clear();
 
+        // Roles
         if (model.SelectedRoleIds?.Count > 0)
         {
             var roles = await _db.Roles
@@ -104,6 +108,26 @@ public class NotificationRoutingController : Controller
             }
         }
 
+        // Permissions
+        if (model.SelectedPermissionKeys?.Count > 0)
+        {
+            var allPerms = BuildPermissionOptions();
+            var permMap = allPerms.ToDictionary(x => x.Key, x => x.Name);
+
+            foreach (var key in model.SelectedPermissionKeys
+                         .Where(k => !string.IsNullOrWhiteSpace(k))
+                         .Select(k => k.Trim())
+                         .Distinct(StringComparer.Ordinal))
+            {
+                route.Permissions.Add(new NotificationRoutePermission
+                {
+                    PermissionKey = key,
+                    PermissionNameSnapshot = permMap.TryGetValue(key, out var n) ? n : null
+                });
+            }
+        }
+
+        // Users
         if (model.SelectedUserIds?.Count > 0)
         {
             var users = await _db.Users
@@ -160,6 +184,7 @@ public class NotificationRoutingController : Controller
         {
             route = await _db.NotificationRoutes
                 .Include(r => r.Roles)
+                .Include(r => r.Permissions)
                 .Include(r => r.Users)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(r => r.Id == id.Value, ct);
@@ -172,6 +197,8 @@ public class NotificationRoutingController : Controller
             .OrderBy(r => r.Name)
             .Select(r => new RoleOptionViewModel { Id = r.Id, Name = r.Name ?? "" })
             .ToListAsync(ct);
+
+        var allPermissions = BuildPermissionOptions();
 
         var selectedUserIds = route?.Users.Select(u => u.UserId).Distinct().ToList() ?? new List<int>();
         var selectedUsers = new List<UserOptionViewModel>();
@@ -200,6 +227,9 @@ public class NotificationRoutingController : Controller
             AllRoles = allRoles,
             SelectedRoleIds = route?.Roles.Select(r => r.RoleId).Distinct().ToList() ?? new List<int>(),
 
+            AllPermissions = allPermissions,
+            SelectedPermissionKeys = route?.Permissions.Select(p => p.PermissionKey).Distinct().ToList() ?? new List<string>(),
+
             SelectedUserIds = selectedUserIds,
             SelectedUsers = selectedUsers
         };
@@ -213,6 +243,8 @@ public class NotificationRoutingController : Controller
             .Select(r => new RoleOptionViewModel { Id = r.Id, Name = r.Name ?? "" })
             .ToListAsync(ct);
 
+        vm.AllPermissions = BuildPermissionOptions();
+
         if (vm.SelectedUserIds?.Count > 0)
         {
             vm.SelectedUsers = await _db.Users
@@ -225,5 +257,36 @@ public class NotificationRoutingController : Controller
                 })
                 .ToListAsync(ct);
         }
+        else
+        {
+            vm.SelectedUsers = new List<UserOptionViewModel>();
+        }
+    }
+
+    private static List<PermissionOptionViewModel> BuildPermissionOptions()
+    {
+        // Reflect public const string fields on SWIMS.Security.Permissions
+        var fields = typeof(Permissions).GetFields(BindingFlags.Public | BindingFlags.Static);
+
+        var list = new List<PermissionOptionViewModel>();
+
+        foreach (var f in fields)
+        {
+            if (f.FieldType != typeof(string)) continue;
+            if (!f.IsLiteral || f.IsInitOnly) continue;
+
+            var key = f.GetRawConstantValue() as string;
+            if (string.IsNullOrWhiteSpace(key)) continue;
+
+            list.Add(new PermissionOptionViewModel
+            {
+                Key = key,
+                Name = f.Name
+            });
+        }
+
+        return list
+            .OrderBy(x => x.Key, StringComparer.Ordinal)
+            .ToList();
     }
 }

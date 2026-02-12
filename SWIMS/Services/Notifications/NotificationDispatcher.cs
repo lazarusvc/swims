@@ -302,30 +302,81 @@ public class NotificationDispatcher : INotificationDispatcher
         var route = await _db.NotificationRoutes
             .Include(r => r.Users)
             .Include(r => r.Roles)
+            .Include(r => r.Permissions)
             .AsNoTracking()
             .FirstOrDefaultAsync(r => r.EventKey == eventKey, ct);
 
         if (route is null || !route.IsEnabled)
             return result;
 
+        // Explicit users
         foreach (var u in route.Users)
             result.Add(u.UserId);
 
-        var roleIds = route.Roles.Select(r => r.RoleId).Distinct().ToList();
-        if (roleIds.Count == 0) return result;
+        // Permission-based expansion (policy -> policy_roles -> user_roles)
+        var permKeys = route.Permissions
+            .Select(p => p.PermissionKey)
+            .Where(k => !string.IsNullOrWhiteSpace(k))
+            .Distinct(StringComparer.Ordinal)
+            .ToList();
 
-        var roleUserIds = await _db.UserRoles
+        if (permKeys.Count > 0)
+        {
+            var permUserIds = await ResolveUsersByPermissionsAsync(permKeys, ct);
+            foreach (var id in permUserIds)
+                result.Add(id);
+        }
+
+        // Role-based expansion (direct role ids)
+        var roleIds = route.Roles.Select(r => r.RoleId).Distinct().ToList();
+        if (roleIds.Count > 0)
+        {
+            var roleUserIds = await _db.UserRoles
+                .AsNoTracking()
+                .Where(ur => roleIds.Contains(ur.RoleId))
+                .Select(ur => ur.UserId)
+                .Distinct()
+                .ToListAsync(ct);
+
+            foreach (var id in roleUserIds)
+                result.Add(id);
+        }
+
+        return result;
+    }
+
+    private async Task<List<int>> ResolveUsersByPermissionsAsync(List<string> permissionKeys, CancellationToken ct)
+    {
+        // 1) Find enabled policies by name (permission key)
+        var policyIds = await _db.AuthorizationPolicies
+            .AsNoTracking()
+            .Where(p => p.IsEnabled && permissionKeys.Contains(p.Name))
+            .Select(p => p.Id)
+            .ToListAsync(ct);
+
+        if (policyIds.Count == 0)
+            return new List<int>();
+
+        // 2) Get role ids attached to those policies
+        var roleIds = await _db.AuthorizationPolicyRoles
+            .AsNoTracking()
+            .Where(pr => policyIds.Contains(pr.AuthorizationPolicyEntityId))
+            .Select(pr => pr.RoleId)
+            .Distinct()
+            .ToListAsync(ct);
+
+        if (roleIds.Count == 0)
+            return new List<int>();
+
+        // 3) Expand to users in those roles
+        return await _db.UserRoles
             .AsNoTracking()
             .Where(ur => roleIds.Contains(ur.RoleId))
             .Select(ur => ur.UserId)
             .Distinct()
             .ToListAsync(ct);
-
-        foreach (var id in roleUserIds)
-            result.Add(id);
-
-        return result;
     }
+
 
     private async Task<HashSet<int>> ResolveSuperAdminRecipientsAsync(CancellationToken ct)
     {

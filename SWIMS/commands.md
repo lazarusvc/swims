@@ -1,5 +1,11 @@
 ﻿/// Migrations commands
 
+
+# Before any PMC migration/update, run this quick check in SSMS:
+
+## SELECT DB_NAME() AS CurrentDb;
+
+
 # Adding Migrations
 
 ## Add-Migration "SwimsIdentity_Init" -Context SwimsIdentityDbContext -Output Migrations/Identity

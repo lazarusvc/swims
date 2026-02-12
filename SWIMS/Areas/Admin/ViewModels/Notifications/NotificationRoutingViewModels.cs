@@ -12,6 +12,19 @@ public class RoleOptionViewModel
     public string Name { get; set; } = "";
 }
 
+public class PermissionOptionViewModel
+{
+    /// <summary>
+    /// Permission key value (e.g. "Approvals.Level2")
+    /// </summary>
+    public string Key { get; set; } = "";
+
+    /// <summary>
+    /// Constant name for readability (e.g. "Approvals_L2")
+    /// </summary>
+    public string Name { get; set; } = "";
+}
+
 public class NotificationRouteEditViewModel
 {
     public int? Id { get; set; }
@@ -27,6 +40,9 @@ public class NotificationRouteEditViewModel
 
     public List<RoleOptionViewModel> AllRoles { get; set; } = new();
     public List<int> SelectedRoleIds { get; set; } = new();
+
+    public List<PermissionOptionViewModel> AllPermissions { get; set; } = new();
+    public List<string> SelectedPermissionKeys { get; set; } = new();
 
     public List<UserOptionViewModel> SelectedUsers { get; set; } = new();
     public List<int> SelectedUserIds { get; set; } = new();

@@ -12,7 +12,7 @@ using SWIMS.Data;
 namespace SWIMS.Migrations.Identity
 {
     [DbContext(typeof(SwimsIdentityDbContext))]
-    [Migration("20260128173042_notify_add_notification_routing")]
+    [Migration("20260128160747_notify_add_notification_routing")]
     partial class notify_add_notification_routing
     {
         /// <inheritdoc />

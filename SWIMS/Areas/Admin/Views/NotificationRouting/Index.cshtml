@@ -19,6 +19,7 @@
                         <th>Type</th>
                         <th>Enabled</th>
                         <th>Roles</th>
+                        <th>Perms</th>
                         <th>Users</th>
                         <th>Updated</th>
                         <th></th>
@@ -32,6 +33,7 @@
                             <td>@r.Type</td>
                             <td>@(r.IsEnabled ? "Yes" : "No")</td>
                             <td>@r.Roles.Count</td>
+                            <td>@r.Permissions.Count</td>
                             <td>@r.Users.Count</td>
                             <td>@r.UpdatedAtUtc.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
                             <td class="text-end">
