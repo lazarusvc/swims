@@ -32,4 +32,26 @@ public static class SwimsEventKeys
         public const string EntryUpdated = "Swims.Events.Forms.EntryUpdated";
         public const string EntryDeleted = "Swims.Events.Forms.EntryDeleted";
     }
+
+    public static class Approvals
+    {
+        public const string PendingL1 = "Swims.Events.Approvals.Pending.L1";
+        public const string PendingL2 = "Swims.Events.Approvals.Pending.L2";
+        public const string PendingL3 = "Swims.Events.Approvals.Pending.L3";
+        public const string PendingL4 = "Swims.Events.Approvals.Pending.L4";
+        public const string PendingL5 = "Swims.Events.Approvals.Pending.L5";
+
+        public const string FinalApproved = "Swims.Events.Approvals.FinalApproved";
+
+        public static string PendingForLevel(int level) => level switch
+        {
+            1 => PendingL1,
+            2 => PendingL2,
+            3 => PendingL3,
+            4 => PendingL4,
+            5 => PendingL5,
+            _ => throw new ArgumentOutOfRangeException(nameof(level), level, "Approval level must be 1..5.")
+        };
+    }
+
 }

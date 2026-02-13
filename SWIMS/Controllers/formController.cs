@@ -373,6 +373,67 @@ namespace SWIMS.Controllers
             string uuid = frm["uuid"].ToString();
             await _context.SaveChangesAsync();
 
+            // 🔔 Notify: Approval progressed (next pending level or final approved)
+            try
+            {
+                var formInfo = await _context.SW_forms
+                    .AsNoTracking()
+                    .Where(x => x.Id == sw_frmData.SW_formsId)
+                    .Select(x => new { x.uuid, x.name, x.approvalAmt })
+                    .FirstOrDefaultAsync(HttpContext.RequestAborted);
+
+                var formUuid = !string.IsNullOrWhiteSpace(uuid) ? uuid : formInfo?.uuid;
+                var formName = formInfo?.name ?? $"Form #{sw_frmData.SW_formsId}";
+                var approvalAmt = formInfo?.approvalAmt ?? 0;
+
+                if (approvalAmt > 0 && !string.IsNullOrWhiteSpace(formUuid))
+                {
+                    var nextPending = GetNextPendingApprovalLevel(sw_frmData, approvalAmt);
+
+                    var actorName = User?.Identity?.Name ?? "A user";
+
+                    if (nextPending.HasValue)
+                    {
+                        var lvl = nextPending.Value;
+
+                        await NotifyApprovalEventAsync(
+                            formId: sw_frmData.SW_formsId,
+                            entryId: sw_frmData.Id,
+                            approvalAmt: approvalAmt,
+                            pendingLevel: lvl,
+                            eventKey: SwimsEventKeys.Approvals.PendingForLevel(lvl),
+                            subject: $"Approval required (Level {lvl})",
+                            actorBody: $"Approval updated for entry #{sw_frmData.Id} on '{formName}'. Next: Level {lvl} of {approvalAmt}.",
+                            routedBody: $"{actorName} advanced entry #{sw_frmData.Id} on '{formName}'. Next approval: Level {lvl} of {approvalAmt}.",
+                            ct: HttpContext.RequestAborted,
+                            formUuid: formUuid,
+                            formName: formName,
+                            recipientOverride: "system" // route-only
+                        );
+                    }
+                    else
+                    {
+                        // final approval complete
+                        await NotifyApprovalEventAsync(
+                            formId: sw_frmData.SW_formsId,
+                            entryId: sw_frmData.Id,
+                            approvalAmt: approvalAmt,
+                            pendingLevel: 0,
+                            eventKey: SwimsEventKeys.Approvals.FinalApproved,
+                            subject: "Final approval completed",
+                            actorBody: $"You completed final approval for entry #{sw_frmData.Id} on '{formName}'.",
+                            routedBody: $"{actorName} completed final approval for entry #{sw_frmData.Id} on '{formName}'.",
+                            ct: HttpContext.RequestAborted,
+                            formUuid: formUuid,
+                            formName: formName,
+                            recipientOverride: User?.FindFirstValue(ClaimTypes.NameIdentifier) // actor gets a record
+                        );
+                    }
+                }
+            }
+            catch { }
+
+
             return RedirectToAction("Program", "Form", new { uuid });
         }
 
@@ -1596,6 +1657,100 @@ namespace SWIMS.Controllers
 
                             texts = texts,
                             extra = extraMeta
+                        }
+                    })
+                };
+
+                await _elsa.ExecuteByNameAsync("Swims.Notifications.DirectInApp", payload, ct);
+            }
+            catch { }
+        }
+
+        private static int? GetNextPendingApprovalLevel(SW_formTableDatum d, int approvalAmt)
+        {
+            if (approvalAmt <= 0) return null;
+
+            var max = Math.Min(approvalAmt, 5);
+
+            bool IsApproved(int level) => level switch
+            {
+                1 => (d.isApproval_01 ?? 0) == 1,
+                2 => (d.isApproval_02 ?? 0) == 1,
+                3 => (d.isApproval_03 ?? 0) == 1,
+                4 => (d.isApproval_04 ?? 0) == 1,
+                5 => (d.isApproval_05 ?? 0) == 1,
+                _ => true
+            };
+
+            for (var i = 1; i <= max; i++)
+                if (!IsApproved(i))
+                    return i;
+
+            return null; // all required approvals complete
+        }
+
+        private async Task NotifyApprovalEventAsync(
+            int formId,
+            int entryId,
+            int approvalAmt,
+            int pendingLevel,
+            string eventKey,
+            string subject,
+            string actorBody,
+            string routedBody,
+            CancellationToken ct = default,
+            string? formUuid = null,
+            string? formName = null,
+            string? recipientOverride = null)
+        {
+            try
+            {
+                var recipient =
+                    recipientOverride
+                    ?? User?.FindFirstValue(ClaimTypes.NameIdentifier)
+                    ?? User?.Identity?.Name;
+
+                if (string.IsNullOrWhiteSpace(recipient))
+                    return;
+
+                string? url = null;
+
+                if (!string.IsNullOrWhiteSpace(formUuid))
+                {
+                    url = pendingLevel >= 1
+                        ? Url.Action("ApprovalAction", "form", new { dataId = entryId, appCnt = pendingLevel, uuid = formUuid })
+                        : Url.Action("Approval", "form", new { uuid = formUuid });
+                }
+
+                var payload = new
+                {
+                    Recipient = recipient,
+                    Channel = "InApp",
+                    Subject = subject,
+                    Body = actorBody,
+                    MetadataJson = JsonSerializer.Serialize(new
+                    {
+                        type = "Approvals",
+                        eventKey,
+                        url,
+                        metadata = new
+                        {
+                            formId,
+                            formName,
+                            formUuid,
+                            entryId,
+                            approvalAmt,
+                            pendingLevel,
+
+                            actorUserId = User?.FindFirstValue(ClaimTypes.NameIdentifier),
+                            actorUserName = User?.Identity?.Name,
+
+                            texts = new
+                            {
+                                actor = new { subject, body = actorBody },
+                                routed = new { subject, body = routedBody },
+                                superadmin = new { subject, body = routedBody }
+                            }
                         }
                     })
                 };

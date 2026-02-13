@@ -81,11 +81,12 @@ namespace SWIMS.Controllers
                     var formInfo = await _context.SW_forms
                         .AsNoTracking()
                         .Where(x => x.Id == sW_formTableDatum.SW_formsId)
-                        .Select(x => new { x.uuid, x.name })
+                        .Select(x => new { x.uuid, x.name, x.approvalAmt })
                         .FirstOrDefaultAsync(HttpContext.RequestAborted);
 
                     var formName = formInfo?.name ?? $"Form #{sW_formTableDatum.SW_formsId}";
                     var formUuid = formInfo?.uuid;
+                    var approvalAmt = formInfo?.approvalAmt ?? 0;
 
                     var entryId = sW_formTableDatum.Id;
 
@@ -101,6 +102,30 @@ namespace SWIMS.Controllers
                         formName: formName,
                         extraMeta: new { created = true }
                     );
+
+                    // 🔔 Notify: Approval pending (L1) — permission routed
+                    if (approvalAmt > 0 && !string.IsNullOrWhiteSpace(formUuid))
+                    {
+                        try
+                        {
+                            await NotifyApprovalEventAsync(
+                                formId: sW_formTableDatum.SW_formsId,
+                                entryId: entryId,
+                                approvalAmt: approvalAmt,
+                                pendingLevel: 1,
+                                eventKey: SwimsEventKeys.Approvals.PendingForLevel(1),
+                                subject: "Approval required (Level 1)",
+                                actorBody: $"You submitted entry #{entryId} on '{formName}' for approval (Level 1 of {approvalAmt}).",
+                                routedBody: $"New approval required: entry #{entryId} on '{formName}' (Level 1 of {approvalAmt}).",
+                                ct: HttpContext.RequestAborted,
+                                formUuid: formUuid,
+                                formName: formName,
+                                recipientOverride: "system" // route-only (no direct recipient)
+                            );
+                        }
+                        catch { }
+                    }
+
                 }
                 catch { }
                 // 🔔 END
@@ -385,6 +410,79 @@ namespace SWIMS.Controllers
             catch { }
         }
 
+        private async Task NotifyApprovalEventAsync(
+    int formId,
+    int entryId,
+    int approvalAmt,
+    int pendingLevel,
+    string eventKey,
+    string subject,
+    string actorBody,
+    string routedBody,
+    CancellationToken ct = default,
+    string? formUuid = null,
+    string? formName = null,
+    string? recipientOverride = null)
+        {
+            try
+            {
+                var recipient =
+                    recipientOverride
+                    ?? User?.FindFirstValue(ClaimTypes.NameIdentifier)
+                    ?? User?.Identity?.Name;
+
+                if (string.IsNullOrWhiteSpace(recipient))
+                    return;
+
+                string? url = null;
+
+                if (!string.IsNullOrWhiteSpace(formUuid) && pendingLevel >= 1)
+                {
+                    url = Url.Action("ApprovalAction", "form", new
+                    {
+                        dataId = entryId,
+                        appCnt = pendingLevel,
+                        uuid = formUuid
+                    });
+                }
+
+                var payload = new
+                {
+                    Recipient = recipient,
+                    Channel = "InApp",
+                    Subject = subject,
+                    Body = actorBody,
+                    MetadataJson = JsonSerializer.Serialize(new
+                    {
+                        type = "Approvals",
+                        eventKey,
+                        url,
+                        metadata = new
+                        {
+                            formId,
+                            formName,
+                            formUuid,
+                            entryId,
+                            approvalAmt,
+                            pendingLevel,
+
+                            actorUserId = User?.FindFirstValue(ClaimTypes.NameIdentifier),
+                            actorUserName = User?.Identity?.Name,
+
+                            texts = new
+                            {
+                                actor = new { subject, body = actorBody },
+                                routed = new { subject, body = routedBody },
+                                superadmin = new { subject, body = routedBody }
+                            }
+                        }
+                    })
+                };
+
+                await _elsa.ExecuteByNameAsync("Swims.Notifications.DirectInApp", payload, ct);
+            }
+            catch { }
+        }
 
 
         private bool SW_formTableDatumExists(int id)
