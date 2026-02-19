@@ -2,6 +2,8 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using MsOptions = Microsoft.Extensions.Options.Options;
+
 
 namespace SWIMS.Services.Email;
 
@@ -25,13 +27,13 @@ public static class EmailingServiceCollectionExtensions
             var legacy = emailing.GetSection("Smtp").Get<SmtpConfiguration>();
 
             if (profiles?.Profiles == null || profiles.Profiles.Count == 0)
-                return Options.Create(legacy ?? new SmtpConfiguration());
+                return MsOptions.Create(legacy ?? new SmtpConfiguration());
 
             var activeKey = profiles.ActiveProfile ?? profiles.Profiles.Keys.First();
             if (!profiles.Profiles.TryGetValue(activeKey, out var active))
                 throw new InvalidOperationException($"Emailing:SmtpProfiles.ActiveProfile '{activeKey}' not found.");
 
-            return Options.Create(active);
+            return MsOptions.Create(active);
         });
 
         // --- Template provider (works for both modes) ---

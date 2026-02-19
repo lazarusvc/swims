@@ -21,6 +21,7 @@ using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Options;
 using Serilog;
 using Serilog.Events;
 using SWIMS.Data;
@@ -29,8 +30,11 @@ using SWIMS.Data.Lookups;
 using SWIMS.Data.Reports;
 using SWIMS.Models;
 using SWIMS.Models.StoredProcs;
+using SWIMS.Options;
+using SWIMS.Security;
 using SWIMS.Services;
 using SWIMS.Services.Auth;
+using SWIMS.Services.Cases;
 using SWIMS.Services.Diagnostics;
 using SWIMS.Services.Diagnostics.Auditing;
 using SWIMS.Services.Diagnostics.Sessions;
@@ -44,7 +48,6 @@ using SWIMS.Services.Outbox.Jobs;
 using SWIMS.Services.Reporting;
 using SWIMS.Services.Setup;
 using SWIMS.Services.SystemSettings;
-using SWIMS.Services.Cases;
 using SWIMS.Web.Endpoints;
 using SWIMS.Web.Hubs;
 using SWIMS.Web.Ops;
@@ -400,6 +403,16 @@ builder.Services.AddHttpClient("Elsa", (sp, client) =>
 });
 
 builder.Services.AddScoped<IElsaWorkflowClient, ElsaWorkflowClient>();
+
+builder.Services
+    .AddOptions<ElsaOptions>()
+    .Bind(builder.Configuration.GetSection("Elsa"))
+    .Validate(o => !string.IsNullOrWhiteSpace(o.Integration.NotificationsKey),
+        "Elsa:Integration:NotificationsKey is required")
+    .ValidateOnStart();
+
+builder.Services.AddScoped<ElsaIntegrationKeyFilter>();
+
 
 
 builder.Services.AddScoped<ISetupStateService, SetupStateService>();

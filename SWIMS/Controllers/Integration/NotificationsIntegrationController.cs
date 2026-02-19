@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SWIMS.Data;
+using SWIMS.Security;
 using SWIMS.Models.Notifications;
 using SWIMS.Services.Notifications;
 using System.Text.Json;
@@ -11,6 +12,7 @@ namespace SWIMS.Controllers.Integration;
 [ApiController]
 [AllowAnonymous]
 [Route("api/integration/notifications")]
+[ServiceFilter(typeof(ElsaIntegrationKeyFilter))]
 public class NotificationsIntegrationController : ControllerBase
 {
     private readonly ILogger<NotificationsIntegrationController> _logger;
