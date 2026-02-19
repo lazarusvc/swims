@@ -84,28 +84,32 @@ public static class SwimsEventKeys
         }
     }
 
-    // SSRS / reporting
+    public static class Admin
+    {
+        public static class Reports
+        {
+            public const string DefinitionCreated = "Swims.Events.Admin.Reports.DefinitionCreated";
+            public const string DefinitionUpdated = "Swims.Events.Admin.Reports.DefinitionUpdated";
+            public const string DefinitionDeleted = "Swims.Events.Admin.Reports.DefinitionDeleted";
+
+            public static class Parameters
+            {
+                public const string Created = "Swims.Events.Admin.Reports.Parameters.Created";
+                public const string Updated = "Swims.Events.Admin.Reports.Parameters.Updated";
+                public const string Deleted = "Swims.Events.Admin.Reports.Parameters.Deleted";
+                public const string QuickAdded = "Swims.Events.Admin.Reports.Parameters.QuickAdded";
+            }
+        }
+    }
+
     public static class Reports
     {
         public const string ExportFailed = "Swims.Events.Reports.ExportFailed";
         public const string ExportSucceeded = "Swims.Events.Reports.ExportSucceeded";
-        public const string Run = "Swims.Events.Reports.Run";
-
-        public static class Definitions
-        {
-            public const string Created = "Swims.Events.Reports.Definitions.Created";
-            public const string Updated = "Swims.Events.Reports.Definitions.Updated";
-            public const string Deleted = "Swims.Events.Reports.Definitions.Deleted";
-        }
-
-        public static class Parameters
-        {
-            public const string Created = "Swims.Events.Reports.Parameters.Created";
-            public const string Updated = "Swims.Events.Reports.Parameters.Updated";
-            public const string Deleted = "Swims.Events.Reports.Parameters.Deleted";
-            public const string QuickAdded = "Swims.Events.Reports.Parameters.QuickAdded";
-        }
     }
+
+
+
 
     // Form Reports (formReportController)
     public static class FormReports

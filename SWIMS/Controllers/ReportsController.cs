@@ -12,6 +12,9 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using System.Text.Json;
 using SWIMS.Services.Elsa;
+using SWIMS.Models.Notifications;
+using SWIMS.Services.Notifications;
+
 
 
 namespace SWIMS.Controllers
@@ -137,22 +140,41 @@ namespace SWIMS.Controllers
 
                 // 🔔 Notify: Report export failed
                 await NotifyReportAsync(
+                    eventKey: SwimsEventKeys.Reports.ExportFailed,
                     subject: "Report export failed",
                     body: $"Report '{title}' failed to export ({(int)resp.StatusCode} {resp.StatusCode})"
                           + (errorSummary != null ? $": {errorSummary}" : "."),
-                    metadata: new
+                    reportId: rpt.Id,
+                    reportName: rpt.Name,
+                    reportDesc: rpt.Desc,
+                    format: (format ?? "PDF"),
+                    extraMeta_: new
                     {
-                        action = "ReportExportFailed",
-                        reportId = rpt.Id,
-                        reportName = rpt.Name,
-                        reportDesc = rpt.Desc,
-                        format = format ?? "PDF",
                         statusCode = (int)resp.StatusCode,
                         status = resp.StatusCode.ToString(),
                         errorSummary
                     },
+                    texts_: new
+                    {
+                        actor = new
+                        {
+                            subject = "Report export failed",
+                            body = $"Your export of '{title}' failed ({(int)resp.StatusCode} {resp.StatusCode})."
+                        },
+                        routed = new
+                        {
+                            subject = "Report export failed",
+                            body = $"{User?.Identity?.Name ?? "A user"} failed to export '{title}' ({(int)resp.StatusCode} {resp.StatusCode})."
+                        },
+                        superadmin = new
+                        {
+                            subject = "Report export failed",
+                            body = $"{User?.Identity?.Name ?? "A user"} failed to export '{title}' ({(int)resp.StatusCode} {resp.StatusCode})."
+                        }
+                    },
                     ct: HttpContext.RequestAborted);
                 // 🔔 Notify: END
+
 
                 return StatusCode((int)resp.StatusCode, "Export failed.");
             }
@@ -171,18 +193,35 @@ namespace SWIMS.Controllers
 
             // 🔔 Notify: Report export succeeded
             await NotifyReportAsync(
+                eventKey: SwimsEventKeys.Reports.ExportSucceeded,
                 subject: "Report exported",
                 body: $"Report '{okTitle}' was exported as {effectiveFormat}.",
-                metadata: new
+                reportId: rpt.Id,
+                reportName: rpt.Name,
+                reportDesc: rpt.Desc,
+                format: effectiveFormat,
+                extraMeta_: new { },
+                texts_: new
                 {
-                    action = "ReportExportSucceeded",
-                    reportId = rpt.Id,
-                    reportName = rpt.Name,
-                    reportDesc = rpt.Desc,
-                    format = effectiveFormat
+                    actor = new
+                    {
+                        subject = "Report exported",
+                        body = $"Your report '{okTitle}' was exported as {effectiveFormat}."
+                    },
+                    routed = new
+                    {
+                        subject = "Report exported",
+                        body = $"{User?.Identity?.Name ?? "A user"} exported '{okTitle}' as {effectiveFormat}."
+                    },
+                    superadmin = new
+                    {
+                        subject = "Report exported",
+                        body = $"{User?.Identity?.Name ?? "A user"} exported '{okTitle}' as {effectiveFormat}."
+                    }
                 },
                 ct: HttpContext.RequestAborted);
             // 🔔 Notify: END
+
 
             // Inline (no filename) so the <iframe> can display it
             return File(bytes, contentType);
@@ -190,15 +229,21 @@ namespace SWIMS.Controllers
 
 
         private async Task NotifyReportAsync(
-            string subject,
-            string body,
-            object? metadata = null,
-            CancellationToken ct = default)
+    string eventKey,
+    string subject,
+    string body,
+    CancellationToken ct = default,
+    int? reportId = null,
+    string? reportName = null,
+    string? reportDesc = null,
+    string? format = null,
+    string? url = null,
+    object? extraMeta_ = null,
+    object? texts_ = null)
         {
-            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var recipient = !string.IsNullOrWhiteSpace(userIdClaim)
-                ? userIdClaim
-                : User.Identity?.Name;
+            var recipient = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrWhiteSpace(recipient))
+                recipient = User.Identity?.Name;
 
             if (string.IsNullOrWhiteSpace(recipient))
                 return;
@@ -209,18 +254,38 @@ namespace SWIMS.Controllers
                 Channel = "InApp",
                 Subject = subject,
                 Body = body,
-                MetadataJson = metadata == null ? null : JsonSerializer.Serialize(metadata)
+                MetadataJson = JsonSerializer.Serialize(new
+                {
+                    type = NotificationTypes.System,
+                    eventKey,
+                    url,
+                    metadata = new
+                    {
+                        reportId,
+                        reportName,
+                        reportDesc,
+                        format,
+
+                        actorUserId = User?.FindFirstValue(ClaimTypes.NameIdentifier),
+                        actorUserName = User?.Identity?.Name,
+
+                        texts = texts_,
+                        extra = extraMeta_
+                    }
+                })
             };
 
             try
             {
                 // 🔔 Notify: Report run event
                 await _elsa.ExecuteByNameAsync("Swims.Notifications.DirectInApp", payload, ct);
+                // 🔔 Notify: END
             }
             catch
             {
                 // Don't break report viewing if Elsa is down.
             }
         }
+
     }
 }

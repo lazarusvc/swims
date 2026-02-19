@@ -8,6 +8,9 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text.Json;
 using SWIMS.Services.Elsa;
+using SWIMS.Models.Notifications;
+using SWIMS.Services.Notifications;
+
 
 
 namespace SWIMS.Areas.Admin.Controllers
@@ -84,18 +87,39 @@ namespace SWIMS.Areas.Admin.Controllers
 
             // 🔔 Notify: Report parameter created
             await NotifyReportParamAsync(
+                eventKey: SwimsEventKeys.Admin.Reports.Parameters.Created,
                 subject: "Report parameter created",
                 body: $"Parameter '{m.ParamKey}' was added to report ID {m.SwReportId}.",
-                metadata: new
+                url: Url.Action(nameof(Edit), new { id = m.Id }),
+                reportId: m.SwReportId,
+                paramId: m.Id,
+                paramKey: m.ParamKey,
+                dataType: m.ParamDataType,
+                extraMeta_: new
                 {
-                    action = "ReportParamCreated",
-                    reportId = m.SwReportId,
-                    paramId = m.Id,
-                    key = m.ParamKey,
-                    dataType = m.ParamDataType
+                    action = "ReportParamCreated"
+                },
+                texts_: new
+                {
+                    actor = new
+                    {
+                        subject = "Report parameter created",
+                        body = $"You added parameter '{m.ParamKey}' to report ID {m.SwReportId}."
+                    },
+                    routed = new
+                    {
+                        subject = "Report parameter created",
+                        body = $"{User?.Identity?.Name ?? "An admin"} added parameter '{m.ParamKey}' to report ID {m.SwReportId}."
+                    },
+                    superadmin = new
+                    {
+                        subject = "Report parameter created",
+                        body = $"{User?.Identity?.Name ?? "An admin"} added parameter '{m.ParamKey}' to report ID {m.SwReportId}."
+                    }
                 },
                 ct: HttpContext.RequestAborted);
             // 🔔 Notify: END
+
 
             TempData["Ok"] = "Parameter added.";
             return RedirectToAction(nameof(Index), new { reportId = m.SwReportId });
@@ -141,18 +165,39 @@ namespace SWIMS.Areas.Admin.Controllers
 
             // 🔔 Notify: Report parameter updated
             await NotifyReportParamAsync(
+                eventKey: SwimsEventKeys.Admin.Reports.Parameters.Updated,
                 subject: "Report parameter updated",
                 body: $"Parameter '{m.ParamKey}' on report ID {m.SwReportId} was updated.",
-                metadata: new
+                url: Url.Action(nameof(Edit), new { id = m.Id }),
+                reportId: m.SwReportId,
+                paramId: m.Id,
+                paramKey: m.ParamKey,
+                dataType: m.ParamDataType,
+                extraMeta_: new
                 {
-                    action = "ReportParamUpdated",
-                    reportId = m.SwReportId,
-                    paramId = m.Id,
-                    key = m.ParamKey,
-                    dataType = m.ParamDataType
+                    action = "ReportParamUpdated"
+                },
+                texts_: new
+                {
+                    actor = new
+                    {
+                        subject = "Report parameter updated",
+                        body = $"You updated parameter '{m.ParamKey}' on report ID {m.SwReportId}."
+                    },
+                    routed = new
+                    {
+                        subject = "Report parameter updated",
+                        body = $"{User?.Identity?.Name ?? "An admin"} updated parameter '{m.ParamKey}' on report ID {m.SwReportId}."
+                    },
+                    superadmin = new
+                    {
+                        subject = "Report parameter updated",
+                        body = $"{User?.Identity?.Name ?? "An admin"} updated parameter '{m.ParamKey}' on report ID {m.SwReportId}."
+                    }
                 },
                 ct: HttpContext.RequestAborted);
             // 🔔 Notify: END
+
 
             TempData["Ok"] = "Parameter saved.";
             return RedirectToAction(nameof(Index), new { reportId = m.SwReportId });
@@ -173,17 +218,39 @@ namespace SWIMS.Areas.Admin.Controllers
 
             // 🔔 Notify: Report parameter deleted
             await NotifyReportParamAsync(
+                eventKey: SwimsEventKeys.Admin.Reports.Parameters.Deleted,
                 subject: "Report parameter deleted",
                 body: $"Parameter '{m.ParamKey}' was removed from report ID {rid}.",
-                metadata: new
+                url: Url.Action(nameof(Index), new { reportId = rid }),
+                reportId: rid,
+                paramId: m.Id,
+                paramKey: m.ParamKey,
+                dataType: m.ParamDataType,
+                extraMeta_: new
                 {
-                    action = "ReportParamDeleted",
-                    reportId = rid,
-                    paramId = m.Id,
-                    key = m.ParamKey
+                    action = "ReportParamDeleted"
+                },
+                texts_: new
+                {
+                    actor = new
+                    {
+                        subject = "Report parameter deleted",
+                        body = $"You removed parameter '{m.ParamKey}' from report ID {rid}."
+                    },
+                    routed = new
+                    {
+                        subject = "Report parameter deleted",
+                        body = $"{User?.Identity?.Name ?? "An admin"} removed parameter '{m.ParamKey}' from report ID {rid}."
+                    },
+                    superadmin = new
+                    {
+                        subject = "Report parameter deleted",
+                        body = $"{User?.Identity?.Name ?? "An admin"} removed parameter '{m.ParamKey}' from report ID {rid}."
+                    }
                 },
                 ct: HttpContext.RequestAborted);
             // 🔔 Notify: END
+
 
             TempData["Ok"] = "Parameter deleted.";
             return RedirectToAction(nameof(Index), new { reportId = rid });
@@ -208,17 +275,40 @@ namespace SWIMS.Areas.Admin.Controllers
 
             // 🔔 Notify: Report parameter quick-added
             await NotifyReportParamAsync(
+                eventKey: SwimsEventKeys.Admin.Reports.Parameters.QuickAdded,
                 subject: "Report parameter quick-added",
                 body: $"QuickAdd parameter '{key}' was added to report ID {reportId}.",
-                metadata: new
+                url: Url.Action(nameof(Index), new { reportId }),
+                reportId: reportId,
+                paramId: null,
+                paramKey: key,
+                dataType: dt,
+                extraMeta_: new
                 {
                     action = "ReportParamQuickAdd",
-                    reportId,
-                    key,
-                    dataType = dt
+                    value
+                },
+                texts_: new
+                {
+                    actor = new
+                    {
+                        subject = "Report parameter quick-added",
+                        body = $"You quick-added parameter '{key}' to report ID {reportId}."
+                    },
+                    routed = new
+                    {
+                        subject = "Report parameter quick-added",
+                        body = $"{User?.Identity?.Name ?? "An admin"} quick-added parameter '{key}' to report ID {reportId}."
+                    },
+                    superadmin = new
+                    {
+                        subject = "Report parameter quick-added",
+                        body = $"{User?.Identity?.Name ?? "An admin"} quick-added parameter '{key}' to report ID {reportId}."
+                    }
                 },
                 ct: HttpContext.RequestAborted);
             // 🔔 Notify: END
+
 
             TempData["Ok"] = $"QuickAdd: {key}={value}";
             return RedirectToAction(nameof(Index), new { reportId });
@@ -227,37 +317,69 @@ namespace SWIMS.Areas.Admin.Controllers
 #endif
 
         private async Task NotifyReportParamAsync(
-            string subject,
-            string body,
-            object? metadata = null,
-            CancellationToken ct = default)
+    string eventKey,
+    string subject,
+    string body,
+    CancellationToken ct = default,
+    string? url = null,
+    int? reportId = null,
+    int? paramId = null,
+    string? paramKey = null,
+    string? dataType = null,
+    object? extraMeta_ = null,
+    object? texts_ = null)
         {
-            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var recipient = !string.IsNullOrWhiteSpace(userIdClaim)
-                ? userIdClaim
-                : User.Identity?.Name;
-
-            if (string.IsNullOrWhiteSpace(recipient))
-                return;
-
-            var payload = new
-            {
-                Recipient = recipient,
-                Channel = "InApp",
-                Subject = subject,
-                Body = body,
-                MetadataJson = metadata == null ? null : JsonSerializer.Serialize(metadata)
-            };
-
             try
             {
-                // 🔔 Notify: Report parameter admin event
-                await _elsa.ExecuteByNameAsync("Swims.Notifications.DirectInApp", payload, ct);
+                var recipient = User?.FindFirstValue(ClaimTypes.NameIdentifier)
+                    ?? User?.Identity?.Name;
+
+                if (string.IsNullOrWhiteSpace(recipient))
+                    return;
+
+                var payload = new
+                {
+                    Recipient = recipient,
+                    Channel = "InApp",
+                    Subject = subject,
+                    Body = body,
+                    MetadataJson = JsonSerializer.Serialize(new
+                    {
+                        type = NotificationTypes.System,
+                        eventKey,
+                        url,
+                        metadata = new
+                        {
+                            reportId,
+                            paramId,
+                            paramKey,
+                            dataType,
+
+                            actorUserId = User?.FindFirstValue(ClaimTypes.NameIdentifier),
+                            actorUserName = User?.Identity?.Name,
+
+                            texts = texts_,
+                            extra = extraMeta_
+                        }
+                    })
+                };
+
+                try
+                {
+                    // 🔔 Notify: Report parameter admin event
+                    await _elsa.ExecuteByNameAsync("Swims.Notifications.DirectInApp", payload, ct);
+                    // 🔔 Notify: END
+                }
+                catch
+                {
+                }
             }
             catch
             {
+                // Best-effort.
             }
         }
+
 
 
     }

@@ -9,6 +9,9 @@ using SWIMS.Models.Reports;
 using System.Security.Claims;
 using System.Text.Json;
 using SWIMS.Services.Elsa;
+using SWIMS.Models.Notifications;
+using SWIMS.Services.Notifications;
+
 
 
 namespace SWIMS.Areas.Admin.Controllers
@@ -61,18 +64,40 @@ namespace SWIMS.Areas.Admin.Controllers
                 TempData["Ok"] = "Report created.";
 
                 // 🔔 Notify: Report definition created
+                var reportTitle = m.Desc ?? m.Name ?? $"ID {m.Id}";
                 await NotifyReportAdminAsync(
+                    eventKey: SwimsEventKeys.Admin.Reports.DefinitionCreated,
                     subject: "Report definition created",
-                    body: $"Report '{m.Desc ?? m.Name}' was created.",
-                    metadata: new
+                    body: $"Report '{reportTitle}' was created.",
+                    url: Url.Action(nameof(Edit), new { id = m.Id }),
+                    reportId: m.Id,
+                    reportName: m.Name,
+                    reportDesc: m.Desc,
+                    extraMeta_: new
                     {
-                        action = "ReportDefinitionCreated",
-                        reportId = m.Id,
-                        reportName = m.Name,
                         roleId = m.RoleId
+                    },
+                    texts_: new
+                    {
+                        actor = new
+                        {
+                            subject = "Report definition created",
+                            body = $"You created report '{reportTitle}'."
+                        },
+                        routed = new
+                        {
+                            subject = "Report definition created",
+                            body = $"{User?.Identity?.Name ?? "An admin"} created report '{reportTitle}'."
+                        },
+                        superadmin = new
+                        {
+                            subject = "Report definition created",
+                            body = $"{User?.Identity?.Name ?? "An admin"} created report '{reportTitle}'."
+                        }
                     },
                     ct: HttpContext.RequestAborted);
                 // 🔔 Notify: END
+
 
 
                 // Optional: jump to Params if they checked the box
@@ -107,18 +132,40 @@ namespace SWIMS.Areas.Admin.Controllers
             await _db.SaveChangesAsync();
 
             // 🔔 Notify: Report definition updated
+            var reportTitle = m.Desc ?? m.Name ?? $"ID {m.Id}";
             await NotifyReportAdminAsync(
+                eventKey: SwimsEventKeys.Admin.Reports.DefinitionUpdated,
                 subject: "Report definition updated",
-                body: $"Report '{m.Desc ?? m.Name}' was updated.",
-                metadata: new
+                body: $"Report '{reportTitle}' was updated.",
+                url: Url.Action(nameof(Edit), new { id = m.Id }),
+                reportId: m.Id,
+                reportName: m.Name,
+                reportDesc: m.Desc,
+                extraMeta_: new
                 {
-                    action = "ReportDefinitionUpdated",
-                    reportId = m.Id,
-                    reportName = m.Name,
                     roleId = m.RoleId
+                },
+                texts_: new
+                {
+                    actor = new
+                    {
+                        subject = "Report definition updated",
+                        body = $"You updated report '{reportTitle}'."
+                    },
+                    routed = new
+                    {
+                        subject = "Report definition updated",
+                        body = $"{User?.Identity?.Name ?? "An admin"} updated report '{reportTitle}'."
+                    },
+                    superadmin = new
+                    {
+                        subject = "Report definition updated",
+                        body = $"{User?.Identity?.Name ?? "An admin"} updated report '{reportTitle}'."
+                    }
                 },
                 ct: HttpContext.RequestAborted);
             // 🔔 Notify: END
+
 
             return RedirectToAction(nameof(Index));
 
@@ -137,54 +184,98 @@ namespace SWIMS.Areas.Admin.Controllers
                 await _db.SaveChangesAsync();
 
                 // 🔔 Notify: Report definition deleted
+                var reportTitle = desc ?? name ?? $"ID {id}";
                 await NotifyReportAdminAsync(
+                    eventKey: SwimsEventKeys.Admin.Reports.DefinitionDeleted,
                     subject: "Report definition deleted",
-                    body: $"Report '{desc ?? name ?? $"ID {id}"}' was deleted.",
-                    metadata: new
+                    body: $"Report '{reportTitle}' was deleted.",
+                    url: Url.Action(nameof(Index)),
+                    reportId: id,
+                    reportName: name,
+                    reportDesc: desc,
+                    extraMeta_: new { },
+                    texts_: new
                     {
-                        action = "ReportDefinitionDeleted",
-                        reportId = id,
-                        reportName = name
+                        actor = new
+                        {
+                            subject = "Report definition deleted",
+                            body = $"You deleted report '{reportTitle}'."
+                        },
+                        routed = new
+                        {
+                            subject = "Report definition deleted",
+                            body = $"{User?.Identity?.Name ?? "An admin"} deleted report '{reportTitle}'."
+                        },
+                        superadmin = new
+                        {
+                            subject = "Report definition deleted",
+                            body = $"{User?.Identity?.Name ?? "An admin"} deleted report '{reportTitle}'."
+                        }
                     },
                     ct: HttpContext.RequestAborted);
                 // 🔔 Notify: END
+
             }
             return RedirectToAction(nameof(Index));
         }
 
 
         private async Task NotifyReportAdminAsync(
-            string subject,
-            string body,
-            object? metadata = null,
-            CancellationToken ct = default)
+    string eventKey,
+    string subject,
+    string body,
+    CancellationToken ct = default,
+    string? url = null,
+    int? reportId = null,
+    string? reportName = null,
+    string? reportDesc = null,
+    object? extraMeta_ = null,
+    object? texts_ = null)
         {
-            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var recipient = !string.IsNullOrWhiteSpace(userIdClaim)
-                ? userIdClaim
-                : User.Identity?.Name;
-
-            if (string.IsNullOrWhiteSpace(recipient))
-                return;
-
-            var payload = new
-            {
-                Recipient = recipient,
-                Channel = "InApp",
-                Subject = subject,
-                Body = body,
-                MetadataJson = metadata == null ? null : JsonSerializer.Serialize(metadata)
-            };
-
             try
             {
+                var recipient = User?.FindFirstValue(ClaimTypes.NameIdentifier)
+                    ?? User?.Identity?.Name;
+
+                if (string.IsNullOrWhiteSpace(recipient))
+                    return;
+
+                var payload = new
+                {
+                    Recipient = recipient,
+                    Channel = "InApp",
+                    Subject = subject,
+                    Body = body,
+                    MetadataJson = JsonSerializer.Serialize(new
+                    {
+                        type = NotificationTypes.System,
+                        eventKey,
+                        url,
+                        metadata = new
+                        {
+                            reportId,
+                            reportName,
+                            reportDesc,
+
+                            actorUserId = User?.FindFirstValue(ClaimTypes.NameIdentifier),
+                            actorUserName = User?.Identity?.Name,
+
+                            texts = texts_,
+                            extra = extraMeta_
+                        }
+                    })
+                };
+
                 // 🔔 Notify: Report admin config event
                 await _elsa.ExecuteByNameAsync("Swims.Notifications.DirectInApp", payload, ct);
+                // 🔔 Notify: END
             }
             catch
             {
+                // Best-effort: never break admin flows if Elsa is down.
             }
         }
+
 
 
     }
