@@ -10,6 +10,9 @@ using SWIMS.Services.Diagnostics;
 using System.Security.Claims;
 using System.Text.Json;
 using SWIMS.Services.Elsa;
+using SWIMS.Models.Notifications;
+using SWIMS.Services.Notifications;
+
 
 namespace SWIMS.Areas.Admin.Controllers
 {
@@ -104,13 +107,16 @@ namespace SWIMS.Areas.Admin.Controllers
             await _db.SaveChangesAsync();
             await _store.InvalidateAsync();
 
+            var actorName = User?.Identity?.Name ?? "An admin";
+
             // 🔔 Notify: Endpoint policy assignment created
             await NotifyAdminAsync(
+                eventKey: SwimsEventKeys.Security.EndpointPolicyAssignments.Created,
                 subject: "Endpoint policy assignment created",
-                body: $"Endpoint assignment for policy '{policy.Name}' was created.",
-                metadata: new
+                body: $"You created endpoint policy assignment #{row.Id} for policy '{policy.Name}'.",
+                url: Url.Action(nameof(Edit), new { id = row.Id }),
+                extraMeta_: new
                 {
-                    action = "EndpointPolicyAssignmentCreated",
                     assignmentId = row.Id,
                     policyId = policy.Id,
                     policyName = policy.Name,
@@ -119,9 +125,33 @@ namespace SWIMS.Areas.Admin.Controllers
                     controller = row.Controller,
                     actionName = row.Action,
                     page = row.Page,
-                    path = row.Path
-                });
+                    path = row.Path,
+                    regex = row.Regex,
+                    notes = row.Notes,
+                    isEnabled = row.IsEnabled,
+                    priority = row.Priority
+                },
+                texts_: new
+                {
+                    actor = new
+                    {
+                        subject = "Endpoint policy assignment created",
+                        body = $"You created endpoint policy assignment #{row.Id} for policy '{policy.Name}'."
+                    },
+                    routed = new
+                    {
+                        subject = "Endpoint policy assignment created",
+                        body = $"{actorName} created endpoint policy assignment #{row.Id} for policy '{policy.Name}'."
+                    },
+                    superadmin = new
+                    {
+                        subject = "Endpoint policy assignment created",
+                        body = $"{actorName} created endpoint policy assignment #{row.Id} for policy '{policy.Name}'."
+                    }
+                },
+                ct: HttpContext.RequestAborted);
             // 🔔 Notify: END
+
 
             TempData["Ok"] = "Endpoint policy assignment created.";
             return RedirectToAction(nameof(Index));
@@ -181,13 +211,16 @@ namespace SWIMS.Areas.Admin.Controllers
             await _db.SaveChangesAsync();
             await _store.InvalidateAsync();
 
+            var actorName = User?.Identity?.Name ?? "An admin";
+
             // 🔔 Notify: Endpoint policy assignment updated
             await NotifyAdminAsync(
+                eventKey: SwimsEventKeys.Security.EndpointPolicyAssignments.Updated,
                 subject: "Endpoint policy assignment updated",
-                body: $"Endpoint assignment for policy '{policy.Name}' was updated.",
-                metadata: new
+                body: $"You updated endpoint policy assignment #{x.Id} for policy '{policy.Name}'.",
+                url: Url.Action(nameof(Edit), new { id = x.Id }),
+                extraMeta_: new
                 {
-                    action = "EndpointPolicyAssignmentUpdated",
                     assignmentId = x.Id,
                     policyId = policy.Id,
                     policyName = policy.Name,
@@ -196,9 +229,33 @@ namespace SWIMS.Areas.Admin.Controllers
                     controller = x.Controller,
                     actionName = x.Action,
                     page = x.Page,
-                    path = x.Path
-                });
+                    path = x.Path,
+                    regex = x.Regex,
+                    notes = x.Notes,
+                    isEnabled = x.IsEnabled,
+                    priority = x.Priority
+                },
+                texts_: new
+                {
+                    actor = new
+                    {
+                        subject = "Endpoint policy assignment updated",
+                        body = $"You updated endpoint policy assignment #{x.Id} for policy '{policy.Name}'."
+                    },
+                    routed = new
+                    {
+                        subject = "Endpoint policy assignment updated",
+                        body = $"{actorName} updated endpoint policy assignment #{x.Id} for policy '{policy.Name}'."
+                    },
+                    superadmin = new
+                    {
+                        subject = "Endpoint policy assignment updated",
+                        body = $"{actorName} updated endpoint policy assignment #{x.Id} for policy '{policy.Name}'."
+                    }
+                },
+                ct: HttpContext.RequestAborted);
             // 🔔 Notify: END
+
 
             TempData["Ok"] = "Endpoint policy assignment updated.";
             return RedirectToAction(nameof(Index));
@@ -215,17 +272,41 @@ namespace SWIMS.Areas.Admin.Controllers
             await _db.SaveChangesAsync();
             await _store.InvalidateAsync();
 
+            var actorName = User?.Identity?.Name ?? "An admin";
+            var stateWord = x.IsEnabled ? "enabled" : "disabled";
+
             // 🔔 Notify: Endpoint policy assignment toggled
             await NotifyAdminAsync(
+                eventKey: SwimsEventKeys.Security.EndpointPolicyAssignments.Toggled,
                 subject: "Endpoint policy assignment toggled",
-                body: $"Endpoint assignment ID {x.Id} was {(x.IsEnabled ? "enabled" : "disabled")}.",
-                metadata: new
+                body: $"You {stateWord} endpoint policy assignment #{x.Id}.",
+                url: Url.Action(nameof(Edit), new { id = x.Id }),
+                extraMeta_: new
                 {
-                    action = "EndpointPolicyAssignmentToggled",
                     assignmentId = x.Id,
                     isEnabled = x.IsEnabled
-                });
+                },
+                texts_: new
+                {
+                    actor = new
+                    {
+                        subject = "Endpoint policy assignment toggled",
+                        body = $"You {stateWord} endpoint policy assignment #{x.Id}."
+                    },
+                    routed = new
+                    {
+                        subject = "Endpoint policy assignment toggled",
+                        body = $"{actorName} {stateWord} endpoint policy assignment #{x.Id}."
+                    },
+                    superadmin = new
+                    {
+                        subject = "Endpoint policy assignment toggled",
+                        body = $"{actorName} {stateWord} endpoint policy assignment #{x.Id}."
+                    }
+                },
+                ct: HttpContext.RequestAborted);
             // 🔔 Notify: END
+
 
             TempData["Ok"] = $"Assignment {(x.IsEnabled ? "enabled" : "disabled")}.";
             return RedirectToAction(nameof(Index));
@@ -243,16 +324,39 @@ namespace SWIMS.Areas.Admin.Controllers
             await _db.SaveChangesAsync();
             await _store.InvalidateAsync();
 
+            var actorName = User?.Identity?.Name ?? "An admin";
+
             // 🔔 Notify: Endpoint policy assignment deleted
             await NotifyAdminAsync(
+                eventKey: SwimsEventKeys.Security.EndpointPolicyAssignments.Deleted,
                 subject: "Endpoint policy assignment deleted",
-                body: $"Endpoint assignment ID {assignmentId} was deleted.",
-                metadata: new
+                body: $"You deleted endpoint policy assignment #{assignmentId}.",
+                url: Url.Action(nameof(Index)),
+                extraMeta_: new
                 {
-                    action = "EndpointPolicyAssignmentDeleted",
                     assignmentId = assignmentId
-                });
+                },
+                texts_: new
+                {
+                    actor = new
+                    {
+                        subject = "Endpoint policy assignment deleted",
+                        body = $"You deleted endpoint policy assignment #{assignmentId}."
+                    },
+                    routed = new
+                    {
+                        subject = "Endpoint policy assignment deleted",
+                        body = $"{actorName} deleted endpoint policy assignment #{assignmentId}."
+                    },
+                    superadmin = new
+                    {
+                        subject = "Endpoint policy assignment deleted",
+                        body = $"{actorName} deleted endpoint policy assignment #{assignmentId}."
+                    }
+                },
+                ct: HttpContext.RequestAborted);
             // 🔔 Notify: END
+
 
             TempData["Ok"] = "Assignment deleted.";
             return RedirectToAction(nameof(Index));
@@ -377,21 +481,41 @@ namespace SWIMS.Areas.Admin.Controllers
 
             await _store.InvalidateAsync();
 
+            var actorName = User?.Identity?.Name ?? "An admin";
+
             // 🔔 Notify: Endpoint policy bulk assignments created
-            if (created > 0)
-            {
-                await NotifyAdminAsync(
-                    subject: "Endpoint policy assignments created",
-                    body: $"Bulk created {created} endpoint policy assignment(s) for policy '{policy.Name}'.",
-                    metadata: new
+            await NotifyAdminAsync(
+                eventKey: SwimsEventKeys.Security.EndpointPolicyAssignments.BulkCreated,
+                subject: "Endpoint policy assignments created",
+                body: $"You bulk created {created} endpoint policy assignment(s) for policy '{policy.Name}'.",
+                url: Url.Action(nameof(Index)),
+                extraMeta_: new
+                {
+                    policyId = policy.Id,
+                    policyName = policy.Name,
+                    createdCount = created
+                },
+                texts_: new
+                {
+                    actor = new
                     {
-                        action = "EndpointPolicyAssignmentsBulkCreated",
-                        createdCount = created,
-                        policyId = policy.Id,
-                        policyName = policy.Name
-                    });
-            }
+                        subject = "Endpoint policy assignments created",
+                        body = $"You bulk created {created} endpoint policy assignment(s) for policy '{policy.Name}'."
+                    },
+                    routed = new
+                    {
+                        subject = "Endpoint policy assignments created",
+                        body = $"{actorName} bulk created {created} endpoint policy assignment(s) for policy '{policy.Name}'."
+                    },
+                    superadmin = new
+                    {
+                        subject = "Endpoint policy assignments created",
+                        body = $"{actorName} bulk created {created} endpoint policy assignment(s) for policy '{policy.Name}'."
+                    }
+                },
+                ct: HttpContext.RequestAborted);
             // 🔔 Notify: END
+
 
             TempData["Ok"] = created > 0
                 ? $"Created {created} assignment(s)."
@@ -425,34 +549,57 @@ namespace SWIMS.Areas.Admin.Controllers
             return View("Create", vm);
         }
 
-        private async Task NotifyAdminAsync(string subject, string body, object? metadata = null)
+        private async Task NotifyAdminAsync(
+    string eventKey,
+    string subject,
+    string body,
+    object? extraMeta_ = null,
+    object? texts_ = null,
+    string? url = null,
+    int? targetUserId = null,
+    IEnumerable<int>? targetUserIds = null,
+    CancellationToken ct = default)
         {
-            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            string? recipient = !string.IsNullOrWhiteSpace(userIdClaim)
-                ? userIdClaim
-                : User.Identity?.Name;
-
-            if (string.IsNullOrWhiteSpace(recipient))
-                return;
-
-            var payload = new
-            {
-                Recipient = recipient,
-                Channel = "InApp",
-                Subject = subject,
-                Body = body,
-                MetadataJson = metadata == null ? null : JsonSerializer.Serialize(metadata)
-            };
-
             try
             {
-                // 🔔 Notify: Admin authorization config event
-                await _elsa.ExecuteByNameAsync("Swims.Notifications.DirectInApp", payload);
+                var recipient = User?.FindFirstValue(ClaimTypes.NameIdentifier)
+                    ?? User?.Identity?.Name;
+
+                if (string.IsNullOrWhiteSpace(recipient))
+                    return;
+
+                var payload = new
+                {
+                    Recipient = recipient,
+                    Channel = "InApp",
+                    Subject = subject,
+                    Body = body,
+                    MetadataJson = JsonSerializer.Serialize(new
+                    {
+                        type = NotificationTypes.System,
+                        eventKey,
+                        url,
+                        metadata = new
+                        {
+                            actorUserId = User?.FindFirstValue(ClaimTypes.NameIdentifier),
+                            actorUserName = User?.Identity?.Name,
+
+                            targetUserId,
+                            targetUserIds = targetUserIds?.ToArray(),
+
+                            texts = texts_,
+                            extra = extraMeta_
+                        }
+                    })
+                };
+
+                await _elsa.ExecuteByNameAsync("Swims.Notifications.DirectInApp", payload, ct);
             }
             catch
             {
             }
         }
+
 
 
     }

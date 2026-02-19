@@ -9,6 +9,9 @@ using SWIMS.Services.Diagnostics;
 using System.Security.Claims;
 using System.Text.Json;
 using SWIMS.Services.Elsa;
+using SWIMS.Models.Notifications;
+using SWIMS.Services.Notifications;
+
 
 namespace SWIMS.Areas.Admin.Controllers
 {
@@ -95,22 +98,49 @@ namespace SWIMS.Areas.Admin.Controllers
             await _db.SaveChangesAsync();
             await _store.InvalidateAsync();
 
+            var actorName = User?.Identity?.Name ?? "An admin";
+
             // 🔔 Notify: Public endpoint created
             await NotifyAdminAsync(
+                eventKey: SwimsEventKeys.Security.PublicEndpoints.Created,
                 subject: "Public endpoint created",
-                body: "A public endpoint was created.",
-                metadata: new
+                body: $"You created public endpoint #{row.Id}.",
+                url: Url.Action(nameof(Edit), new { id = row.Id }),
+                extraMeta_: new
                 {
-                    action = "PublicEndpointCreated",
                     endpointId = row.Id,
                     matchType = row.MatchType,
                     area = row.Area,
                     controller = row.Controller,
                     actionName = row.Action,
                     page = row.Page,
-                    path = row.Path
-                });
+                    path = row.Path,
+                    regex = row.Regex,
+                    notes = row.Notes,
+                    isEnabled = row.IsEnabled,
+                    priority = row.Priority
+                },
+                texts_: new
+                {
+                    actor = new
+                    {
+                        subject = "Public endpoint created",
+                        body = $"You created public endpoint #{row.Id}."
+                    },
+                    routed = new
+                    {
+                        subject = "Public endpoint created",
+                        body = $"{actorName} created public endpoint #{row.Id}."
+                    },
+                    superadmin = new
+                    {
+                        subject = "Public endpoint created",
+                        body = $"{actorName} created public endpoint #{row.Id}."
+                    }
+                },
+                ct: HttpContext.RequestAborted);
             // 🔔 Notify: END
+
 
             TempData["Ok"] = "Public endpoint created.";
             return RedirectToAction(nameof(Index));
@@ -153,22 +183,49 @@ namespace SWIMS.Areas.Admin.Controllers
             await _db.SaveChangesAsync();
             await _store.InvalidateAsync();
 
+            var actorName = User?.Identity?.Name ?? "An admin";
+
             // 🔔 Notify: Public endpoint updated
             await NotifyAdminAsync(
+                eventKey: SwimsEventKeys.Security.PublicEndpoints.Updated,
                 subject: "Public endpoint updated",
-                body: $"Public endpoint ID {x.Id} was updated.",
-                metadata: new
+                body: $"You updated public endpoint #{x.Id}.",
+                url: Url.Action(nameof(Edit), new { id = x.Id }),
+                extraMeta_: new
                 {
-                    action = "PublicEndpointUpdated",
                     endpointId = x.Id,
                     matchType = x.MatchType,
                     area = x.Area,
                     controller = x.Controller,
                     actionName = x.Action,
                     page = x.Page,
-                    path = x.Path
-                });
+                    path = x.Path,
+                    regex = x.Regex,
+                    notes = x.Notes,
+                    isEnabled = x.IsEnabled,
+                    priority = x.Priority
+                },
+                texts_: new
+                {
+                    actor = new
+                    {
+                        subject = "Public endpoint updated",
+                        body = $"You updated public endpoint #{x.Id}."
+                    },
+                    routed = new
+                    {
+                        subject = "Public endpoint updated",
+                        body = $"{actorName} updated public endpoint #{x.Id}."
+                    },
+                    superadmin = new
+                    {
+                        subject = "Public endpoint updated",
+                        body = $"{actorName} updated public endpoint #{x.Id}."
+                    }
+                },
+                ct: HttpContext.RequestAborted);
             // 🔔 Notify: END
+
 
             TempData["Ok"] = "Public endpoint updated.";
             return RedirectToAction(nameof(Index));
@@ -185,17 +242,41 @@ namespace SWIMS.Areas.Admin.Controllers
             await _db.SaveChangesAsync();
             await _store.InvalidateAsync();
 
+            var actorName = User?.Identity?.Name ?? "An admin";
+            var stateWord = x.IsEnabled ? "enabled" : "disabled";
+
             // 🔔 Notify: Public endpoint toggled
             await NotifyAdminAsync(
+                eventKey: SwimsEventKeys.Security.PublicEndpoints.Toggled,
                 subject: "Public endpoint toggled",
-                body: $"Public endpoint ID {x.Id} was {(x.IsEnabled ? "enabled" : "disabled")}.",
-                metadata: new
+                body: $"You {stateWord} public endpoint #{x.Id}.",
+                url: Url.Action(nameof(Edit), new { id = x.Id }),
+                extraMeta_: new
                 {
-                    action = "PublicEndpointToggled",
                     endpointId = x.Id,
                     isEnabled = x.IsEnabled
-                });
+                },
+                texts_: new
+                {
+                    actor = new
+                    {
+                        subject = "Public endpoint toggled",
+                        body = $"You {stateWord} public endpoint #{x.Id}."
+                    },
+                    routed = new
+                    {
+                        subject = "Public endpoint toggled",
+                        body = $"{actorName} {stateWord} public endpoint #{x.Id}."
+                    },
+                    superadmin = new
+                    {
+                        subject = "Public endpoint toggled",
+                        body = $"{actorName} {stateWord} public endpoint #{x.Id}."
+                    }
+                },
+                ct: HttpContext.RequestAborted);
             // 🔔 Notify: END
+
 
             TempData["Ok"] = $"Public endpoint {(x.IsEnabled ? "enabled" : "disabled")}.";
             return RedirectToAction(nameof(Index));
@@ -213,16 +294,39 @@ namespace SWIMS.Areas.Admin.Controllers
             await _db.SaveChangesAsync();
             await _store.InvalidateAsync();
 
+            var actorName = User?.Identity?.Name ?? "An admin";
+
             // 🔔 Notify: Public endpoint deleted
             await NotifyAdminAsync(
+                eventKey: SwimsEventKeys.Security.PublicEndpoints.Deleted,
                 subject: "Public endpoint deleted",
-                body: $"Public endpoint ID {endpointId} was deleted.",
-                metadata: new
+                body: $"You deleted public endpoint #{endpointId}.",
+                url: Url.Action(nameof(Index)),
+                extraMeta_: new
                 {
-                    action = "PublicEndpointDeleted",
                     endpointId = endpointId
-                });
+                },
+                texts_: new
+                {
+                    actor = new
+                    {
+                        subject = "Public endpoint deleted",
+                        body = $"You deleted public endpoint #{endpointId}."
+                    },
+                    routed = new
+                    {
+                        subject = "Public endpoint deleted",
+                        body = $"{actorName} deleted public endpoint #{endpointId}."
+                    },
+                    superadmin = new
+                    {
+                        subject = "Public endpoint deleted",
+                        body = $"{actorName} deleted public endpoint #{endpointId}."
+                    }
+                },
+                ct: HttpContext.RequestAborted);
             // 🔔 Notify: END
+
 
             TempData["Ok"] = "Public endpoint deleted.";
             return RedirectToAction(nameof(Index));
@@ -266,34 +370,57 @@ namespace SWIMS.Areas.Admin.Controllers
             return View("Create", vm);
         }
 
-        private async Task NotifyAdminAsync(string subject, string body, object? metadata = null)
+        private async Task NotifyAdminAsync(
+    string eventKey,
+    string subject,
+    string body,
+    object? extraMeta_ = null,
+    object? texts_ = null,
+    string? url = null,
+    int? targetUserId = null,
+    IEnumerable<int>? targetUserIds = null,
+    CancellationToken ct = default)
         {
-            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            string? recipient = !string.IsNullOrWhiteSpace(userIdClaim)
-                ? userIdClaim
-                : User.Identity?.Name;
-
-            if (string.IsNullOrWhiteSpace(recipient))
-                return;
-
-            var payload = new
-            {
-                Recipient = recipient,
-                Channel = "InApp",
-                Subject = subject,
-                Body = body,
-                MetadataJson = metadata == null ? null : JsonSerializer.Serialize(metadata)
-            };
-
             try
             {
-                // 🔔 Notify: Admin authorization config event
-                await _elsa.ExecuteByNameAsync("Swims.Notifications.DirectInApp", payload);
+                var recipient = User?.FindFirstValue(ClaimTypes.NameIdentifier)
+                    ?? User?.Identity?.Name;
+
+                if (string.IsNullOrWhiteSpace(recipient))
+                    return;
+
+                var payload = new
+                {
+                    Recipient = recipient,
+                    Channel = "InApp",
+                    Subject = subject,
+                    Body = body,
+                    MetadataJson = JsonSerializer.Serialize(new
+                    {
+                        type = NotificationTypes.System,
+                        eventKey,
+                        url,
+                        metadata = new
+                        {
+                            actorUserId = User?.FindFirstValue(ClaimTypes.NameIdentifier),
+                            actorUserName = User?.Identity?.Name,
+
+                            targetUserId,
+                            targetUserIds = targetUserIds?.ToArray(),
+
+                            texts = texts_,
+                            extra = extraMeta_
+                        }
+                    })
+                };
+
+                await _elsa.ExecuteByNameAsync("Swims.Notifications.DirectInApp", payload, ct);
             }
             catch
             {
             }
         }
+
 
 
     }

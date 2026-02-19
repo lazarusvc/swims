@@ -9,6 +9,9 @@ using SWIMS.Services.Auth;
 using System.Security.Claims;
 using System.Text.Json;
 using SWIMS.Services.Elsa;
+using SWIMS.Models.Notifications;
+using SWIMS.Services.Notifications;
+
 
 namespace SWIMS.Areas.Admin.Controllers
 {
@@ -95,17 +98,41 @@ namespace SWIMS.Areas.Admin.Controllers
 
             await _store.InvalidateAsync(policy.Name);
 
+            var actorName = User?.Identity?.Name ?? "An admin";
+
             // 🔔 Notify: Authorization policy created
             await NotifyAdminAsync(
+                eventKey: SwimsEventKeys.Security.AuthorizationPolicies.Created,
                 subject: "Authorization policy created",
-                body: $"Policy '{policy.Name}' was created.",
-                metadata: new
+                body: $"You created policy '{policy.Name}'.",
+                url: Url.Action(nameof(Edit), new { id = policy.Id }),
+                extraMeta_: new
                 {
-                    action = "AuthPolicyCreated",
                     policyId = policy.Id,
-                    policyName = policy.Name
-                });
+                    policyName = policy.Name,
+                    isEnabled = policy.IsEnabled
+                },
+                texts_: new
+                {
+                    actor = new
+                    {
+                        subject = "Authorization policy created",
+                        body = $"You created policy '{policy.Name}'."
+                    },
+                    routed = new
+                    {
+                        subject = "Authorization policy created",
+                        body = $"{actorName} created policy '{policy.Name}'."
+                    },
+                    superadmin = new
+                    {
+                        subject = "Authorization policy created",
+                        body = $"{actorName} created policy '{policy.Name}'."
+                    }
+                },
+                ct: HttpContext.RequestAborted);
             // 🔔 Notify: END
+
 
             TempData["Ok"] = $"Policy '{policy.Name}' created.";
             return RedirectToAction(nameof(Index));
@@ -174,17 +201,41 @@ namespace SWIMS.Areas.Admin.Controllers
             await _db.SaveChangesAsync();
             await _store.InvalidateAsync(policy.Name);
 
+            var actorName = User?.Identity?.Name ?? "An admin";
+
             // 🔔 Notify: Authorization policy updated
             await NotifyAdminAsync(
+                eventKey: SwimsEventKeys.Security.AuthorizationPolicies.Updated,
                 subject: "Authorization policy updated",
-                body: $"Policy '{policy.Name}' was updated.",
-                metadata: new
+                body: $"You updated policy '{policy.Name}'.",
+                url: Url.Action(nameof(Edit), new { id = policy.Id }),
+                extraMeta_: new
                 {
-                    action = "AuthPolicyUpdated",
                     policyId = policy.Id,
-                    policyName = policy.Name
-                });
+                    policyName = policy.Name,
+                    isEnabled = policy.IsEnabled
+                },
+                texts_: new
+                {
+                    actor = new
+                    {
+                        subject = "Authorization policy updated",
+                        body = $"You updated policy '{policy.Name}'."
+                    },
+                    routed = new
+                    {
+                        subject = "Authorization policy updated",
+                        body = $"{actorName} updated policy '{policy.Name}'."
+                    },
+                    superadmin = new
+                    {
+                        subject = "Authorization policy updated",
+                        body = $"{actorName} updated policy '{policy.Name}'."
+                    }
+                },
+                ct: HttpContext.RequestAborted);
             // 🔔 Notify: END
+
 
             TempData["Ok"] = $"Policy '{policy.Name}' updated.";
             return RedirectToAction(nameof(Index));
@@ -211,18 +262,42 @@ namespace SWIMS.Areas.Admin.Controllers
             await _db.SaveChangesAsync();
             await _store.InvalidateAsync(policy.Name);
 
+            var actorName = User?.Identity?.Name ?? "An admin";
+            var stateWord = policy.IsEnabled ? "enabled" : "disabled";
+
             // 🔔 Notify: Authorization policy toggled
             await NotifyAdminAsync(
+                eventKey: SwimsEventKeys.Security.AuthorizationPolicies.Toggled,
                 subject: "Authorization policy toggled",
-                body: $"Policy '{policy.Name}' was {(policy.IsEnabled ? "enabled" : "disabled")}.",
-                metadata: new
+                body: $"You {stateWord} policy '{policy.Name}'.",
+                url: Url.Action(nameof(Edit), new { id = policy.Id }),
+                extraMeta_: new
                 {
-                    action = "AuthPolicyToggled",
                     policyId = policy.Id,
                     policyName = policy.Name,
                     isEnabled = policy.IsEnabled
-                });
+                },
+                texts_: new
+                {
+                    actor = new
+                    {
+                        subject = "Authorization policy toggled",
+                        body = $"You {stateWord} policy '{policy.Name}'."
+                    },
+                    routed = new
+                    {
+                        subject = "Authorization policy toggled",
+                        body = $"{actorName} {stateWord} policy '{policy.Name}'."
+                    },
+                    superadmin = new
+                    {
+                        subject = "Authorization policy toggled",
+                        body = $"{actorName} {stateWord} policy '{policy.Name}'."
+                    }
+                },
+                ct: HttpContext.RequestAborted);
             // 🔔 Notify: END
+
 
             TempData["Ok"] = $"Policy '{policy.Name}' {(policy.IsEnabled ? "enabled" : "disabled")}.";
             return RedirectToAction(nameof(Index));
@@ -247,17 +322,40 @@ namespace SWIMS.Areas.Admin.Controllers
             await _db.SaveChangesAsync();
             await _store.InvalidateAsync(policy.Name);
 
+            var actorName = User?.Identity?.Name ?? "An admin";
+
             // 🔔 Notify: Authorization policy deleted
             await NotifyAdminAsync(
+                eventKey: SwimsEventKeys.Security.AuthorizationPolicies.Deleted,
                 subject: "Authorization policy deleted",
-                body: $"Policy '{policy.Name}' was deleted.",
-                metadata: new
+                body: $"You deleted policy '{policy.Name}'.",
+                url: Url.Action(nameof(Index)),
+                extraMeta_: new
                 {
-                    action = "AuthPolicyDeleted",
                     policyId = policy.Id,
                     policyName = policy.Name
-                });
+                },
+                texts_: new
+                {
+                    actor = new
+                    {
+                        subject = "Authorization policy deleted",
+                        body = $"You deleted policy '{policy.Name}'."
+                    },
+                    routed = new
+                    {
+                        subject = "Authorization policy deleted",
+                        body = $"{actorName} deleted policy '{policy.Name}'."
+                    },
+                    superadmin = new
+                    {
+                        subject = "Authorization policy deleted",
+                        body = $"{actorName} deleted policy '{policy.Name}'."
+                    }
+                },
+                ct: HttpContext.RequestAborted);
             // 🔔 Notify: END
+
 
             TempData["Ok"] = $"Policy '{policy.Name}' deleted.";
             return RedirectToAction(nameof(Index));
@@ -301,34 +399,57 @@ namespace SWIMS.Areas.Admin.Controllers
             }
         }
 
-        private async Task NotifyAdminAsync(string subject, string body, object? metadata = null)
+        private async Task NotifyAdminAsync(
+    string eventKey,
+    string subject,
+    string body,
+    object? extraMeta_ = null,
+    object? texts_ = null,
+    string? url = null,
+    int? targetUserId = null,
+    IEnumerable<int>? targetUserIds = null,
+    CancellationToken ct = default)
         {
-            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            string? recipient = !string.IsNullOrWhiteSpace(userIdClaim)
-                ? userIdClaim
-                : User.Identity?.Name;
-
-            if (string.IsNullOrWhiteSpace(recipient))
-                return;
-
-            var payload = new
-            {
-                Recipient = recipient,
-                Channel = "InApp",
-                Subject = subject,
-                Body = body,
-                MetadataJson = metadata == null ? null : JsonSerializer.Serialize(metadata)
-            };
-
             try
             {
-                // 🔔 Notify: Admin authorization config event
-                await _elsa.ExecuteByNameAsync("Swims.Notifications.DirectInApp", payload);
+                var recipient = User?.FindFirstValue(ClaimTypes.NameIdentifier)
+                    ?? User?.Identity?.Name;
+
+                if (string.IsNullOrWhiteSpace(recipient))
+                    return;
+
+                var payload = new
+                {
+                    Recipient = recipient,
+                    Channel = "InApp",
+                    Subject = subject,
+                    Body = body,
+                    MetadataJson = JsonSerializer.Serialize(new
+                    {
+                        type = NotificationTypes.System,
+                        eventKey,
+                        url,
+                        metadata = new
+                        {
+                            actorUserId = User?.FindFirstValue(ClaimTypes.NameIdentifier),
+                            actorUserName = User?.Identity?.Name,
+
+                            targetUserId,
+                            targetUserIds = targetUserIds?.ToArray(),
+
+                            texts = texts_, // actor/target/routed/superadmin/default
+                            extra = extraMeta_
+                        }
+                    })
+                };
+
+                await _elsa.ExecuteByNameAsync("Swims.Notifications.DirectInApp", payload, ct);
             }
             catch
             {
             }
         }
+
 
 
     }
