@@ -105,6 +105,7 @@ namespace SWIMS.Areas.Admin.Controllers
                     policyId = policy.Id,
                     policyName = policy.Name
                 });
+            // 🔔 Notify: END
 
             TempData["Ok"] = $"Policy '{policy.Name}' created.";
             return RedirectToAction(nameof(Index));
@@ -183,6 +184,7 @@ namespace SWIMS.Areas.Admin.Controllers
                     policyId = policy.Id,
                     policyName = policy.Name
                 });
+            // 🔔 Notify: END
 
             TempData["Ok"] = $"Policy '{policy.Name}' updated.";
             return RedirectToAction(nameof(Index));
@@ -220,6 +222,7 @@ namespace SWIMS.Areas.Admin.Controllers
                     policyName = policy.Name,
                     isEnabled = policy.IsEnabled
                 });
+            // 🔔 Notify: END
 
             TempData["Ok"] = $"Policy '{policy.Name}' {(policy.IsEnabled ? "enabled" : "disabled")}.";
             return RedirectToAction(nameof(Index));
@@ -254,6 +257,7 @@ namespace SWIMS.Areas.Admin.Controllers
                     policyId = policy.Id,
                     policyName = policy.Name
                 });
+            // 🔔 Notify: END
 
             TempData["Ok"] = $"Policy '{policy.Name}' deleted.";
             return RedirectToAction(nameof(Index));

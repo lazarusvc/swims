@@ -110,6 +110,7 @@ namespace SWIMS.Areas.Admin.Controllers
                     page = row.Page,
                     path = row.Path
                 });
+            // 🔔 Notify: END
 
             TempData["Ok"] = "Public endpoint created.";
             return RedirectToAction(nameof(Index));
@@ -167,6 +168,7 @@ namespace SWIMS.Areas.Admin.Controllers
                     page = x.Page,
                     path = x.Path
                 });
+            // 🔔 Notify: END
 
             TempData["Ok"] = "Public endpoint updated.";
             return RedirectToAction(nameof(Index));
@@ -193,6 +195,7 @@ namespace SWIMS.Areas.Admin.Controllers
                     endpointId = x.Id,
                     isEnabled = x.IsEnabled
                 });
+            // 🔔 Notify: END
 
             TempData["Ok"] = $"Public endpoint {(x.IsEnabled ? "enabled" : "disabled")}.";
             return RedirectToAction(nameof(Index));
@@ -219,6 +222,7 @@ namespace SWIMS.Areas.Admin.Controllers
                     action = "PublicEndpointDeleted",
                     endpointId = endpointId
                 });
+            // 🔔 Notify: END
 
             TempData["Ok"] = "Public endpoint deleted.";
             return RedirectToAction(nameof(Index));

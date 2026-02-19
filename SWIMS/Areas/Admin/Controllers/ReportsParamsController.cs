@@ -95,6 +95,7 @@ namespace SWIMS.Areas.Admin.Controllers
                     dataType = m.ParamDataType
                 },
                 ct: HttpContext.RequestAborted);
+            // 🔔 Notify: END
 
             TempData["Ok"] = "Parameter added.";
             return RedirectToAction(nameof(Index), new { reportId = m.SwReportId });
@@ -151,6 +152,7 @@ namespace SWIMS.Areas.Admin.Controllers
                     dataType = m.ParamDataType
                 },
                 ct: HttpContext.RequestAborted);
+            // 🔔 Notify: END
 
             TempData["Ok"] = "Parameter saved.";
             return RedirectToAction(nameof(Index), new { reportId = m.SwReportId });
@@ -181,6 +183,7 @@ namespace SWIMS.Areas.Admin.Controllers
                     key = m.ParamKey
                 },
                 ct: HttpContext.RequestAborted);
+            // 🔔 Notify: END
 
             TempData["Ok"] = "Parameter deleted.";
             return RedirectToAction(nameof(Index), new { reportId = rid });
@@ -215,6 +218,7 @@ namespace SWIMS.Areas.Admin.Controllers
                     dataType = dt
                 },
                 ct: HttpContext.RequestAborted);
+            // 🔔 Notify: END
 
             TempData["Ok"] = $"QuickAdd: {key}={value}";
             return RedirectToAction(nameof(Index), new { reportId });

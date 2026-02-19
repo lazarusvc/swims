@@ -136,6 +136,7 @@ namespace SWIMS.Controllers
                     userEmail = swUser.Email,
                     role
                 });
+            // 🔔 Notify: END
 
             return RedirectToAction(nameof(Index));
         }
@@ -210,6 +211,7 @@ namespace SWIMS.Controllers
                     userEmail = user.Email,
                     role
                 });
+            // 🔔 Notify: END
 
             return RedirectToAction(nameof(Index));
         }
@@ -259,6 +261,7 @@ namespace SWIMS.Controllers
                             userId = userId,
                             userEmail = userEmail
                         });
+                    // 🔔 Notify: END
                 }
             }
 
@@ -352,6 +355,7 @@ namespace SWIMS.Controllers
                     addedRoles = toAdd,
                     removedRoles = toRemove
                 });
+            // 🔔 Notify: END
 
             return RedirectToAction(nameof(Index));
         }

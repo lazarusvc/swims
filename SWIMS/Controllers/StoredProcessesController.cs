@@ -144,6 +144,7 @@ namespace SWIMS.Controllers
                     errorSummary
                 },
                 ct: HttpContext.RequestAborted);
+            // 🔔 Notify: END
 
             // make context available to the RunResult view so Export can include it
             ViewBag.uid = uid;
@@ -210,6 +211,7 @@ namespace SWIMS.Controllers
                     format
                 },
                 ct: HttpContext.RequestAborted);
+            // 🔔 Notify: END
 
             var csv = DataTableToCsv(table);
             var fileName = $"{sp.Name.Replace(':', '_').Replace('/', '_')}_{DateTime.UtcNow:yyyyMMdd_HHmmss}.csv";

@@ -121,6 +121,7 @@ namespace SWIMS.Areas.Admin.Controllers
                     page = row.Page,
                     path = row.Path
                 });
+            // 🔔 Notify: END
 
             TempData["Ok"] = "Endpoint policy assignment created.";
             return RedirectToAction(nameof(Index));
@@ -197,6 +198,7 @@ namespace SWIMS.Areas.Admin.Controllers
                     page = x.Page,
                     path = x.Path
                 });
+            // 🔔 Notify: END
 
             TempData["Ok"] = "Endpoint policy assignment updated.";
             return RedirectToAction(nameof(Index));
@@ -223,6 +225,7 @@ namespace SWIMS.Areas.Admin.Controllers
                     assignmentId = x.Id,
                     isEnabled = x.IsEnabled
                 });
+            // 🔔 Notify: END
 
             TempData["Ok"] = $"Assignment {(x.IsEnabled ? "enabled" : "disabled")}.";
             return RedirectToAction(nameof(Index));
@@ -249,6 +252,7 @@ namespace SWIMS.Areas.Admin.Controllers
                     action = "EndpointPolicyAssignmentDeleted",
                     assignmentId = assignmentId
                 });
+            // 🔔 Notify: END
 
             TempData["Ok"] = "Assignment deleted.";
             return RedirectToAction(nameof(Index));
@@ -387,6 +391,7 @@ namespace SWIMS.Areas.Admin.Controllers
                         policyName = policy.Name
                     });
             }
+            // 🔔 Notify: END
 
             TempData["Ok"] = created > 0
                 ? $"Created {created} assignment(s)."

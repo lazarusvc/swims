@@ -410,6 +410,7 @@ namespace SWIMS.Controllers
                     }
                 }
             );
+            // 🔔 Notify: END
 
 
 
@@ -551,6 +552,7 @@ namespace SWIMS.Controllers
                     superadmin = new { subject = "Case updated", body = $"{actorName} updated case {caseEntity.case_number}." }
                 }
             );
+            // 🔔 Notify: END
 
 
 
@@ -849,6 +851,7 @@ namespace SWIMS.Controllers
                     superadmin = new { subject = "Case status updated", body = $"{actorName} changed status of case {caseEntity.case_number} to '{status}'." }
                 }
             );
+            // 🔔 Notify: END
 
 
 
@@ -903,6 +906,7 @@ namespace SWIMS.Controllers
                     superadmin = new { subject = "Case status updated", body = $"{actorName} cleared the manual status override for case {caseEntity.case_number}." }
                 }
             );
+            // 🔔 Notify: END
 
 
 
@@ -1168,6 +1172,7 @@ namespace SWIMS.Controllers
                     }
                 }
             );
+            // 🔔 Notify: END
 
 
 
@@ -1222,6 +1227,7 @@ namespace SWIMS.Controllers
                     superadmin = new { subject = "Case refreshed", body = $"{actorName} refreshed case {caseNo} from the primary application. {result.Message}" }
                 }
             );
+            // 🔔 Notify: END
 
 
 
@@ -1276,6 +1282,7 @@ namespace SWIMS.Controllers
                     superadmin = new { subject = "Form detached from case", body = $"{actorName} detached a form submission link from case {caseNo}." }
                 }
             );
+            // 🔔 Notify: END
 
 
 

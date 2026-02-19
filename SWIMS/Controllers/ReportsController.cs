@@ -152,6 +152,7 @@ namespace SWIMS.Controllers
                         errorSummary
                     },
                     ct: HttpContext.RequestAborted);
+                // 🔔 Notify: END
 
                 return StatusCode((int)resp.StatusCode, "Export failed.");
             }
@@ -181,6 +182,7 @@ namespace SWIMS.Controllers
                     format = effectiveFormat
                 },
                 ct: HttpContext.RequestAborted);
+            // 🔔 Notify: END
 
             // Inline (no filename) so the <iframe> can display it
             return File(bytes, contentType);
