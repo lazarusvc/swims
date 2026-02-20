@@ -8,6 +8,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Security.Claims;
+using System.Text.Json;
+using SWIMS.Models.Notifications;
+using SWIMS.Services.Elsa;
+using SWIMS.Services.Notifications;
+
 
 namespace SWIMS.Controllers
 {
@@ -15,6 +21,8 @@ namespace SWIMS.Controllers
     {
         private readonly SwimsDb_moreContext _context;
         private readonly SwimsStoredProcsDbContext _context_sp;
+        private readonly IElsaWorkflowClient _elsa;
+
 
         private static int? TryExtractProcIdFromRunUrl(string? url)
         {
@@ -23,10 +31,11 @@ namespace SWIMS.Controllers
             return m.Success ? int.Parse(m.Groups[1].Value) : (int?)null;
         }
 
-        public formProcessController(SwimsDb_moreContext context, SwimsStoredProcsDbContext sp)
+        public formProcessController(SwimsDb_moreContext context, SwimsStoredProcsDbContext sp, IElsaWorkflowClient elsa)
         {
             _context = context;
             _context_sp = sp;
+            _elsa = elsa;
         }
 
         // GET: formProcess
@@ -94,6 +103,45 @@ namespace SWIMS.Controllers
 
                 _context.Add(sW_formProcess);
                 await _context.SaveChangesAsync();
+
+                // 🔔 Notify: Form process created
+                var actorName = User?.Identity?.Name ?? "A user";
+
+                var formInfo = await _context.SW_forms
+                    .AsNoTracking()
+                    .Where(x => x.Id == sW_formProcess.SW_formsId)
+                    .Select(x => new { x.uuid, x.name })
+                    .FirstOrDefaultAsync();
+
+                var notifProcId = TryExtractProcIdFromRunUrl(sW_formProcess.url);
+
+
+                var subject = "Form process created";
+                var actorBody = $"You created form process '{sW_formProcess.name ?? $"ID {sW_formProcess.Id}"}' for form '{formInfo?.name ?? $"Form {sW_formProcess.SW_formsId}"}'.";
+                var routedBody = $"{actorName} created form process '{sW_formProcess.name ?? $"ID {sW_formProcess.Id}"}' for form '{formInfo?.name ?? $"Form {sW_formProcess.SW_formsId}"}'.";
+
+                await NotifyFormProcessEventAsync(
+                    eventKey: SwimsEventKeys.FormProcess.ProcessCreated,
+                    subject: subject,
+                    actorBody: actorBody,
+                    routedBody: routedBody,
+                    url: Url.Action(nameof(Details), new { id = sW_formProcess.Id }),
+                    extraMeta_: new
+                    {
+                        formProcessId = sW_formProcess.Id,
+                        formId = sW_formProcess.SW_formsId,
+                        formUuid = formInfo?.uuid,
+                        formName = formInfo?.name,
+
+                        processName = sW_formProcess.name,
+                        runUrl = sW_formProcess.url,
+                        storedProcId = notifProcId
+                    },
+                    ct: HttpContext.RequestAborted
+                );
+                // 🔔 Notify: END
+
+
                 return RedirectToAction(nameof(Index));
             }
             return View(sW_formProcess);
@@ -148,6 +196,45 @@ namespace SWIMS.Controllers
 
                     _context.Update(sW_formProcess);
                     await _context.SaveChangesAsync();
+
+                    // 🔔 Notify: Form process updated
+                    var actorName = User?.Identity?.Name ?? "A user";
+
+                    var formInfo = await _context.SW_forms
+                        .AsNoTracking()
+                        .Where(x => x.Id == sW_formProcess.SW_formsId)
+                        .Select(x => new { x.uuid, x.name })
+                        .FirstOrDefaultAsync();
+
+                    var notifProcId = TryExtractProcIdFromRunUrl(sW_formProcess.url);
+
+
+                    var subject = "Form process updated";
+                    var actorBody = $"You updated form process '{sW_formProcess.name ?? $"ID {sW_formProcess.Id}"}' for form '{formInfo?.name ?? $"Form {sW_formProcess.SW_formsId}"}'.";
+                    var routedBody = $"{actorName} updated form process '{sW_formProcess.name ?? $"ID {sW_formProcess.Id}"}' for form '{formInfo?.name ?? $"Form {sW_formProcess.SW_formsId}"}'.";
+
+                    await NotifyFormProcessEventAsync(
+                        eventKey: SwimsEventKeys.FormProcess.ProcessUpdated,
+                        subject: subject,
+                        actorBody: actorBody,
+                        routedBody: routedBody,
+                        url: Url.Action(nameof(Details), new { id = sW_formProcess.Id }),
+                        extraMeta_: new
+                        {
+                            formProcessId = sW_formProcess.Id,
+                            formId = sW_formProcess.SW_formsId,
+                            formUuid = formInfo?.uuid,
+                            formName = formInfo?.name,
+
+                            processName = sW_formProcess.name,
+                            runUrl = sW_formProcess.url,
+                            storedProcId = notifProcId
+                        },
+                        ct: HttpContext.RequestAborted
+                    );
+                    // 🔔 Notify: END
+
+
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -189,18 +276,126 @@ namespace SWIMS.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var sW_formProcess = await _context.SW_formProcesses.FindAsync(id);
+
             if (sW_formProcess != null)
             {
+                var processId = sW_formProcess.Id;
+                var processName = sW_formProcess.name;
+                var runUrl = sW_formProcess.url;
+                var formId = sW_formProcess.SW_formsId;
+
+                var formInfo = await _context.SW_forms
+                    .AsNoTracking()
+                    .Where(x => x.Id == formId)
+                    .Select(x => new { x.uuid, x.name })
+                    .FirstOrDefaultAsync();
+
+                var procId = TryExtractProcIdFromRunUrl(runUrl);
+
                 _context.SW_formProcesses.Remove(sW_formProcess);
+                await _context.SaveChangesAsync();
+
+                // 🔔 Notify: Form process deleted
+                var actorName = User?.Identity?.Name ?? "A user";
+
+                var subject = "Form process deleted";
+                var actorBody = $"You deleted form process '{processName ?? $"ID {processId}"}' for form '{formInfo?.name ?? $"Form {formId}"}'.";
+                var routedBody = $"{actorName} deleted form process '{processName ?? $"ID {processId}"}' for form '{formInfo?.name ?? $"Form {formId}"}'.";
+
+                await NotifyFormProcessEventAsync(
+                    eventKey: SwimsEventKeys.FormProcess.ProcessDeleted,
+                    subject: subject,
+                    actorBody: actorBody,
+                    routedBody: routedBody,
+                    url: Url.Action(nameof(Index)),
+                    extraMeta_: new
+                    {
+                        formProcessId = processId,
+                        formId = formId,
+                        formUuid = formInfo?.uuid,
+                        formName = formInfo?.name,
+
+                        processName = processName,
+                        runUrl = runUrl,
+                        storedProcId = procId
+                    },
+                    ct: HttpContext.RequestAborted
+                );
+                // 🔔 Notify: END
+
+                return RedirectToAction(nameof(Index));
             }
 
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
+
         }
 
         private bool SW_formProcessExists(int id)
         {
             return _context.SW_formProcesses.Any(e => e.Id == id);
         }
+
+        private async Task NotifyFormProcessEventAsync(
+    string eventKey,
+    string subject,
+    string actorBody,
+    string routedBody,
+    string? url = null,
+    object? extraMeta_ = null,
+    CancellationToken ct = default)
+        {
+            try
+            {
+                var userIdClaim = User?.FindFirstValue(ClaimTypes.NameIdentifier);
+                var recipient = !string.IsNullOrWhiteSpace(userIdClaim)
+                    ? userIdClaim
+                    : User?.Identity?.Name;
+
+                if (string.IsNullOrWhiteSpace(recipient))
+                    return;
+
+                int? actorUserId = null;
+                if (int.TryParse(userIdClaim, out var parsedActorId))
+                    actorUserId = parsedActorId;
+
+                var actorUserName = User?.Identity?.Name ?? "";
+
+                var payload = new
+                {
+                    Recipient = recipient,
+                    Channel = "InApp",
+                    Subject = subject,
+                    Body = actorBody,
+                    MetadataJson = JsonSerializer.Serialize(new
+                    {
+                        type = NotificationTypes.Forms,
+                        eventKey,
+                        url,
+                        metadata = new
+                        {
+                            actorUserId,
+                            actorUserName,
+
+                            texts = new
+                            {
+                                actor = new { subject, body = actorBody },
+                                routed = new { subject, body = routedBody },
+                                superadmin = new { subject, body = routedBody }
+                            },
+
+                            extraMeta_ = extraMeta_
+                        }
+                    })
+                };
+
+                await _elsa.ExecuteByNameAsync("Swims.Notifications.DirectInApp", payload, ct);
+            }
+            catch
+            {
+                // Best-effort: never block config UX if Elsa is down.
+            }
+        }
+
     }
 }

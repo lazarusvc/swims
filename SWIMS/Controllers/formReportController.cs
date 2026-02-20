@@ -14,6 +14,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using SWIMS.Models;
+using SWIMS.Services.Notifications;
+
 
 
 namespace SWIMS.Controllers
@@ -76,18 +78,27 @@ namespace SWIMS.Controllers
                 await _context.SaveChangesAsync();
 
                 // 🔔 Notify: Form report created
+                var actorName = User?.Identity?.Name ?? "Someone";
+
                 await NotifyFormReportAsync(
+                    eventKey: SwimsEventKeys.FormReports.Created,
                     subject: "Form report created",
                     body: $"Form report '{sW_formReport.name}' was created.",
-                    metadata: new
+                    reportId: sW_formReport.Id,
+                    reportName: sW_formReport.name,
+                    formId: sW_formReport.SW_formsId,
+                    reportUrl: sW_formReport.url,
+                    url: Url.Action(nameof(Details), new { id = sW_formReport.Id }),
+                    texts: new
                     {
-                        action = "FormReportCreated",
-                        id = sW_formReport.Id,
-                        formId = sW_formReport.SW_formsId,
-                        url = sW_formReport.url
+                        actor = new { subject = "Form report created", body = $"You created form report '{sW_formReport.name}'." },
+                        routed = new { subject = "Form report created", body = $"{actorName} created form report '{sW_formReport.name}'." },
+                        superadmin = new { subject = "Form report created", body = $"{actorName} created form report '{sW_formReport.name}'." }
                     },
                     ct: HttpContext.RequestAborted);
+
                 // 🔔 Notify: END
+
 
                 return RedirectToAction(nameof(Index));
             }
@@ -133,18 +144,27 @@ namespace SWIMS.Controllers
                     await _context.SaveChangesAsync();
 
                     // 🔔 Notify: Form report updated
+                    var actorName = User?.Identity?.Name ?? "Someone";
+
                     await NotifyFormReportAsync(
+                        eventKey: SwimsEventKeys.FormReports.Updated,
                         subject: "Form report updated",
                         body: $"Form report '{sW_formReport.name}' was updated.",
-                        metadata: new
+                        reportId: sW_formReport.Id,
+                        reportName: sW_formReport.name,
+                        formId: sW_formReport.SW_formsId,
+                        reportUrl: sW_formReport.url,
+                        url: Url.Action(nameof(Details), new { id = sW_formReport.Id }),
+                        texts: new
                         {
-                            action = "FormReportUpdated",
-                            id = sW_formReport.Id,
-                            formId = sW_formReport.SW_formsId,
-                            url = sW_formReport.url
+                            actor = new { subject = "Form report updated", body = $"You updated form report '{sW_formReport.name}'." },
+                            routed = new { subject = "Form report updated", body = $"{actorName} updated form report '{sW_formReport.name}'." },
+                            superadmin = new { subject = "Form report updated", body = $"{actorName} updated form report '{sW_formReport.name}'." }
                         },
                         ct: HttpContext.RequestAborted);
+
                     // 🔔 Notify: END
+
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -198,17 +218,27 @@ namespace SWIMS.Controllers
                 await _context.SaveChangesAsync();
 
                 // 🔔 Notify: Form report deleted
+                var actorName = User?.Identity?.Name ?? "Someone";
+
                 await NotifyFormReportAsync(
+                    eventKey: SwimsEventKeys.FormReports.Deleted,
                     subject: "Form report deleted",
                     body: $"Form report '{name}' was deleted.",
-                    metadata: new
+                    reportId: id,
+                    reportName: name,
+                    formId: formId,
+                    reportUrl: null,
+                    url: Url.Action(nameof(Index)),
+                    texts: new
                     {
-                        action = "FormReportDeleted",
-                        id,
-                        formId
+                        actor = new { subject = "Form report deleted", body = $"You deleted form report '{name}'." },
+                        routed = new { subject = "Form report deleted", body = $"{actorName} deleted form report '{name}'." },
+                        superadmin = new { subject = "Form report deleted", body = $"{actorName} deleted form report '{name}'." }
                     },
                     ct: HttpContext.RequestAborted);
+
                 // 🔔 Notify: END
+
             }
 
             await _context.SaveChangesAsync();
@@ -223,23 +253,55 @@ namespace SWIMS.Controllers
 
 
         private async Task NotifyFormReportAsync(
-            string subject,
-            string body,
-            object? metadata = null,
-            CancellationToken ct = default)
+    string eventKey,
+    string subject,
+    string body,
+    int? reportId = null,
+    string? reportName = null,
+    int? formId = null,
+    string? reportUrl = null,
+    string? url = null,
+    object? texts = null,
+    object? extraMeta = null,
+    CancellationToken ct = default)
         {
-            // Get the numeric user id from claims
-            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (!int.TryParse(userIdString, out var userId))
-                return; // no valid user, skip
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var recipient = !string.IsNullOrWhiteSpace(userIdClaim)
+                ? userIdClaim
+                : User.Identity?.Name;
+
+            if (string.IsNullOrWhiteSpace(recipient))
+                return;
+
+            int? actorUserId = null;
+            if (int.TryParse(userIdClaim, out var parsedActorId))
+                actorUserId = parsedActorId;
+
+            var actorUserName = User?.Identity?.Name ?? "system";
 
             var payload = new
             {
-                Recipient = userId.ToString(), // always send numeric user id
+                Recipient = recipient,
                 Channel = "InApp",
                 Subject = subject,
                 Body = body,
-                MetadataJson = metadata == null ? null : JsonSerializer.Serialize(metadata)
+                MetadataJson = JsonSerializer.Serialize(new
+                {
+                    type = "Forms",
+                    eventKey,
+                    url,
+                    metadata = new
+                    {
+                        actorUserId,
+                        actorUserName,
+                        reportId,
+                        reportName,
+                        formId,
+                        reportUrl,
+                        texts,
+                        extra = extraMeta
+                    }
+                })
             };
 
             try
@@ -252,6 +314,7 @@ namespace SWIMS.Controllers
                 // keep swallowing for now so admin UX isn't blocked
             }
         }
+
 
 
 

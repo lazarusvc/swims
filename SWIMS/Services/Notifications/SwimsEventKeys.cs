@@ -110,26 +110,11 @@ public static class SwimsEventKeys
 
 
 
-
-    // Form Reports (formReportController)
-    public static class FormReports
-    {
-        public const string Created = "Swims.Events.Forms.Reports.Created";
-        public const string Updated = "Swims.Events.Forms.Reports.Updated";
-        public const string Deleted = "Swims.Events.Forms.Reports.Deleted";
-    }
-
-    // Identity (users/roles admin controllers)
+    // -------------------------------
+    // Identity / Admin (Users + Roles)
+    // -------------------------------
     public static class Identity
     {
-        public static class Roles
-        {
-            public const string Created = "Swims.Events.Identity.Roles.Created";
-            public const string Updated = "Swims.Events.Identity.Roles.Updated";
-            public const string Deleted = "Swims.Events.Identity.Roles.Deleted";
-            public const string MembershipUpdated = "Swims.Events.Identity.Roles.MembershipUpdated";
-        }
-
         public static class Users
         {
             public const string Created = "Swims.Events.Identity.Users.Created";
@@ -137,24 +122,55 @@ public static class SwimsEventKeys
             public const string Deleted = "Swims.Events.Identity.Users.Deleted";
             public const string RolesUpdated = "Swims.Events.Identity.Users.RolesUpdated";
         }
+
+        public static class Roles
+        {
+            public const string Created = "Swims.Events.Identity.Roles.Created";
+            public const string Updated = "Swims.Events.Identity.Roles.Updated";
+            public const string Deleted = "Swims.Events.Identity.Roles.Deleted";
+            public const string MembershipUpdated = "Swims.Events.Identity.Roles.MembershipUpdated";
+        }
     }
 
-    // Stored procedures
-    public static class StoredProcesses
+    // -------------------------------
+    // Forms / Form Report Config
+    // -------------------------------
+    public static class FormReports
     {
-        public const string Created = "Swims.Events.StoredProcesses.Created";
-        public const string Updated = "Swims.Events.StoredProcesses.Updated";
-        public const string Deleted = "Swims.Events.StoredProcesses.Deleted";
+        public const string Created = "Swims.Events.Forms.Reports.Created";
+        public const string Updated = "Swims.Events.Forms.Reports.Updated";
+        public const string Deleted = "Swims.Events.Forms.Reports.Deleted";
+    }
 
-        // Matches your existing notify blocks: executed + export (status lives in metadata)
-        public const string Executed = "Swims.Events.StoredProcesses.Executed";
-        public const string Exported = "Swims.Events.StoredProcesses.Exported";
+    // -------------------------------
+    // Forms / Form Process Config
+    // -------------------------------
+    public static class FormProcess
+    {
+        public const string ProcessCreated = "Swims.Events.Forms.ProcessCreated";
+        public const string ProcessUpdated = "Swims.Events.Forms.ProcessUpdated";
+        public const string ProcessDeleted = "Swims.Events.Forms.ProcessDeleted";
+
+    }
+
+    // -------------------------------
+    // Stored Procedures
+    // -------------------------------
+    public static class StoredProcedures
+    {
+        public const string Created = "Swims.Events.StoredProcedures.Created";
+        public const string Updated = "Swims.Events.StoredProcedures.Updated";
+        public const string Deleted = "Swims.Events.StoredProcedures.Deleted";
+
+        public const string Executed = "Swims.Events.StoredProcedures.Executed";
+        public const string Exported = "Swims.Events.StoredProcedures.Exported";
 
         public static class Parameters
         {
-            public const string Created = "Swims.Events.StoredProcesses.Parameters.Created";
-            public const string Updated = "Swims.Events.StoredProcesses.Parameters.Updated";
-            public const string Deleted = "Swims.Events.StoredProcesses.Parameters.Deleted";
+            public const string Created = "Swims.Events.StoredProcedures.Parameters.Created";
+            public const string Updated = "Swims.Events.StoredProcedures.Parameters.Updated";
+            public const string Deleted = "Swims.Events.StoredProcedures.Parameters.Deleted";
         }
     }
+
 }

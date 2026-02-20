@@ -9,6 +9,8 @@ using SWIMS.Models.ViewModels;
 using System.Security.Claims;
 using System.Text.Json;
 using SWIMS.Services.Elsa;
+using SWIMS.Services.Notifications;
+
 
 
 namespace SWIMS.Controllers
@@ -67,17 +69,25 @@ namespace SWIMS.Controllers
             await _db.SaveChangesAsync();
 
             // 🔔 Notify: Stored procedure created
+            var actorName = User?.Identity?.Name ?? "Someone";
+
             await NotifyAdminAsync(
+                eventKey: SwimsEventKeys.StoredProcedures.Created,
                 subject: "Stored procedure created",
                 body: $"Stored process '{row.Name}' was created.",
-                metadata: new
+                processId: row.Id,
+                processName: row.Name,
+                url: Url.Action(nameof(Edit), new { id = row.Id }),
+                texts: new
                 {
-                    action = "StoredProcessCreated",
-                    processId = row.Id,
-                    processName = row.Name
+                    actor = new { subject = "Stored procedure created", body = $"You created stored process '{row.Name}'." },
+                    routed = new { subject = "Stored procedure created", body = $"{actorName} created stored process '{row.Name}'." },
+                    superadmin = new { subject = "Stored procedure created", body = $"{actorName} created stored process '{row.Name}'." }
                 },
                 ct: HttpContext.RequestAborted);
+
             // 🔔 Notify: END
+
 
             return RedirectToAction(nameof(Index));
         }
@@ -130,17 +140,25 @@ namespace SWIMS.Controllers
             await _db.SaveChangesAsync();
 
             // 🔔 Notify: Stored procedure updated
+            var actorName = User?.Identity?.Name ?? "Someone";
+
             await NotifyAdminAsync(
+                eventKey: SwimsEventKeys.StoredProcedures.Updated,
                 subject: "Stored procedure updated",
                 body: $"Stored process '{row.Name}' was updated.",
-                metadata: new
+                processId: row.Id,
+                processName: row.Name,
+                url: Url.Action(nameof(Edit), new { id = row.Id }),
+                texts: new
                 {
-                    action = "StoredProcessUpdated",
-                    processId = row.Id,
-                    processName = row.Name
+                    actor = new { subject = "Stored procedure updated", body = $"You updated stored process '{row.Name}'." },
+                    routed = new { subject = "Stored procedure updated", body = $"{actorName} updated stored process '{row.Name}'." },
+                    superadmin = new { subject = "Stored procedure updated", body = $"{actorName} updated stored process '{row.Name}'." }
                 },
                 ct: HttpContext.RequestAborted);
+
             // 🔔 Notify: END
+
 
             return RedirectToAction(nameof(Index));
         }
@@ -167,17 +185,25 @@ namespace SWIMS.Controllers
                 await _db.SaveChangesAsync();
 
                 // 🔔 Notify: Stored procedure deleted
+                var actorName = User?.Identity?.Name ?? "Someone";
+
                 await NotifyAdminAsync(
+                    eventKey: SwimsEventKeys.StoredProcedures.Deleted,
                     subject: "Stored procedure deleted",
                     body: $"Stored process '{name}' was deleted.",
-                    metadata: new
+                    processId: pid,
+                    processName: name,
+                    url: Url.Action(nameof(Index)),
+                    texts: new
                     {
-                        action = "StoredProcessDeleted",
-                        processId = pid,
-                        processName = name
+                        actor = new { subject = "Stored procedure deleted", body = $"You deleted stored process '{name}'." },
+                        routed = new { subject = "Stored procedure deleted", body = $"{actorName} deleted stored process '{name}'." },
+                        superadmin = new { subject = "Stored procedure deleted", body = $"{actorName} deleted stored process '{name}'." }
                     },
                     ct: HttpContext.RequestAborted);
+
                 // 🔔 Notify: END
+
             }
             return RedirectToAction(nameof(Index));
 
@@ -187,10 +213,15 @@ namespace SWIMS.Controllers
         // Generic admin notification helper for stored procedure admin actions.
         // --------------------------------------------------------------------
         private async Task NotifyAdminAsync(
-            string subject,
-            string body,
-            object? metadata = null,
-            CancellationToken ct = default)
+    string eventKey,
+    string subject,
+    string body,
+    int? processId = null,
+    string? processName = null,
+    string? url = null,
+    object? texts = null,
+    object? extraMeta = null,
+    CancellationToken ct = default)
         {
             var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var recipient = !string.IsNullOrWhiteSpace(userIdClaim)
@@ -200,13 +231,33 @@ namespace SWIMS.Controllers
             if (string.IsNullOrWhiteSpace(recipient))
                 return;
 
+            int? actorUserId = null;
+            if (int.TryParse(userIdClaim, out var parsedActorId))
+                actorUserId = parsedActorId;
+
+            var actorUserName = User?.Identity?.Name ?? "system";
+
             var payload = new
             {
                 Recipient = recipient,
                 Channel = "InApp",
                 Subject = subject,
                 Body = body,
-                MetadataJson = metadata == null ? null : JsonSerializer.Serialize(metadata)
+                MetadataJson = JsonSerializer.Serialize(new
+                {
+                    type = "System",
+                    eventKey,
+                    url,
+                    metadata = new
+                    {
+                        actorUserId,
+                        actorUserName,
+                        processId,
+                        processName,
+                        texts,
+                        extra = extraMeta
+                    }
+                })
             };
 
             try
@@ -218,6 +269,7 @@ namespace SWIMS.Controllers
             {
             }
         }
+
 
 
         private string Protect(string plaintext) =>

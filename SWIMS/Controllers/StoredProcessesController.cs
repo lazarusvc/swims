@@ -7,6 +7,8 @@ using SWIMS.Services;
 using System.Security.Claims;
 using System.Text.Json;
 using SWIMS.Services.Elsa;
+using SWIMS.Services.Notifications;
+
 
 namespace SWIMS.Controllers
 {
@@ -129,22 +131,26 @@ namespace SWIMS.Controllers
             }
 
             // 🔔 Notify: Stored procedure executed (with success/failure info)
+            var actorName = User?.Identity?.Name ?? "Someone";
+
             await NotifyStoredProcAsync(
+                eventKey: SwimsEventKeys.StoredProcedures.Executed,
                 subject: subject,
                 body: body,
-                metadata: new
+                processId: sp.Id,
+                processName: sp.Name,
+                url: Url.Action(nameof(Run), new { id, formId, orgId, uid }),
+                texts: new
                 {
-                    action = "StoredProcessRun",
-                    processId = sp.Id,
-                    processName = sp.Name,
-                    formId,
-                    orgId,
-                    uid,
-                    hasError,
-                    errorSummary
+                    actor = new { subject = subject, body = body },
+                    routed = new { subject = subject, body = $"{actorName}: {body}" },
+                    superadmin = new { subject = subject, body = $"{actorName}: {body}" }
                 },
+                extraMeta: new { formId, orgId, uid, hasError, errorSummary },
                 ct: HttpContext.RequestAborted);
+
             // 🔔 Notify: END
+
 
             // make context available to the RunResult view so Export can include it
             ViewBag.uid = uid;
@@ -197,21 +203,26 @@ namespace SWIMS.Controllers
                 return BadRequest("Only CSV is supported right now.");
 
             // 🔔 Notify: Stored procedure export
+            var actorName = User?.Identity?.Name ?? "Someone";
+
             await NotifyStoredProcAsync(
+                eventKey: SwimsEventKeys.StoredProcedures.Exported,
                 subject: "Stored procedure exported",
                 body: $"Data from stored process '{sp.Name}' was exported as {format.ToUpperInvariant()}.",
-                metadata: new
+                processId: sp.Id,
+                processName: sp.Name,
+                url: Url.Action(nameof(Run), new { id, formId = formIdStr, orgId = orgIdStr, uid = uidQ }),
+                texts: new
                 {
-                    action = "StoredProcessExport",
-                    processId = sp.Id,
-                    processName = sp.Name,
-                    formId = formIdStr,
-                    orgId = orgIdStr,
-                    uid = uidQ,
-                    format
+                    actor = new { subject = "Stored procedure exported", body = $"You exported data from '{sp.Name}' as {format.ToUpperInvariant()}." },
+                    routed = new { subject = "Stored procedure exported", body = $"{actorName} exported data from '{sp.Name}' as {format.ToUpperInvariant()}." },
+                    superadmin = new { subject = "Stored procedure exported", body = $"{actorName} exported data from '{sp.Name}' as {format.ToUpperInvariant()}." }
                 },
+                extraMeta: new { formId = formIdStr, orgId = orgIdStr, uid = uidQ, format },
                 ct: HttpContext.RequestAborted);
+
             // 🔔 Notify: END
+
 
             var csv = DataTableToCsv(table);
             var fileName = $"{sp.Name.Replace(':', '_').Replace('/', '_')}_{DateTime.UtcNow:yyyyMMdd_HHmmss}.csv";
@@ -286,10 +297,15 @@ namespace SWIMS.Controllers
         // Generic notification helper for stored procedure operations.
         // ---------------------------------------------------------------------------
         private async Task NotifyStoredProcAsync(
-            string subject,
-            string body,
-            object? metadata = null,
-            CancellationToken ct = default)
+    string eventKey,
+    string subject,
+    string body,
+    int? processId = null,
+    string? processName = null,
+    string? url = null,
+    object? texts = null,
+    object? extraMeta = null,
+    CancellationToken ct = default)
         {
             var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var recipient = !string.IsNullOrWhiteSpace(userIdClaim)
@@ -299,13 +315,33 @@ namespace SWIMS.Controllers
             if (string.IsNullOrWhiteSpace(recipient))
                 return;
 
+            int? actorUserId = null;
+            if (int.TryParse(userIdClaim, out var parsedActorId))
+                actorUserId = parsedActorId;
+
+            var actorUserName = User?.Identity?.Name ?? "system";
+
             var payload = new
             {
                 Recipient = recipient,
                 Channel = "InApp",
                 Subject = subject,
                 Body = body,
-                MetadataJson = metadata == null ? null : JsonSerializer.Serialize(metadata)
+                MetadataJson = JsonSerializer.Serialize(new
+                {
+                    type = "System",
+                    eventKey,
+                    url,
+                    metadata = new
+                    {
+                        actorUserId,
+                        actorUserName,
+                        processId,
+                        processName,
+                        texts,
+                        extra = extraMeta
+                    }
+                })
             };
 
             try
@@ -318,6 +354,7 @@ namespace SWIMS.Controllers
                 // Never block execution if Elsa is unavailable.
             }
         }
+
 
 
     }

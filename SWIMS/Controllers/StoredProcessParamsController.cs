@@ -8,6 +8,8 @@ using SWIMS.Models.ViewModels;
 using System.Security.Claims;
 using System.Text.Json;
 using SWIMS.Services.Elsa;
+using SWIMS.Services.Notifications;
+
 
 
 namespace SWIMS.Controllers
@@ -111,18 +113,27 @@ namespace SWIMS.Controllers
 
 
             // 🔔 Notify: Stored procedure parameter created
+            var actorName = User?.Identity?.Name ?? "Someone";
+
             await NotifyParamAsync(
+                eventKey: SwimsEventKeys.StoredProcedures.Parameters.Created,
                 subject: "Stored procedure parameter created",
                 body: $"Parameter '{vm.Key}' was added to stored process ID {vm.StoredProcessId}.",
-                metadata: new
+                processId: vm.StoredProcessId,
+                paramId: null,
+                key: vm.Key,
+                dataType: vm.DataType,
+                url: Url.Action(nameof(Index), new { processId = vm.StoredProcessId }),
+                texts: new
                 {
-                    action = "StoredProcessParamCreated",
-                    processId = vm.StoredProcessId,
-                    key = vm.Key,
-                    dataType = vm.DataType
+                    actor = new { subject = "Stored procedure parameter created", body = $"You added parameter '{vm.Key}' to process ID {vm.StoredProcessId}." },
+                    routed = new { subject = "Stored procedure parameter created", body = $"{actorName} added parameter '{vm.Key}' to process ID {vm.StoredProcessId}." },
+                    superadmin = new { subject = "Stored procedure parameter created", body = $"{actorName} added parameter '{vm.Key}' to process ID {vm.StoredProcessId}." }
                 },
                 ct: HttpContext.RequestAborted);
+
             // 🔔 Notify: END
+
 
             return RedirectToAction(nameof(Index), new { processId = vm.StoredProcessId });
         }
@@ -167,19 +178,27 @@ namespace SWIMS.Controllers
             await _db.SaveChangesAsync();
 
             // 🔔 Notify: Stored procedure parameter updated
+            var actorName = User?.Identity?.Name ?? "Someone";
+
             await NotifyParamAsync(
+                eventKey: SwimsEventKeys.StoredProcedures.Parameters.Updated,
                 subject: "Stored procedure parameter updated",
                 body: $"Parameter '{vm.Key}' on stored process ID {vm.StoredProcessId} was updated.",
-                metadata: new
+                processId: vm.StoredProcessId,
+                paramId: row.Id,
+                key: vm.Key,
+                dataType: vm.DataType,
+                url: Url.Action(nameof(Index), new { processId = vm.StoredProcessId }),
+                texts: new
                 {
-                    action = "StoredProcessParamUpdated",
-                    processId = vm.StoredProcessId,
-                    paramId = row.Id,
-                    key = vm.Key,
-                    dataType = vm.DataType
+                    actor = new { subject = "Stored procedure parameter updated", body = $"You updated parameter '{vm.Key}' on process ID {vm.StoredProcessId}." },
+                    routed = new { subject = "Stored procedure parameter updated", body = $"{actorName} updated parameter '{vm.Key}' on process ID {vm.StoredProcessId}." },
+                    superadmin = new { subject = "Stored procedure parameter updated", body = $"{actorName} updated parameter '{vm.Key}' on process ID {vm.StoredProcessId}." }
                 },
                 ct: HttpContext.RequestAborted);
+
             // 🔔 Notify: END
+
 
             return RedirectToAction(nameof(Index), new { processId = vm.StoredProcessId });
         }
@@ -208,18 +227,27 @@ namespace SWIMS.Controllers
                 await _db.SaveChangesAsync();
 
                 // 🔔 Notify: Stored procedure parameter deleted
+                var actorName = User?.Identity?.Name ?? "Someone";
+
                 await NotifyParamAsync(
+                    eventKey: SwimsEventKeys.StoredProcedures.Parameters.Deleted,
                     subject: "Stored procedure parameter deleted",
                     body: $"Parameter '{key}' was removed from stored process ID {pid}.",
-                    metadata: new
+                    processId: pid,
+                    paramId: id,
+                    key: key,
+                    dataType: null,
+                    url: Url.Action(nameof(Index), new { processId = pid }),
+                    texts: new
                     {
-                        action = "StoredProcessParamDeleted",
-                        processId = pid,
-                        paramId = id,
-                        key
+                        actor = new { subject = "Stored procedure parameter deleted", body = $"You removed parameter '{key}' from process ID {pid}." },
+                        routed = new { subject = "Stored procedure parameter deleted", body = $"{actorName} removed parameter '{key}' from process ID {pid}." },
+                        superadmin = new { subject = "Stored procedure parameter deleted", body = $"{actorName} removed parameter '{key}' from process ID {pid}." }
                     },
                     ct: HttpContext.RequestAborted);
+
                 // 🔔 Notify: END
+
 
                 return RedirectToAction(nameof(Index), new { processId = pid });
             }
@@ -231,10 +259,17 @@ namespace SWIMS.Controllers
         // Generic admin notification helper for stored procedure parameter actions.
         // --------------------------------------------------------------------
         private async Task NotifyParamAsync(
-            string subject,
-            string body,
-            object? metadata = null,
-            CancellationToken ct = default)
+    string eventKey,
+    string subject,
+    string body,
+    int? processId = null,
+    int? paramId = null,
+    string? key = null,
+    string? dataType = null,
+    string? url = null,
+    object? texts = null,
+    object? extraMeta = null,
+    CancellationToken ct = default)
         {
             var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var recipient = !string.IsNullOrWhiteSpace(userIdClaim)
@@ -244,13 +279,35 @@ namespace SWIMS.Controllers
             if (string.IsNullOrWhiteSpace(recipient))
                 return;
 
+            int? actorUserId = null;
+            if (int.TryParse(userIdClaim, out var parsedActorId))
+                actorUserId = parsedActorId;
+
+            var actorUserName = User?.Identity?.Name ?? "system";
+
             var payload = new
             {
                 Recipient = recipient,
                 Channel = "InApp",
                 Subject = subject,
                 Body = body,
-                MetadataJson = metadata == null ? null : JsonSerializer.Serialize(metadata)
+                MetadataJson = JsonSerializer.Serialize(new
+                {
+                    type = "System",
+                    eventKey,
+                    url,
+                    metadata = new
+                    {
+                        actorUserId,
+                        actorUserName,
+                        processId,
+                        paramId,
+                        key,
+                        dataType,
+                        texts,
+                        extra = extraMeta
+                    }
+                })
             };
 
             try
@@ -262,6 +319,7 @@ namespace SWIMS.Controllers
             {
             }
         }
+
 
 
     }

@@ -20,6 +20,8 @@ using System.Threading.Tasks;
 using System.Security.Claims;
 using System.Text.Json;
 using SWIMS.Services.Elsa;
+using SWIMS.Services.Notifications;
+
 
 namespace SWIMS.Controllers
 {
@@ -126,17 +128,38 @@ namespace SWIMS.Controllers
                 await _userManager.AddToRoleAsync(swUser, role);
 
             // 🔔 Notify: Admin created user account
+            var actorName = User?.Identity?.Name ?? "Someone";
+
             await NotifyAdminAsync(
+                eventKey: SwimsEventKeys.Identity.Users.Created,
                 subject: "User account created",
                 body: $"User '{(swUser.Email ?? swUser.UserName ?? $"ID {swUser.Id}")}' was created.",
-                metadata: new
+                userId: swUser.Id,
+                userEmail: swUser.Email,
+                url: Url.Action(nameof(Details), new { id = swUser.Id }),
+                texts: new
                 {
-                    action = "UserCreated",
-                    userId = swUser.Id,
-                    userEmail = swUser.Email,
-                    role
-                });
+                    actor = new
+                    {
+                        subject = "User account created",
+                        body = $"You created user '{(swUser.Email ?? swUser.UserName ?? $"ID {swUser.Id}")}'."
+                    },
+                    routed = new
+                    {
+                        subject = "User account created",
+                        body = $"{actorName} created user '{(swUser.Email ?? swUser.UserName ?? $"ID {swUser.Id}")}'."
+                    },
+                    superadmin = new
+                    {
+                        subject = "User account created",
+                        body = $"{actorName} created user '{(swUser.Email ?? swUser.UserName ?? $"ID {swUser.Id}")}'."
+                    }
+                },
+                extraMeta: new { role },
+                ct: HttpContext.RequestAborted);
+
             // 🔔 Notify: END
+
 
             return RedirectToAction(nameof(Index));
         }
@@ -201,17 +224,38 @@ namespace SWIMS.Controllers
             }
 
             // 🔔 Notify: Admin updated user account
+            var actorName = User?.Identity?.Name ?? "Someone";
+
             await NotifyAdminAsync(
+                eventKey: SwimsEventKeys.Identity.Users.Updated,
                 subject: "User account updated",
                 body: $"User '{(user.Email ?? user.UserName ?? $"ID {user.Id}")}' was updated.",
-                metadata: new
+                userId: user.Id,
+                userEmail: user.Email,
+                url: Url.Action(nameof(Details), new { id = user.Id }),
+                texts: new
                 {
-                    action = "UserUpdated",
-                    userId = user.Id,
-                    userEmail = user.Email,
-                    role
-                });
+                    actor = new
+                    {
+                        subject = "User account updated",
+                        body = $"You updated user '{(user.Email ?? user.UserName ?? $"ID {user.Id}")}'."
+                    },
+                    routed = new
+                    {
+                        subject = "User account updated",
+                        body = $"{actorName} updated user '{(user.Email ?? user.UserName ?? $"ID {user.Id}")}'."
+                    },
+                    superadmin = new
+                    {
+                        subject = "User account updated",
+                        body = $"{actorName} updated user '{(user.Email ?? user.UserName ?? $"ID {user.Id}")}'."
+                    }
+                },
+                extraMeta: new { role },
+                ct: HttpContext.RequestAborted);
+
             // 🔔 Notify: END
+
 
             return RedirectToAction(nameof(Index));
         }
@@ -252,16 +296,37 @@ namespace SWIMS.Controllers
                 if (result.Succeeded)
                 {
                     // 🔔 Notify: Admin deleted user account
+                    var actorName = User?.Identity?.Name ?? "Someone";
+
                     await NotifyAdminAsync(
+                        eventKey: SwimsEventKeys.Identity.Users.Deleted,
                         subject: "User account deleted",
                         body: $"User '{(userEmail ?? userName ?? $"ID {userId}")}' was deleted.",
-                        metadata: new
+                        userId: userId,
+                        userEmail: userEmail,
+                        url: Url.Action(nameof(Index)),
+                        texts: new
                         {
-                            action = "UserDeleted",
-                            userId = userId,
-                            userEmail = userEmail
-                        });
+                            actor = new
+                            {
+                                subject = "User account deleted",
+                                body = $"You deleted user '{(userEmail ?? userName ?? $"ID {userId}")}'."
+                            },
+                            routed = new
+                            {
+                                subject = "User account deleted",
+                                body = $"{actorName} deleted user '{(userEmail ?? userName ?? $"ID {userId}")}'."
+                            },
+                            superadmin = new
+                            {
+                                subject = "User account deleted",
+                                body = $"{actorName} deleted user '{(userEmail ?? userName ?? $"ID {userId}")}'."
+                            }
+                        },
+                        ct: HttpContext.RequestAborted);
+
                     // 🔔 Notify: END
+
                 }
             }
 
@@ -344,18 +409,38 @@ namespace SWIMS.Controllers
             }
 
             // 🔔 Notify: Admin updated user roles
+            var actorName = User?.Identity?.Name ?? "Someone";
+
             await NotifyAdminAsync(
+                eventKey: SwimsEventKeys.Identity.Users.RolesUpdated,
                 subject: "User roles updated",
                 body: $"Roles for user '{(user.Email ?? user.UserName ?? $"ID {user.Id}")}' were updated.",
-                metadata: new
+                userId: user.Id,
+                userEmail: user.Email,
+                url: Url.Action(nameof(ManageRoles), new { id = user.Id }),
+                texts: new
                 {
-                    action = "UserRolesUpdated",
-                    userId = user.Id,
-                    userEmail = user.Email,
-                    addedRoles = toAdd,
-                    removedRoles = toRemove
-                });
+                    actor = new
+                    {
+                        subject = "User roles updated",
+                        body = $"You updated roles for user '{(user.Email ?? user.UserName ?? $"ID {user.Id}")}'."
+                    },
+                    routed = new
+                    {
+                        subject = "User roles updated",
+                        body = $"{actorName} updated roles for user '{(user.Email ?? user.UserName ?? $"ID {user.Id}")}'."
+                    },
+                    superadmin = new
+                    {
+                        subject = "User roles updated",
+                        body = $"{actorName} updated roles for user '{(user.Email ?? user.UserName ?? $"ID {user.Id}")}'."
+                    }
+                },
+                extraMeta: new { addedRoles = toAdd, removedRoles = toRemove },
+                ct: HttpContext.RequestAborted);
+
             // 🔔 Notify: END
+
 
             return RedirectToAction(nameof(Index));
         }
@@ -364,11 +449,28 @@ namespace SWIMS.Controllers
         // --------------------------------------------------------------------
         // Generic admin notification helper for user management actions.
         // --------------------------------------------------------------------
-        private async Task NotifyAdminAsync(string subject, string body, object metadata = null)
+        private async Task NotifyAdminAsync(
+    string eventKey,
+    string subject,
+    string body,
+    int? userId = null,
+    string? userEmail = null,
+    string? url = null,
+    object? texts = null,
+    object? extraMeta = null,
+    CancellationToken ct = default)
         {
-            var recipient = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.Identity?.Name;
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var recipient = userIdClaim ?? User.Identity?.Name;
+
             if (string.IsNullOrWhiteSpace(recipient))
                 return;
+
+            int? actorUserId = null;
+            if (int.TryParse(userIdClaim, out var parsedActorId))
+                actorUserId = parsedActorId;
+
+            var actorUserName = User?.Identity?.Name ?? "system";
 
             var payload = new
             {
@@ -376,19 +478,34 @@ namespace SWIMS.Controllers
                 Channel = "InApp",
                 Subject = subject,
                 Body = body,
-                MetadataJson = metadata == null ? null : JsonSerializer.Serialize(metadata)
+                MetadataJson = JsonSerializer.Serialize(new
+                {
+                    type = "System",
+                    eventKey,
+                    url,
+                    metadata = new
+                    {
+                        actorUserId,
+                        actorUserName,
+                        userId,
+                        userEmail,
+                        texts,
+                        extra = extraMeta
+                    }
+                })
             };
 
             try
             {
                 // 🔔 Notify: Admin user / role management event
-                await _elsa.ExecuteByNameAsync("Swims.Notifications.DirectInApp", payload);
+                await _elsa.ExecuteByNameAsync("Swims.Notifications.DirectInApp", payload, ct);
             }
             catch
             {
                 // Swallow failures so admin UX is never blocked by Elsa issues.
             }
         }
+
 
 
     }

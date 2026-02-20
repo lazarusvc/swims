@@ -22,6 +22,8 @@ using System.Threading.Tasks;
 using System.Security.Claims;
 using System.Text.Json;
 using SWIMS.Services.Elsa;
+using SWIMS.Services.Notifications;
+
 
 namespace SWIMS.Controllers
 {
@@ -115,16 +117,37 @@ namespace SWIMS.Controllers
             }
 
             // 🔔 Notify: Admin created role
+            var actorName = User?.Identity?.Name ?? "Someone";
+
             await NotifyAdminAsync(
+                eventKey: SwimsEventKeys.Identity.Roles.Created,
                 subject: "Role created",
                 body: $"Role '{role.Name}' was created.",
-                metadata: new
+                roleId: role.Id,
+                roleName: role.Name,
+                url: Url.Action(nameof(Details), new { id = role.Id }),
+                texts: new
                 {
-                    action = "RoleCreated",
-                    roleId = role.Id,
-                    roleName = role.Name
-                });
+                    actor = new
+                    {
+                        subject = "Role created",
+                        body = $"You created role '{role.Name}'."
+                    },
+                    routed = new
+                    {
+                        subject = "Role created",
+                        body = $"{actorName} created role '{role.Name}'."
+                    },
+                    superadmin = new
+                    {
+                        subject = "Role created",
+                        body = $"{actorName} created role '{role.Name}'."
+                    }
+                },
+                ct: HttpContext.RequestAborted);
+
             // 🔔 Notify: END
+
 
             return RedirectToAction(nameof(Index));
         }
@@ -176,16 +199,37 @@ namespace SWIMS.Controllers
             }
 
             // 🔔 Notify: Admin updated role
+            var actorName = User?.Identity?.Name ?? "Someone";
+
             await NotifyAdminAsync(
+                eventKey: SwimsEventKeys.Identity.Roles.Updated,
                 subject: "Role updated",
                 body: $"Role '{role.Name}' was updated.",
-                metadata: new
+                roleId: role.Id,
+                roleName: role.Name,
+                url: Url.Action(nameof(Details), new { id = role.Id }),
+                texts: new
                 {
-                    action = "RoleUpdated",
-                    roleId = role.Id,
-                    roleName = role.Name
-                });
+                    actor = new
+                    {
+                        subject = "Role updated",
+                        body = $"You updated role '{role.Name}'."
+                    },
+                    routed = new
+                    {
+                        subject = "Role updated",
+                        body = $"{actorName} updated role '{role.Name}'."
+                    },
+                    superadmin = new
+                    {
+                        subject = "Role updated",
+                        body = $"{actorName} updated role '{role.Name}'."
+                    }
+                },
+                ct: HttpContext.RequestAborted);
+
             // 🔔 Notify: END
+
 
             return RedirectToAction(nameof(Index));
         }
@@ -226,16 +270,37 @@ namespace SWIMS.Controllers
                 if (result.Succeeded)
                 {
                     // 🔔 Notify: Admin deleted role
+                    var actorName = User?.Identity?.Name ?? "Someone";
+
                     await NotifyAdminAsync(
+                        eventKey: SwimsEventKeys.Identity.Roles.Deleted,
                         subject: "Role deleted",
                         body: $"Role '{roleName ?? $"ID {roleId}"}' was deleted.",
-                        metadata: new
+                        roleId: roleId,
+                        roleName: roleName,
+                        url: Url.Action(nameof(Index)),
+                        texts: new
                         {
-                            action = "RoleDeleted",
-                            roleId = roleId,
-                            roleName = roleName
-                        });
+                            actor = new
+                            {
+                                subject = "Role deleted",
+                                body = $"You deleted role '{roleName ?? $"ID {roleId}"}'."
+                            },
+                            routed = new
+                            {
+                                subject = "Role deleted",
+                                body = $"{actorName} deleted role '{roleName ?? $"ID {roleId}"}'."
+                            },
+                            superadmin = new
+                            {
+                                subject = "Role deleted",
+                                body = $"{actorName} deleted role '{roleName ?? $"ID {roleId}"}'."
+                            }
+                        },
+                        ct: HttpContext.RequestAborted);
+
                     // 🔔 Notify: END
+
                 }
             }
 
@@ -324,16 +389,37 @@ namespace SWIMS.Controllers
                 return View(model);
 
             // 🔔 Notify: Admin updated role membership
+            var actorName = User?.Identity?.Name ?? "Someone";
+
             await NotifyAdminAsync(
+                eventKey: SwimsEventKeys.Identity.Roles.MembershipUpdated,
                 subject: "Role membership updated",
                 body: $"Membership for role '{role.Name}' was updated.",
-                metadata: new
+                roleId: role.Id,
+                roleName: role.Name,
+                url: Url.Action(nameof(ManageUsers), new { id = role.Id }),
+                texts: new
                 {
-                    action = "RoleUsersUpdated",
-                    roleId = role.Id,
-                    roleName = role.Name
-                });
+                    actor = new
+                    {
+                        subject = "Role membership updated",
+                        body = $"You updated membership for role '{role.Name}'."
+                    },
+                    routed = new
+                    {
+                        subject = "Role membership updated",
+                        body = $"{actorName} updated membership for role '{role.Name}'."
+                    },
+                    superadmin = new
+                    {
+                        subject = "Role membership updated",
+                        body = $"{actorName} updated membership for role '{role.Name}'."
+                    }
+                },
+                ct: HttpContext.RequestAborted);
+
             // 🔔 Notify: END
+
 
             return RedirectToAction(nameof(Index));
         }
@@ -341,11 +427,30 @@ namespace SWIMS.Controllers
         // --------------------------------------------------------------------
         // Generic admin notification helper for role management actions.
         // --------------------------------------------------------------------
-        private async Task NotifyAdminAsync(string subject, string body, object metadata = null)
+        private async Task NotifyAdminAsync(
+    string eventKey,
+    string subject,
+    string body,
+    int? roleId = null,
+    string? roleName = null,
+    string? url = null,
+    object? texts = null,
+    object? extraMeta = null,
+    CancellationToken ct = default)
         {
-            var recipient = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.Identity?.Name;
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var recipient = !string.IsNullOrWhiteSpace(userIdClaim)
+                ? userIdClaim
+                : User.Identity?.Name;
+
             if (string.IsNullOrWhiteSpace(recipient))
                 return;
+
+            int? actorUserId = null;
+            if (int.TryParse(userIdClaim, out var parsedActorId))
+                actorUserId = parsedActorId;
+
+            var actorUserName = User?.Identity?.Name ?? "system";
 
             var payload = new
             {
@@ -353,19 +458,34 @@ namespace SWIMS.Controllers
                 Channel = "InApp",
                 Subject = subject,
                 Body = body,
-                MetadataJson = metadata == null ? null : JsonSerializer.Serialize(metadata)
+                MetadataJson = JsonSerializer.Serialize(new
+                {
+                    type = "System",
+                    eventKey,
+                    url,
+                    metadata = new
+                    {
+                        actorUserId,
+                        actorUserName,
+                        roleId,
+                        roleName,
+                        texts,
+                        extra = extraMeta
+                    }
+                })
             };
 
             try
             {
                 // 🔔 Notify: Admin user / role management event
-                await _elsa.ExecuteByNameAsync("Swims.Notifications.DirectInApp", payload);
+                await _elsa.ExecuteByNameAsync("Swims.Notifications.DirectInApp", payload, ct);
             }
             catch
             {
                 // Don't block role admin if Elsa is unavailable.
             }
         }
+
 
 
     }
