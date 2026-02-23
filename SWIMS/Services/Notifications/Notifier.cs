@@ -16,16 +16,19 @@ public sealed class Notifier : INotifier
     private readonly INotificationPreferences _prefs;           // <- your prefs interface
     private readonly INotificationEmailComposer _composer;      // <- your email composer
     private readonly IEmailOutbox _outbox;                      // <- your outbox
+    private readonly NotificationEmailOptions _emailOptions;
+    private readonly HashSet<string> _emailAllow;
 
     private static readonly JsonSerializerOptions _json = new(JsonSerializerDefaults.Web);
 
     public Notifier(
-        SwimsIdentityDbContext db,
-        IHubContext<NotifsHub> hub,
-        IWebPushSender webPush,
-        INotificationPreferences prefs,
-        INotificationEmailComposer composer,
-        IEmailOutbox outbox)
+    SwimsIdentityDbContext db,
+    IHubContext<NotifsHub> hub,
+    IWebPushSender webPush,
+    INotificationPreferences prefs,
+    INotificationEmailComposer composer,
+    IEmailOutbox outbox,
+    Microsoft.Extensions.Options.IOptions<NotificationEmailOptions> emailOptions)
     {
         _db = db;
         _hub = hub;
@@ -33,6 +36,9 @@ public sealed class Notifier : INotifier
         _prefs = prefs;
         _composer = composer;
         _outbox = outbox;
+
+        _emailOptions = emailOptions.Value ?? new NotificationEmailOptions();
+        _emailAllow = new HashSet<string>(_emailOptions.ImmediateAllowEventKeys ?? new(), StringComparer.Ordinal);
     }
 
     public async Task NotifyUserAsync(int userId, string username, string type, object payload)
@@ -67,18 +73,25 @@ public sealed class Notifier : INotifier
         }
 
         // Email via Outbox — honors per-type prefs; uses NotificationEmailComposer
-        // await SendEmailIfEnabledAsync(userId, type, username, json);
+        await SendEmailIfEnabledAsync(userId, type, username, json);
     }
 
     private async Task SendEmailIfEnabledAsync(int userId, string type, string usernameOrEmail, string payloadJson)
     {
         try
         {
-            // 1) Check effective prefs for this type
-            var eff = await _prefs.GetEffectiveAsync(userId, type);
-            if (!(eff.email)) return;
+            if (!_emailOptions.ImmediateEnabled)
+                return;
 
-            // 2) Resolve recipient email
+            var eff = await _prefs.GetEffectiveAsync(userId, type);
+            if (!eff.email)
+                return;
+
+            // Only allowlisted event keys can trigger immediate email.
+            var eventKey = TryReadEventKey(payloadJson);
+            if (string.IsNullOrWhiteSpace(eventKey) || !_emailAllow.Contains(eventKey))
+                return;
+
             var email = await _db.Users
                 .Where(u => u.Id == userId)
                 .Select(u => u.Email)
@@ -87,7 +100,6 @@ public sealed class Notifier : INotifier
             if (string.IsNullOrWhiteSpace(email))
                 return;
 
-            // 3) Compose via your existing templating engine
             var (subject, html, text) = await _composer.ComposeAsync(
                 userId: userId,
                 type: type,
@@ -95,7 +107,6 @@ public sealed class Notifier : INotifier
                 payloadJson: payloadJson
             );
 
-            // 4) Enqueue (Hangfire processes dispatch)
             await _outbox.EnqueueAsync(
                 to: email,
                 subject: subject,
@@ -105,7 +116,22 @@ public sealed class Notifier : INotifier
         }
         catch
         {
-            // email is best-effort; never block or throw
+            // email is best-effort; never block
+        }
+
+        static string? TryReadEventKey(string json)
+        {
+            try
+            {
+                using var doc = JsonDocument.Parse(json);
+                var root = doc.RootElement;
+                if (root.ValueKind == JsonValueKind.Object &&
+                    root.TryGetProperty("eventKey", out var ek) &&
+                    ek.ValueKind == JsonValueKind.String)
+                    return ek.GetString();
+            }
+            catch { }
+            return null;
         }
     }
 

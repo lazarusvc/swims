@@ -96,7 +96,7 @@ public static class NotificationsEndpoints
             var oldOne = oldRows.FirstOrDefault(x => x.type == dto.Type);
 
             // apply change
-            await svc.UpsertAsync(uid, dto.Type, dto.InApp, dto.Email, dto.Digest);
+            await svc.UpsertAsync(uid, dto.Type, inApp: true, email: dto.Email, digest: dto.Digest);
 
             // snapshot new
             var newRows = await svc.ListAsync(uid);

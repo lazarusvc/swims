@@ -11,17 +11,14 @@ public sealed class NotificationPreferences : INotificationPreferences
 
     public async Task<(bool inApp, bool email, bool digest)> GetEffectiveAsync(int userId, string type, CancellationToken ct = default)
     {
-        // Type-specific
         var row = await _db.NotificationPreferences.AsNoTracking()
             .FirstOrDefaultAsync(x => x.UserId == userId && x.Type == type, ct);
-        if (row != null) return (row.InAppEnabled, row.EmailEnabled, row.DigestEnabled);
+        if (row != null) return (inApp: true, email: row.EmailEnabled, digest: row.DigestEnabled);
 
-        // Global default for the user
         var def = await _db.NotificationPreferences.AsNoTracking()
             .FirstOrDefaultAsync(x => x.UserId == userId && x.Type == null, ct);
-        if (def != null) return (def.InAppEnabled, def.EmailEnabled, def.DigestEnabled);
+        if (def != null) return (inApp: true, email: def.EmailEnabled, digest: def.DigestEnabled);
 
-        // System defaults
         return (inApp: true, email: false, digest: false);
     }
 
@@ -36,7 +33,7 @@ public sealed class NotificationPreferences : INotificationPreferences
             {
                 UserId = userId,
                 Type = type,
-                InAppEnabled = inApp,
+                InAppEnabled = true,
                 EmailEnabled = email,
                 DigestEnabled = digest
             };
@@ -44,7 +41,7 @@ public sealed class NotificationPreferences : INotificationPreferences
         }
         else
         {
-            row.InAppEnabled = inApp;
+            row.InAppEnabled = true;
             row.EmailEnabled = email;
             row.DigestEnabled = digest;
             row.UpdatedUtc = DateTime.UtcNow;

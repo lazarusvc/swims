@@ -361,6 +361,9 @@ builder.Services.AddHealthChecks();
 
 builder.Services.AddScoped<INotificationPreferences, NotificationPreferences>();
 
+builder.Services.Configure<NotificationEmailOptions>(
+    builder.Configuration.GetSection("Notifications:Email"));
+
 builder.Services.AddMemoryVapidTokenCache();
 
 // Push client with VAPID defaults from config
