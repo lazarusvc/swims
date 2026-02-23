@@ -29,9 +29,10 @@
                 <div class="col-md-4">
                     <label class="form-label">Type (module bucket)</label>
                     <select class="form-select" name="Type">
-                        <option value="System" selected="@(Model.Type == "System")">System</option>
-                        <option value="Forms" selected="@(Model.Type == "Forms")">Forms</option>
-                        <option value="Cases" selected="@(Model.Type == "Cases")">Cases</option>
+                        @foreach (var t in Model.AllTypes)
+                        {
+                            <option value="@t" selected="@(Model.Type == t)">@t</option>
+                        }
                     </select>
                     @Html.ValidationMessageFor(m => m.Type, "", new { @class = "text-danger small" })
                 </div>

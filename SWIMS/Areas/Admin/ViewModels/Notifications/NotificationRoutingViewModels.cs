@@ -31,8 +31,11 @@ public class NotificationRouteEditViewModel
 
     public string EventKey { get; set; } = "";
 
-    // module bucket: "Forms", "Cases", "System"
+    // module bucket: "Forms", "Cases", "System", "Approvals", etc.
     public string Type { get; set; } = "System";
+
+    // Populated from SWIMS.Models.Notifications.NotificationTypes (reflection).
+    public List<string> AllTypes { get; set; } = new();
 
     public bool IsEnabled { get; set; } = true;
 

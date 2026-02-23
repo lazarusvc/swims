@@ -79,4 +79,14 @@ public static class NotificationTypes
     public const string System = "System";
     public const string Forms = "Forms";
     public const string Cases = "Cases";
+    public const string Approvals = "Approvals";
+
+    public const string Security = "Security";
+    public const string Identity = "Identity";
+    public const string Reports = "Reports";
+    public const string StoredProcedures = "StoredProcedures";
+
+    // Optional but useful: keep form-report config separate from forms content if you want.
+    public const string FormReports = "FormReports";
+    public const string FormProcess = "FormProcess";
 }

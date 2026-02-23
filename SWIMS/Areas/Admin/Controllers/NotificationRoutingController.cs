@@ -53,6 +53,15 @@ public class NotificationRoutingController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Save(NotificationRouteEditViewModel model, CancellationToken ct)
     {
+        // Validate Type from NotificationTypes constants (prevents manual tampering).
+        var allowedTypes = BuildNotificationTypeOptions();
+        var requestedType = (model.Type ?? NotificationTypes.System).Trim();
+
+        if (!allowedTypes.Contains(requestedType, StringComparer.Ordinal))
+        {
+            ModelState.AddModelError(nameof(model.Type), "Invalid route type.");
+        }
+
         if (!ModelState.IsValid)
         {
             await RehydrateListsAsync(model, ct);
@@ -80,7 +89,7 @@ public class NotificationRoutingController : Controller
         }
 
         route.EventKey = (model.EventKey ?? "").Trim();
-        route.Type = (model.Type ?? "System").Trim();
+        route.Type = requestedType;
         route.IsEnabled = model.IsEnabled;
         route.Description = string.IsNullOrWhiteSpace(model.Description) ? null : model.Description.Trim();
         route.UpdatedAtUtc = now;
@@ -199,6 +208,11 @@ public class NotificationRoutingController : Controller
             .ToListAsync(ct);
 
         var allPermissions = BuildPermissionOptions();
+        var allTypes = BuildNotificationTypeOptions();
+
+        var selectedType = (route?.Type ?? NotificationTypes.System).Trim();
+        if (!allTypes.Contains(selectedType, StringComparer.Ordinal))
+            selectedType = NotificationTypes.System;
 
         var selectedUserIds = route?.Users.Select(u => u.UserId).Distinct().ToList() ?? new List<int>();
         var selectedUsers = new List<UserOptionViewModel>();
@@ -220,7 +234,9 @@ public class NotificationRoutingController : Controller
         {
             Id = route?.Id,
             EventKey = route?.EventKey ?? "",
-            Type = route?.Type ?? "System",
+            Type = selectedType,
+            AllTypes = allTypes,
+
             IsEnabled = route?.IsEnabled ?? true,
             Description = route?.Description,
 
@@ -244,6 +260,7 @@ public class NotificationRoutingController : Controller
             .ToListAsync(ct);
 
         vm.AllPermissions = BuildPermissionOptions();
+        vm.AllTypes = BuildNotificationTypeOptions();
 
         if (vm.SelectedUserIds?.Count > 0)
         {
@@ -261,6 +278,13 @@ public class NotificationRoutingController : Controller
         {
             vm.SelectedUsers = new List<UserOptionViewModel>();
         }
+
+        // Normalize Type to a valid option (prevents blanking out on failed validation)
+        var t = (vm.Type ?? NotificationTypes.System).Trim();
+        if (!vm.AllTypes.Contains(t, StringComparer.Ordinal))
+            vm.Type = NotificationTypes.System;
+        else
+            vm.Type = t;
     }
 
     private static List<PermissionOptionViewModel> BuildPermissionOptions()
@@ -287,6 +311,30 @@ public class NotificationRoutingController : Controller
 
         return list
             .OrderBy(x => x.Key, StringComparer.Ordinal)
+            .ToList();
+    }
+
+    private static List<string> BuildNotificationTypeOptions()
+    {
+        // Reflect public const string fields on SWIMS.Models.Notifications.NotificationTypes
+        var fields = typeof(NotificationTypes).GetFields(BindingFlags.Public | BindingFlags.Static);
+
+        var list = new List<string>();
+
+        foreach (var f in fields)
+        {
+            if (f.FieldType != typeof(string)) continue;
+            if (!f.IsLiteral || f.IsInitOnly) continue;
+
+            var v = f.GetRawConstantValue() as string;
+            if (string.IsNullOrWhiteSpace(v)) continue;
+
+            list.Add(v);
+        }
+
+        return list
+            .Distinct(StringComparer.Ordinal)
+            .OrderBy(x => x, StringComparer.Ordinal)
             .ToList();
     }
 }

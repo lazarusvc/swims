@@ -16,6 +16,10 @@ using System;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using SWIMS.Models.Notifications;
+using SWIMS.Services.Notifications;
+using System.Collections.Generic;
+using System.Reflection;
 
 namespace SWIMS.Data
 {
@@ -992,6 +996,180 @@ namespace SWIMS.Data
                 notes: "Submit entries");
 
 
+
+            // ------------------------------------------------------------
+            // 10) NOTIFICATION ROUTING SEED (notify.notification_routes + auth.*)
+            // ------------------------------------------------------------
+
+            static IEnumerable<string> GetAllEventKeys(Type root)
+            {
+                // Grab all public const string fields recursively from SwimsEventKeys + nested types.
+                // (This keeps routes in sync without manual lists.)
+                var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+                void Walk(Type t)
+                {
+                    foreach (var f in t.GetFields(BindingFlags.Public | BindingFlags.Static))
+                    {
+                        if (f.FieldType == typeof(string) && f.IsLiteral && !f.IsInitOnly)
+                        {
+                            var v = f.GetRawConstantValue() as string;
+                            if (!string.IsNullOrWhiteSpace(v))
+                                seen.Add(v);
+                        }
+                    }
+
+                    foreach (var nt in t.GetNestedTypes(BindingFlags.Public))
+                        Walk(nt);
+                }
+
+                Walk(root);
+                return seen;
+            }
+
+            static string InferRouteType(string eventKey)
+            {
+                // Order matters: more specific first.
+                if (eventKey.Contains(".Approvals.", StringComparison.OrdinalIgnoreCase))
+                    return NotificationTypes.Approvals;
+
+                if (eventKey.Contains(".Cases.", StringComparison.OrdinalIgnoreCase))
+                    return NotificationTypes.Cases;
+
+                // Form Reports can appear as either:
+                // - Swims.Events.FormReports.*
+                // - Swims.Events.Forms.Reports.*
+                if (eventKey.Contains(".FormReports.", StringComparison.OrdinalIgnoreCase) ||
+                    eventKey.Contains(".Forms.Reports.", StringComparison.OrdinalIgnoreCase))
+                    return NotificationTypes.FormReports;
+ 
+                if (eventKey.Contains(".FormProcess.", StringComparison.OrdinalIgnoreCase))
+                    return NotificationTypes.FormReports;
+
+                if (eventKey.Contains(".Forms.", StringComparison.OrdinalIgnoreCase))
+                    return NotificationTypes.Forms;
+
+                if (eventKey.Contains(".Security.", StringComparison.OrdinalIgnoreCase))
+                    return NotificationTypes.Security;
+
+                if (eventKey.Contains(".Identity.", StringComparison.OrdinalIgnoreCase))
+                    return NotificationTypes.Identity;
+
+                // You’ve used both spellings in different places historically, so catch both.
+                if (eventKey.Contains(".StoredProcedures.", StringComparison.OrdinalIgnoreCase) ||
+                    eventKey.Contains(".StoredProcesses.", StringComparison.OrdinalIgnoreCase))
+                    return NotificationTypes.StoredProcedures;
+
+                if (eventKey.Contains(".Reports.", StringComparison.OrdinalIgnoreCase))
+                    return NotificationTypes.Reports;
+
+                return NotificationTypes.System;
+            }
+
+            async Task<NotificationRoute> UpsertNotificationRouteAsync(
+                string eventKey,
+                string type,
+                string? description = null,
+                bool? isEnabled = null)
+            {
+                var route = await db.NotificationRoutes
+                    .FirstOrDefaultAsync(r => r.EventKey == eventKey);
+
+                if (route == null)
+                {
+                    route = new NotificationRoute
+                    {
+                        EventKey = eventKey,
+                        Type = type,
+                        IsEnabled = isEnabled ?? true,
+                        Description = description,
+                        UpdatedAtUtc = DateTimeOffset.UtcNow
+                    };
+                    db.NotificationRoutes.Add(route);
+                    await db.SaveChangesAsync();
+                    return route;
+                }
+
+                // Don’t stomp admin edits, but DO fix bad System bucketing caused by older inference.
+                var inferredType = type;
+
+                // If it was seeded as System but should be a better bucket, upgrade it automatically.
+                if (string.Equals(route.Type, NotificationTypes.System, StringComparison.OrdinalIgnoreCase) &&
+                    !string.Equals(inferredType, NotificationTypes.System, StringComparison.OrdinalIgnoreCase))
+                {
+                    route.Type = inferredType;
+                }
+                else if (string.IsNullOrWhiteSpace(route.Type))
+                {
+                    route.Type = inferredType;
+                }
+
+                // Only fill description if it’s blank (don’t overwrite admin edits)
+                if (string.IsNullOrWhiteSpace(route.Description) && !string.IsNullOrWhiteSpace(description))
+                    route.Description = description;
+
+                if (isEnabled.HasValue)
+                    route.IsEnabled = isEnabled.Value;
+
+                route.UpdatedAtUtc = DateTimeOffset.UtcNow;
+
+                await db.SaveChangesAsync();
+                return route;
+            }
+
+            async Task EnsureRoutePermissionAsync(int routeId, string permissionKey, string? permissionNameSnapshot = null)
+            {
+                var set = db.Set<NotificationRoutePermission>();
+
+                var exists = await set.AnyAsync(x =>
+                    x.RouteId == routeId &&
+                    x.PermissionKey == permissionKey);
+
+                if (exists) return;
+
+                set.Add(new NotificationRoutePermission
+                {
+                    RouteId = routeId,
+                    PermissionKey = permissionKey,
+                    PermissionNameSnapshot = permissionNameSnapshot
+                });
+
+                await db.SaveChangesAsync();
+            }
+
+            // A) Ensure a route row exists for every event key constant
+            foreach (var eventKey in GetAllEventKeys(typeof(SwimsEventKeys)))
+            {
+                await UpsertNotificationRouteAsync(
+                    eventKey: eventKey,
+                    type: InferRouteType(eventKey),
+                    description: null,
+                    isEnabled: null);
+            }
+
+            // B) Approvals: permission-based routing (special case)
+            // Seed L1..L5 as enabled and mapped to the permission keys you already use for gate policies.:contentReference[oaicite:2]{index=2}
+            var rL1 = await UpsertNotificationRouteAsync(SwimsEventKeys.Approvals.PendingL1, NotificationTypes.Approvals, "Approvals pending L1 (permission routed)");
+            await EnsureRoutePermissionAsync(rL1.Id, Permissions.Approvals_L1, "Approvals_L1");
+
+            var rL2 = await UpsertNotificationRouteAsync(SwimsEventKeys.Approvals.PendingL2, NotificationTypes.Approvals, "Approvals pending L2 (permission routed)");
+            await EnsureRoutePermissionAsync(rL2.Id, Permissions.Approvals_L2, "Approvals_L2");
+
+            var rL3 = await UpsertNotificationRouteAsync(SwimsEventKeys.Approvals.PendingL3, NotificationTypes.Approvals, "Approvals pending L3 (permission routed)");
+            await EnsureRoutePermissionAsync(rL3.Id, Permissions.Approvals_L3, "Approvals_L3");
+
+            var rL4 = await UpsertNotificationRouteAsync(SwimsEventKeys.Approvals.PendingL4, NotificationTypes.Approvals, "Approvals pending L4 (permission routed)");
+            await EnsureRoutePermissionAsync(rL4.Id, Permissions.Approvals_L4, "Approvals_L4");
+
+            var rL5 = await UpsertNotificationRouteAsync(SwimsEventKeys.Approvals.PendingL5, NotificationTypes.Approvals, "Approvals pending L5 (permission routed)");
+            await EnsureRoutePermissionAsync(rL5.Id, Permissions.Approvals_L5, "Approvals_L5");
+
+            // C) FinalApproved: create the route row, but keep disabled until department confirms recipients
+            await UpsertNotificationRouteAsync(
+                SwimsEventKeys.Approvals.FinalApproved,
+                NotificationTypes.Approvals,
+                description: "Final approved (recipient rules TBD)",
+                isEnabled: false);
 
 
         }
