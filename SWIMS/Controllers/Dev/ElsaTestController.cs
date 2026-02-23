@@ -3,75 +3,71 @@ using Microsoft.AspNetCore.Mvc;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Security.Claims;
-using System.Threading.Tasks;
 
-namespace YourSwimsNamespace.Controllers.Dev
+namespace SWIMS.Controllers.Dev;
+
+[ApiController]
+[ApiExplorerSettings(IgnoreApi = true)]
+[Route("dev/elsa-test")]
+[Authorize(Roles = "SuperAdmin")]
+public sealed class ElsaTestController : ControllerBase
 {
-    [ApiController]
-    [Route("dev/elsa-test")]
-    // Optionally lock this down to local/dev-only:
-    // [Authorize(Policy = "DevOnly")]
-    [AllowAnonymous]
-    public class ElsaTestController : ControllerBase
+    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly IWebHostEnvironment _env;
+
+    public ElsaTestController(IHttpClientFactory httpClientFactory, IWebHostEnvironment env)
     {
-        private readonly IHttpClientFactory _httpClientFactory;
+        _httpClientFactory = httpClientFactory;
+        _env = env;
+    }
 
-        public ElsaTestController(IHttpClientFactory httpClientFactory)
+    private IActionResult? BlockIfNotDev()
+        => _env.IsDevelopment() ? null : NotFound();
+
+    [HttpGet("definitions")]
+    public async Task<IActionResult> GetDefinitions(CancellationToken ct)
+    {
+        var blocked = BlockIfNotDev();
+        if (blocked is not null) return blocked;
+
+        var client = _httpClientFactory.CreateClient("Elsa");
+        var response = await client.GetAsync(
+            "workflow-definitions?versionOptions=Latest&Page=0&PageSize=20&OrderDirection=Ascending", ct);
+
+        var body = await response.Content.ReadAsStringAsync(ct);
+        response.EnsureSuccessStatusCode();
+        return Content(body, "application/json");
+    }
+
+    [HttpPost("run/{definitionId}")]
+    public async Task<IActionResult> RunWorkflow(string definitionId, CancellationToken ct)
+    {
+        var blocked = BlockIfNotDev();
+        if (blocked is not null) return blocked;
+
+        var client = _httpClientFactory.CreateClient("Elsa");
+
+        var recipient =
+            User?.FindFirstValue(ClaimTypes.NameIdentifier)
+            ?? User?.Identity?.Name
+            ?? "1";
+
+        var requestBody = new
         {
-            _httpClientFactory = httpClientFactory;
-        }
-
-        [HttpGet("definitions")]
-        public async Task<IActionResult> GetDefinitions()
-        {
-            var client = _httpClientFactory.CreateClient("Elsa");
-
-            var response = await client.GetAsync(
-                "workflow-definitions?versionOptions=Latest&Page=0&PageSize=20&OrderDirection=Ascending");
-
-            var body = await response.Content.ReadAsStringAsync();
-            response.EnsureSuccessStatusCode();
-
-            // Just forward Elsa's JSON
-            return Content(body, "application/json");
-        }
-
-        [HttpPost("run/{definitionId}")]
-        [AllowAnonymous] // dev-only
-        public async Task<IActionResult> RunWorkflow(string definitionId)
-        {
-            var client = _httpClientFactory.CreateClient("Elsa");
-
-            var recipient =
-                User?.FindFirstValue(ClaimTypes.NameIdentifier) // preferred: int userId as string
-                ?? User?.Identity?.Name                          // fallback: username (if your app sets it)
-                ?? "1";                                          // last resort fallback (replace with a known userId)
-
-            var requestBody = new
+            input = new
             {
-                input = new
-                {
-                    Channel = "InApp",
-                    Recipient = recipient,
-                    Subject = $"Dynamic Elsa → SWIMS ({DateTime.UtcNow:O})",
-                    Body = $"Hello from SWIMS at {DateTime.UtcNow:O}",
-                    MetadataJson = "{\"source\":\"swims-dev\",\"event\":\"ManualTest\"}"
-                }
-            };
+                Channel = "InApp",
+                Recipient = recipient,
+                Subject = $"Dynamic Elsa → SWIMS ({DateTime.UtcNow:O})",
+                Body = $"Hello from SWIMS at {DateTime.UtcNow:O}",
+                MetadataJson = "{\"type\":\"System\",\"eventKey\":\"Swims.Events.Dev.ManualTest\",\"metadata\":{\"source\":\"swims-dev\"}}"
+            }
+        };
 
-            var relativeUrl = $"workflow-definitions/{definitionId}/execute";
+        var relativeUrl = $"workflow-definitions/{definitionId}/execute";
+        var response = await client.PostAsJsonAsync(relativeUrl, requestBody, ct);
+        var content = await response.Content.ReadAsStringAsync(ct);
 
-            // Debug log to be 100% sure of the URL
-            Console.WriteLine($"Calling Elsa: {client.BaseAddress}{relativeUrl}");
-
-            var response = await client.PostAsJsonAsync(relativeUrl, requestBody);
-
-            var content = await response.Content.ReadAsStringAsync();
-
-            // For now, don't throw on 400 – just show what Elsa returned
-            return Content(
-                $"Status: {(int)response.StatusCode}\n\n{content}",
-                "text/plain");
-        }
+        return Content($"Status: {(int)response.StatusCode}\n\n{content}", "text/plain");
     }
 }
