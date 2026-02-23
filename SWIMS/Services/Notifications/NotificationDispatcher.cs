@@ -71,7 +71,7 @@ public class NotificationDispatcher : INotificationDispatcher
         // Fan-out from routing table + superadmins (only if we have an eventKey)
         if (!string.IsNullOrWhiteSpace(eventKey))
         {
-            routeIds = await ResolveRouteRecipientsAsync(eventKey!, ct);
+            routeIds = await ResolveRouteRecipientsAsync(type, eventKey!, ct);
             foreach (var id in routeIds) recipientIds.Add(id);
 
             superIds = await ResolveSuperAdminRecipientsAsync(ct);
@@ -295,7 +295,7 @@ public class NotificationDispatcher : INotificationDispatcher
         }
     }
 
-    private async Task<HashSet<int>> ResolveRouteRecipientsAsync(string eventKey, CancellationToken ct)
+    private async Task<HashSet<int>> ResolveRouteRecipientsAsync(string type, string eventKey, CancellationToken ct)
     {
         var result = new HashSet<int>();
 
@@ -304,7 +304,18 @@ public class NotificationDispatcher : INotificationDispatcher
             .Include(r => r.Roles)
             .Include(r => r.Permissions)
             .AsNoTracking()
-            .FirstOrDefaultAsync(r => r.EventKey == eventKey, ct);
+            .FirstOrDefaultAsync(r => r.EventKey == eventKey && r.Type == type, ct);
+
+        // fallback for legacy/dirty rows
+        if (route is null)
+        {
+            route = await _db.NotificationRoutes
+                .Include(r => r.Users)
+                .Include(r => r.Roles)
+                .Include(r => r.Permissions)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(r => r.EventKey == eventKey, ct);
+        }
 
         if (route is null || !route.IsEnabled)
             return result;
