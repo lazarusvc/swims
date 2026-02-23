@@ -1,195 +1,43 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using SWIMS.Data;
-using SWIMS.Security;
 using SWIMS.Models.Notifications;
+using SWIMS.Security;
 using SWIMS.Services.Notifications;
-using System.Text.Json;
 
 namespace SWIMS.Controllers.Integration;
 
 [ApiController]
-[AllowAnonymous]
 [Route("api/integration/notifications")]
+[AllowAnonymous]
 [ServiceFilter(typeof(ElsaIntegrationKeyFilter))]
-public class NotificationsIntegrationController : ControllerBase
+public sealed class NotificationsIntegrationController : ControllerBase
 {
-    private readonly ILogger<NotificationsIntegrationController> _logger;
-    private readonly SwimsIdentityDbContext _db;
-    private readonly INotifier _notifier;
     private readonly INotificationDispatcher _dispatcher;
-    private readonly IConfiguration _config;
+    private readonly ILogger<NotificationsIntegrationController> _logger;
 
     public NotificationsIntegrationController(
-        ILogger<NotificationsIntegrationController> logger,
-        SwimsIdentityDbContext db,
-        INotifier notifier,
         INotificationDispatcher dispatcher,
-        IConfiguration config)
+        ILogger<NotificationsIntegrationController> logger)
     {
-        _logger = logger;
-        _db = db;
-        _notifier = notifier;
         _dispatcher = dispatcher;
-        _config = config;
+        _logger = logger;
     }
-
-    [HttpPost]
-    public Task<IActionResult> ReceiveBase([FromBody] SwimsNotificationRequest request, CancellationToken ct)
-    => ReceiveCoreAsync(request, ct);
 
     [HttpPost("receive")]
-    public Task<IActionResult> Receive([FromBody] SwimsNotificationRequest request, CancellationToken ct)
-        => ReceiveCoreAsync(request, ct);
-
-
-    private async Task<IActionResult> ReceiveCoreAsync(SwimsNotificationRequest request, CancellationToken ct)
+    public async Task<IActionResult> Receive([FromBody] SwimsNotificationRequest request, CancellationToken ct)
     {
-        var expected = _config["Integration:NotificationsKey"];
-
-        if (!string.IsNullOrWhiteSpace(expected))
-        {
-            if (!Request.Headers.TryGetValue("X-SWIMS-INTEGRATION-KEY", out var provided) ||
-                !string.Equals(provided.ToString(), expected, StringComparison.Ordinal))
-            {
-                return Unauthorized(new { ok = false, error = "invalid integration key" });
-            }
-        }
-
-        await _dispatcher.DispatchAsync(request, ct);
-        return Ok(new { ok = true });
-    }
-
-
-    private bool TryParseUser(
-        string recipient,
-        out int userId,
-        out string username,
-        out string error)
-    {
-        userId = 0;
-        username = "";
-        error = "";
-
-        // Numeric Id
-        if (int.TryParse(recipient, out var id))
-        {
-            var user = _db.Users
-                .AsNoTracking()
-                .Where(u => u.Id == id)
-                .Select(u => new { u.Id, u.UserName, u.Email })
-                .FirstOrDefault();
-
-            if (user is null)
-            {
-                error = $"userId {id} not found";
-                return false;
-            }
-
-            userId = user.Id;
-            username = user.UserName ?? user.Email ?? $"user:{user.Id}";
-            return true;
-        }
-
-        // Username / email – normalize like MessagingEndpoints.Norm
-        var norm = recipient.Trim().ToUpperInvariant();
-
-        var loginUser = _db.Users
-            .AsNoTracking()
-            .Where(u => u.NormalizedUserName == norm || u.NormalizedEmail == norm)
-            .Select(u => new { u.Id, u.UserName, u.Email })
-            .FirstOrDefault();
-
-        if (loginUser is null)
-        {
-            error = $"login '{recipient}' not found";
-            return false;
-        }
-
-        userId = loginUser.Id;
-        username = loginUser.UserName ?? loginUser.Email ?? $"user:{loginUser.Id}";
-        return true;
-    }
-
-    private sealed record ParsedMetadata(
-        string Type,
-        string? EventKey,
-        string? Url,
-        object? Metadata);
-
-    private static ParsedMetadata ParseMetadata(string? metadataJson, string defaultType)
-    {
-        if (string.IsNullOrWhiteSpace(metadataJson))
-            return new ParsedMetadata(defaultType, null, null, null);
+        if (request is null)
+            return BadRequest(new { error = "missing request body" });
 
         try
         {
-            using var doc = JsonDocument.Parse(metadataJson);
-            var root = doc.RootElement;
-
-            if (root.ValueKind != JsonValueKind.Object)
-                return new ParsedMetadata(defaultType, null, null, metadataJson);
-
-            var type = defaultType;
-            if (root.TryGetProperty("type", out var typeProp) && typeProp.ValueKind == JsonValueKind.String)
-            {
-                var s = typeProp.GetString();
-                if (!string.IsNullOrWhiteSpace(s))
-                    type = s!;
-            }
-
-            string? eventKey = null;
-            if (root.TryGetProperty("eventKey", out var eventProp) && eventProp.ValueKind == JsonValueKind.String)
-                eventKey = eventProp.GetString();
-
-            string? url = null;
-            if (root.TryGetProperty("url", out var urlProp) && urlProp.ValueKind == JsonValueKind.String)
-                url = urlProp.GetString();
-
-            // Clone the JsonElement so it survives after JsonDocument is disposed.
-            var metadata = root.Clone();
-
-            return new ParsedMetadata(type, eventKey, url, metadata);
+            await _dispatcher.DispatchAsync(request, ct);
+            return Ok(new { ok = true });
         }
-        catch
+        catch (Exception ex)
         {
-            // Raw string fallback if JSON is invalid
-            return new ParsedMetadata(defaultType, null, null, metadataJson);
+            _logger.LogError(ex, "Failed to dispatch incoming notification.");
+            return StatusCode(500, new { error = "dispatch_failed" });
         }
-    }
-
-    private static object BuildPayload(
-        string type,
-        string? eventKey,
-        string? url,
-        SwimsNotificationRequest request,
-        object? metadata)
-    {
-        // Optional: limit snippet length
-        var body = request.Body ?? "";
-        var snippet = body.Length > 160 ? body[..160] + "…" : body;
-
-        return new
-        {
-            // Helpful for audit/search even if your DB has a Type column too.
-            type,
-
-            // Fine-grained audit key (e.g. "Swims.Events.Cases.Assigned")
-            eventKey,
-
-            subject = request.Subject,
-            message = body,
-            snippet,
-
-            // Allow deep-linking from dropdown/toast/email when SWIMS supplies it.
-            url,
-
-            // Button label for email templates if/when re-enabled
-            actionLabel = "Open in SWIMS",
-
-            // Metadata passthrough (json object or raw string)
-            metadata
-        };
     }
 }
