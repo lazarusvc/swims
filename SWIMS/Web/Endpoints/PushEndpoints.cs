@@ -58,11 +58,25 @@ public static class PushEndpoints
             return Results.Ok(new { ok = true });
         });
 
-        grp.MapPost("unsubscribe", async (SwimsIdentityDbContext db, PushUnsubDto body) =>
+        grp.MapPost("unsubscribe", async (HttpContext http, SwimsIdentityDbContext db, PushUnsubDto body) =>
         {
-            if (string.IsNullOrWhiteSpace(body.endpoint)) return Results.BadRequest();
-            var s = await db.PushSubscriptions.FirstOrDefaultAsync(x => x.Endpoint == body.endpoint);
-            if (s != null) { s.IsActive = false; await db.SaveChangesAsync(); }
+            if (string.IsNullOrWhiteSpace(body.endpoint))
+                return Results.BadRequest();
+
+            if (!int.TryParse(http.User.FindFirstValue(ClaimTypes.NameIdentifier), out var me))
+                return Results.Unauthorized();
+
+            var s = await db.PushSubscriptions.FirstOrDefaultAsync(x =>
+                x.Endpoint == body.endpoint &&
+                x.UserId == me);
+
+            if (s != null)
+            {
+                s.IsActive = false;
+                await db.SaveChangesAsync();
+            }
+
+            // Always OK (idempotent)
             return Results.Ok(new { ok = true });
         });
 
