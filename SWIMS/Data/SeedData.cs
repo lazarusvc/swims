@@ -356,7 +356,7 @@ namespace SWIMS.Data
                 Always(Permissions.Forms_Builder, "Admin"),
                 isSystem: true, description: "Create/edit forms");
             await UpsertPolicyAsync(Permissions.Forms_Submit,
-                Always(Permissions.Forms_Submit, "SocialWorker", "Secretary", "VCCClerk"),
+                Always(Permissions.Forms_Submit, "Admin", "SocialWorker", "Secretary", "VCCClerk"),
                 description: "Submit operational forms");
 
             // Intake
