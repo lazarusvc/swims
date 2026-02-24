@@ -53,6 +53,60 @@
     </div>
 </div>
 
+<div class="col-12">
+    <div class="card shadow-sm border-0 mt-3">
+        <div class="card-body">
+            <h6 class="fw-semibold mb-2">Browser Push Notifications</h6>
+            <p class="text-secondary-light mb-3">
+                Push notifications can appear even when SWIMS is not open (if supported by your browser/device).
+            </p>
+
+            <div class="d-flex gap-2 align-items-center flex-wrap">
+                <button type="button" class="btn btn-primary btn-sm" id="btn-push-enable">Enable Push</button>
+                <button type="button" class="btn btn-outline-danger btn-sm" id="btn-push-disable">Disable Push</button>
+                <span class="text-secondary-light small" id="push-status"></span>
+            </div>
+
+            <div class="mt-2 small text-secondary-light">
+                If you previously blocked push notifications, you may need to re-enable them in your browser settings.
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script src="~/WowDash/js/notif-prefs.js" asp-append-version="true"></script>
+
+    <script>
+        (function () {
+          async function setStatus() {
+            const el = document.getElementById('push-status');
+            if (!el) return;
+
+            const perm = (typeof Notification !== 'undefined') ? Notification.permission : 'unsupported';
+            let sub = 'unknown';
+
+            if (window.SwimsPush?.status) {
+              const s = await window.SwimsPush.status();
+              sub = s.subscribed ? 'yes' : 'no';
+            }
+
+            el.textContent = `Permission: ${perm} • Subscribed: ${sub}`;
+          }
+
+          document.addEventListener('DOMContentLoaded', () => {
+            setStatus();
+
+            document.getElementById('btn-push-enable')?.addEventListener('click', async () => {
+              await window.SwimsPush?.enable?.();
+              await setStatus();
+            });
+
+            document.getElementById('btn-push-disable')?.addEventListener('click', async () => {
+              await window.SwimsPush?.disable?.();
+              await setStatus();
+            });
+          });
+        })();
+    </script>
 }

@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using SWIMS.Data;
 using SWIMS.Models.Notifications;
 using SWIMS.Services.Outbox;                // IEmailOutbox
@@ -17,7 +18,8 @@ public sealed class Notifier : INotifier
     private readonly INotificationEmailComposer _composer;      // <- your email composer
     private readonly IEmailOutbox _outbox;                      // <- your outbox
     private readonly NotificationEmailOptions _emailOptions;
-    private readonly HashSet<string> _emailAllow;
+    private readonly HashSet<string> _mandatory;
+    private readonly HashSet<string> _allow;
 
     private static readonly JsonSerializerOptions _json = new(JsonSerializerDefaults.Web);
 
@@ -28,7 +30,7 @@ public sealed class Notifier : INotifier
     INotificationPreferences prefs,
     INotificationEmailComposer composer,
     IEmailOutbox outbox,
-    Microsoft.Extensions.Options.IOptions<NotificationEmailOptions> emailOptions)
+    IOptions<NotificationEmailOptions> emailOptions)
     {
         _db = db;
         _hub = hub;
@@ -38,7 +40,8 @@ public sealed class Notifier : INotifier
         _outbox = outbox;
 
         _emailOptions = emailOptions.Value ?? new NotificationEmailOptions();
-        _emailAllow = new HashSet<string>(_emailOptions.ImmediateAllowEventKeys ?? new(), StringComparer.Ordinal);
+        _mandatory = new HashSet<string>(_emailOptions.MandatoryEventKeys ?? new(), StringComparer.Ordinal);
+        _allow = new HashSet<string>(_emailOptions.AllowEventKeys ?? new(), StringComparer.Ordinal);
     }
 
     public async Task NotifyUserAsync(int userId, string username, string type, object payload)
@@ -83,14 +86,24 @@ public sealed class Notifier : INotifier
             if (!_emailOptions.ImmediateEnabled)
                 return;
 
-            var eff = await _prefs.GetEffectiveAsync(userId, type);
-            if (!eff.email)
+            var eventKey = TryReadEventKey(payloadJson);
+            if (string.IsNullOrWhiteSpace(eventKey))
                 return;
 
-            // Only allowlisted event keys can trigger immediate email.
-            var eventKey = TryReadEventKey(payloadJson);
-            if (string.IsNullOrWhiteSpace(eventKey) || !_emailAllow.Contains(eventKey))
+            var isMandatory = _mandatory.Contains(eventKey);
+            var isOptionalAllowed = _allow.Contains(eventKey);
+
+            // Not in either list => no immediate email.
+            if (!isMandatory && !isOptionalAllowed)
                 return;
+
+            // Optional emails obey user pref; mandatory ignores user pref.
+            if (!isMandatory)
+            {
+                var eff = await _prefs.GetEffectiveAsync(userId, type);
+                if (!eff.email)
+                    return;
+            }
 
             var email = await _db.Users
                 .Where(u => u.Id == userId)
@@ -107,16 +120,11 @@ public sealed class Notifier : INotifier
                 payloadJson: payloadJson
             );
 
-            await _outbox.EnqueueAsync(
-                to: email,
-                subject: subject,
-                html: html,
-                text: text
-            );
+            await _outbox.EnqueueAsync(to: email, subject: subject, html: html, text: text);
         }
         catch
         {
-            // email is best-effort; never block
+            // best-effort
         }
 
         static string? TryReadEventKey(string json)
@@ -124,9 +132,8 @@ public sealed class Notifier : INotifier
             try
             {
                 using var doc = JsonDocument.Parse(json);
-                var root = doc.RootElement;
-                if (root.ValueKind == JsonValueKind.Object &&
-                    root.TryGetProperty("eventKey", out var ek) &&
+                if (doc.RootElement.ValueKind == JsonValueKind.Object &&
+                    doc.RootElement.TryGetProperty("eventKey", out var ek) &&
                     ek.ValueKind == JsonValueKind.String)
                     return ek.GetString();
             }
