@@ -9,6 +9,7 @@ using System.Security.Claims;
 using System.Text.Json;
 using SWIMS.Services.Elsa;
 using SWIMS.Services.Notifications;
+using SWIMS.Services.Diagnostics.Auditing;
 
 
 
@@ -19,13 +20,16 @@ namespace SWIMS.Controllers
     {
         private readonly SwimsStoredProcsDbContext _db;
         private readonly IElsaWorkflowClient _elsa;
+        private readonly IAuditLogger _audit;
 
         public StoredProcessParamsController(
             SwimsStoredProcsDbContext db,
-            IElsaWorkflowClient elsa)
+            IElsaWorkflowClient elsa,
+            IAuditLogger audit)
         {
             _db = db;
             _elsa = elsa;
+            _audit = audit;
         }
 
         // GET: /StoredProcessParams or /StoredProcessParams/{processId}
@@ -102,15 +106,43 @@ namespace SWIMS.Controllers
                 return View(vm);
             }
 
-            _db.StoredProcessParams.Add(new StoredProcessParam
+            var row = new StoredProcessParam
             {
                 StoredProcessId = vm.StoredProcessId,
                 Key = vm.Key.Trim(),
                 DataType = vm.DataType,
                 Value = vm.Value
-            });
+            };
+            _db.StoredProcessParams.Add(row);
             await _db.SaveChangesAsync();
 
+            // 📝 Audit: Stored procedure parameter created
+            AuditHelpers.TryResolveActor(User, out var actorId, out var actorUsername);
+
+            await _audit.TryLogAsync(
+                action: "StoredProcedureParameterCreated",
+                entity: "StoredProcessParam",
+                entityId: row.Id.ToString(),
+                userId: actorId,
+                username: actorUsername,
+                oldObj: null,
+                newObj: new
+                {
+                    paramId = row.Id,
+                    processId = row.StoredProcessId,
+                    key = row.Key,
+                    dataType = row.DataType,
+                    hasValue = !string.IsNullOrWhiteSpace(row.Value),
+                    valueLength = row.Value?.Length ?? 0
+                },
+                extra: new
+                {
+                    processId = row.StoredProcessId,
+                    key = row.Key,
+                    dataType = row.DataType
+                },
+                ct: HttpContext.RequestAborted);
+            // 📝 Audit: END
 
             // 🔔 Notify: Stored procedure parameter created
             var actorName = User?.Identity?.Name ?? "Someone";
@@ -172,10 +204,51 @@ namespace SWIMS.Controllers
             var row = await _db.StoredProcessParams.FirstOrDefaultAsync(x => x.Id == id);
             if (row == null) return RedirectToAction(nameof(Index));
 
+            var oldObj = new
+            {
+                paramId = row.Id,
+                processId = row.StoredProcessId,
+                key = row.Key,
+                dataType = row.DataType,
+                hasValue = !string.IsNullOrWhiteSpace(row.Value),
+                valueLength = row.Value?.Length ?? 0
+            };
+
             row.Key = vm.Key.Trim();
             row.DataType = vm.DataType;
             row.Value = vm.Value;
             await _db.SaveChangesAsync();
+
+            // 📝 Audit: Stored procedure parameter updated
+            AuditHelpers.TryResolveActor(User, out var actorId, out var actorUsername);
+
+            var newObj = new
+            {
+                paramId = row.Id,
+                processId = row.StoredProcessId,
+                key = row.Key,
+                dataType = row.DataType,
+                hasValue = !string.IsNullOrWhiteSpace(row.Value),
+                valueLength = row.Value?.Length ?? 0
+            };
+
+            await _audit.TryLogAsync(
+                action: "StoredProcedureParameterUpdated",
+                entity: "StoredProcessParam",
+                entityId: row.Id.ToString(),
+                userId: actorId,
+                username: actorUsername,
+                oldObj: oldObj,
+                newObj: newObj,
+                extra: new
+                {
+                    processId = row.StoredProcessId,
+                    keyChanged = !string.Equals(oldObj.key, newObj.key, StringComparison.Ordinal),
+                    dataTypeChanged = !string.Equals(oldObj.dataType, newObj.dataType, StringComparison.Ordinal),
+                    valueChanged = (oldObj.valueLength != newObj.valueLength) || (oldObj.hasValue != newObj.hasValue)
+                },
+                ct: HttpContext.RequestAborted);
+            // 📝 Audit: END
 
             // 🔔 Notify: Stored procedure parameter updated
             var actorName = User?.Identity?.Name ?? "Someone";
@@ -223,8 +296,37 @@ namespace SWIMS.Controllers
                 var pid = row.StoredProcessId;
                 var key = row.Key;
 
+                var oldObj = new
+                {
+                    paramId = row.Id,
+                    processId = row.StoredProcessId,
+                    key = row.Key,
+                    dataType = row.DataType,
+                    hasValue = !string.IsNullOrWhiteSpace(row.Value),
+                    valueLength = row.Value?.Length ?? 0
+                };
+
                 _db.StoredProcessParams.Remove(row);
                 await _db.SaveChangesAsync();
+
+                // 📝 Audit: Stored procedure parameter deleted
+                AuditHelpers.TryResolveActor(User, out var actorId, out var actorUsername);
+
+                await _audit.TryLogAsync(
+                    action: "StoredProcedureParameterDeleted",
+                    entity: "StoredProcessParam",
+                    entityId: id.ToString(),
+                    userId: actorId,
+                    username: actorUsername,
+                    oldObj: oldObj,
+                    newObj: null,
+                    extra: new
+                    {
+                        processId = pid,
+                        key = key
+                    },
+                    ct: HttpContext.RequestAborted);
+                // 📝 Audit: END
 
                 // 🔔 Notify: Stored procedure parameter deleted
                 var actorName = User?.Identity?.Name ?? "Someone";

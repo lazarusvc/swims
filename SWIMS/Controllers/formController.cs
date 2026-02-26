@@ -22,6 +22,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using static System.Net.Mime.MediaTypeNames;
+using SWIMS.Services.Diagnostics.Auditing;
 
 
 namespace SWIMS.Controllers
@@ -31,12 +32,14 @@ namespace SWIMS.Controllers
         private readonly SwimsDb_moreContext _context;
         private readonly SwimsLookupDbContext _lookup;
         private readonly IElsaWorkflowClient _elsa;
+        private readonly IAuditLogger _audit;
 
-        public formController(SwimsDb_moreContext context, SwimsLookupDbContext lookup, IElsaWorkflowClient elsa)
+        public formController(SwimsDb_moreContext context, SwimsLookupDbContext lookup, IElsaWorkflowClient elsa, IAuditLogger audit)
         {
             _context = context;
             _lookup = lookup;
             _elsa = elsa;
+            _audit = audit;
         }
 
         /// <summary>
@@ -889,6 +892,20 @@ namespace SWIMS.Controllers
                 await image.CopyToAsync(stream);
             }
 
+            // ✅ Validation: LOCATION (SW_identityId) must be selected + exist
+            if (sW_form.SW_identityId <= 0)
+            {
+                ModelState.AddModelError(nameof(SW_form.SW_identityId), "Location is required.");
+            }
+            else
+            {
+                var identityExists = await _context.SW_identities
+                    .AnyAsync(x => x.Id == sW_form.SW_identityId, HttpContext.RequestAborted);
+
+                if (!identityExists)
+                    ModelState.AddModelError(nameof(SW_form.SW_identityId), "Selected location is invalid.");
+            }
+
             if (ModelState.IsValid)
             {
                 var createdForm = new SW_form
@@ -910,9 +927,42 @@ namespace SWIMS.Controllers
 
                 await SaveFormClassificationAsync(createdForm.Id, formTypeId, programTagIds);
 
-                var actorName = User?.Identity?.Name ?? "A user";
+                // 📝 Audit: Form definition created
+                AuditHelpers.TryResolveActor(User, out var actorId, out var actorUsername);
+
+                await _audit.TryLogAsync(
+                    action: "FormDefinitionCreated",
+                    entity: "Form",
+                    entityId: createdForm.Id.ToString(),
+                    userId: actorId,
+                    username: actorUsername,
+                    oldObj: null,
+                    newObj: new
+                    {
+                        createdForm.Id,
+                        createdForm.uuid,
+                        createdForm.name,
+                        createdForm.desc,
+                        createdForm.header,
+                        createdForm.SW_identityId,
+                        createdForm.is_linking,
+                        createdForm.approvalAmt,
+                        formTypeId,
+                        programTagIds
+                    },
+                    extra: new
+                    {
+                        formId = createdForm.Id,
+                        formUuid = createdForm.uuid,
+                        formName = createdForm.name,
+                        identityId = createdForm.SW_identityId
+                    },
+                    ct: HttpContext.RequestAborted);
+                // 📝 Audit: END
 
                 // 🔔 Notify: Form Created
+                var actorName = User?.Identity?.Name ?? "A user";
+
                 await NotifyFormEventAsync(
                     formId: createdForm.Id,
                     eventKey: SwimsEventKeys.Forms.DefinitionCreated,
@@ -1123,6 +1173,11 @@ namespace SWIMS.Controllers
                     .ToList();
             }
 
+            // 📝 Audit: Form publish (snapshot OLD counts)
+            var oldNameCount = existingNameList.Count;
+            var oldTypeCount = existingTypeList.Count;
+            // 📝 Audit: END
+
             // ✅ CHANGED: Build dictionaries from de-duped lists
             var existingNames = existingNameList
                 .GroupBy(n => n.field!, StringComparer.OrdinalIgnoreCase)
@@ -1182,12 +1237,18 @@ namespace SWIMS.Controllers
 
             // OPTIONAL: prune rows removed from the builder (keeps DB in sync with current form)
             var prune = true; // set false if you prefer to retain old mappings
+
+            var staleTypeRemovedCount = 0;
+            var staleNameRemovedCount = 0;
+
             if (prune)
             {
                 var staleTypeIds = existingTypes.Values
                     .Where(t => !seen.Contains(t.field!))
                     .Select(t => t.Id)
                     .ToList();
+
+                staleTypeRemovedCount = staleTypeIds.Count;
 
                 if (staleTypeIds.Count > 0)
                 {
@@ -1203,6 +1264,8 @@ namespace SWIMS.Controllers
                     .Select(n => n.Id)
                     .ToList();
 
+                staleNameRemovedCount = staleNameIds.Count;
+
                 if (staleNameIds.Count > 0)
                 {
                     var staleNames = await _context.SW_formTableNames
@@ -1216,9 +1279,41 @@ namespace SWIMS.Controllers
             // Save atomically
             await _context.SaveChangesAsync();
 
-            var actorName = User?.Identity?.Name ?? "A user";
+            // 📝 Audit: Form definition published
+            AuditHelpers.TryResolveActor(User, out var actorId, out var actorUsername);
+
+            await _audit.TryLogAsync(
+                action: "FormDefinitionPublished",
+                entity: "Form",
+                entityId: fID.ToString(),
+                userId: actorId,
+                username: actorUsername,
+                oldObj: new
+                {
+                    nameRowCount = oldNameCount,
+                    typeRowCount = oldTypeCount
+                },
+                newObj: new
+                {
+                    published = true,
+                    fieldCount = seen.Count,
+                    incomingFieldCount = incoming.Count,
+                    pruned = prune,
+                    staleNameRemovedCount,
+                    staleTypeRemovedCount
+                },
+                extra: new
+                {
+                    formId = fID,
+                    formUuid = swForm.uuid,
+                    formName = swForm.name
+                },
+                ct: HttpContext.RequestAborted);
+            // 📝 Audit: END
 
             // 🔔 Notify: Form published
+            var actorName = User?.Identity?.Name ?? "A user";
+
             await NotifyFormEventAsync(
                 formId: fID,
                 eventKey: SwimsEventKeys.Forms.DefinitionPublished,
@@ -1299,6 +1394,32 @@ namespace SWIMS.Controllers
 
             if (existing == null) return NotFound();
 
+            // 📝 Audit: Form definition update (snapshot OLD)
+            var oldTypeId = await _lookup.SW_formFormTypes
+                .Where(x => x.SW_formsId == existing.Id)
+                .Select(x => (int?)x.SW_formTypeId)
+                .SingleOrDefaultAsync(HttpContext.RequestAborted);
+
+            var oldTagIds = await _lookup.SW_formProgramTags
+                .Where(x => x.SW_formsId == existing.Id)
+                .Select(x => x.SW_programTagId)
+                .ToListAsync(HttpContext.RequestAborted);
+
+            var oldForm = new
+            {
+                existing.Id,
+                existing.uuid,
+                existing.name,
+                existing.desc,
+                existing.header,
+                existing.SW_identityId,
+                existing.is_linking,
+                existing.approvalAmt,
+                formTypeId = oldTypeId,
+                programTagIds = oldTagIds
+            };
+            // 📝 Audit: END
+
             // Normalize classification inputs
             if (formTypeId.HasValue && formTypeId.Value <= 0) formTypeId = null;
 
@@ -1364,6 +1485,39 @@ namespace SWIMS.Controllers
             try
             {
                 await _context.SaveChangesAsync();
+
+                // 📝 Audit: Form definition updated
+                AuditHelpers.TryResolveActor(User, out var actorId, out var actorUsername);
+
+                await _audit.TryLogAsync(
+                    action: "FormDefinitionUpdated",
+                    entity: "Form",
+                    entityId: existing.Id.ToString(),
+                    userId: actorId,
+                    username: actorUsername,
+                    oldObj: oldForm,
+                    newObj: new
+                    {
+                        existing.Id,
+                        existing.uuid,
+                        existing.name,
+                        existing.desc,
+                        existing.header,
+                        existing.SW_identityId,
+                        existing.is_linking,
+                        existing.approvalAmt,
+                        formTypeId,
+                        programTagIds
+                    },
+                    extra: new
+                    {
+                        formId = existing.Id,
+                        formUuid = existing.uuid,
+                        formName = existing.name,
+                        identityId = existing.SW_identityId
+                    },
+                    ct: HttpContext.RequestAborted);
+                // 📝 Audit: END
 
                 // ✅ Save FormType + ProgramTags selection on edit
                 await SaveFormClassificationAsync(existing.Id, formTypeId, programTagIds);
@@ -1564,6 +1718,11 @@ namespace SWIMS.Controllers
             var tagLinks = await _lookup.SW_formProgramTags.Where(x => x.SW_formsId == id).ToListAsync();
             if (tagLinks.Count > 0) _lookup.SW_formProgramTags.RemoveRange(tagLinks);
 
+            // 📝 Audit: Form delete (snapshot classification)
+            var oldTypeId = typeLink?.SW_formTypeId;
+            var oldTagIds = tagLinks.Select(x => x.SW_programTagId).ToList();
+            // 📝 Audit: END
+
             await _lookup.SaveChangesAsync();
 
 
@@ -1575,6 +1734,48 @@ namespace SWIMS.Controllers
             }
 
             await _context.SaveChangesAsync();
+
+            var deletedFormId = id.ToString();
+            object? deletedFormOldObj = null;
+
+            if (sW_form != null)
+            {
+                deletedFormId = sW_form.Id.ToString();
+                deletedFormOldObj = new
+                {
+                    sW_form.Id,
+                    sW_form.uuid,
+                    sW_form.name,
+                    sW_form.desc,
+                    sW_form.header,
+                    sW_form.SW_identityId,
+                    sW_form.is_linking,
+                    sW_form.approvalAmt,
+                    formTypeId = oldTypeId,
+                    programTagIds = oldTagIds
+                };
+            }
+
+            // 📝 Audit: Form definition deleted
+            AuditHelpers.TryResolveActor(User, out var actorId, out var actorUsername);
+
+            await _audit.TryLogAsync(
+                action: "FormDefinitionDeleted",
+                entity: "Form",
+                entityId: deletedFormId,
+                userId: actorId,
+                username: actorUsername,
+                oldObj: deletedFormOldObj,
+                newObj: new { deleted = true },
+                extra: new
+                {
+                    formId = sW_form.Id,
+                    formUuid = sW_form.uuid,
+                    formName = sW_form.name,
+                    identityId = sW_form.SW_identityId
+                },
+                ct: HttpContext.RequestAborted);
+            // 📝 Audit: END
 
             // 🔔 Notify: Form deleted
             var actorName = User?.Identity?.Name ?? "A user";

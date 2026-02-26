@@ -8,6 +8,7 @@ using System.Security.Claims;
 using System.Text.Json;
 using SWIMS.Services.Elsa;
 using SWIMS.Services.Notifications;
+using SWIMS.Services.Diagnostics.Auditing;
 
 
 namespace SWIMS.Controllers
@@ -17,15 +18,18 @@ namespace SWIMS.Controllers
         private readonly SwimsStoredProcsDbContext _db;
         private readonly StoredProcedureRunner _runner;
         private readonly IElsaWorkflowClient _elsa;
+        private readonly IAuditLogger _audit;
 
         public StoredProcessesController(
             SwimsStoredProcsDbContext db,
             StoredProcedureRunner runner,
-            IElsaWorkflowClient elsa)
+            IElsaWorkflowClient elsa,
+            IAuditLogger audit)
         {
             _db = db;
             _runner = runner;
             _elsa = elsa;
+            _audit = audit;
         }
 
         // GET: /StoredProcesses
@@ -83,6 +87,14 @@ namespace SWIMS.Controllers
                 if (map.TryGetValue(p.Id, out var row)) row.Value = p.Value;
             await _db.SaveChangesAsync();
 
+            // 📝 Audit: Stored procedure execute (prepare)
+            var execStartedUtc = DateTime.UtcNow;
+
+            // Do NOT log param values — only counts
+            var paramCount = sp.Params?.Count ?? 0;
+            var paramFilledCount = sp.Params?.Count(p => !string.IsNullOrWhiteSpace(p.Value)) ?? 0;
+            // 📝 Audit: END
+
             // --- uuid-aware tokenization (unchanged) ---
             var uid = Request.Query["uid"].FirstOrDefault()
                    ?? Request.Form["uid"].FirstOrDefault()
@@ -130,6 +142,42 @@ namespace SWIMS.Controllers
                 body = $"Stored process '{sp.Name}' failed: {errorSummary}";
             }
 
+            // 📝 Audit: Stored procedure executed
+            AuditHelpers.TryResolveActor(User, out var actorId, out var actorUsername);
+
+            var execDurationMs = (DateTime.UtcNow - execStartedUtc).TotalMilliseconds;
+            var rowCount = table?.Rows?.Count ?? 0;
+            var colCount = table?.Columns?.Count ?? 0;
+
+            await _audit.TryLogAsync(
+                action: "StoredProcedureExecuted",
+                entity: "StoredProcess",
+                entityId: sp.Id.ToString(),
+                userId: actorId,
+                username: actorUsername,
+                oldObj: null,
+                newObj: new
+                {
+                    processId = sp.Id,
+                    processName = sp.Name,
+                    success = !hasError,
+                    hasError,
+                    errorSummary,
+                    durationMs = execDurationMs,
+                    rowCount,
+                    colCount,
+                    paramCount,
+                    paramFilledCount
+                },
+                extra: new
+                {
+                    formId,
+                    orgId,
+                    uid
+                },
+                ct: HttpContext.RequestAborted);
+            // 📝 Audit: END
+
             // 🔔 Notify: Stored procedure executed (with success/failure info)
             var actorName = User?.Identity?.Name ?? "Someone";
 
@@ -174,6 +222,10 @@ namespace SWIMS.Controllers
             var sp = await _db.StoredProcesses.Include(x => x.Params).FirstOrDefaultAsync(x => x.Id == id);
             if (sp is null) return NotFound();
 
+            // 📝 Audit: Actor
+            AuditHelpers.TryResolveActor(User, out var actorId, out var actorUsername);
+            // 📝 Audit: END
+
             // ✅ Only read Query on GET; fall back to TempData.Peek
             var uidQ = Request.Query["uid"].FirstOrDefault()
                     ?? Request.Query["uuid"].FirstOrDefault()
@@ -195,12 +247,75 @@ namespace SWIMS.Controllers
             var (table, error) = await _runner.ExecuteAsync(sp, tokenizedParams);
             if (!string.IsNullOrWhiteSpace(error) || table is null)
             {
+                // 📝 Audit: Stored procedure export failed
+
+                string? exportErrorSummary = null;
+                var exportError = error ?? "No data returned.";
+                var exportFirstLine = exportError
+                    .Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
+                    .FirstOrDefault() ?? "Unknown error";
+                exportErrorSummary = exportFirstLine.Length > 160 ? exportFirstLine[..160] + "…" : exportFirstLine;
+
+                await _audit.TryLogAsync(
+                    action: "StoredProcedureExportFailed",
+                    entity: "StoredProcess",
+                    entityId: sp.Id.ToString(),
+                    userId: actorId,
+                    username: actorUsername,
+                    oldObj: null,
+                    newObj: new
+                    {
+                        processId = sp.Id,
+                        processName = sp.Name,
+                        format,
+                        errorSummary = exportErrorSummary
+                    },
+                    extra: new
+                    {
+                        formId = formIdStr,
+                        orgId = orgIdStr,
+                        uid = uidQ
+                    },
+                    ct: HttpContext.RequestAborted);
+                // 📝 Audit: END
+
                 TempData["Error"] = error ?? "No data returned.";
                 return RedirectToAction(nameof(Run), new { id, formId = formIdStr, orgId = orgIdStr, uid = uidQ });
             }
 
             if (!string.Equals(format, "csv", StringComparison.OrdinalIgnoreCase))
                 return BadRequest("Only CSV is supported right now.");
+
+            // 📝 Audit: Stored procedure export (prepare)
+            var rowCount = table.Rows.Count;
+            var colCount = table.Columns.Count;
+            var fileName = $"{sp.Name.Replace(':', '_').Replace('/', '_')}_{DateTime.UtcNow:yyyyMMdd_HHmmss}.csv";
+            // 📝 Audit: END
+
+            await _audit.TryLogAsync(
+                action: "StoredProcedureExported",
+                entity: "StoredProcess",
+                entityId: sp.Id.ToString(),
+                userId: actorId,
+                username: actorUsername,
+                oldObj: null,
+                newObj: new
+                {
+                    processId = sp.Id,
+                    processName = sp.Name,
+                    format,
+                    rowCount,
+                    colCount,
+                    fileName
+                },
+                extra: new
+                {
+                    formId = formIdStr,
+                    orgId = orgIdStr,
+                    uid = uidQ
+                },
+                ct: HttpContext.RequestAborted);
+            // 📝 Audit: END
 
             // 🔔 Notify: Stored procedure export
             var actorName = User?.Identity?.Name ?? "Someone";
@@ -225,7 +340,6 @@ namespace SWIMS.Controllers
 
 
             var csv = DataTableToCsv(table);
-            var fileName = $"{sp.Name.Replace(':', '_').Replace('/', '_')}_{DateTime.UtcNow:yyyyMMdd_HHmmss}.csv";
             return File(System.Text.Encoding.UTF8.GetBytes(csv), "text/csv", fileName);
         }
 

@@ -23,6 +23,7 @@ using System.Security.Claims;
 using System.Text.Json;
 using SWIMS.Services.Elsa;
 using SWIMS.Services.Notifications;
+using SWIMS.Services.Diagnostics.Auditing;
 
 
 namespace SWIMS.Controllers
@@ -37,6 +38,7 @@ namespace SWIMS.Controllers
         private readonly RoleManager<SwRole> _roleManager;
         private readonly UserManager<SwUser> _userManager;
         private readonly IElsaWorkflowClient _elsa;
+        private readonly IAuditLogger _audit;
 
         /// <summary>
         /// Initializes a new instance of the rolesController.
@@ -44,14 +46,17 @@ namespace SWIMS.Controllers
         /// <param name="roleManager">Identity RoleManager for <see cref="SwRole"/>.</param>
         /// <param name="userManager">Identity UserManager for <see cref="SwUser"/>.</param>
         /// <param name="elsa"></param>
+        /// /// <param name="audit"></param>
         public rolesController(
-        RoleManager<SwRole> roleManager,
-        UserManager<SwUser> userManager,
-        IElsaWorkflowClient elsa)
+            RoleManager<SwRole> roleManager,
+            UserManager<SwUser> userManager,
+            IElsaWorkflowClient elsa,
+            IAuditLogger audit)
         {
             _roleManager = roleManager;
             _userManager = userManager;
             _elsa = elsa;
+            _audit = audit;
         }
 
         /// <summary>
@@ -366,27 +371,60 @@ namespace SWIMS.Controllers
             var desiredUserIds = model.Users.Where(x => x.Selected).Select(x => x.UserId).ToHashSet();
             var allUsers = await _userManager.Users.ToListAsync();
 
+            var currentUserIds = new HashSet<int>();
+            var addedUserIds = new List<int>();
+            var removedUserIds = new List<int>();
+
             foreach (var u in allUsers)
             {
                 var currentlyInRole = await _userManager.IsInRoleAsync(u, role.Name);
                 var shouldBeInRole = desiredUserIds.Contains(u.Id);
+
+                // 📝 Audit tracking: current membership snapshot (before changes)
+                if (currentlyInRole)
+                    currentUserIds.Add(u.Id);
 
                 if (!currentlyInRole && shouldBeInRole)
                 {
                     var addRes = await _userManager.AddToRoleAsync(u, role.Name);
                     if (!addRes.Succeeded)
                         foreach (var e in addRes.Errors) ModelState.AddModelError("", e.Description);
+                    else
+                        addedUserIds.Add(u.Id);
                 }
                 else if (currentlyInRole && !shouldBeInRole)
                 {
                     var remRes = await _userManager.RemoveFromRoleAsync(u, role.Name);
                     if (!remRes.Succeeded)
                         foreach (var e in remRes.Errors) ModelState.AddModelError("", e.Description);
+                    else
+                        removedUserIds.Add(u.Id);
                 }
             }
 
             if (!ModelState.IsValid)
                 return View(model);
+
+            // 📝 Audit: Role membership updated
+            AuditHelpers.TryResolveActor(User, out var actorId, out var actorUsername);
+
+            await _audit.TryLogAsync(
+                action: "RoleMembershipUpdated",
+                entity: "Role",
+                entityId: role.Id.ToString(),
+                userId: actorId,
+                username: actorUsername,
+                oldObj: new { memberCount = currentUserIds.Count },
+                newObj: new { memberCount = desiredUserIds.Count },
+                extra: new
+                {
+                    roleId = role.Id,
+                    roleName = role.Name,
+                    addedUserIds,
+                    removedUserIds
+                },
+                ct: HttpContext.RequestAborted);
+            // 📝 Audit: END
 
             // 🔔 Notify: Admin updated role membership
             var actorName = User?.Identity?.Name ?? "Someone";

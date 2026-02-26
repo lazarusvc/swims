@@ -11,6 +11,7 @@ using System.Text.Json;
 using SWIMS.Services.Elsa;
 using SWIMS.Models.Notifications;
 using SWIMS.Services.Notifications;
+using SWIMS.Services.Diagnostics.Auditing;
 
 
 namespace SWIMS.Areas.Admin.Controllers
@@ -22,17 +23,20 @@ namespace SWIMS.Areas.Admin.Controllers
         private readonly IPublicAccessStore _store;
         private readonly IEndpointCatalog _catalog;
         private readonly IElsaWorkflowClient _elsa;
+        private readonly IAuditLogger _audit;
 
         public PublicEndpointsController(
             SwimsIdentityDbContext db,
             IPublicAccessStore store,
             IEndpointCatalog catalog,
-            IElsaWorkflowClient elsa)
+            IElsaWorkflowClient elsa,
+            IAuditLogger audit)
         {
             _db = db;
             _store = store;
             _catalog = catalog;
             _elsa = elsa;
+            _audit = audit;
         }
 
         public async Task<IActionResult> Index()
@@ -98,9 +102,36 @@ namespace SWIMS.Areas.Admin.Controllers
             await _db.SaveChangesAsync();
             await _store.InvalidateAsync();
 
-            var actorName = User?.Identity?.Name ?? "An admin";
+            // 📝 Audit: Public endpoint created
+            AuditHelpers.TryResolveActor(User, out var actorId, out var actorUsername);
+
+            await _audit.TryLogAsync(
+                action: "PublicEndpointCreated",
+                entity: "PublicEndpoint",
+                entityId: row.Id.ToString(),
+                userId: actorId,
+                username: actorUsername,
+                oldObj: null,
+                newObj: new
+                {
+                    endpointId = row.Id,
+                    matchType = row.MatchType,
+                    area = row.Area,
+                    controller = row.Controller,
+                    actionName = row.Action,
+                    page = row.Page,
+                    path = row.Path,
+                    regex = row.Regex,
+                    notes = row.Notes,
+                    isEnabled = row.IsEnabled,
+                    priority = row.Priority
+                },
+                ct: HttpContext.RequestAborted);
+            // 📝 Audit: END
 
             // 🔔 Notify: Public endpoint created
+            var actorName = User?.Identity?.Name ?? "An admin";
+
             await NotifyAdminAsync(
                 eventKey: SwimsEventKeys.Security.PublicEndpoints.Created,
                 subject: "Public endpoint created",
@@ -175,6 +206,21 @@ namespace SWIMS.Areas.Admin.Controllers
 
             if (!ModelState.IsValid) return View(vm);
 
+            var oldObj = new
+            {
+                endpointId = x.Id,
+                matchType = x.MatchType,
+                area = x.Area,
+                controller = x.Controller,
+                actionName = x.Action,
+                page = x.Page,
+                path = x.Path,
+                regex = x.Regex,
+                notes = x.Notes,
+                isEnabled = x.IsEnabled,
+                priority = x.Priority
+            };
+
             x.MatchType = vm.MatchType; x.Area = vm.Area; x.Controller = vm.Controller; x.Action = vm.Action;
             x.Page = vm.Page; x.Path = vm.Path; x.Regex = vm.Regex;
             x.Notes = vm.Notes; x.IsEnabled = vm.IsEnabled; x.Priority = vm.Priority;
@@ -183,9 +229,38 @@ namespace SWIMS.Areas.Admin.Controllers
             await _db.SaveChangesAsync();
             await _store.InvalidateAsync();
 
-            var actorName = User?.Identity?.Name ?? "An admin";
+            // 📝 Audit: Public endpoint updated
+            AuditHelpers.TryResolveActor(User, out var actorId, out var actorUsername);
+
+            var newObj = new
+            {
+                endpointId = x.Id,
+                matchType = x.MatchType,
+                area = x.Area,
+                controller = x.Controller,
+                actionName = x.Action,
+                page = x.Page,
+                path = x.Path,
+                regex = x.Regex,
+                notes = x.Notes,
+                isEnabled = x.IsEnabled,
+                priority = x.Priority
+            };
+
+            await _audit.TryLogAsync(
+                action: "PublicEndpointUpdated",
+                entity: "PublicEndpoint",
+                entityId: x.Id.ToString(),
+                userId: actorId,
+                username: actorUsername,
+                oldObj: oldObj,
+                newObj: newObj,
+                ct: HttpContext.RequestAborted);
+            // 📝 Audit: END
 
             // 🔔 Notify: Public endpoint updated
+            var actorName = User?.Identity?.Name ?? "An admin";
+
             await NotifyAdminAsync(
                 eventKey: SwimsEventKeys.Security.PublicEndpoints.Updated,
                 subject: "Public endpoint updated",
@@ -237,15 +312,35 @@ namespace SWIMS.Areas.Admin.Controllers
             var x = await _db.PublicEndpoints.FindAsync(id);
             if (x is null) return NotFound();
 
+            var oldIsEnabled = x.IsEnabled;
+
             x.IsEnabled = !x.IsEnabled;
             x.UpdatedAt = DateTimeOffset.UtcNow;
             await _db.SaveChangesAsync();
             await _store.InvalidateAsync();
 
+            // 📝 Audit: Public endpoint toggled
+            AuditHelpers.TryResolveActor(User, out var actorId, out var actorUsername);
+
+            await _audit.TryLogAsync(
+                action: "PublicEndpointToggled",
+                entity: "PublicEndpoint",
+                entityId: x.Id.ToString(),
+                userId: actorId,
+                username: actorUsername,
+                oldObj: new { isEnabled = oldIsEnabled },
+                newObj: new { isEnabled = x.IsEnabled },
+                extra: new
+                {
+                    endpointId = x.Id
+                },
+                ct: HttpContext.RequestAborted);
+            // 📝 Audit: END
+
+            // 🔔 Notify: Public endpoint toggled
             var actorName = User?.Identity?.Name ?? "An admin";
             var stateWord = x.IsEnabled ? "enabled" : "disabled";
 
-            // 🔔 Notify: Public endpoint toggled
             await NotifyAdminAsync(
                 eventKey: SwimsEventKeys.Security.PublicEndpoints.Toggled,
                 subject: "Public endpoint toggled",
@@ -290,13 +385,43 @@ namespace SWIMS.Areas.Admin.Controllers
 
             var endpointId = x.Id;
 
+            var oldObj = new
+            {
+                endpointId = x.Id,
+                matchType = x.MatchType,
+                area = x.Area,
+                controller = x.Controller,
+                actionName = x.Action,
+                page = x.Page,
+                path = x.Path,
+                regex = x.Regex,
+                notes = x.Notes,
+                isEnabled = x.IsEnabled,
+                priority = x.Priority
+            };
+
             _db.PublicEndpoints.Remove(x);
             await _db.SaveChangesAsync();
             await _store.InvalidateAsync();
 
-            var actorName = User?.Identity?.Name ?? "An admin";
+            // 📝 Audit: Public endpoint deleted
+            AuditHelpers.TryResolveActor(User, out var actorId, out var actorUsername);
+
+            await _audit.TryLogAsync(
+                action: "PublicEndpointDeleted",
+                entity: "PublicEndpoint",
+                entityId: endpointId.ToString(),
+                userId: actorId,
+                username: actorUsername,
+                oldObj: oldObj,
+                newObj: null,
+                extra: new { endpointId },
+                ct: HttpContext.RequestAborted);
+            // 📝 Audit: END
 
             // 🔔 Notify: Public endpoint deleted
+            var actorName = User?.Identity?.Name ?? "An admin";
+
             await NotifyAdminAsync(
                 eventKey: SwimsEventKeys.Security.PublicEndpoints.Deleted,
                 subject: "Public endpoint deleted",

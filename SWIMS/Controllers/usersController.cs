@@ -21,6 +21,7 @@ using System.Security.Claims;
 using System.Text.Json;
 using SWIMS.Services.Elsa;
 using SWIMS.Services.Notifications;
+using SWIMS.Services.Diagnostics.Auditing;
 
 
 namespace SWIMS.Controllers
@@ -30,15 +31,18 @@ namespace SWIMS.Controllers
         private readonly UserManager<SwUser> _userManager;
         private readonly RoleManager<SwRole> _roleManager;
         private readonly IElsaWorkflowClient _elsa;
+        private readonly IAuditLogger _audit;
 
         public usersController(
             UserManager<SwUser> userManager,
             RoleManager<SwRole> roleManager,
-            IElsaWorkflowClient elsa)
+            IElsaWorkflowClient elsa,
+            IAuditLogger audit)
         {
             _userManager = userManager;
             _roleManager = roleManager;
             _elsa = elsa;
+            _audit = audit;
         }
 
         // GET: users
@@ -407,6 +411,27 @@ namespace SWIMS.Controllers
                 model.DisplayName = user.Email ?? user.UserName ?? $"User {user.Id}";
                 return View(model);
             }
+
+            // 📝 Audit: User roles updated (P0 launch MUST)
+            AuditHelpers.TryResolveActor(User, out var actorId, out var actorUsername);
+
+            await _audit.TryLogAsync(
+                action: "UserRolesUpdated",
+                entity: "User",
+                entityId: user.Id.ToString(),
+                userId: actorId,
+                username: actorUsername,
+                oldObj: new { roles = currentRoleNames },
+                newObj: new { roles = desiredRoleNames },
+                extra: new
+                {
+                    targetUserId = user.Id,
+                    addedRoles = toAdd,
+                    removedRoles = toRemove
+                },
+                ct: HttpContext.RequestAborted);
+            // 📝 Audit: END
+
 
             // 🔔 Notify: Admin updated user roles
             var actorName = User?.Identity?.Name ?? "Someone";

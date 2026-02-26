@@ -45,6 +45,20 @@ else
     if (!Model.Any())
     {
         <div class="alert alert-secondary">No parameters defined yet.</div>
+
+        <div class="d-flex flex-wrap gap-2 mt-2">
+            <a class="btn btn-sm btn-success d-flex align-items-center gap-1"
+               asp-action="Create" asp-route-processId="@proc.Id">
+                <iconify-icon icon="lucide:plus" class="fs-14"></iconify-icon>
+                <span>Add Parameter</span>
+            </a>
+
+            <a class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1"
+               asp-area="" asp-controller="StoredProcessesAdmin" asp-action="Index">
+                <iconify-icon icon="lucide:arrow-left" class="fs-14"></iconify-icon>
+                <span>Back</span>
+            </a>
+        </div>
     }
     else
     {

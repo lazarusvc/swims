@@ -12,6 +12,7 @@ using System.Text.Json;
 using SWIMS.Services.Elsa;
 using SWIMS.Models.Notifications;
 using SWIMS.Services.Notifications;
+using SWIMS.Services.Diagnostics.Auditing;
 
 
 namespace SWIMS.Areas.Admin.Controllers
@@ -23,17 +24,20 @@ namespace SWIMS.Areas.Admin.Controllers
         private readonly IEndpointPolicyAssignmentStore _store;
         private readonly IEndpointCatalog _catalog;
         private readonly IElsaWorkflowClient _elsa;
+        private readonly IAuditLogger _audit;
 
         public EndpointPoliciesController(
             SwimsIdentityDbContext db,
             IEndpointPolicyAssignmentStore store,
             IEndpointCatalog catalog,
-            IElsaWorkflowClient elsa)
+            IElsaWorkflowClient elsa,
+            IAuditLogger audit)
         {
             _db = db;
             _store = store;
             _catalog = catalog;
             _elsa = elsa;
+            _audit = audit;
         }
 
         public async Task<IActionResult> Index()
@@ -107,9 +111,38 @@ namespace SWIMS.Areas.Admin.Controllers
             await _db.SaveChangesAsync();
             await _store.InvalidateAsync();
 
-            var actorName = User?.Identity?.Name ?? "An admin";
+            // 📝 Audit: Endpoint policy assignment created
+            AuditHelpers.TryResolveActor(User, out var actorId, out var actorUsername);
+
+            await _audit.TryLogAsync(
+                action: "EndpointPolicyAssignmentCreated",
+                entity: "EndpointPolicyAssignment",
+                entityId: row.Id.ToString(),
+                userId: actorId,
+                username: actorUsername,
+                oldObj: null,
+                newObj: new
+                {
+                    assignmentId = row.Id,
+                    policyId = policy.Id,
+                    policyName = policy.Name,
+                    matchType = row.MatchType,
+                    area = row.Area,
+                    controller = row.Controller,
+                    actionName = row.Action,
+                    page = row.Page,
+                    path = row.Path,
+                    regex = row.Regex,
+                    notes = row.Notes,
+                    isEnabled = row.IsEnabled,
+                    priority = row.Priority
+                },
+                ct: HttpContext.RequestAborted);
+            // 📝 Audit: END
 
             // 🔔 Notify: Endpoint policy assignment created
+            var actorName = User?.Identity?.Name ?? "An admin";
+
             await NotifyAdminAsync(
                 eventKey: SwimsEventKeys.Security.EndpointPolicyAssignments.Created,
                 subject: "Endpoint policy assignment created",
@@ -202,6 +235,23 @@ namespace SWIMS.Areas.Admin.Controllers
                 return View(vm);
             }
 
+            var oldObj = new
+            {
+                assignmentId = x.Id,
+                policyId = x.PolicyId,
+                policyName = x.PolicyName,
+                matchType = x.MatchType,
+                area = x.Area,
+                controller = x.Controller,
+                actionName = x.Action,
+                page = x.Page,
+                path = x.Path,
+                regex = x.Regex,
+                notes = x.Notes,
+                isEnabled = x.IsEnabled,
+                priority = x.Priority
+            };
+
             x.MatchType = vm.MatchType; x.Area = vm.Area; x.Controller = vm.Controller; x.Action = vm.Action;
             x.Page = vm.Page; x.Path = vm.Path; x.Regex = vm.Regex;
             x.PolicyId = policy.Id; x.Policy = policy; x.PolicyName = policy.Name;
@@ -211,9 +261,40 @@ namespace SWIMS.Areas.Admin.Controllers
             await _db.SaveChangesAsync();
             await _store.InvalidateAsync();
 
-            var actorName = User?.Identity?.Name ?? "An admin";
+            // 📝 Audit: Endpoint policy assignment updated
+            AuditHelpers.TryResolveActor(User, out var actorId, out var actorUsername);
+
+            var newObj = new
+            {
+                assignmentId = x.Id,
+                policyId = policy.Id,
+                policyName = policy.Name,
+                matchType = x.MatchType,
+                area = x.Area,
+                controller = x.Controller,
+                actionName = x.Action,
+                page = x.Page,
+                path = x.Path,
+                regex = x.Regex,
+                notes = x.Notes,
+                isEnabled = x.IsEnabled,
+                priority = x.Priority
+            };
+
+            await _audit.TryLogAsync(
+                action: "EndpointPolicyAssignmentUpdated",
+                entity: "EndpointPolicyAssignment",
+                entityId: x.Id.ToString(),
+                userId: actorId,
+                username: actorUsername,
+                oldObj: oldObj,
+                newObj: newObj,
+                ct: HttpContext.RequestAborted);
+            // 📝 Audit: END
 
             // 🔔 Notify: Endpoint policy assignment updated
+            var actorName = User?.Identity?.Name ?? "An admin";
+
             await NotifyAdminAsync(
                 eventKey: SwimsEventKeys.Security.EndpointPolicyAssignments.Updated,
                 subject: "Endpoint policy assignment updated",
@@ -267,15 +348,32 @@ namespace SWIMS.Areas.Admin.Controllers
             var x = await _db.EndpointPolicyAssignments.FindAsync(id);
             if (x is null) return NotFound();
 
+            var oldIsEnabled = x.IsEnabled;
+
             x.IsEnabled = !x.IsEnabled;
             x.UpdatedAt = DateTimeOffset.UtcNow;
             await _db.SaveChangesAsync();
             await _store.InvalidateAsync();
 
+            // 📝 Audit: Endpoint policy assignment toggled
+            AuditHelpers.TryResolveActor(User, out var actorId, out var actorUsername);
+
+            await _audit.TryLogAsync(
+                action: "EndpointPolicyAssignmentToggled",
+                entity: "EndpointPolicyAssignment",
+                entityId: x.Id.ToString(),
+                userId: actorId,
+                username: actorUsername,
+                oldObj: new { isEnabled = oldIsEnabled },
+                newObj: new { isEnabled = x.IsEnabled },
+                extra: new { assignmentId = x.Id },
+                ct: HttpContext.RequestAborted);
+            // 📝 Audit: END
+
+            // 🔔 Notify: Endpoint policy assignment toggled
             var actorName = User?.Identity?.Name ?? "An admin";
             var stateWord = x.IsEnabled ? "enabled" : "disabled";
 
-            // 🔔 Notify: Endpoint policy assignment toggled
             await NotifyAdminAsync(
                 eventKey: SwimsEventKeys.Security.EndpointPolicyAssignments.Toggled,
                 subject: "Endpoint policy assignment toggled",
@@ -320,13 +418,45 @@ namespace SWIMS.Areas.Admin.Controllers
 
             var assignmentId = x.Id;
 
+            var oldObj = new
+            {
+                assignmentId = x.Id,
+                policyId = x.PolicyId,
+                policyName = x.PolicyName,
+                matchType = x.MatchType,
+                area = x.Area,
+                controller = x.Controller,
+                actionName = x.Action,
+                page = x.Page,
+                path = x.Path,
+                regex = x.Regex,
+                notes = x.Notes,
+                isEnabled = x.IsEnabled,
+                priority = x.Priority
+            };
+
             _db.EndpointPolicyAssignments.Remove(x);
             await _db.SaveChangesAsync();
             await _store.InvalidateAsync();
 
-            var actorName = User?.Identity?.Name ?? "An admin";
+            // 📝 Audit: Endpoint policy assignment deleted
+            AuditHelpers.TryResolveActor(User, out var actorId, out var actorUsername);
+
+            await _audit.TryLogAsync(
+                action: "EndpointPolicyAssignmentDeleted",
+                entity: "EndpointPolicyAssignment",
+                entityId: assignmentId.ToString(),
+                userId: actorId,
+                username: actorUsername,
+                oldObj: oldObj,
+                newObj: null,
+                extra: new { assignmentId },
+                ct: HttpContext.RequestAborted);
+            // 📝 Audit: END
 
             // 🔔 Notify: Endpoint policy assignment deleted
+            var actorName = User?.Identity?.Name ?? "An admin";
+
             await NotifyAdminAsync(
                 eventKey: SwimsEventKeys.Security.EndpointPolicyAssignments.Deleted,
                 subject: "Endpoint policy assignment deleted",
@@ -481,9 +611,32 @@ namespace SWIMS.Areas.Admin.Controllers
 
             await _store.InvalidateAsync();
 
-            var actorName = User?.Identity?.Name ?? "An admin";
+            // 📝 Audit: Endpoint policy bulk assignments created
+            AuditHelpers.TryResolveActor(User, out var actorId, out var actorUsername);
+
+            await _audit.TryLogAsync(
+                action: "EndpointPolicyAssignmentsBulkCreated",
+                entity: "AuthorizationPolicy",
+                entityId: policy.Id.ToString(),
+                userId: actorId,
+                username: actorUsername,
+                oldObj: null,
+                newObj: new
+                {
+                    policyId = policy.Id,
+                    policyName = policy.Name,
+                    createdCount = created,
+                    isEnabled = vm.IsEnabled,
+                    priority = vm.Priority,
+                    controllerActionsSelected = controllerActions?.Length ?? 0,
+                    pagesSelected = pages?.Length ?? 0
+                },
+                ct: HttpContext.RequestAborted);
+            // 📝 Audit: END
 
             // 🔔 Notify: Endpoint policy bulk assignments created
+            var actorName = User?.Identity?.Name ?? "An admin";
+
             await NotifyAdminAsync(
                 eventKey: SwimsEventKeys.Security.EndpointPolicyAssignments.BulkCreated,
                 subject: "Endpoint policy assignments created",

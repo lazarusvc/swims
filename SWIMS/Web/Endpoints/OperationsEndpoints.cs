@@ -8,6 +8,7 @@ using SWIMS.Services.Notifications;
 using SWIMS.Services.Outbox;
 using System.Text;
 using System.Text.Json;
+using SWIMS.Services.Diagnostics.Auditing;
 
 namespace SWIMS.Web.Endpoints;
 
@@ -187,6 +188,8 @@ public static class OperationsEndpoints
 
         // --- AUDIT CSV --------------------------------------------------------------
         logs.MapGet("audit.csv", async (
+            HttpContext http,
+            IAuditLogger audit,
             SwimsIdentityDbContext db,
             int skip = 0,
             int take = 1000,          // CSV: default bigger page
@@ -236,7 +239,39 @@ public static class OperationsEndpoints
                                   x.NewValuesJson,
                                   x.ExtraJson
                               })
-                              .ToListAsync();
+                              .ToListAsync(http.RequestAborted);
+
+            // 📝 Audit: Audit logs exported
+            AuditHelpers.TryResolveActor(http.User, out var actorId, out var actorUsername);
+
+            await audit.TryLogAsync(
+                action: "AuditLogsExported",
+                entity: "AuditLog",
+                entityId: "export",
+                userId: actorId,
+                username: actorUsername,
+                oldObj: null,
+                newObj: new
+                {
+                    exportedCount = rows.Count,
+                    skip,
+                    take,
+                    filterUserId = userId,
+                    filterUsername = username,
+                    actionFilter = action,
+                    entityFilter = entity,
+                    entityIdFilter = entityId,
+                    from,
+                    to,
+                    containsProvided = !string.IsNullOrWhiteSpace(contains),
+                    containsLength = contains?.Length ?? 0
+                },
+                extra: new
+                {
+                    path = http.Request.Path.Value
+                },
+                ct: http.RequestAborted);
+            // 📝 Audit: END
 
             string Esc(string? s)
             {
@@ -262,6 +297,8 @@ public static class OperationsEndpoints
 
         // --- SESSIONS CSV -----------------------------------------------------------
         logs.MapGet("sessions.csv", async (
+            HttpContext http,
+            IAuditLogger audit,
             SwimsIdentityDbContext db,
             int skip = 0,
             int take = 5000,
@@ -299,7 +336,38 @@ public static class OperationsEndpoints
                                   x.Ip,
                                   x.UserAgent
                               })
-                              .ToListAsync();
+                              .ToListAsync(http.RequestAborted);
+
+            // 📝 Audit: Session logs exported
+            AuditHelpers.TryResolveActor(http.User, out var actorId, out var actorUsername);
+
+            await audit.TryLogAsync(
+                action: "SessionLogsExported",
+                entity: "SessionLog",
+                entityId: "export",
+                userId: actorId,
+                username: actorUsername,
+                oldObj: null,
+                newObj: new
+                {
+                    exportedCount = rows.Count,
+                    skip,
+                    take,
+                    filterUserId = userId,
+                    filterUsername = username,
+                    sessionId,
+                    from,
+                    to,
+                    activeOnly,
+                    containsProvided = !string.IsNullOrWhiteSpace(contains),
+                    containsLength = contains?.Length ?? 0
+                },
+                extra: new
+                {
+                    path = http.Request.Path.Value
+                },
+                ct: http.RequestAborted);
+            // 📝 Audit: END
 
             string Esc(string? s)
             {

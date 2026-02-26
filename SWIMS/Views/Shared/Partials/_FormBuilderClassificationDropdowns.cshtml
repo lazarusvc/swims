@@ -37,7 +37,7 @@
 </style>
 
 <div class="row mb-24 gy-3 align-items-center">
-    <label class="form-label mb-0 col-sm-4">LOCATION:</label>
+    <label class="form-label mb-0 col-sm-4">LOCATION:<span style="color:red;">*</span></label>
     <div class="col-sm-10">
         <div class="dropdown w-100" data-dd-single>
             <button class="form-control text-start dropdown-toggle toggle-icon swims-dd-btn"
@@ -67,6 +67,7 @@
                 }
             </div>
         </div>
+        <span class="text-danger" data-valmsg-for="SW_identityId" data-valmsg-replace="true"></span>
     </div>
 </div>
 
@@ -204,6 +205,34 @@
             });
           });
         }
+      });
+
+            // ✅ UI validation: require LOCATION selection (SW_identityId)
+      document.querySelectorAll('form').forEach(form => {
+        if (form.__swims_identity_validation) return;
+        form.__swims_identity_validation = true;
+
+        function msgEl() {
+          return form.querySelector('[data-valmsg-for="SW_identityId"]');
+        }
+        function setMsg(t) {
+          const el = msgEl();
+          if (el) el.textContent = t || '';
+        }
+
+        form.addEventListener('submit', (e) => {
+          const radios = form.querySelectorAll('input[name="SW_identityId"]');
+          if (!radios.length) return; // not a form containing LOCATION
+          const checked = form.querySelector('input[name="SW_identityId"]:checked');
+          if (!checked) {
+            e.preventDefault();
+            setMsg('Location is required.');
+          }
+        });
+
+        form.querySelectorAll('input[name="SW_identityId"]').forEach(r =>
+          r.addEventListener('change', () => setMsg(''))
+        );
       });
     })();
 </script>

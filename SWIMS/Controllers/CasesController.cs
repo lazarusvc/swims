@@ -21,9 +21,7 @@ using SWIMS.Services.Elsa;
 using System.Security.Claims;
 using System.Text.Json;
 using System.Threading;
-
-
-
+using SWIMS.Services.Diagnostics.Auditing;
 
 
 namespace SWIMS.Controllers
@@ -38,6 +36,7 @@ namespace SWIMS.Controllers
         private readonly SwimsLookupDbContext _lookup;
         private readonly ICaseLifecycleService _caseLifecycle;
         private readonly IElsaWorkflowClient _elsa;
+        private readonly IAuditLogger _audit;
 
 
         public CasesController(
@@ -47,7 +46,8 @@ namespace SWIMS.Controllers
             UserManager<SwUser> userManager,
             SwimsLookupDbContext lookup,
             ICaseLifecycleService caseLifecycle,
-            IElsaWorkflowClient elsa)
+            IElsaWorkflowClient elsa,
+            IAuditLogger audit)
         {
             _cases = cases;
             _core = core;
@@ -56,9 +56,8 @@ namespace SWIMS.Controllers
             _lookup = lookup;
             _caseLifecycle = caseLifecycle;
             _elsa = elsa;
+            _audit = audit;
         }
-
-
 
         // GET: /Cases
         public async Task<IActionResult> Index(string? search, string? status, int? program)
@@ -375,9 +374,38 @@ namespace SWIMS.Controllers
             _cases.SW_cases.Add(entity);
             await _cases.SaveChangesAsync();
 
-            var actorName = User?.Identity?.Name ?? "A user";
+            // 📝 Audit: Case created
+            AuditHelpers.TryResolveActor(User, out var actorId, out var actorUsername);
+
+            await _audit.TryLogAsync(
+                action: "CaseCreated",
+                entity: "Case",
+                entityId: entity.Id.ToString(),
+                userId: actorId,
+                username: actorUsername,
+                oldObj: null,
+                newObj: new
+                {
+                    caseId = entity.Id,
+                    caseNumber = entity.case_number,
+                    title = entity.title,
+                    beneficiaryId = entity.SW_beneficiaryId,
+                    status = entity.status,
+                    programTagId = entity.ProgramTagId,
+                    programTag = entity.program_tag
+                },
+                extra: new
+                {
+                    beneficiaryId = entity.SW_beneficiaryId,
+                    programTagId = entity.ProgramTagId,
+                    programTag = entity.program_tag
+                },
+                ct: HttpContext.RequestAborted);
+            // 📝 Audit: END
 
             // 🔔 Notify: Case created
+            var actorName = User?.Identity?.Name ?? "A user";
+
             await NotifyCaseEventAsync(
                 caseId: entity.Id,
                 eventKey: SwimsEventKeys.Cases.Created,
@@ -803,6 +831,17 @@ namespace SWIMS.Controllers
             if (caseEntity == null)
                 return NotFound();
 
+            var oldCaseStatusState = new
+            {
+                status = caseEntity.status,
+                statusOverride = caseEntity.status_override,
+                statusOverrideReason = caseEntity.status_override_reason,
+                statusOverrideAt = caseEntity.status_override_at,
+                statusOverrideBy = caseEntity.status_override_by,
+                statusOverrideUntil = caseEntity.status_override_until,
+                closedAt = caseEntity.closed_at
+            };
+
             // Manual override: set both the visible status + override fields
             var now = DateTime.UtcNow;
 
@@ -827,9 +866,38 @@ namespace SWIMS.Controllers
 
             await _cases.SaveChangesAsync();
 
-            var actorName = User?.Identity?.Name ?? "A user";
+            // 📝 Audit: Case status manually overridden
+            AuditHelpers.TryResolveActor(User, out var actorId, out var actorUsername);
+
+            await _audit.TryLogAsync(
+                action: "CaseStatusOverridden",
+                entity: "Case",
+                entityId: caseEntity.Id.ToString(),
+                userId: actorId,
+                username: actorUsername,
+                oldObj: oldCaseStatusState,
+                newObj: new
+                {
+                    status = caseEntity.status,
+                    statusOverride = caseEntity.status_override,
+                    statusOverrideReason = caseEntity.status_override_reason,
+                    statusOverrideAt = caseEntity.status_override_at,
+                    statusOverrideBy = caseEntity.status_override_by,
+                    statusOverrideUntil = caseEntity.status_override_until,
+                    closedAt = caseEntity.closed_at
+                },
+                extra: new
+                {
+                    requestedStatus = status,
+                    reason = caseEntity.status_override_reason,
+                    mode = "ManualOverride"
+                },
+                ct: HttpContext.RequestAborted);
+            // 📝 Audit: END
 
             // 🔔 Notify: Case status changed (override)
+            var actorName = User?.Identity?.Name ?? "A user";
+
             await NotifyCaseEventAsync(
                 caseId: caseEntity.Id,
                 eventKey: SwimsEventKeys.Cases.StatusChanged,
@@ -875,6 +943,17 @@ namespace SWIMS.Controllers
                 return RedirectToAction(nameof(Details), new { id });
             }
 
+            var oldOverrideState = new
+            {
+                status = caseEntity.status,
+                statusOverride = caseEntity.status_override,
+                statusOverrideReason = caseEntity.status_override_reason,
+                statusOverrideAt = caseEntity.status_override_at,
+                statusOverrideBy = caseEntity.status_override_by,
+                statusOverrideUntil = caseEntity.status_override_until,
+                closedAt = caseEntity.closed_at
+            };
+
             caseEntity.status_override = null;
             caseEntity.status_override_reason = null;
             caseEntity.status_override_until = null;
@@ -883,9 +962,36 @@ namespace SWIMS.Controllers
 
             await _cases.SaveChangesAsync();
 
-            var actorName = User?.Identity?.Name ?? "A user";
+            // 📝 Audit: Case status override cleared
+            AuditHelpers.TryResolveActor(User, out var actorId, out var actorUsername);
+
+            await _audit.TryLogAsync(
+                action: "CaseStatusOverrideCleared",
+                entity: "Case",
+                entityId: caseEntity.Id.ToString(),
+                userId: actorId,
+                username: actorUsername,
+                oldObj: oldOverrideState,
+                newObj: new
+                {
+                    status = caseEntity.status,
+                    statusOverride = caseEntity.status_override,
+                    statusOverrideReason = caseEntity.status_override_reason,
+                    statusOverrideAt = caseEntity.status_override_at,
+                    statusOverrideBy = caseEntity.status_override_by,
+                    statusOverrideUntil = caseEntity.status_override_until,
+                    closedAt = caseEntity.closed_at
+                },
+                extra: new
+                {
+                    mode = "OverrideCleared"
+                },
+                ct: HttpContext.RequestAborted);
+            // 📝 Audit: END
 
             // 🔔 Notify: Case status updated (override cleared)
+            var actorName = User?.Identity?.Name ?? "A user";
+
             await NotifyCaseEventAsync(
                 caseId: caseEntity.Id,
                 eventKey: SwimsEventKeys.Cases.StatusChanged,
@@ -1456,6 +1562,41 @@ namespace SWIMS.Controllers
             _cases.SW_caseAssignments.Add(assignment);
             await _cases.SaveChangesAsync();
 
+            // 📝 Audit: Case assignment created
+            AuditHelpers.TryResolveActor(User, out var actorId, out var actorUsername);
+
+            int? assignedUserIdInt = null;
+            if (int.TryParse(model.UserId, out var tmpAssignedId))
+                assignedUserIdInt = tmpAssignedId;
+
+            await _audit.TryLogAsync(
+                action: "CaseAssigned",
+                entity: "CaseAssignment",
+                entityId: assignment.Id.ToString(),
+                userId: actorId,
+                username: actorUsername,
+                oldObj: null,
+                newObj: new
+                {
+                    assignmentId = assignment.Id,
+                    caseId = assignment.SW_caseId,
+                    assignedUserId = assignment.user_id,        // string
+                    assignedUserIdInt,                          // int?
+                    roleOnCase = assignment.role_on_case,
+                    isActive = assignment.is_active,
+                    assignedAt = assignment.assigned_at,
+                    unassignedAt = assignment.unassigned_at
+                },
+                extra: new
+                {
+                    caseId = assignment.SW_caseId,
+                    assignedUserId = assignment.user_id,
+                    assignedUserIdInt,
+                    roleOnCase = assignment.role_on_case
+                },
+                ct: HttpContext.RequestAborted);
+            // 📝 Audit: END
+
             // 🔔 Notify: Case assignment
             try
             {
@@ -1574,10 +1715,45 @@ namespace SWIMS.Controllers
                 return RedirectToAction(nameof(Details), new { id = caseId });
             }
 
+            var oldAssignmentState = new
+            {
+                isActive = assignment.is_active,
+                unassignedAt = assignment.unassigned_at
+            };
+
             assignment.is_active = false;
             assignment.unassigned_at = DateTime.Now; // matches your other timestamps
 
             await _cases.SaveChangesAsync();
+
+            // 📝 Audit: Case assignment removed
+            AuditHelpers.TryResolveActor(User, out var actorId, out var actorUsername);
+
+            int? removedUserIdInt = null;
+            if (int.TryParse(assignment.user_id, out var tmpRemovedId))
+                removedUserIdInt = tmpRemovedId;
+
+            await _audit.TryLogAsync(
+                action: "CaseUnassigned",
+                entity: "CaseAssignment",
+                entityId: assignment.Id.ToString(),
+                userId: actorId,
+                username: actorUsername,
+                oldObj: oldAssignmentState,
+                newObj: new
+                {
+                    isActive = assignment.is_active,
+                    unassignedAt = assignment.unassigned_at
+                },
+                extra: new
+                {
+                    caseId = assignment.SW_caseId,
+                    removedUserId = assignment.user_id,     // string
+                    removedUserIdInt,
+                    roleOnCase = assignment.role_on_case
+                },
+                ct: HttpContext.RequestAborted);
+            // 📝 Audit: END
 
             // 🔔 Notify: Case unassignment
             try

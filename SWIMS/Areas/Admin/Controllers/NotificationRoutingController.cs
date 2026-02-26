@@ -6,6 +6,7 @@ using SWIMS.Data;
 using SWIMS.Models.Notifications;
 using SWIMS.Security;
 using System.Reflection;
+using SWIMS.Services.Diagnostics.Auditing;
 
 namespace SWIMS.Areas.Admin.Controllers;
 
@@ -14,10 +15,12 @@ namespace SWIMS.Areas.Admin.Controllers;
 public class NotificationRoutingController : Controller
 {
     private readonly SwimsIdentityDbContext _db;
+    private readonly IAuditLogger _audit;
 
-    public NotificationRoutingController(SwimsIdentityDbContext db)
+    public NotificationRoutingController(SwimsIdentityDbContext db, IAuditLogger audit)
     {
         _db = db;
+        _audit = audit;
     }
 
     [HttpGet]
@@ -88,6 +91,26 @@ public class NotificationRoutingController : Controller
             _db.NotificationRoutes.Add(route);
         }
 
+        var isCreate = !model.Id.HasValue;
+
+        object? oldObj = null;
+
+        if (!isCreate)
+        {
+            oldObj = new
+            {
+                routeId = route.Id,
+                eventKey = route.EventKey,
+                type = route.Type,
+                isEnabled = route.IsEnabled,
+                description = route.Description,
+
+                roleIds = route.Roles.Select(r => r.RoleId).Distinct().ToList(),
+                permissionKeys = route.Permissions.Select(p => p.PermissionKey).Distinct().ToList(),
+                userIds = route.Users.Select(u => u.UserId).Distinct().ToList()
+            };
+        }
+
         route.EventKey = (model.EventKey ?? "").Trim();
         route.Type = requestedType;
         route.IsEnabled = model.IsEnabled;
@@ -156,6 +179,38 @@ public class NotificationRoutingController : Controller
         }
 
         await _db.SaveChangesAsync(ct);
+
+        // 📝 Audit: Notification route saved
+        AuditHelpers.TryResolveActor(User, out var actorId, out var actorUsername);
+
+        var newObj = new
+        {
+            routeId = route.Id,
+            eventKey = route.EventKey,
+            type = route.Type,
+            isEnabled = route.IsEnabled,
+            description = route.Description,
+
+            roleIds = route.Roles.Select(r => r.RoleId).Distinct().ToList(),
+            permissionKeys = route.Permissions.Select(p => p.PermissionKey).Distinct().ToList(),
+            userIds = route.Users.Select(u => u.UserId).Distinct().ToList()
+        };
+
+        await _audit.TryLogAsync(
+            action: isCreate ? "NotificationRouteCreated" : "NotificationRouteUpdated",
+            entity: "NotificationRoute",
+            entityId: route.Id.ToString(),
+            userId: actorId,
+            username: actorUsername,
+            oldObj: oldObj,
+            newObj: newObj,
+            extra: new
+            {
+                routeId = route.Id,
+                isCreate
+            },
+            ct: ct);
+        // 📝 Audit: END
 
         TempData["Success"] = "Notification route saved.";
         return RedirectToAction(nameof(Index));

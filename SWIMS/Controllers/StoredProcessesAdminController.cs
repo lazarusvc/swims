@@ -10,8 +10,7 @@ using System.Security.Claims;
 using System.Text.Json;
 using SWIMS.Services.Elsa;
 using SWIMS.Services.Notifications;
-
-
+using SWIMS.Services.Diagnostics.Auditing;
 
 namespace SWIMS.Controllers
 {
@@ -20,15 +19,18 @@ namespace SWIMS.Controllers
         private readonly SwimsStoredProcsDbContext _db;
         private readonly IDataProtector? _protector;
         private readonly IElsaWorkflowClient _elsa;
+        private readonly IAuditLogger _audit;
 
         public StoredProcessesAdminController(
             SwimsStoredProcsDbContext db,
             IDataProtectionProvider dp,
-            IElsaWorkflowClient elsa)
+            IElsaWorkflowClient elsa,
+            IAuditLogger audit)
         {
             _db = db;
             _protector = dp.CreateProtector(DataProtectionPurposes.StoredProcedures);
             _elsa = elsa;
+            _audit = audit;
         }
 
         // GET: /StoredProcessesAdmin
@@ -68,6 +70,30 @@ namespace SWIMS.Controllers
             _db.StoredProcesses.Add(row);
             await _db.SaveChangesAsync();
 
+            // 📝 Audit: Stored procedure created
+            AuditHelpers.TryResolveActor(User, out var actorId, out var actorUsername);
+
+            await _audit.TryLogAsync(
+                action: "StoredProcedureCreated",
+                entity: "StoredProcess",
+                entityId: row.Id.ToString(),
+                userId: actorId,
+                username: actorUsername,
+                oldObj: null,
+                newObj: new
+                {
+                    processId = row.Id,
+                    row.Name,
+                    row.Description,
+                    row.ConnectionKey,
+                    row.DataSource,
+                    row.Database,
+                    hasDbUser = !string.IsNullOrWhiteSpace(row.DbUserEncrypted),
+                    hasDbPassword = !string.IsNullOrWhiteSpace(row.DbPasswordEncrypted)
+                },
+                ct: HttpContext.RequestAborted);
+            // 📝 Audit: END
+
             // 🔔 Notify: Stored procedure created
             var actorName = User?.Identity?.Name ?? "Someone";
 
@@ -89,7 +115,7 @@ namespace SWIMS.Controllers
             // 🔔 Notify: END
 
 
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction("Index", "StoredProcessParams", new { processId = row.Id });
         }
 
         // GET: /StoredProcessesAdmin/Edit/5
@@ -128,6 +154,18 @@ namespace SWIMS.Controllers
             var row = await _db.StoredProcesses.FirstOrDefaultAsync(x => x.Id == id);
             if (row == null) return NotFound();
 
+            var oldObj = new
+            {
+                processId = row.Id,
+                row.Name,
+                row.Description,
+                row.ConnectionKey,
+                row.DataSource,
+                row.Database,
+                hasDbUser = !string.IsNullOrWhiteSpace(row.DbUserEncrypted),
+                hasDbPassword = !string.IsNullOrWhiteSpace(row.DbPasswordEncrypted)
+            };
+
             row.Name = vm.Name.Trim();
             row.Description = vm.Description?.Trim();
             row.ConnectionKey = string.IsNullOrWhiteSpace(vm.ConnectionKey) ? null : vm.ConnectionKey!.Trim();
@@ -138,6 +176,37 @@ namespace SWIMS.Controllers
             if (!string.IsNullOrWhiteSpace(vm.DbPassword)) row.DbPasswordEncrypted = Protect(vm.DbPassword!);
 
             await _db.SaveChangesAsync();
+
+            // 📝 Audit: Stored procedure updated
+            AuditHelpers.TryResolveActor(User, out var actorId, out var actorUsername);
+
+            var newObj = new
+            {
+                processId = row.Id,
+                row.Name,
+                row.Description,
+                row.ConnectionKey,
+                row.DataSource,
+                row.Database,
+                hasDbUser = !string.IsNullOrWhiteSpace(row.DbUserEncrypted),
+                hasDbPassword = !string.IsNullOrWhiteSpace(row.DbPasswordEncrypted)
+            };
+
+            await _audit.TryLogAsync(
+                action: "StoredProcedureUpdated",
+                entity: "StoredProcess",
+                entityId: row.Id.ToString(),
+                userId: actorId,
+                username: actorUsername,
+                oldObj: oldObj,
+                newObj: newObj,
+                extra: new
+                {
+                    dbUserUpdated = !string.IsNullOrWhiteSpace(vm.DbUser),
+                    dbPasswordUpdated = !string.IsNullOrWhiteSpace(vm.DbPassword)
+                },
+                ct: HttpContext.RequestAborted);
+            // 📝 Audit: END
 
             // 🔔 Notify: Stored procedure updated
             var actorName = User?.Identity?.Name ?? "Someone";
@@ -181,8 +250,35 @@ namespace SWIMS.Controllers
                 var name = row.Name;
                 var pid = row.Id;
 
+                var oldObj = new
+                {
+                    processId = row.Id,
+                    row.Name,
+                    row.Description,
+                    row.ConnectionKey,
+                    row.DataSource,
+                    row.Database,
+                    hasDbUser = !string.IsNullOrWhiteSpace(row.DbUserEncrypted),
+                    hasDbPassword = !string.IsNullOrWhiteSpace(row.DbPasswordEncrypted),
+                    paramCount = row.Params?.Count ?? 0
+                };
+
                 _db.StoredProcesses.Remove(row); // cascade deletes params
                 await _db.SaveChangesAsync();
+
+                // 📝 Audit: Stored procedure deleted
+                AuditHelpers.TryResolveActor(User, out var actorId, out var actorUsername);
+
+                await _audit.TryLogAsync(
+                    action: "StoredProcedureDeleted",
+                    entity: "StoredProcess",
+                    entityId: pid.ToString(),
+                    userId: actorId,
+                    username: actorUsername,
+                    oldObj: oldObj,
+                    newObj: null,
+                    ct: HttpContext.RequestAborted);
+                // 📝 Audit: END
 
                 // 🔔 Notify: Stored procedure deleted
                 var actorName = User?.Identity?.Name ?? "Someone";
