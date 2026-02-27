@@ -35,7 +35,7 @@ namespace SWIMS.Controllers
         private readonly UserManager<SwUser> _userManager;
         private readonly SwimsLookupDbContext _lookup;
         private readonly ICaseLifecycleService _caseLifecycle;
-        private readonly IElsaWorkflowClient _elsa;
+        private readonly IElsaWorkflowQueue _elsaQueue;
         private readonly IAuditLogger _audit;
 
 
@@ -46,7 +46,7 @@ namespace SWIMS.Controllers
             UserManager<SwUser> userManager,
             SwimsLookupDbContext lookup,
             ICaseLifecycleService caseLifecycle,
-            IElsaWorkflowClient elsa,
+            IElsaWorkflowQueue elsaQueue,
             IAuditLogger audit)
         {
             _cases = cases;
@@ -55,7 +55,7 @@ namespace SWIMS.Controllers
             _userManager = userManager;
             _lookup = lookup;
             _caseLifecycle = caseLifecycle;
-            _elsa = elsa;
+            _elsaQueue = elsaQueue;
             _audit = audit;
         }
 
@@ -2446,7 +2446,7 @@ namespace SWIMS.Controllers
                     })
                 };
 
-                await _elsa.ExecuteByNameAsync("Swims.Notifications.DirectInApp", payload, ct);
+                await _elsaQueue.EnqueueByNameAsync("Swims.Notifications.DirectInApp", payload, ct);
             }
             catch { }
         }

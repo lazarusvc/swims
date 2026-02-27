@@ -22,16 +22,16 @@ namespace SWIMS.Areas.Admin.Controllers
     {
         private readonly SwimsReportsDbContext _db;
         private readonly ILogger<ReportParamsController> _logger;
-        private readonly IElsaWorkflowClient _elsa;
+        private readonly IElsaWorkflowQueue _elsaQueue;
 
         public ReportParamsController(
             SwimsReportsDbContext db,
             ILogger<ReportParamsController> logger,
-            IElsaWorkflowClient elsa)
+            IElsaWorkflowQueue elsaQueue)
         {
             _db = db;
             _logger = logger;
-            _elsa = elsa;
+            _elsaQueue = elsaQueue;
         }
 
         // GET: /Admin/ReportParams/Index?reportId=123
@@ -367,7 +367,7 @@ namespace SWIMS.Areas.Admin.Controllers
                 try
                 {
                     // 🔔 Notify: Report parameter admin event
-                    await _elsa.ExecuteByNameAsync("Swims.Notifications.DirectInApp", payload, ct);
+                    await _elsaQueue.EnqueueByNameAsync("Swims.Notifications.DirectInApp", payload, ct);
                     // 🔔 Notify: END
                 }
                 catch

@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Text.Json;
+using Hangfire;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SWIMS.Models.Notifications;
 using SWIMS.Security;
@@ -12,32 +14,34 @@ namespace SWIMS.Controllers.Integration;
 [ServiceFilter(typeof(ElsaIntegrationKeyFilter))]
 public sealed class NotificationsIntegrationController : ControllerBase
 {
-    private readonly INotificationDispatcher _dispatcher;
+    private readonly IBackgroundJobClient _jobs;
     private readonly ILogger<NotificationsIntegrationController> _logger;
+    private static readonly JsonSerializerOptions _json = new(JsonSerializerDefaults.Web);
 
     public NotificationsIntegrationController(
-        INotificationDispatcher dispatcher,
+        IBackgroundJobClient jobs,
         ILogger<NotificationsIntegrationController> logger)
     {
-        _dispatcher = dispatcher;
+        _jobs = jobs;
         _logger = logger;
     }
 
     [HttpPost("receive")]
-    public async Task<IActionResult> Receive([FromBody] SwimsNotificationRequest request, CancellationToken ct)
+    public IActionResult Receive([FromBody] SwimsNotificationRequest request)
     {
         if (request is null)
             return BadRequest(new { error = "missing request body" });
 
         try
         {
-            await _dispatcher.DispatchAsync(request, ct);
-            return Ok(new { ok = true });
+            var body = JsonSerializer.Serialize(request, _json);
+            _jobs.Enqueue<NotificationDispatchJobs>(j => j.DispatchAsync(body));
+            return Ok(new { ok = true, queued = true });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to dispatch incoming notification.");
-            return StatusCode(500, new { error = "dispatch_failed" });
+            _logger.LogError(ex, "Failed to enqueue incoming notification dispatch.");
+            return StatusCode(500, new { error = "enqueue_failed" });
         }
     }
 }

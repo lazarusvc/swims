@@ -299,37 +299,47 @@ public class NotificationDispatcher : INotificationDispatcher
     {
         var result = new HashSet<int>();
 
-        var route = await _db.NotificationRoutes
-            .Include(r => r.Users)
-            .Include(r => r.Roles)
-            .Include(r => r.Permissions)
+        // 1) Find the route row (no Includes; only scalar projection)
+        var routeRow = await _db.NotificationRoutes
             .AsNoTracking()
-            .FirstOrDefaultAsync(r => r.EventKey == eventKey && r.Type == type, ct);
+            .Where(r => r.EventKey == eventKey && r.Type == type)
+            .Select(r => new { r.Id, r.IsEnabled })
+            .FirstOrDefaultAsync(ct);
 
         // fallback for legacy/dirty rows
-        if (route is null)
+        if (routeRow is null)
         {
-            route = await _db.NotificationRoutes
-                .Include(r => r.Users)
-                .Include(r => r.Roles)
-                .Include(r => r.Permissions)
+            routeRow = await _db.NotificationRoutes
                 .AsNoTracking()
-                .FirstOrDefaultAsync(r => r.EventKey == eventKey, ct);
+                .Where(r => r.EventKey == eventKey)
+                .OrderByDescending(r => r.UpdatedAtUtc)
+                .Select(r => new { r.Id, r.IsEnabled })
+                .FirstOrDefaultAsync(ct);
         }
 
-        if (route is null || !route.IsEnabled)
+        if (routeRow is null || !routeRow.IsEnabled)
             return result;
 
-        // Explicit users
-        foreach (var u in route.Users)
-            result.Add(u.UserId);
+        var routeId = routeRow.Id;
 
-        // Permission-based expansion (policy -> policy_roles -> user_roles)
-        var permKeys = route.Permissions
-            .Select(p => p.PermissionKey)
+        // 2) Explicit users
+        var directUserIds = await _db.Set<NotificationRouteUser>()
+            .AsNoTracking()
+            .Where(x => x.RouteId == routeId)
+            .Select(x => x.UserId)
+            .ToListAsync(ct);
+
+        foreach (var id in directUserIds)
+            result.Add(id);
+
+        // 3) Permission expansion (policy -> policy_roles -> user_roles)
+        var permKeys = await _db.Set<NotificationRoutePermission>()
+            .AsNoTracking()
+            .Where(x => x.RouteId == routeId)
+            .Select(x => x.PermissionKey)
             .Where(k => !string.IsNullOrWhiteSpace(k))
-            .Distinct(StringComparer.Ordinal)
-            .ToList();
+            .Distinct()
+            .ToListAsync(ct);
 
         if (permKeys.Count > 0)
         {
@@ -338,8 +348,14 @@ public class NotificationDispatcher : INotificationDispatcher
                 result.Add(id);
         }
 
-        // Role-based expansion (direct role ids)
-        var roleIds = route.Roles.Select(r => r.RoleId).Distinct().ToList();
+        // 4) Role expansion
+        var roleIds = await _db.Set<NotificationRouteRole>()
+            .AsNoTracking()
+            .Where(x => x.RouteId == routeId)
+            .Select(x => x.RoleId)
+            .Distinct()
+            .ToListAsync(ct);
+
         if (roleIds.Count > 0)
         {
             var roleUserIds = await _db.UserRoles

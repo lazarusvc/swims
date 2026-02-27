@@ -21,16 +21,16 @@ namespace SWIMS.Areas.Admin.Controllers
     {
         private readonly SwimsReportsDbContext _db;
         private readonly RoleManager<SwRole> _roles;
-        private readonly IElsaWorkflowClient _elsa;
+        private readonly IElsaWorkflowQueue _elsaQueue;
 
         public ReportsAdminController(
             SwimsReportsDbContext db,
             RoleManager<SwRole> roles,
-            IElsaWorkflowClient elsa)
+            IElsaWorkflowQueue elsaQueue)
         {
             _db = db;
             _roles = roles;
-            _elsa = elsa;
+            _elsaQueue = elsaQueue;
         }
 
         public async Task<IActionResult> Index() =>
@@ -267,7 +267,7 @@ namespace SWIMS.Areas.Admin.Controllers
                 };
 
                 // 🔔 Notify: Report admin config event
-                await _elsa.ExecuteByNameAsync("Swims.Notifications.DirectInApp", payload, ct);
+                await _elsaQueue.EnqueueByNameAsync("Swims.Notifications.DirectInApp", payload, ct);
                 // 🔔 Notify: END
             }
             catch

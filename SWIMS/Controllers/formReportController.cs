@@ -24,12 +24,12 @@ namespace SWIMS.Controllers
     public class formReportController : Controller
     {
         private readonly SwimsDb_moreContext _context;
-        private readonly IElsaWorkflowClient _elsa;
+        private readonly IElsaWorkflowQueue _elsaQueue;
 
-        public formReportController(SwimsDb_moreContext context, IElsaWorkflowClient elsa)
+        public formReportController(SwimsDb_moreContext context, IElsaWorkflowQueue elsaQueue)
         {
             _context = context;
-            _elsa = elsa;
+            _elsaQueue = elsaQueue;
         }
 
         // GET: formReport
@@ -307,7 +307,7 @@ namespace SWIMS.Controllers
             try
             {
                 // 🔔 Notify: Form report admin event
-                await _elsa.ExecuteByNameAsync("Swims.Notifications.DirectInApp", payload, ct);
+                await _elsaQueue.EnqueueByNameAsync("Swims.Notifications.DirectInApp", payload, ct);
             }
             catch
             {

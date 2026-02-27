@@ -416,7 +416,11 @@ builder.Services
 
 builder.Services.AddScoped<ElsaIntegrationKeyFilter>();
 
+builder.Services.AddScoped<IElsaWorkflowQueue, ElsaWorkflowQueue>();
+builder.Services.AddScoped<ElsaWorkflowJobs>();
 
+builder.Services.AddScoped<NotificationDispatchJobs>();
+builder.Services.AddScoped<NotificationDeliveryJobs>();
 
 builder.Services.AddScoped<ISetupStateService, SetupStateService>();
 

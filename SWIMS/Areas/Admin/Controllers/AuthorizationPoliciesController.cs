@@ -21,16 +21,16 @@ namespace SWIMS.Areas.Admin.Controllers
     {
         private readonly SwimsIdentityDbContext _db;
         private readonly IPolicyStore _store;
-        private readonly IElsaWorkflowClient _elsa;
+        private readonly IElsaWorkflowQueue _elsaQueue;
 
         public AuthorizationPoliciesController(
         SwimsIdentityDbContext db,
         IPolicyStore store,
-        IElsaWorkflowClient elsa) 
+        IElsaWorkflowQueue elsaQueue) 
         {
             _db = db;
             _store = store;
-            _elsa = elsa;
+            _elsaQueue = elsaQueue;
         }
 
         // GET: /Admin/AuthorizationPolicies
@@ -443,7 +443,7 @@ namespace SWIMS.Areas.Admin.Controllers
                     })
                 };
 
-                await _elsa.ExecuteByNameAsync("Swims.Notifications.DirectInApp", payload, ct);
+                await _elsaQueue.EnqueueByNameAsync("Swims.Notifications.DirectInApp", payload, ct);
             }
             catch
             {

@@ -18,12 +18,12 @@ namespace SWIMS.Controllers
     public class formTableDataController : Controller
     {
         private readonly SwimsDb_moreContext _context;
-        private readonly IElsaWorkflowClient _elsa;
+        private readonly IElsaWorkflowQueue _elsaQueue;
 
-        public formTableDataController(SwimsDb_moreContext context, IElsaWorkflowClient elsa)
+        public formTableDataController(SwimsDb_moreContext context, IElsaWorkflowQueue elsaQueue)
         {
             _context = context;
-            _elsa = elsa;
+            _elsaQueue = elsaQueue;
         }
 
         // GET: formTableData
@@ -405,7 +405,7 @@ namespace SWIMS.Controllers
                     })
                 };
 
-                await _elsa.ExecuteByNameAsync("Swims.Notifications.DirectInApp", payload, ct);
+                await _elsaQueue.EnqueueByNameAsync("Swims.Notifications.DirectInApp", payload, ct);
             }
             catch { }
         }
@@ -479,7 +479,7 @@ namespace SWIMS.Controllers
                     })
                 };
 
-                await _elsa.ExecuteByNameAsync("Swims.Notifications.DirectInApp", payload, ct);
+                await _elsaQueue.EnqueueByNameAsync("Swims.Notifications.DirectInApp", payload, ct);
             }
             catch { }
         }

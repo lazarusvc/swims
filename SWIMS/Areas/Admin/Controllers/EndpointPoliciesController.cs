@@ -23,20 +23,20 @@ namespace SWIMS.Areas.Admin.Controllers
         private readonly SwimsIdentityDbContext _db;
         private readonly IEndpointPolicyAssignmentStore _store;
         private readonly IEndpointCatalog _catalog;
-        private readonly IElsaWorkflowClient _elsa;
+        private readonly IElsaWorkflowQueue _elsaQueue;
         private readonly IAuditLogger _audit;
 
         public EndpointPoliciesController(
             SwimsIdentityDbContext db,
             IEndpointPolicyAssignmentStore store,
             IEndpointCatalog catalog,
-            IElsaWorkflowClient elsa,
+            IElsaWorkflowQueue elsaQueue,
             IAuditLogger audit)
         {
             _db = db;
             _store = store;
             _catalog = catalog;
-            _elsa = elsa;
+            _elsaQueue = elsaQueue;
             _audit = audit;
         }
 
@@ -746,7 +746,7 @@ namespace SWIMS.Areas.Admin.Controllers
                     })
                 };
 
-                await _elsa.ExecuteByNameAsync("Swims.Notifications.DirectInApp", payload, ct);
+                await _elsaQueue.EnqueueByNameAsync("Swims.Notifications.DirectInApp", payload, ct);
             }
             catch
             {

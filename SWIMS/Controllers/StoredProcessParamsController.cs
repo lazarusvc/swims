@@ -19,16 +19,16 @@ namespace SWIMS.Controllers
     public class StoredProcessParamsController : Controller
     {
         private readonly SwimsStoredProcsDbContext _db;
-        private readonly IElsaWorkflowClient _elsa;
+        private readonly IElsaWorkflowQueue _elsaQueue;
         private readonly IAuditLogger _audit;
 
         public StoredProcessParamsController(
             SwimsStoredProcsDbContext db,
-            IElsaWorkflowClient elsa,
+            IElsaWorkflowQueue elsaQueue,
             IAuditLogger audit)
         {
             _db = db;
-            _elsa = elsa;
+            _elsaQueue = elsaQueue;
             _audit = audit;
         }
 
@@ -415,7 +415,7 @@ namespace SWIMS.Controllers
             try
             {
                 // 🔔 Notify: Stored procedure parameter event
-                await _elsa.ExecuteByNameAsync("Swims.Notifications.DirectInApp", payload, ct);
+                await _elsaQueue.EnqueueByNameAsync("Swims.Notifications.DirectInApp", payload, ct);
             }
             catch
             {

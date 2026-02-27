@@ -31,14 +31,14 @@ namespace SWIMS.Controllers
     {
         private readonly SwimsDb_moreContext _context;
         private readonly SwimsLookupDbContext _lookup;
-        private readonly IElsaWorkflowClient _elsa;
+        private readonly IElsaWorkflowQueue _elsaQueue;
         private readonly IAuditLogger _audit;
 
-        public formController(SwimsDb_moreContext context, SwimsLookupDbContext lookup, IElsaWorkflowClient elsa, IAuditLogger audit)
+        public formController(SwimsDb_moreContext context, SwimsLookupDbContext lookup, IElsaWorkflowQueue elsaQueue, IAuditLogger audit)
         {
             _context = context;
             _lookup = lookup;
-            _elsa = elsa;
+            _elsaQueue = elsaQueue;
             _audit = audit;
         }
 
@@ -1861,7 +1861,7 @@ namespace SWIMS.Controllers
                     })
                 };
 
-                await _elsa.ExecuteByNameAsync("Swims.Notifications.DirectInApp", payload, ct);
+                await _elsaQueue.EnqueueByNameAsync("Swims.Notifications.DirectInApp", payload, ct);
             }
             catch { }
         }
@@ -1955,7 +1955,7 @@ namespace SWIMS.Controllers
                     })
                 };
 
-                await _elsa.ExecuteByNameAsync("Swims.Notifications.DirectInApp", payload, ct);
+                await _elsaQueue.EnqueueByNameAsync("Swims.Notifications.DirectInApp", payload, ct);
             }
             catch { }
         }

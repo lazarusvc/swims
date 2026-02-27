@@ -30,18 +30,18 @@ namespace SWIMS.Controllers
     {
         private readonly UserManager<SwUser> _userManager;
         private readonly RoleManager<SwRole> _roleManager;
-        private readonly IElsaWorkflowClient _elsa;
+        private readonly IElsaWorkflowQueue _elsaQueue;
         private readonly IAuditLogger _audit;
 
         public usersController(
             UserManager<SwUser> userManager,
             RoleManager<SwRole> roleManager,
-            IElsaWorkflowClient elsa,
+            IElsaWorkflowQueue elsaQueue,
             IAuditLogger audit)
         {
             _userManager = userManager;
             _roleManager = roleManager;
-            _elsa = elsa;
+            _elsaQueue = elsaQueue;
             _audit = audit;
         }
 
@@ -523,7 +523,7 @@ namespace SWIMS.Controllers
             try
             {
                 // 🔔 Notify: Admin user / role management event
-                await _elsa.ExecuteByNameAsync("Swims.Notifications.DirectInApp", payload, ct);
+                await _elsaQueue.EnqueueByNameAsync("Swims.Notifications.DirectInApp", payload, ct);
             }
             catch
             {

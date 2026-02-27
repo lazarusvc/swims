@@ -21,7 +21,7 @@ namespace SWIMS.Controllers
     {
         private readonly SwimsDb_moreContext _context;
         private readonly SwimsStoredProcsDbContext _context_sp;
-        private readonly IElsaWorkflowClient _elsa;
+        private readonly IElsaWorkflowQueue _elsaQueue;
 
 
         private static int? TryExtractProcIdFromRunUrl(string? url)
@@ -31,11 +31,11 @@ namespace SWIMS.Controllers
             return m.Success ? int.Parse(m.Groups[1].Value) : (int?)null;
         }
 
-        public formProcessController(SwimsDb_moreContext context, SwimsStoredProcsDbContext sp, IElsaWorkflowClient elsa)
+        public formProcessController(SwimsDb_moreContext context, SwimsStoredProcsDbContext sp, IElsaWorkflowQueue elsaQueue)
         {
             _context = context;
             _context_sp = sp;
-            _elsa = elsa;
+            _elsaQueue = elsaQueue;
         }
 
         // GET: formProcess
@@ -389,7 +389,7 @@ namespace SWIMS.Controllers
                     })
                 };
 
-                await _elsa.ExecuteByNameAsync("Swims.Notifications.DirectInApp", payload, ct);
+                await _elsaQueue.EnqueueByNameAsync("Swims.Notifications.DirectInApp", payload, ct);
             }
             catch
             {

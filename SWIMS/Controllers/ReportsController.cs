@@ -25,18 +25,18 @@ namespace SWIMS.Controllers
         private readonly SwimsReportsDbContext _db;
         private readonly ISsrsUrlBuilder _url;
         private readonly IOptions<ReportingOptions> _opt;
-        private readonly IElsaWorkflowClient _elsa;
+        private readonly IElsaWorkflowQueue _elsaQueue;
 
         public ReportsController(
             SwimsReportsDbContext db,
             ISsrsUrlBuilder url,
             IOptions<ReportingOptions> opt,
-            IElsaWorkflowClient elsa)
+            IElsaWorkflowQueue elsaQueue)
         {
             _db = db;
             _url = url;
             _opt = opt;
-            _elsa = elsa;
+            _elsaQueue = elsaQueue;
         }
 
         [HttpGet]
@@ -278,7 +278,7 @@ namespace SWIMS.Controllers
             try
             {
                 // 🔔 Notify: Report run event
-                await _elsa.ExecuteByNameAsync("Swims.Notifications.DirectInApp", payload, ct);
+                await _elsaQueue.EnqueueByNameAsync("Swims.Notifications.DirectInApp", payload, ct);
                 // 🔔 Notify: END
             }
             catch

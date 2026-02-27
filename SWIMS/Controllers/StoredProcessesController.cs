@@ -17,18 +17,18 @@ namespace SWIMS.Controllers
     {
         private readonly SwimsStoredProcsDbContext _db;
         private readonly StoredProcedureRunner _runner;
-        private readonly IElsaWorkflowClient _elsa;
+        private readonly IElsaWorkflowQueue _elsaQueue;
         private readonly IAuditLogger _audit;
 
         public StoredProcessesController(
             SwimsStoredProcsDbContext db,
             StoredProcedureRunner runner,
-            IElsaWorkflowClient elsa,
+            IElsaWorkflowQueue elsaQueue,
             IAuditLogger audit)
         {
             _db = db;
             _runner = runner;
-            _elsa = elsa;
+            _elsaQueue = elsaQueue;
             _audit = audit;
         }
 
@@ -461,7 +461,7 @@ namespace SWIMS.Controllers
             try
             {
                 // 🔔 Notify: Stored procedure event
-                await _elsa.ExecuteByNameAsync("Swims.Notifications.DirectInApp", payload, ct);
+                await _elsaQueue.EnqueueByNameAsync("Swims.Notifications.DirectInApp", payload, ct);
             }
             catch
             {

@@ -18,18 +18,18 @@ namespace SWIMS.Controllers
     {
         private readonly SwimsStoredProcsDbContext _db;
         private readonly IDataProtector? _protector;
-        private readonly IElsaWorkflowClient _elsa;
+        private readonly IElsaWorkflowQueue _elsaQueue;
         private readonly IAuditLogger _audit;
 
         public StoredProcessesAdminController(
             SwimsStoredProcsDbContext db,
             IDataProtectionProvider dp,
-            IElsaWorkflowClient elsa,
+            IElsaWorkflowQueue elsaQueue,
             IAuditLogger audit)
         {
             _db = db;
             _protector = dp.CreateProtector(DataProtectionPurposes.StoredProcedures);
-            _elsa = elsa;
+            _elsaQueue = elsaQueue;
             _audit = audit;
         }
 
@@ -359,7 +359,7 @@ namespace SWIMS.Controllers
             try
             {
                 // 🔔 Notify: Stored procedure admin event
-                await _elsa.ExecuteByNameAsync("Swims.Notifications.DirectInApp", payload, ct);
+                await _elsaQueue.EnqueueByNameAsync("Swims.Notifications.DirectInApp", payload, ct);
             }
             catch
             {
