@@ -2,5 +2,9 @@
 
 public interface IElsaWorkflowClient
 {
-    Task ExecuteByNameAsync(string workflowName, object? input = null, CancellationToken ct = default);
+    Task ExecuteByNameAsync(
+        string workflowName,
+        object? input = null,
+        CancellationToken ct = default,
+        bool throwOnUnavailable = false);
 }

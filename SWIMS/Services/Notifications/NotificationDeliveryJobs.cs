@@ -48,7 +48,7 @@ public sealed class NotificationDeliveryJobs
         _allow = new HashSet<string>(_emailOptions.AllowEventKeys ?? new(), StringComparer.Ordinal);
     }
 
-    [Queue("default")]
+    [Queue("notifications")]
     [AutomaticRetry(Attempts = 0)] // IMPORTANT: avoid duplicate push/emails on retry
     public async Task DeliverAsync(Guid notificationId)
     {

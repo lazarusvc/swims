@@ -173,4 +173,11 @@ public static class SwimsEventKeys
         }
     }
 
+    public static class System
+    {
+        public static class Elsa
+        {
+            public const string Unavailable = "Swims.Events.System.Elsa.Unavailable";
+        }
+    }
 }

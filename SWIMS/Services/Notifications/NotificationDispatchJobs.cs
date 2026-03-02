@@ -21,7 +21,7 @@ public sealed class NotificationDispatchJobs
         _logger = logger;
     }
 
-    [Queue("default")]
+    [Queue("notifications")]
     [AutomaticRetry(Attempts = 0)] // IMPORTANT: avoid duplicate notifs on retry
     public async Task DispatchAsync(string requestJson)
     {

@@ -30,6 +30,7 @@ public sealed class NotificationDigestJobs
     /// <summary>
     /// Build and send per-type digests for "yesterday" (UTC) by default.
     /// </summary>
+    [Queue("outbox")]
     public async Task<int> RunDailyAsync(DateTime? utcNow = null, CancellationToken ct = default)
     {
         var now = utcNow ?? DateTime.UtcNow;

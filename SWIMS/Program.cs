@@ -229,16 +229,32 @@ builder.Services.AddHangfire(cfg =>
                SchemaName = "ops",
                PrepareSchemaIfNecessary = true,
                SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
-               QueuePollInterval = TimeSpan.FromSeconds(15),
+               QueuePollInterval = TimeSpan.FromSeconds(1),
                CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
                UseRecommendedIsolationLevel = true
            });
 });
 
-// Hangfire Server
+// Hangfire Servers (split queues)
+// 1) User-facing pipeline: workflow triggers + notif dispatch + delivery
 builder.Services.AddHangfireServer(options =>
 {
-    options.Queues = new[] { "outbox", "default" }; // "outbox" first = higher priority
+    options.Queues = new[] { "notifications" };
+    options.WorkerCount = 10; // tune as needed
+});
+
+// 2) Email outbox only
+builder.Services.AddHangfireServer(options =>
+{
+    options.Queues = new[] { "outbox" };
+    options.WorkerCount = 1; // outbox should not starve notifications
+});
+
+// 3) Defualt for any misc jobs that don't specify a queue (optional, but good to catch misconfigurations)
+builder.Services.AddHangfireServer(options =>
+{
+    options.Queues = new[] { "default" };
+    options.WorkerCount = 1; // outbox should not starve notifications
 });
 
 builder.Services.Configure<ReportingOptions>(builder.Configuration.GetSection("Reporting"));
@@ -421,6 +437,8 @@ builder.Services.AddScoped<ElsaWorkflowJobs>();
 
 builder.Services.AddScoped<NotificationDispatchJobs>();
 builder.Services.AddScoped<NotificationDeliveryJobs>();
+
+builder.Services.AddMemoryCache();
 
 builder.Services.AddScoped<ISetupStateService, SetupStateService>();
 

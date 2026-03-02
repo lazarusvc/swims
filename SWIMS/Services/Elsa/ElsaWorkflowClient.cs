@@ -29,7 +29,11 @@ namespace SWIMS.Services.Elsa
             _tempDataFactory = tempDataFactory;
         }
 
-        public async Task ExecuteByNameAsync(string workflowName, object? input = null, CancellationToken ct = default)
+        public async Task ExecuteByNameAsync(
+            string workflowName,
+            object? input = null,
+            CancellationToken ct = default,
+            bool throwOnUnavailable = false)
         {
             try
             {
@@ -44,14 +48,17 @@ namespace SWIMS.Services.Elsa
 
                 if (string.IsNullOrWhiteSpace(defId))
                 {
+                    var msg = "Workflow/notifications are temporarily unavailable. Your changes were saved.";
+
                     _logger.LogWarning(
                         "Elsa workflow definition not found for name '{WorkflowName}' (Published/Latest). Base={BaseAddress}",
                         workflowName,
                         client.BaseAddress?.ToString() ?? "(null)");
 
-                    SetElsaWarningOncePerRequest(
-                        "Workflow/notifications are temporarily unavailable. Your changes were saved.");
+                    if (throwOnUnavailable)
+                        throw new ElsaWorkflowUnavailableException(workflowName, ElsaFailureReason.DefinitionNotFound, msg);
 
+                    SetElsaWarningOncePerRequest(msg);
                     return;
                 }
 
@@ -78,24 +85,37 @@ namespace SWIMS.Services.Elsa
                         relativeUrl,
                         body);
 
-                    SetElsaWarningOncePerRequest(
-                        "Workflow/notifications are temporarily unavailable. Your changes were saved.");
+                    var msg = "Workflow/notifications are temporarily unavailable. Your changes were saved.";
+
+                    if (throwOnUnavailable)
+                        throw new ElsaWorkflowUnavailableException(workflowName, ElsaFailureReason.ExecutionFailed, msg, statusCode: (int)resp.StatusCode);
+
+                    SetElsaWarningOncePerRequest(msg);
+                    return;
                 }
 
             }
             catch (HttpRequestException ex)
             {
-                HandleElsaUnavailable(ex, workflowName);
+                // Network / connection issues (e.g., connection refused when Elsa is down)
+                HandleElsaUnavailable(ex, workflowName, throwOnUnavailable);
             }
             catch (TaskCanceledException ex)
             {
-                HandleElsaUnavailable(ex, workflowName);
+                // Timeout / cancellation (e.g., CTS timeout we added in the Hangfire job)
+                HandleElsaUnavailable(ex, workflowName, throwOnUnavailable);
             }
             catch (Exception ex)
             {
                 // Fail open, but log it (don’t crash your business action)
                 _logger.LogWarning(ex, "Unexpected error calling Elsa; skipping workflow '{WorkflowName}'.", workflowName);
-                SetElsaWarningOncePerRequest("Workflow/notifications are temporarily unavailable. Your changes were saved.");
+
+                var msg = "Workflow/notifications are temporarily unavailable. Your changes were saved.";
+
+                if (throwOnUnavailable)
+                    throw new ElsaWorkflowUnavailableException(workflowName, ElsaFailureReason.ExecutionFailed, msg, ex);
+
+                SetElsaWarningOncePerRequest(msg);
             }
         }
 
@@ -220,12 +240,18 @@ namespace SWIMS.Services.Elsa
             return false;
         }
 
-        private void HandleElsaUnavailable(Exception ex, string workflowName)
+        private void HandleElsaUnavailable(Exception ex, string workflowName, bool throwOnUnavailable)
         {
             _logger.LogWarning(ex, "Elsa is unavailable; skipping workflow '{WorkflowName}'.", workflowName);
 
-            SetElsaWarningOncePerRequest(
-                "Workflow/notifications are temporarily unavailable (Elsa is offline). Your changes were saved, but automated notifications may not be delivered.");
+            var msg =
+                "Workflow/notifications are temporarily unavailable (Elsa is offline). " +
+                "Your changes were saved, but automated notifications may not be delivered.";
+
+            if (throwOnUnavailable)
+                throw new ElsaWorkflowUnavailableException(workflowName, ElsaFailureReason.Offline, msg, ex);
+
+            SetElsaWarningOncePerRequest(msg);
         }
 
         private void SetElsaWarningOncePerRequest(string message)
