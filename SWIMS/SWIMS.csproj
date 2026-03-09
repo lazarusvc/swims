@@ -77,6 +77,7 @@
 	</ItemGroup>
 
   <ItemGroup>
+    <Folder Include="wwwroot\docfx\docs\{auth,authorization,programmes-forms,cases,beneficiaries,reference-data,email,notifications,messaging,reporting,stored-procedures,observability,admin,api,background-jobs,elsa-workflows,pwa}\" />
     <Folder Include="wwwroot\uploads\" />
   </ItemGroup>
 

@@ -1,0 +1,146 @@
+- name: Introduction
+  href: introduction.md
+- name: Getting Started
+  href: getting-started.md
+- name: Architecture
+  href: architecture.md
+- name: Database Design
+  href: database-design.md
+
+- name: Authentication
+  href: auth/
+  items:
+    - name: Overview
+      href: auth/overview.md
+    - name: LDAP Integration
+      href: auth/ldap.md
+    - name: Two-Factor Authentication
+      href: auth/two-factor.md
+
+- name: Authorization
+  href: authorization/
+  items:
+    - name: Overview
+      href: authorization/overview.md
+    - name: RBAC & Permissions
+      href: authorization/rbac.md
+    - name: Dynamic Policies
+      href: authorization/dynamic-policies.md
+    - name: Endpoint Policies
+      href: authorization/endpoint-policies.md
+
+- name: Programmes & Forms
+  href: programmes-forms/
+  items:
+    - name: Overview
+      href: programmes-forms/overview.md
+    - name: Form Builder
+      href: programmes-forms/form-builder.md
+    - name: Conditional Logic
+      href: programmes-forms/conditional-logic.md
+    - name: Approvals Workflow
+      href: programmes-forms/approvals.md
+
+- name: Cases
+  href: cases/
+  items:
+    - name: Overview
+      href: cases/overview.md
+    - name: Lifecycle & Status
+      href: cases/lifecycle.md
+    - name: Benefit Period Management
+      href: cases/benefit-period.md
+
+- name: Beneficiaries
+  href: beneficiaries/
+  items:
+    - name: Overview
+      href: beneficiaries/overview.md
+
+- name: Reference Data
+  href: reference-data/
+  items:
+    - name: Overview
+      href: reference-data/overview.md
+
+- name: Email Service
+  href: email/
+  items:
+    - name: Overview
+      href: email/overview.md
+    - name: Email Templates
+      href: email/templates.md
+
+- name: Notifications
+  href: notifications/
+  items:
+    - name: Overview
+      href: notifications/overview.md
+    - name: Web Push (PWA)
+      href: notifications/web-push.md
+
+- name: Messaging
+  href: messaging/
+  items:
+    - name: Overview
+      href: messaging/overview.md
+
+- name: Reporting (SSRS)
+  href: reporting/
+  items:
+    - name: Overview
+      href: reporting/overview.md
+    - name: SSRS Proxy
+      href: reporting/ssrs-proxy.md
+
+- name: Stored Procedures
+  href: stored-procedures/
+  items:
+    - name: Overview
+      href: stored-procedures/overview.md
+    - name: Wrappers & Helpers
+      href: stored-procedures/wrappers.md
+
+- name: Observability
+  href: observability/
+  items:
+    - name: Overview
+      href: observability/overview.md
+    - name: Audit Log
+      href: observability/audit-log.md
+    - name: Session Log
+      href: observability/session-log.md
+
+- name: Admin & Settings
+  href: admin/
+  items:
+    - name: Overview
+      href: admin/overview.md
+    - name: Users & Roles
+      href: admin/users-roles.md
+    - name: System Settings
+      href: admin/system-settings.md
+
+- name: API Module
+  href: api/
+  items:
+    - name: Overview
+      href: api/overview.md
+
+- name: Background Jobs
+  href: background-jobs/
+  items:
+    - name: Overview
+      href: background-jobs/overview.md
+
+- name: Elsa Workflows
+  href: elsa-workflows/
+  items:
+    - name: Overview
+      href: elsa-workflows/overview.md
+
+- name: PWA & Web Push
+  href: pwa/
+  items:
+    - name: Overview
+      href: pwa/overview.md

@@ -4,7 +4,7 @@
     {
       "src": [
         {
-          "src": "../../", // ← path to your .csproj directory (e.g. "../MyProject.Web")
+          "src": "../../",
           "files": [ "**/*.csproj" ]
         }
       ],
@@ -12,7 +12,7 @@
     }
   ],
   "build": {
-    "dest": "../docs", // ← output into wwwroot/docs
+    "dest": "../docs",
     "content": [
       {
         "files": [ "**/*.{md,yml}" ],
@@ -27,7 +27,10 @@
     ],
     "template": [ "default", "modern" ],
     "globalMetadata": {
+      "_appTitle": "SWIMS Developer Documentation",
+      "_appName": "SWIMS",
       "_enableSearch": true,
+      "_disableContribution": true,
       "pdf": true
     }
   }

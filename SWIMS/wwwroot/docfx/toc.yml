@@ -1,8 +1,4 @@
-- name: Project
-  href: swims/
-- name: Development
-  href: dev/
-- name: Docs
+- name: Developer Guide
   href: docs/
-- name: API
+- name: API Reference
   href: api/
