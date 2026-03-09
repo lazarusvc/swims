@@ -1,4 +1,6 @@
 - name: Developer Guide
-  href: docs/
+  href: dev/
+- name: User Guide
+  href: user-guide/
 - name: API Reference
   href: api/

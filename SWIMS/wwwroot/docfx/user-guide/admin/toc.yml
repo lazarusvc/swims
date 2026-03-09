@@ -1,0 +1,18 @@
+- name: Overview
+  href: overview.md
+- name: Managing Users
+  href: users.md
+- name: Managing Roles
+  href: roles.md
+- name: System Settings
+  href: system-settings.md
+- name: Notification Routing
+  href: notification-routing.md
+- name: Authorization & Policies
+  href: authorization.md
+- name: Audit & Session Logs
+  href: logs.md
+- name: Hangfire Dashboard
+  href: hangfire.md
+- name: API Dashboard
+  href: api-dashboard.md

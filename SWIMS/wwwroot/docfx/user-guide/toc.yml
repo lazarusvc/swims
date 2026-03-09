@@ -1,0 +1,126 @@
+- name: Introduction
+  href: introduction.md
+
+- name: Getting Started
+  href: getting-started/
+  items:
+    - name: Logging In
+      href: getting-started/logging-in.md
+    - name: Navigating SWIMS
+      href: getting-started/navigation.md
+    - name: Your Account
+      href: getting-started/your-account.md
+    - name: Two-Factor Authentication
+      href: getting-started/two-factor.md
+
+- name: Programmes & Forms
+  href: programmes-forms/
+  items:
+    - name: Overview
+      href: programmes-forms/overview.md
+    - name: Browsing Programmes
+      href: programmes-forms/browsing.md
+    - name: Filling In a Form
+      href: programmes-forms/filling-a-form.md
+    - name: Managing Forms (Admin)
+      href: programmes-forms/managing-forms.md
+
+- name: Cases
+  href: cases/
+  items:
+    - name: Overview
+      href: cases/overview.md
+    - name: Creating a Case
+      href: cases/creating.md
+    - name: Managing a Case
+      href: cases/managing.md
+    - name: Case Status Reference
+      href: cases/status-reference.md
+
+- name: Approvals
+  href: approvals/
+  items:
+    - name: Overview
+      href: approvals/overview.md
+    - name: Reviewing & Approving
+      href: approvals/reviewing.md
+
+- name: Beneficiaries
+  href: beneficiaries/
+  items:
+    - name: Overview
+      href: beneficiaries/overview.md
+    - name: Registering a Beneficiary
+      href: beneficiaries/registering.md
+    - name: Searching & Editing
+      href: beneficiaries/searching-editing.md
+
+- name: Reference Data
+  href: reference-data/
+  items:
+    - name: Overview
+      href: reference-data/overview.md
+
+- name: Messenger
+  href: messenger/
+  items:
+    - name: Overview
+      href: messenger/overview.md
+    - name: Starting a Conversation
+      href: messenger/conversations.md
+
+- name: Notifications
+  href: notifications/
+  items:
+    - name: Overview
+      href: notifications/overview.md
+    - name: Managing Preferences
+      href: notifications/preferences.md
+
+- name: Reports
+  href: reports/
+  items:
+    - name: Overview
+      href: reports/overview.md
+    - name: Running a Report
+      href: reports/running.md
+
+- name: Stored Procedures
+  href: stored-procedures/
+  items:
+    - name: Overview
+      href: stored-procedures/overview.md
+
+- name: Administration
+  href: admin/
+  items:
+    - name: Overview
+      href: admin/overview.md
+    - name: Managing Users
+      href: admin/users.md
+    - name: Managing Roles
+      href: admin/roles.md
+    - name: System Settings
+      href: admin/system-settings.md
+    - name: Notification Routing
+      href: admin/notification-routing.md
+    - name: Authorization & Policies
+      href: admin/authorization.md
+    - name: Audit & Session Logs
+      href: admin/logs.md
+    - name: Hangfire Dashboard
+      href: admin/hangfire.md
+    - name: API Dashboard
+      href: admin/api-dashboard.md
+
+- name: Quick Reference
+  href: quick-reference/
+  items:
+    - name: Case Status Definitions
+      href: quick-reference/case-statuses.md
+    - name: Permissions & Roles
+      href: quick-reference/permissions.md
+    - name: Common Tasks
+      href: quick-reference/common-tasks.md
+    - name: Glossary
+      href: quick-reference/glossary.md

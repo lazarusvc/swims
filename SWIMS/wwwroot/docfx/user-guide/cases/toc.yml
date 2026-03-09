@@ -1,0 +1,8 @@
+- name: Overview
+  href: overview.md
+- name: Creating a Case
+  href: creating.md
+- name: Managing a Case
+  href: managing.md
+- name: Case Status Reference
+  href: status-reference.md
