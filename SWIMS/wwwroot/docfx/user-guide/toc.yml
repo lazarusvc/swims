@@ -124,3 +124,9 @@
       href: quick-reference/common-tasks.md
     - name: Glossary
       href: quick-reference/glossary.md
+
+- name: About This Documentation
+  href: documentation/
+  items:
+    - name: About This Documentation
+      href: documentation/overview.md

@@ -22,7 +22,7 @@
   items:
     - name: Overview
       href: authorization/overview.md
-    - name: RBAC & Permissions
+    - name: RBAC
       href: authorization/rbac.md
     - name: Dynamic Policies
       href: authorization/dynamic-policies.md
@@ -46,9 +46,9 @@
   items:
     - name: Overview
       href: cases/overview.md
-    - name: Lifecycle & Status
+    - name: Lifecycle
       href: cases/lifecycle.md
-    - name: Benefit Period Management
+    - name: Benefit Period
       href: cases/benefit-period.md
 
 - name: Beneficiaries
@@ -63,12 +63,12 @@
     - name: Overview
       href: reference-data/overview.md
 
-- name: Email Service
+- name: Email
   href: email/
   items:
     - name: Overview
       href: email/overview.md
-    - name: Email Templates
+    - name: Templates
       href: email/templates.md
 
 - name: Notifications
@@ -76,7 +76,7 @@
   items:
     - name: Overview
       href: notifications/overview.md
-    - name: Web Push (PWA)
+    - name: Web Push
       href: notifications/web-push.md
 
 - name: Messaging
@@ -85,7 +85,7 @@
     - name: Overview
       href: messaging/overview.md
 
-- name: Reporting (SSRS)
+- name: Reporting
   href: reporting/
   items:
     - name: Overview
@@ -98,7 +98,7 @@
   items:
     - name: Overview
       href: stored-procedures/overview.md
-    - name: Wrappers & Helpers
+    - name: Wrappers
       href: stored-procedures/wrappers.md
 
 - name: Observability
@@ -111,7 +111,7 @@
     - name: Session Log
       href: observability/session-log.md
 
-- name: Admin & Settings
+- name: Administration
   href: admin/
   items:
     - name: Overview
@@ -121,7 +121,7 @@
     - name: System Settings
       href: admin/system-settings.md
 
-- name: API Module
+- name: API
   href: api/
   items:
     - name: Overview
@@ -139,8 +139,14 @@
     - name: Overview
       href: elsa-workflows/overview.md
 
-- name: PWA & Web Push
+- name: PWA
   href: pwa/
   items:
     - name: Overview
       href: pwa/overview.md
+
+- name: Documentation System
+  href: documentation/
+  items:
+    - name: Overview
+      href: documentation/overview.md
