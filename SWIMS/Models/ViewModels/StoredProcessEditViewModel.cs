@@ -27,6 +27,9 @@ public class StoredProcessEditViewModel
     [DataType(DataType.Password)]
     public string? DbPassword { get; set; }
 
+    /// <summary>When true, CSV exports omit the column-header row.</summary>
+    public bool ExcludeHeadersOnExport { get; set; }
+
     public string ConnectionSummary =>
         !string.IsNullOrWhiteSpace(ConnectionKey) ? $"Connection: {ConnectionKey}" : $"{DataSource}/{Database}";
 }

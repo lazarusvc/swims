@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SWIMS.Data;
 
@@ -10,9 +11,11 @@ using SWIMS.Data;
 namespace SWIMS.Migrations.StoredProcs
 {
     [DbContext(typeof(SwimsStoredProcsDbContext))]
-    partial class SwimsStoredProcsDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260410152441_AddExcludeHeadersOnExport")]
+    partial class AddExcludeHeadersOnExport
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

@@ -37,7 +37,10 @@ Required parameters are marked with `*`. The procedure cannot run until all requ
 
 ## Exporting Results
 
-Results displayed on screen can typically be exported to CSV using the **Export** button that appears after execution.
+Results displayed on screen can be exported to CSV using the **Export CSV** button that appears after execution.
+
+> [!NOTE]
+> Some procedures (e.g. bank file generators) are configured to **exclude column headers** from the exported CSV. The on-screen table always shows headers — this setting only affects the downloaded file. If you need to change this behaviour, ask an administrator to toggle the **Exclude headers on CSV export** option in Stored Procedure Admin.
 
 ## Managing Procedures (Admin)
 
@@ -45,6 +48,7 @@ Users with `SP.Manage` permission can:
 
 - Register new stored procedures in the catalogue (**Stored Procedure Admin**)
 - Edit procedure names, descriptions, and connection settings
+- Toggle **Exclude headers on CSV export** — when checked, the downloaded CSV file will not include a column header row (useful for bank files and other machine-consumed exports)
 - Configure and manage parameters (**Stored Procedure Params**)
 
 > [!WARNING]

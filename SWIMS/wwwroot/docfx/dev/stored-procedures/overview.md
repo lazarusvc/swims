@@ -22,6 +22,7 @@ public class StoredProcess
     public string? Description { get; set; }
     public string? ConnectionName { get; set; } // Which connection string to use
     public bool IsActive { get; set; }
+    public bool ExcludeHeadersOnExport { get; set; } // Omit column headers from CSV export
     public int SortOrder { get; set; }
 }
 ```
@@ -62,6 +63,18 @@ It:
 3. Maps parameter values to typed `SqlParameter` instances using `DataType`.
 4. Executes and captures the first result set as a `DataTable`.
 5. Returns a `StoredProcResult` containing the data table or any SQL error.
+
+## CSV Export & Header Control
+
+The **Export CSV** button on the results page re-executes the stored procedure and returns the data as a downloadable `.csv` file. By default the first row contains column headers (the `DataTable.Columns` names).
+
+### Excluding headers
+
+Set `ExcludeHeadersOnExport = true` on a `StoredProcess` to omit the header row from the CSV output. This is configured per-procedure via the admin UI (checkbox: *Exclude headers on CSV export*).
+
+Typical use case: **bank file generation** (e.g. SmartStream control-group files) where the downstream system expects raw data rows with no header line.
+
+Implementation: `StoredProcessesController.DataTableToCsv(DataTable dt, bool includeHeaders)` — the `includeHeaders` flag gates the header-writing loop.
 
 ## Routes & Permissions
 

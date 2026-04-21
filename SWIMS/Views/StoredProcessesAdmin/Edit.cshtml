@@ -33,6 +33,12 @@
         <textarea asp-for="Description" class="form-control" rows="2"></textarea>
     </div>
 
+    <div class="mb-3 form-check">
+        <input asp-for="ExcludeHeadersOnExport" class="form-check-input" />
+        <label asp-for="ExcludeHeadersOnExport" class="form-check-label">Exclude headers on CSV export</label>
+        <div class="form-text">Check this for bank files or other exports where the consumer doesn't want a header row.</div>
+    </div>
+
     <fieldset class="border p-3 mb-3">
         <legend class="float-none w-auto px-2">Connection (Option A)</legend>
         <div class="mb-2">

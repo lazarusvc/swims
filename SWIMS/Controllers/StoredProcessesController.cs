@@ -339,21 +339,24 @@ namespace SWIMS.Controllers
             // 🔔 Notify: END
 
 
-            var csv = DataTableToCsv(table);
+            var csv = DataTableToCsv(table, includeHeaders: !sp.ExcludeHeadersOnExport);
             return File(System.Text.Encoding.UTF8.GetBytes(csv), "text/csv", fileName);
         }
 
-        private static string DataTableToCsv(System.Data.DataTable dt)
+        private static string DataTableToCsv(System.Data.DataTable dt, bool includeHeaders = true)
         {
             var sb = new System.Text.StringBuilder();
 
             // headers
-            for (int i = 0; i < dt.Columns.Count; i++)
+            if (includeHeaders)
             {
-                if (i > 0) sb.Append(',');
-                sb.Append(EscapeCsv(dt.Columns[i].ColumnName));
+                for (int i = 0; i < dt.Columns.Count; i++)
+                {
+                    if (i > 0) sb.Append(',');
+                    sb.Append(EscapeCsv(dt.Columns[i].ColumnName));
+                }
+                sb.AppendLine();
             }
-            sb.AppendLine();
 
             // rows
             foreach (System.Data.DataRow row in dt.Rows)

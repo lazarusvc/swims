@@ -64,7 +64,8 @@ namespace SWIMS.Controllers
                 DataSource = string.IsNullOrWhiteSpace(vm.DataSource) ? null : vm.DataSource!.Trim(),
                 Database = string.IsNullOrWhiteSpace(vm.Database) ? null : vm.Database!.Trim(),
                 DbUserEncrypted = string.IsNullOrWhiteSpace(vm.DbUser) ? null : Protect(vm.DbUser!),
-                DbPasswordEncrypted = string.IsNullOrWhiteSpace(vm.DbPassword) ? null : Protect(vm.DbPassword!)
+                DbPasswordEncrypted = string.IsNullOrWhiteSpace(vm.DbPassword) ? null : Protect(vm.DbPassword!),
+                ExcludeHeadersOnExport = vm.ExcludeHeadersOnExport
             };
 
             _db.StoredProcesses.Add(row);
@@ -89,7 +90,8 @@ namespace SWIMS.Controllers
                     row.DataSource,
                     row.Database,
                     hasDbUser = !string.IsNullOrWhiteSpace(row.DbUserEncrypted),
-                    hasDbPassword = !string.IsNullOrWhiteSpace(row.DbPasswordEncrypted)
+                    hasDbPassword = !string.IsNullOrWhiteSpace(row.DbPasswordEncrypted),
+                    row.ExcludeHeadersOnExport
                 },
                 ct: HttpContext.RequestAborted);
             // 📝 Audit: END
@@ -131,7 +133,8 @@ namespace SWIMS.Controllers
                 Description = row.Description,
                 ConnectionKey = row.ConnectionKey,
                 DataSource = row.DataSource,
-                Database = row.Database
+                Database = row.Database,
+                ExcludeHeadersOnExport = row.ExcludeHeadersOnExport
                 // Do NOT echo creds
             };
             return View(vm);
@@ -163,7 +166,8 @@ namespace SWIMS.Controllers
                 row.DataSource,
                 row.Database,
                 hasDbUser = !string.IsNullOrWhiteSpace(row.DbUserEncrypted),
-                hasDbPassword = !string.IsNullOrWhiteSpace(row.DbPasswordEncrypted)
+                hasDbPassword = !string.IsNullOrWhiteSpace(row.DbPasswordEncrypted),
+                row.ExcludeHeadersOnExport
             };
 
             row.Name = vm.Name.Trim();
@@ -171,6 +175,8 @@ namespace SWIMS.Controllers
             row.ConnectionKey = string.IsNullOrWhiteSpace(vm.ConnectionKey) ? null : vm.ConnectionKey!.Trim();
             row.DataSource = string.IsNullOrWhiteSpace(vm.DataSource) ? null : vm.DataSource!.Trim();
             row.Database = string.IsNullOrWhiteSpace(vm.Database) ? null : vm.Database!.Trim();
+
+            row.ExcludeHeadersOnExport = vm.ExcludeHeadersOnExport;
 
             if (!string.IsNullOrWhiteSpace(vm.DbUser)) row.DbUserEncrypted = Protect(vm.DbUser!);
             if (!string.IsNullOrWhiteSpace(vm.DbPassword)) row.DbPasswordEncrypted = Protect(vm.DbPassword!);
@@ -189,7 +195,8 @@ namespace SWIMS.Controllers
                 row.DataSource,
                 row.Database,
                 hasDbUser = !string.IsNullOrWhiteSpace(row.DbUserEncrypted),
-                hasDbPassword = !string.IsNullOrWhiteSpace(row.DbPasswordEncrypted)
+                hasDbPassword = !string.IsNullOrWhiteSpace(row.DbPasswordEncrypted),
+                row.ExcludeHeadersOnExport
             };
 
             await _audit.TryLogAsync(

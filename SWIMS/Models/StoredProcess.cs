@@ -21,6 +21,11 @@ namespace SWIMS.Models
         public string? DbUserEncrypted { get; set; }
         public string? DbPasswordEncrypted { get; set; }
 
+        /// <summary>
+        /// When true, CSV exports omit the column-header row (e.g. for bank file generation).
+        /// </summary>
+        public bool ExcludeHeadersOnExport { get; set; }
+
         public ICollection<StoredProcessParam> Params { get; set; } = new List<StoredProcessParam>();
     }
 }
