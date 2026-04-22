@@ -12,7 +12,10 @@
 </div>
 <!-- ----------------------------------------------- -->
 @{
-    ViewData["Title"] = "Program - " + @ViewBag.formName;
+    ViewData["title"] = "Program – " + ViewBag.formName;
+    ViewData["subTitle"] = "Expanded view of submissions for this form.";
+    ViewData["description"] = "Review and filter individual entries for the selected form, open submissions, and access linked forms or approval history as needed.";
+
     var uid = ViewBag.uuid;
 
     // List of forms that are linking

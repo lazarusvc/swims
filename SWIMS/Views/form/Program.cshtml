@@ -12,8 +12,11 @@
 </div>
 <!-- ----------------------------------------------- -->
 @{
-    ViewData["Title"] = "Program - " + @ViewBag.formName;
-    var uid = ViewBag.uuid;   // page variable - form UUID 
+    ViewData["title"] = "Program – " + ViewBag.formName;
+    ViewData["subTitle"] = "Overview of live entries and actions for this form.";
+    ViewData["description"] = "Use this dashboard to see activity for the selected form, including new submissions, approvals, linked forms and quick actions for programme users.";
+
+    var uid = ViewBag.uuid;   // page variable - form UUID
 
     // List of forms that are linking
     // ______________________________
