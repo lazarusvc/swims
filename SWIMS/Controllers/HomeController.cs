@@ -53,6 +53,7 @@ namespace SWIMS.Controllers
             // Reuse the same source as the original Index:
             ViewBag.frmBtn = _context.SW_forms
                 .AsNoTracking()
+                .OrderByDescending(x => x.dateModified)
                 .ToList();
 
             return View();
