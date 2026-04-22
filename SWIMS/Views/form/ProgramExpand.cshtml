@@ -1,22 +1,5 @@
 ﻿@using System.Text.Json
 
-@{
-    ViewData["title"] = "Program – " + ViewBag.formName;
-    ViewData["subTitle"] = "Expanded view of submissions for this form.";
-    ViewData["description"] = "Review and filter individual entries for the selected form, open submissions, and access linked forms or approval history as needed.";
-
-
-    var uid = ViewBag.uuid;
-
-    // List of forms that are linking
-    // ______________________________
-    //
-    var linkOption = "<option>--select--</option>";
-    @foreach (var inx in ViewBag.formLINK)
-    {
-        linkOption += "<option value=" + inx.uuid + ">" + inx.name + "</option>";
-    }
-}
 
 <!-- BACK BUTTON -->
 <div style="width: 110px;">
@@ -28,7 +11,19 @@
     <br />
 </div>
 <!-- ----------------------------------------------- -->
+@{
+    ViewData["Title"] = "Program - " + @ViewBag.formName;
+    var uid = ViewBag.uuid;
 
+    // List of forms that are linking
+    // ______________________________
+    //
+    var linkScript = "";
+    @foreach (var inx in ViewBag.formLINK)
+    {
+        linkScript += inx.uuid + ',';
+    }
+}
 
 <div class="row">
     <div class="col-sm-12">
@@ -180,7 +175,7 @@
                                 $("." + fieldName).val(select_list_classVAL[2]);
                             }
                             if (fieldName === "organization") {
-                                $("." + fieldName).val(select_list_classVAL[2]);
+                                $("." + fieldName).val(select_list_classVAL[0] + ', ' + select_list_classVAL[2]);
                             }
                         });
 
@@ -190,6 +185,17 @@
                         console.error("Error loading data for " + fieldName + ":", error);
                     }
                 });
+
+                // Linking fetch custom buttons
+                var _uuidFromDom = fieldName;
+                var _uuidFromController = "@linkScript";
+                var _uuidFromControllerSplit = _uuidFromController.split(",");
+
+                for (let i = 0; i < 5; i++) {
+                    if (_uuidFromDom = _uuidFromControllerSplit[i]) {
+                        $("#" + _uuidFromDom).replaceWith("<br/><a href='#ex5' rel='modal:open' data-id='" + _uuidFromDom + "' onclick='linkingBtnLogic(this)' class='btn btn-secondary'>Enter For: " + _uuidFromDom.substring(0, 8) + " ...</a>");
+                    }
+                }
 
             });
         }
@@ -201,7 +207,20 @@
         }
     });
 
-    // ------------------------------------------- TINYMCE - WYSWYGET EDITOR
+    // ------------------------------------------- LINKING ONCLICK LOGIC
+    function linkingBtnLogic(btn) {
+        const id = btn.dataset.id;
+        $.ajax({
+            url: '@Url.Action("Linking", "form")?&uuid=' + id + "&originUUID=@uid",
+            type: "GET",
+            success: function(result) {
+                $("#ex5").html(result);
+            }
+        });
+    }
+
+
+        // ------------------------------------------- TINYMCE - WYSWYGET EDITOR
     jQuery(function ($) {
         $(".trumbowyg").trumbowyg({
             btns: [
@@ -228,31 +247,5 @@
         $('.organization').select2();
         $('.financial_institution').select2();
         $('.city').select2();
-    });
-
-    // ------------------------------------------- LINKING SCRIPT LOGIC
-    jQuery(function ($) {
-        // If Select Dropdown has field name `linking`
-        //
-        // 1. hide current Dropdown element
-        // 2. infuse WowDash styling Dropdown list
-        // 3. inject Form ID with linking check
-        // 4. Popup the selected partial view linked form
-        //
-        if ('input[name="linking"]') {
-            $('input[name="linking"]').before("<div class='alert alert-primary bg-primary-50 text-primary-600 border-primary-600 border-start-width-4-px border-top-0 border-end-0 border-bottom-0 px-24 py-13 mb-0 fw-semibold text-lg radius-4 d-flex align-items-center justify-content-between' role='alert'><div class='d-flex align-items-center gap-2'><iconify-icon icon='mdi:form-dropdown' class='icon text-xl'></iconify-icon>ID: </div><br><select id='isLinkingForm' class='form-control'>@Html.Raw(linkOption)</select></div>");
-            $('input[name="linking"]').hide();
-        }
-
-        $('#isLinkingForm').on('keyup change', function() {
-                $.ajax({
-                    url: '@Url.Action("Linking", "form")?&uuid=' + $(this).val() + "&=@uid",
-                    type: "GET",
-                    success: function (result) {
-                        $("#ex5").html(result);
-                    }
-                });
-            $("#ex5").modal();
-        });
     });
 </script>

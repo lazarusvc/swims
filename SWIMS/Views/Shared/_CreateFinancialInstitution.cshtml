@@ -20,7 +20,7 @@
                 </div>
             </div>
 
-            <input type="hidden" name="partialCheck" id="partialCheck" value="@ViewData["UID"]" />
+            <input type="hidden" name="partialCheck__financial-institution" id="partialCheck__financial-institution" value="" />
             <input type="submit" value="Create" class="btn rounded-pill btn-success-600" />
         </form>
         </div>
@@ -29,3 +29,13 @@
 </div>
 
 
+<script type="text/javascript">
+
+    // Fetch UUID from url param and
+    // Append to hidden Input field `partialCheck`
+    // _____________________________________________
+
+    var params = new window.URLSearchParams(window.location.search);
+    document.getElementById("partialCheck__financial-institution").value = params.get('uuid');
+
+</script>

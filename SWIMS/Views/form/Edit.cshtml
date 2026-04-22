@@ -2,11 +2,8 @@
 @model SWIMS.Models.SW_form
 
 @{
-    ViewData["title"] = "Edit form – designer";
-    ViewData["subTitle"] = "Update the structure and behaviour of this form.";
-    ViewData["description"] = "Use the form designer to adjust fields, layout, logic and approval settings for this form. Changes are saved to the current configuration and can be re-published when ready.";
+    ViewData["Title"] = "Form Development | EDIT";
 }
-
 
 
 <hr />
@@ -85,12 +82,38 @@
                     <small class="text-muted">Leave blank to keep the current image.</small>
 
 
-                    <div class="row mb-24 gy-3 align-items-center">
+                    <div class="row mb-24 gy-3 align-items-center textareaFormBuilder">
                         <label asp-for="header" class="form-label mb-0 col-sm-4">HEADER:</label>
                         <div class="col-sm-10">
                             <textarea asp-for="header" id="trumbowyg"></textarea>
                             <span asp-validation-for="header" class="text-danger"></span>
                         </div>
+                    </div>
+
+                    @*
+                    <div class="row mb-24 gy-3 align-items-center">
+                        <label class="form-label mb-0 col-sm-4">IS FORM LINKING:</label>
+                        <div class="col-sm-10" id="linkingCheck">                          
+                            <input type="radio" id="is_linking" name="is_linking" value="true">
+                            <label for="is_linking">Yes</label><br />
+
+                            <input type="radio" id="is_linking" name="is_linking" value="false">
+                            <label for="is_linking">No</label><br />
+                            <span asp-validation-for="is_linking" class="text-danger"></span>
+                        </div>
+                    </div> 
+                    *@
+
+                    <div class="radio-group row mb-24 gy-3 align-items-center">
+                        <label class="form-label mb-0 col-sm-4">IS FORM LINKING:</label>
+                            <div class="formbuilder-radio">
+                                <input type="radio" id="is_linking" name="is_linking" value="true">
+                                <label for="is_linking">Yes</label>
+                            </div>
+                            <div class="formbuilder-radio">
+                                <input type="radio" id="is_linking" name="is_linking" value="false">
+                                <label for="is_linking">No</label>
+                            </div>
                     </div>
 
                     <div class="row mb-24 gy-3 align-items-center">
@@ -120,13 +143,14 @@
 }
 
 
-    <link href="~/css/forms-stylesheet.css" rel="stylesheet" />
+
+
+<link href="~/css/forms-stylesheet.css" rel="stylesheet" />
+<link href="~/lib/trumbowyg-editor/ui/trumbowyg.min.css" rel="stylesheet" />
 <script src="~/lib/jquery/dist/jquery.min.js"></script>
 <script src="~/lib/formbuilder/form-builder.min.js"></script>
 <script src="~/lib/fb-logic/formbuilder-conditional-logic.umd.js"></script>
-<link href="~/lib/trumbowyg-editor/ui/trumbowyg.min.css" rel="stylesheet" />
 <script src="~/lib/trumbowyg-editor/trumbowyg.min.js"></script>
-
 
 <script type="text/javascript">
   jQuery(function ($) {

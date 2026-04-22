@@ -6,6 +6,7 @@
     <div id="fb-rendered-form-partial"></div>
     <input asp-for="SW_formsId" type="hidden" value="@ViewBag.SW_formsId" />
     <input asp-for="isLinkingForm" type="hidden" value="@ViewBag.isLinkingForm" />
+    <input type="hidden" name="partialCheck-linking" id="partialCheck-linking" value="" />
     <button type="submit" class="btn btn-success">Submit</button>
 </form>
 
@@ -17,6 +18,14 @@
 <link href="~/lib/trumbowyg-editor/ui/trumbowyg.min.css" rel="stylesheet" />
 <script src="~/lib/trumbowyg-editor/trumbowyg.min.js"></script>
 <script type="text/javascript">
+
+    // Fetch UUID from url param and
+    // Append to hidden Input field `partialCheck`
+    // _____________________________________________
+
+    var params = new window.URLSearchParams(window.location.search);
+    document.getElementById("partialCheck-linking").value = params.get('uuid');
+
     // RENDER FORM
     //
     // -----------------------------------------------------------------------------------------------------
@@ -28,28 +37,27 @@
 
     // Normalize to an Array the renderer expects (handles double-encoded JSON too)
     function normalizeFormData(raw) {
-      if (raw == null) return [];
-      try {
-        if (typeof raw === 'string') {
-          const once = JSON.parse(raw);
-          return (typeof once === 'string') ? JSON.parse(once) : once;
+          if (raw == null) return [];
+          try {
+            if (typeof raw === 'string') {
+              const once = JSON.parse(raw);
+              return (typeof once === 'string') ? JSON.parse(once) : once;
+            }
+            return raw;
+          } catch (e) {
+            console.error('Form JSON parse failed:', e, raw);
+            return [];
+          }
         }
-        return raw;
-      } catch (e) {
-        console.error('Form JSON parse failed:', e, raw);
-        return [];
-      }
-    }
 
-    const formData = normalizeFormData(__rawServerValue);
+        const formData = normalizeFormData(__rawServerValue);
 
-    // Render and hydrate logic
-    $(container).formRender({ formData: formData, dataType: 'json' });
+        // Render and hydrate logic
+        $(container).formRender({ formData: formData, dataType: 'json' });
 
-    if (window.FBConditionalLogic) {
-      FBConditionalLogic.setup(container, formData);
-    }
-
+        if (window.FBConditionalLogic) {
+          FBConditionalLogic.setup(container, formData);
+        }
     });
 </script>
 

@@ -1,19 +1,5 @@
 ﻿@using System.Text.Json
-
-@{
-    ViewData["title"] = "Program – " + ViewBag.formName;
-    ViewData["subTitle"] = "Overview of live entries and actions for this form.";
-    ViewData["description"] = "Use this dashboard to see activity for the selected form, including new submissions, approvals, linked forms and quick actions for programme users.";
-
-
-    var uid = ViewBag.uuid;   // page variable - form UUID
-
-    var linkOption = "<option>--select--</option>"; // List of forms that are linking
-    @foreach (var inx in ViewBag.formLINK)
-    {
-        linkOption += "<option value=" + inx.uuid + ">" + inx.name + "</option>";
-    }
-}
+@inject IConfiguration Configuration
 
 <!-- BACK BUTTON -->
 <div style="width: 110px;">
@@ -25,7 +11,37 @@
     <br />
 </div>
 <!-- ----------------------------------------------- -->
+@{
+    ViewData["Title"] = "Program - " + @ViewBag.formName;
+    var uid = ViewBag.uuid;   // page variable - form UUID 
 
+    // List of forms that are linking
+    // ______________________________
+    //
+    var linkScript = "";
+    @foreach (var inx in ViewBag.formLINK)
+    {
+        linkScript += inx.uuid + ',';
+    }
+
+    // List of process
+    // ______________________________
+    //
+    var li_contents = "";
+    @foreach (var inx in ViewBag.processes)
+    {
+        li_contents += "<li class='list-group-item d-flex align-items-center justify-content-between border text-secondary-light p-16 bg-base border-bottom-0'>";
+        li_contents += "<div class='d-flex align-items-center gap-2'>";
+        li_contents += "<span class='d-flex'>";
+        li_contents += "<iconify-icon icon='mynaui:cart-check' class='text-xl'></iconify-icon>";
+        li_contents += "</span>";
+        li_contents += "<a href=" + @Configuration["App:PathBase"] + @inx.url + " target='_blank'>" + @inx.name + "</a>";
+        li_contents += "</div>";
+        li_contents += "<span class='text-xs bg-success-100 text-success-600 radius-4 px-10 py-2 fw-semibold'>RUN</span>";
+        li_contents += "</li>";        
+    }
+
+}
 <hr />
 <br />
 <div class="row">
@@ -134,7 +150,7 @@
 
     <!-- LINKING FORM MODAL ________________________________________________ -->
     <div id="ex5" class="modal">
-</div>
+    </div>
 
     <!-- APPROVAL HISTORY MODAL ____________________________________________ -->
     <div id="ex6" class="modal timeline">
@@ -168,32 +184,7 @@
             </div>
             <div class="card-body">
                 <ul class="list-group radius-8">
-                @foreach (var inx in ViewBag.processes)
-                    {
-                        // Handle both shapes you've been using:
-                        // 1) SelectListItem (Text/Value)
-                        // 2) SW_formProcess (name/url)
-                        var s = inx as Microsoft.AspNetCore.Mvc.Rendering.SelectListItem;
-
-                        var raw = s != null ? (s.Value ?? "#")
-                        : (inx?.url as string) ?? "#";
-
-                        var label = s != null ? (s.Text ?? "Run")
-                        : ((inx?.name as string) ?? "Run");
-
-                        var sep = raw?.Contains("?") == true ? "&" : "?";
-                        var url = $"{raw}{sep}uid={uid}";
-
-                    <li class="list-group-item d-flex align-items-center justify-content-between border text-secondary-light p-16 bg-base border-bottom-0">
-                        <div class="d-flex align-items-center gap-2">
-                            <span class="d-flex">
-                                <iconify-icon icon="mynaui:cart-check" class="text-xl"></iconify-icon>
-                            </span>
-                                <a href="@url" target="_blank" rel="noopener">@label</a>
-                        </div>
-                        <span class="text-xs bg-success-100 text-success-600 radius-4 px-10 py-2 fw-semibold">RUN</span>
-                    </li>                
-                }
+                    @Html.Raw(li_contents)
                 </ul>
             </div>
         </div>
@@ -246,13 +237,13 @@
 
 <script src="~/js/datatables.min.js"></script>
 <link href="~/lib/trumbowyg-editor/ui/trumbowyg.min.css" rel="stylesheet" />
-<script src="~/lib/trumbowyg-editor/trumbowyg.min.js"></script>
+<script src="~/lib/trumbowyg-editor/trumbowyg.js"></script>
 <script src="~/lib/jquery-modal/jquery.modal.min.js"></script>
 <link href="~/lib/jquery-modal/jquery.modal.min.css" rel="stylesheet" />
+<link href="~/lib/select2/select2.css" rel="stylesheet" />
+<script src="~/lib/select2/select2.js"></script>
 <script type="text/javascript">
-    // RENDER FORM
-    //
-    // -----------------------------------------------------------------------------------------------------
+    // ------------------------------------------- RENDER FORM
     jQuery(function($) {
       var container = document.getElementById('fb-rendered-form');
 
@@ -285,13 +276,23 @@
 
     });
 
-    // CUSTOM FORM FUNCTIONALITY
-    //
-    // -----------------------------------------------------------------------------------------------------
+    // ------------------------------------------- HISTORY BTN ONCLICK LOGIC
+    // jQuery(function ($) {
+    //     // get url from processURL anchor tag
+    //     var processURL = $("#processURL").attr("href");
+    //     console.log(processURL);
+    //     // wrap processUrl in window.apiUrl();
+    //     var wrappedProcessURL = window.apiUrl(processURL);
+    //     console.log(wrappedProcessURL);
+    //     // set the wrapped url back to the anchor tag
+    //     $("#processURL").attr("href", wrappedProcessURL);
+    // });
+
+
+    // ------------------------------------------- CUSTOM FORM FUNCTIONALITY
     jQuery(function($) {
 
         function findFields($root) {
-
             $root.find("input[name], select[name], textarea[name], input[radio-group]").each(function () {
                 var $field = $(this);
                 var fieldName = $field.attr("name");
@@ -336,7 +337,6 @@
                         }
   
                         $("select[name="+ fieldName +"]").on("keyup change", function() {
-
                             var select_list_classVAL = $(this).children("option:selected").val().split(",");
 
                             if (fieldName === "beneficiary") {
@@ -349,17 +349,27 @@
                                 $("." + fieldName).val(select_list_classVAL[2]);
                             }
                             if (fieldName === "organization") {
-                                $("." + fieldName).val(select_list_classVAL[2]);
+                                $("." + fieldName).val(select_list_classVAL[0] + ', ' + select_list_classVAL[2]);
                             }
                         });                      
-
-
                     },
                     error: function (xhr, status, error) {
                         console.error("Error loading data for " + fieldName + ":", error);
                     }
                 });
 
+                
+                // Linking fetch custom buttons
+                var _uuidFromDom = fieldName;
+                var _uuidFromController = "@linkScript";
+                var _uuidFromControllerSplit = _uuidFromController.split(",");
+
+                for (let i = 0; i < 5; i++) {
+                    if (_uuidFromDom = _uuidFromControllerSplit[i]) { 
+                        $("#" + _uuidFromDom).replaceWith("<br/><a href='#ex5' rel='modal:open' data-id='" + _uuidFromDom + "' onclick='linkingBtnLogic(this)' class='btn btn-secondary'>Enter For: " + _uuidFromDom.substring(0, 8) + " ...</a>");
+                    }
+                }
+        
             });
         }
 
@@ -370,6 +380,17 @@
         }
     });
     
+    // ------------------------------------------- LINKING ONCLICK LOGIC
+    function linkingBtnLogic(btn) {
+        const id = btn.dataset.id;
+        $.ajax({
+            url: '@Url.Action("Linking", "form")?&uuid=' + id + "&originUUID=@uid",
+            type: "GET",
+            success: function(result) {
+                $("#ex5").html(result);
+            }
+        });
+    }
 
     // ------------------------------------------- TABLE DATATABLE INIT
     let table = new DataTable('#dataTable');
@@ -397,36 +418,10 @@
 
     // ------------------------------------------- SELECT2 Dropdown
     jQuery(function ($) {
-        $('.beneficiary').select2();
-        $('.organization').select2();
-        $('.financial_institution').select2();
-        $('.city').select2();
-    });
-
-    // ------------------------------------------- LINKING SCRIPT LOGIC
-    jQuery(function ($) {
-        // If Select Dropdown has field name `linking`
-        //
-        // 1. hide current Dropdown element
-        // 2. infuse WowDash styling Dropdown list
-        // 3. inject Form ID with linking check
-        // 4. Popup the selected partial view linked form
-        //
-        if ('input[name="linking"]') {
-            $('input[name="linking"]').before("<div class='alert alert-primary bg-primary-50 text-primary-600 border-primary-600 border-start-width-4-px border-top-0 border-end-0 border-bottom-0 px-24 py-13 mb-0 fw-semibold text-lg radius-4 d-flex align-items-center justify-content-between' role='alert'><div class='d-flex align-items-center gap-2'><iconify-icon icon='mdi:form-dropdown' class='icon text-xl'></iconify-icon>ID: </div><br><select id='isLinkingForm' class='form-control'>@Html.Raw(linkOption)</select></div>");
-            $('input[name="linking"]').hide();
-        }
-
-        $('#isLinkingForm').on('keyup change', function() {
-                $.ajax({
-                    url: '@Url.Action("Linking", "form")?&uuid=' + $(this).val() + "&=@uid",
-                    type: "GET",
-                    success: function (result) {
-                        $("#ex5").html(result);
-                    }
-                });
-            $("#ex5").modal();
-        });
+        $("select[name='beneficiary']").select2();
+        $("select[name='organization']").select2();
+        $("select[name='financial_institution']").select2();
+        $("select[name='city']").select2();
     });
 
     // ------------------------------------------- HISTORY BTN ONCLICK LOGIC
@@ -438,5 +433,6 @@
                 $("#ex6").html(result);
             }
     });
-    }
+
+}
 </script>
