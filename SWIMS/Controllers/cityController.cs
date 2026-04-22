@@ -49,13 +49,26 @@ namespace SWIMS.Controllers
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,name")] SW_city sW_city)
+        public async Task<IActionResult> Create([Bind("Id,name")] SW_city sW_city, IFormCollection frm)
         {
             if (ModelState.IsValid)
             {
                 _context.Add(sW_city);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+
+
+                // Redirect logic for /form/Program quick access buttons
+                // ---------------------------------------------------------
+                string partialCheck = frm["partialCheck__city"].ToString();
+                if (partialCheck != null)
+                {
+                    return RedirectToAction("Program", "form", new { uuid = partialCheck });
+                }
+                else
+                {
+                    return RedirectToAction(nameof(Index));
+                }
+
             }
             return View(sW_city);
         }

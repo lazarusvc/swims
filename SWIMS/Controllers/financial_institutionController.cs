@@ -62,7 +62,7 @@ namespace SWIMS.Controllers
 
                 // Redirect logic for /form/Program quick access buttons
                 // ---------------------------------------------------------
-                string partialCheck = frm["partialCheck"].ToString();
+                string partialCheck = frm["partialCheck__financial-institution"].ToString();
                 if (partialCheck != null)
                 {
                     return RedirectToAction("Program", "form", new { uuid = partialCheck });
