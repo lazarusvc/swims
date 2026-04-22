@@ -31,6 +31,24 @@
                asp-route-orgId="@(ViewBag.orgId ?? "")">
                 Export CSV
             </a>
+            <a class="btn btn-sm btn-outline-primary me-2"
+               asp-action="Export"
+               asp-route-id="@Model.ProcessId"
+               asp-route-format="xlsx"
+               asp-route-uid="@ViewBag.uid"
+               asp-route-formId="@(ViewBag.formId ?? "")"
+               asp-route-orgId="@(ViewBag.orgId ?? "")">
+                Export XLSX
+            </a>
+            <a class="btn btn-sm btn-outline-primary me-2"
+               asp-action="Export"
+               asp-route-id="@Model.ProcessId"
+               asp-route-format="txt"
+               asp-route-uid="@ViewBag.uid"
+               asp-route-formId="@(ViewBag.formId ?? "")"
+               asp-route-orgId="@(ViewBag.orgId ?? "")">
+                Export TXT
+            </a>
         }
         <a class="btn btn-sm btn-outline-secondary" asp-action="Index">Back</a>
     </div>

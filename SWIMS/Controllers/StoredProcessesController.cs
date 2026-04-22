@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using OfficeOpenXml;
 using SWIMS.Data;
 using SWIMS.Models.ViewModels;
 using SWIMS.Services;
@@ -283,13 +284,15 @@ namespace SWIMS.Controllers
                 return RedirectToAction(nameof(Run), new { id, formId = formIdStr, orgId = orgIdStr, uid = uidQ });
             }
 
-            if (!string.Equals(format, "csv", StringComparison.OrdinalIgnoreCase))
-                return BadRequest("Only CSV is supported right now.");
+            var normalizedFormat = (format ?? "csv").ToLowerInvariant();
+            if (normalizedFormat != "csv" && normalizedFormat != "xlsx" && normalizedFormat != "txt")
+                return BadRequest("Unsupported format.");
 
             // 📝 Audit: Stored procedure export (prepare)
             var rowCount = table.Rows.Count;
             var colCount = table.Columns.Count;
-            var fileName = $"{sp.Name.Replace(':', '_').Replace('/', '_')}_{DateTime.UtcNow:yyyyMMdd_HHmmss}.csv";
+            var fileNameBase = $"{sp.Name.Replace(':', '_').Replace('/', '_')}_{DateTime.UtcNow:yyyyMMdd_HHmmss}";
+            var fileName = $"{fileNameBase}.{normalizedFormat}";
             // 📝 Audit: END
 
             await _audit.TryLogAsync(
@@ -339,8 +342,24 @@ namespace SWIMS.Controllers
             // 🔔 Notify: END
 
 
-            var csv = DataTableToCsv(table, includeHeaders: !sp.ExcludeHeadersOnExport);
-            return File(System.Text.Encoding.UTF8.GetBytes(csv), "text/csv", fileName);
+            switch (normalizedFormat)
+            {
+                case "xlsx":
+                {
+                    var xlsx = DataTableToXlxs(table, sp.ExcludeHeadersOnExport);
+                    return File(xlsx.ToArray(), "application/octet-stream", fileName);
+                }
+                case "txt":
+                {
+                    var txt = DataTableToTxt(table, includeHeaders: !sp.ExcludeHeadersOnExport);
+                    return File(System.Text.Encoding.UTF8.GetBytes(txt), "application/octet-stream", fileName);
+                }
+                default:
+                {
+                    var csv = DataTableToCsv(table, includeHeaders: !sp.ExcludeHeadersOnExport);
+                    return File(System.Text.Encoding.UTF8.GetBytes(csv), "text/csv", fileName);
+                }
+            }
         }
 
         private static string DataTableToCsv(System.Data.DataTable dt, bool includeHeaders = true)
@@ -373,6 +392,65 @@ namespace SWIMS.Controllers
             return sb.ToString();
 
             static string EscapeCsv(string s)
+            {
+                // wrap in quotes if it contains comma, quote, or newline; double the quotes inside
+                var needsQuotes = s.Contains(',') || s.Contains('"') || s.Contains('\n') || s.Contains('\r');
+                if (needsQuotes)
+                    return $"\"{s.Replace("\"", "\"\"")}\"";
+                return s;
+            }
+        }
+
+        private static MemoryStream DataTableToXlxs(System.Data.DataTable dt, bool includeHeaders)
+        {
+            var stream = new MemoryStream();
+            using (var package = new ExcelPackage(stream))
+            {
+                var workSheet = package.Workbook.Worksheets.Add("Sheet1");
+                workSheet.Cells["A1"].LoadFromDataTable(dt, true);
+
+                // headers
+                if (includeHeaders)
+                {
+                    workSheet.DeleteRow(1);
+                }
+                package.Save();
+            }
+            stream.Position = 0;
+
+            return stream;
+        }
+
+        private static string DataTableToTxt(System.Data.DataTable dt, bool includeHeaders = true)
+        {
+            var sb = new System.Text.StringBuilder();
+
+            // headers
+            if (includeHeaders)
+            {
+                for (int i = 0; i < dt.Columns.Count; i++)
+                {
+                    if (i > 0) sb.Append(',');
+                    sb.Append(EscapeTxt(dt.Columns[i].ColumnName));
+                }
+                sb.AppendLine();
+            }
+
+            // rows
+            foreach (System.Data.DataRow row in dt.Rows)
+            {
+                for (int i = 0; i < dt.Columns.Count; i++)
+                {
+                    if (i > 0) sb.Append(',');
+                    var val = row[i]?.ToString() ?? string.Empty;
+                    sb.Append(EscapeTxt(val));
+                }
+                sb.AppendLine();
+            }
+
+            return sb.ToString();
+
+            static string EscapeTxt(string s)
             {
                 // wrap in quotes if it contains comma, quote, or newline; double the quotes inside
                 var needsQuotes = s.Contains(',') || s.Contains('"') || s.Contains('\n') || s.Contains('\r');
