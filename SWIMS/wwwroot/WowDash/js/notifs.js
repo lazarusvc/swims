@@ -184,7 +184,17 @@
                 console.warn('[notifs] mark-one failed:', err);
             }
 
-            if (href) window.location.href = href;
+            if (href) {
+                let _target;
+                try {
+                    // Absolute URL stored by server (includes origin + pathbase): extract path only
+                    _target = new URL(href).pathname + new URL(href).search + new URL(href).hash;
+                } catch {
+                    // Relative path: let api() prepend pathbase
+                    _target = api(href);
+                }
+                window.location.assign(_target);
+            }
         });
 
         // SignalR live

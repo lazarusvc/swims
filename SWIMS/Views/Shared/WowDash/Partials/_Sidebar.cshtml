@@ -502,6 +502,32 @@
 
             @if (SignInManager.IsSignedIn(User))
             {
+                <li class="sidebar-menu-group-title">Documentation</li>
+                <li>
+                    <a href="@Url.Content("~/docs/user-guide/introduction.html")" target="_blank">
+                        <iconify-icon icon="lucide:book-open" class="menu-icon"></iconify-icon>
+                        <span>User Guide</span>
+                    </a>
+                </li>
+                @if (await Can(Permissions.Admin_Docs))
+                {
+                    <li>
+                        <a href="@Url.Content("~/docs/dev/introduction.html")" target="_blank">
+                            <iconify-icon icon="lucide:code-2" class="menu-icon"></iconify-icon>
+                            <span>Dev Docs</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="@Url.Content("~/docs/api/index.html")" target="_blank">
+                            <iconify-icon icon="mdi:api" class="menu-icon"></iconify-icon>
+                            <span>API Reference</span>
+                        </a>
+                    </li>
+                }
+            }
+
+            @if (SignInManager.IsSignedIn(User))
+            {
                 <li>
                     <a asp-area="Identity" asp-page="/Account/Logout">
                         <iconify-icon icon="lucide:power" class="menu-icon"></iconify-icon>

@@ -1,7 +1,14 @@
 ﻿@model SWIMS.Models.SW_formTableDatum
 
 @{
-    ViewData["Title"] = "Delete";
+    ViewData["Title"] = "Delete Table Entry";
+    ViewData["title"] = "Delete table entry";
+    ViewData["subTitle"] = "Confirm removal";
+    ViewData["description"] = "Permanently remove this data row from the form lookup table.";
+    ViewData["BreadcrumbParentTitle"] = "Form table data";
+    ViewData["BreadcrumbParentController"] = "formTableData";
+    ViewData["BreadcrumbParentAction"] = "Index";
+    ViewData["BreadcrumbCurrentTitle"] = "Delete table entry";
 }
 
 <h6 style="color:red;">Are you sure you want to delete this?</h6>

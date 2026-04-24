@@ -1,7 +1,14 @@
 ﻿@model SWIMS.Models.SW_formTableName
 
 @{
-    ViewData["Title"] = "Delete";
+    ViewData["Title"] = "Delete Table Definition";
+    ViewData["title"] = "Delete table definition";
+    ViewData["subTitle"] = "Confirm removal";
+    ViewData["description"] = "Permanently remove this lookup table definition from the system.";
+    ViewData["BreadcrumbParentTitle"] = "Form table definitions";
+    ViewData["BreadcrumbParentController"] = "formTableName";
+    ViewData["BreadcrumbParentAction"] = "Index";
+    ViewData["BreadcrumbCurrentTitle"] = "Delete table definition";
 }
 
 <h6 style="color:red;">Are you sure you want to delete this?</h6>

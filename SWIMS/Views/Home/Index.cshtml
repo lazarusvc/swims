@@ -1,9 +1,9 @@
 ﻿@using System.Security.Claims
 
 @{
-    // Browser tab title only; no breadcrumb title/subTitle/description
-    ViewData["Title"] = "SWIMS Home";
-
+    ViewData["Title"] = "Home";
+    ViewData["title"] = "Home";
+    ViewData["subTitle"] = "SWIMS Dashboard";
     var isAuthenticated = User?.Identity?.IsAuthenticated == true;
 }
 
@@ -17,10 +17,10 @@
                         <div class="col-xl-7">
                             <h4 class="mb-20">Welcome to the Social Welfare Information Management System (SWIMS)</h4>
                             <p class="mb-0 text-secondary-light max-w-634-px text-xl">
-                                SWIMS is Dominica’s evolving platform for managing social assistance programmes, cases and payments
-                                in a single, integrated system. It is designed to move social welfare delivery away from paper files
-                                and scattered spreadsheets into a structured, traceable and data-driven workflow that better supports
-                                households and the people who work with them.
+                                SWIMS is Dominica’s integrated platform for managing social assistance programmes, cases and payments.
+                                Built for the Ministry of Social Services, it replaces paper-based and spreadsheet-driven workflows
+                                with a structured, auditable system that supports social workers, programme managers and administrators
+                                across the full beneficiary lifecycle.
                             </p>
                         </div>
                         <div class="col-xl-5 d-xl-block d-none">
@@ -116,10 +116,9 @@
                                              class="accordion-collapse collapse"
                                              data-bs-parent="#accordionAboutSwims">
                                             <div class="accordion-body">
-                                                This environment represents an <strong>MVP and testing build</strong>.
-                                                It is used for ongoing user acceptance testing and refinement
-                                                ahead of full production launch. Screens, data and workflows may change
-                                                as feedback is incorporated.
+                                                SWIMS is in active production operation across the Government of Dominica's social welfare programmes.
+                                                The system manages live beneficiary records, cases, payments and programme data.
+                                                All workflows are operational and changes are subject to the standard change management process.
                                             </div>
                                         </div>
                                     </div>
@@ -172,10 +171,9 @@
                                              class="accordion-collapse collapse"
                                              data-bs-parent="#accordionGovernance">
                                             <div class="accordion-body">
-                                                SWIMS is designed to support secure handling of beneficiary and
-                                                programme data. The final hosting, data protection and integration
-                                                arrangements are defined by Government policy and project agreements.
-                                                This environment may use sample or test data depending on the phase.
+                                                Beneficiary and programme data in SWIMS is handled in accordance with Government of Dominica policy
+                                                and project data agreements. The system is hosted on government infrastructure and access is
+                                                strictly role-controlled. All data stored is live operational data.
                                             </div>
                                         </div>
                                     </div>

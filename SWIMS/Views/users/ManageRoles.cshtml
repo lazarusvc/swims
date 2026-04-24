@@ -1,9 +1,14 @@
 ﻿@model SWIMS.Models.ViewModels.EditUserRolesVM
 @{
-    ViewData["Title"] = "Manage Roles";
+    ViewData["Title"] = "Manage Roles for User";
+    ViewData["title"] = "Manage roles";
+    ViewData["subTitle"] = "User role assignment";
+    ViewData["description"] = "Add or remove roles for this user account.";
+    ViewData["BreadcrumbParentTitle"] = "User management";
+    ViewData["BreadcrumbParentController"] = "users";
+    ViewData["BreadcrumbParentAction"] = "Index";
+    ViewData["BreadcrumbCurrentTitle"] = "Manage roles";
 }
-
-<h3 class="mb-3">Manage Roles for @Model.DisplayName</h3>
 
 <form asp-action="ManageRoles" asp-route-id="@Model.UserId" method="post">
     @Html.AntiForgeryToken()
