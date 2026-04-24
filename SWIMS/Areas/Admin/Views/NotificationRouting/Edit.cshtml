@@ -2,12 +2,16 @@
 
 @{
     ViewData["Title"] = Model.Id.HasValue ? "Edit Notification Route" : "Create Notification Route";
+    ViewData["title"] = Model.Id.HasValue ? "Edit notification route" : "New notification route";
+    ViewData["subTitle"] = Model.Id.HasValue ? "Update routing rule" : "Create routing rule";
+    ViewData["description"] = "Configure the event key, type, and target recipients for this notification route.";
+    ViewData["BreadcrumbParentTitle"] = "Notification routing";
+    ViewData["BreadcrumbParentController"] = "NotificationRouting";
+    ViewData["BreadcrumbParentArea"] = "Admin";
+    ViewData["BreadcrumbParentAction"] = "Index";
+    ViewData["BreadcrumbCurrentArea"] = "Admin";
+    ViewData["BreadcrumbCurrentTitle"] = Model.Id.HasValue ? "Edit notification route" : "New notification route";
 }
-
-<div class="d-flex align-items-center justify-content-between mb-3">
-    <h4 class="mb-0">@ViewData["Title"]</h4>
-    <a class="btn btn-outline-secondary" asp-action="Index">Back</a>
-</div>
 
 <div class="card">
     <div class="card-body">

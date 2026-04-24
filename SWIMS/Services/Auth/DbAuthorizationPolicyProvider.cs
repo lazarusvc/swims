@@ -42,7 +42,11 @@ namespace SWIMS.Services.Auth
                 return b.Build();
             }
 
-            return await _fallback.GetPolicyAsync(policyName);
+            // Unknown policy: return deny-all rather than null. Returning null causes
+            // DefaultAuthorizationService to throw InvalidOperationException at call sites
+            // like the sidebar Can() helper that legitimately check optional permissions.
+            return await _fallback.GetPolicyAsync(policyName)
+                ?? new AuthorizationPolicyBuilder().RequireAssertion(_ => false).Build();
         }
     }
 }

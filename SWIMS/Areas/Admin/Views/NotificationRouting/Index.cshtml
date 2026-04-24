@@ -2,14 +2,22 @@
 
 @{
     ViewData["Title"] = "Notification Routing";
+    ViewData["title"] = "Notification Routing";
+    ViewData["subTitle"] = "Event routing rules";
+    ViewData["description"] = "Configure which roles, permissions, and users receive notifications for each system event.";
+    ViewData["BreadcrumbCurrentArea"] = "Admin";
+    ViewData["BreadcrumbCurrentController"] = "NotificationRouting";
+    ViewData["BreadcrumbCurrentAction"] = "Index";
 }
 
-<div class="d-flex align-items-center justify-content-between mb-3">
-    <h4 class="mb-0">Notification Routing</h4>
-    <a class="btn btn-primary" asp-action="Create">Create Route</a>
-</div>
-
-<div class="card">
+<div class="card basic-data-table">
+    <div class="card-header d-flex align-items-center justify-content-between gap-2 flex-wrap">
+        <h5 class="card-title mb-0">Notification Routing</h5>
+        <a asp-action="Create" class="btn btn-sm btn-primary d-flex align-items-center gap-1">
+            <iconify-icon icon="lucide:plus" class="fs-14"></iconify-icon>
+            <span>Create Route</span>
+        </a>
+    </div>
     <div class="card-body">
         <div class="table-responsive">
             <table class="table table-sm align-middle">

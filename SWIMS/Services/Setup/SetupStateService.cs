@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using SWIMS.Data;
@@ -20,6 +21,7 @@ namespace SWIMS.Services.Setup
         private readonly SwimsDb_moreContext _coreDb;
         private readonly SwimsStoredProcsDbContext _spDb;
         private readonly SwimsReportsDbContext _reportsDb;
+        private readonly IMemoryCache _cache;
 
         public SetupStateService(
             IConfiguration config,
@@ -27,7 +29,8 @@ namespace SWIMS.Services.Setup
             SwimsIdentityDbContext identityDb,
             SwimsDb_moreContext coreDb,
             SwimsStoredProcsDbContext spDb,
-            SwimsReportsDbContext reportsDb)
+            SwimsReportsDbContext reportsDb,
+            IMemoryCache cache)
         {
             _config = config;
             _env = env;
@@ -35,6 +38,7 @@ namespace SWIMS.Services.Setup
             _coreDb = coreDb;
             _spDb = spDb;
             _reportsDb = reportsDb;
+            _cache = cache;
         }
 
         public async Task<SetupSummary> GetSummaryAsync(CancellationToken cancellationToken = default)
@@ -154,7 +158,12 @@ namespace SWIMS.Services.Setup
 
         public async Task<bool> IsAppConfiguredAsync(CancellationToken cancellationToken = default)
         {
+            const string key = "setup_state_configured";
+            if (_cache.TryGetValue(key, out bool cached))
+                return cached;
             var summary = await GetSummaryAsync(cancellationToken);
+            _cache.Set(key, summary.IsConfigured,
+                new MemoryCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10) });
             return summary.IsConfigured;
         }
 

@@ -1,52 +1,65 @@
-﻿@model PolicyEditViewModel
+@model PolicyEditViewModel
 
 @{
-    ViewData["title"] = "Create Policy";
-    ViewData["subTitle"] = "Create Policy";
+    ViewData["Title"] = "Create Policy";
+    ViewData["title"] = "Create policy";
+    ViewData["subTitle"] = "New authorization policy";
     ViewData["description"] = "Define a new authorization policy.";
 
-    // Parent crumb → main index page
-    ViewData["BreadcrumbParentText"] = "Policies";
+    ViewData["BreadcrumbParentTitle"] = "Policies";
     ViewData["BreadcrumbParentArea"] = "Admin";
     ViewData["BreadcrumbParentController"] = "AuthorizationPolicies";
     ViewData["BreadcrumbParentAction"] = "Index";
 
-    // Current page crumb
     ViewData["BreadcrumbCurrentArea"] = "Admin";
     ViewData["BreadcrumbCurrentController"] = "AuthorizationPolicies";
     ViewData["BreadcrumbCurrentAction"] = "Create";
 }
 
+<div class="card">
+    <div class="card-body">
+        <form asp-action="Create" method="post">
+            @Html.AntiForgeryToken()
 
-<form asp-action="Create" method="post">
-    @Html.AntiForgeryToken()
+            <div class="mb-3">
+                <label asp-for="Name" class="form-label"></label>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+                <small class="text-muted">Use this exact name in [Authorize(Policy = "Name")].</small>
+            </div>
 
-    <div class="mb-3">
-        <label asp-for="Name" class="form-label"></label>
-        <input asp-for="Name" class="form-control" />
-        <span asp-validation-for="Name" class="text-danger"></span>
-        <small class="text-muted">Use this exact name in [Authorize(Policy = "Name")].</small>
+            <div class="mb-3">
+                <label asp-for="Description" class="form-label"></label>
+                <textarea asp-for="Description" class="form-control" rows="2"></textarea>
+            </div>
+
+            <div class="form-check form-switch mb-3">
+                <input asp-for="IsEnabled" class="form-check-input" />
+                <label asp-for="IsEnabled" class="form-check-label">Enabled</label>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Allowed Roles</label>
+                <div class="border rounded p-2" style="max-height: 260px; overflow: auto;">
+                    @foreach (var role in Model.AllRoles)
+                    {
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox"
+                                   name="SelectedRoleIds"
+                                   value="@role.Value" />
+                            <label class="form-check-label">@role.Text</label>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button class="btn btn-primary" type="submit">Create</button>
+                <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+        </form>
     </div>
-
-    <div class="mb-3">
-        <label asp-for="Description" class="form-label"></label>
-        <textarea asp-for="Description" class="form-control" rows="2"></textarea>
-    </div>
-
-    <div class="form-check form-switch mb-3">
-        <input asp-for="IsEnabled" class="form-check-input" />
-        <label asp-for="IsEnabled" class="form-check-label">Enabled</label>
-    </div>
-
-    <div class="mb-3">
-        <label class="form-label">Allowed Roles</label>
-        <select asp-for="SelectedRoleIds" asp-items="Model.AllRoles" class="form-select" multiple size="8"></select>
-        <span class="form-text">Hold Ctrl/Cmd to select multiple.</span>
-    </div>
-
-    <button class="btn btn-primary">Create</button>
-    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
-</form>
+</div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

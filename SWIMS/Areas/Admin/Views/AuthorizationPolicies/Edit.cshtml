@@ -1,52 +1,66 @@
-﻿@model PolicyEditViewModel
+@model PolicyEditViewModel
 
 @{
-    ViewData["title"] = "Edit Policy";
-    ViewData["subTitle"] = "Edit Policy";
-    ViewData["description"] = "Update this authorization policy.";
-
-    // Parent crumb → main index page
-    ViewData["BreadcrumbParentText"] = "Policies";
+    ViewData["Title"] = "Edit Policy";
+    ViewData["title"] = "Edit policy";
+    ViewData["subTitle"] = "Update authorization policy";
+    ViewData["description"] = "Modify the description, status, and role assignments for this authorization policy.";
+    ViewData["BreadcrumbParentTitle"] = "Policies";
     ViewData["BreadcrumbParentArea"] = "Admin";
     ViewData["BreadcrumbParentController"] = "AuthorizationPolicies";
     ViewData["BreadcrumbParentAction"] = "Index";
-
-    // Current page crumb
     ViewData["BreadcrumbCurrentArea"] = "Admin";
     ViewData["BreadcrumbCurrentController"] = "AuthorizationPolicies";
     ViewData["BreadcrumbCurrentAction"] = "Edit";
 }
 
+<div class="card">
+    <div class="card-body">
+        <form asp-action="Edit" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Id" />
 
-<form asp-action="Edit" method="post">
-    @Html.AntiForgeryToken()
-    <input type="hidden" asp-for="Id" />
+            <div class="mb-3">
+                <label class="form-label">Name</label>
+                <input class="form-control" value="@Model.Name" disabled />
+                <input type="hidden" asp-for="Name" />
+                <div class="form-text">Used by [Authorize(Policy = "...")].</div>
+            </div>
 
-    <div class="mb-3">
-        <label class="form-label">Name</label>
-        <input class="form-control" value="@Model.Name" disabled />
-        <input type="hidden" asp-for="Name" />
-        <div class="form-text">Used by [Authorize(Policy = "...")].</div>
+            <div class="mb-3">
+                <label asp-for="Description" class="form-label"></label>
+                <textarea asp-for="Description" class="form-control" rows="2"></textarea>
+            </div>
+
+            <div class="form-check form-switch mb-3">
+                <input asp-for="IsEnabled" class="form-check-input" />
+                <label asp-for="IsEnabled" class="form-check-label">Enabled</label>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Allowed Roles</label>
+                <div class="border rounded p-2" style="max-height: 260px; overflow: auto;">
+                    @foreach (var role in Model.AllRoles)
+                    {
+                        var isChecked = Model.SelectedRoleIds.Contains(int.Parse(role.Value));
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox"
+                                   name="SelectedRoleIds"
+                                   value="@role.Value"
+                                   @(isChecked ? "checked" : "") />
+                            <label class="form-check-label">@role.Text</label>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button class="btn btn-primary" type="submit">Save</button>
+                <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+        </form>
     </div>
-
-    <div class="mb-3">
-        <label asp-for="Description" class="form-label"></label>
-        <textarea asp-for="Description" class="form-control" rows="2"></textarea>
-    </div>
-
-    <div class="form-check form-switch mb-3">
-        <input asp-for="IsEnabled" class="form-check-input" />
-        <label asp-for="IsEnabled" class="form-check-label">Enabled</label>
-    </div>
-
-    <div class="mb-3">
-        <label class="form-label">Allowed Roles</label>
-        <select asp-for="SelectedRoleIds" asp-items="Model.AllRoles" class="form-select" multiple size="8"></select>
-    </div>
-
-    <button class="btn btn-primary">Save</button>
-    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
-</form>
+</div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
