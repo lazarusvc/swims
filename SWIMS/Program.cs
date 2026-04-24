@@ -451,8 +451,7 @@ var app = builder.Build();
 
 
 // ---- Safe Migrate + Seed (Dev or when explicitly enabled) ----
-if (app.Environment.IsDevelopment() ||
-    (builder.Configuration.GetValue<bool?>("Auth:SeedOnStartup") ?? false))
+if (builder.Configuration.GetValue<bool?>("Auth:SeedOnStartup") ?? false)
 {
     using var scope = app.Services.CreateScope();
     var services = scope.ServiceProvider;
@@ -507,6 +506,12 @@ if (app.Environment.IsDevelopment() ||
     }
 }
 
+// Prime the SetupStateService cache so the first request to / hits cache, not the DB.
+using (var scope = app.Services.CreateScope())
+{
+    var setupState = scope.ServiceProvider.GetRequiredService<ISetupStateService>();
+    await setupState.IsAppConfiguredAsync();
+}
 
 // --- PathBase / reverse-proxy support
 var env = app.Environment;
@@ -598,21 +603,9 @@ app.UseHttpsRedirection();
 var contentTypeProvider = new FileExtensionContentTypeProvider();
 contentTypeProvider.Mappings[".webmanifest"] = "application/manifest+json";
 
-// replacement for the call UseStaticFiles()
 app.UseStaticFiles(new StaticFileOptions
 {
     ContentTypeProvider = contentTypeProvider
-});
-
-// Serve generated DocFX documentation at /docs
-app.UseFileServer(new FileServerOptions
-{
-    RequestPath = "/docs",
-    FileProvider = new PhysicalFileProvider(
-        Path.Combine(builder.Environment.ContentRootPath, "wwwroot", "docs")
-    ),
-    EnableDefaultFiles = true,
-    EnableDirectoryBrowsing = false
 });
 
 app.UseRouting();

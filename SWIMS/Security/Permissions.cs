@@ -79,4 +79,8 @@ public static class Permissions
     // API
     public const string Api_Access = "Api.Access";
 
+    // Documentation
+    public const string Docs_UserGuide = "Docs.UserGuide";
+    public const string Admin_Docs = "Admin.Docs";
+
 }

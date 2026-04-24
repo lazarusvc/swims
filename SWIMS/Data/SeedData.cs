@@ -328,6 +328,15 @@ namespace SWIMS.Data
             await UpsertPolicyAsync("SuperAdminOnly", new[] { "SuperAdmin" }, isSystem: true, description: "Break-glass access");
             await UpsertPolicyAsync("AdminOnly", new[] { "SuperAdmin", "Admin" }, isSystem: true, description: "Administrative access");
 
+            // Documentation access
+            await UpsertPolicyAsync(Permissions.Docs_UserGuide,
+                new[] { "SuperAdmin", "Admin", "SocialWorker", "Secretary", "Coordinator",
+                        "Director", "PermanentSecretary", "Minister", "ProgramManager", "ReadOnly", "Ops" },
+                description: "Access to the SWIMS user guide");
+            await UpsertPolicyAsync(Permissions.Admin_Docs,
+                new[] { "SuperAdmin" },
+                isSystem: true, description: "Access to developer and API documentation");
+
             // Reports
             await UpsertPolicyAsync(Permissions.Reports_View,
                 Always(Permissions.Reports_View, "Admin", "ProgramManager", "ReportManager", "Director", "PermanentSecretary", "Minister","ReadOnly"),
@@ -707,7 +716,6 @@ namespace SWIMS.Data
                 controller: "NotificationRouting",
                 priority: 100,
                 notes: "Admin: configure notification routing rules");
-
 
             // --- Core app surfaces ---
 
