@@ -366,8 +366,11 @@ FodyWeavers.xsd
 # DocFX-generated API metadata (rebuilt on every build)
 SWIMS/wwwroot/docfx/api/
 
-# DocFX-generated API metadata (rebuilt on every build)
+# DocFX-generated site output (rebuilt on every build)
 SWIMS/wwwroot/docs/
+
+# DocFX PDF plugin output (rebuilt on every build)
+SWIMS/wwwroot/docfx/user-guide/toc.pdf
 
 /SWIMS.zip
 
@@ -376,3 +379,6 @@ SWIMS/appsettings.json
 SWIMS/appsettings.Development.json
 
 /SWIMS/appsettings.Development.local.json
+
+# WowDash UI template — removed from solution, kept on disk for reference
+Templates/WowDash/

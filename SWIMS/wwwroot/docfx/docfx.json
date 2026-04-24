@@ -23,6 +23,9 @@
       {
         "files": [ "images/**" ],
         "src": "images"
+      },
+      {
+        "files": [ "user-guide/toc.pdf" ]
       }
     ],
     "template": [ "default", "modern" ],

@@ -32,7 +32,7 @@ For developers building and maintaining SWIMS. Covers architecture, modules, con
 ### 📖 API Reference
 Auto-generated reference documentation from C# XML comments.
 
-[Open API Reference](api/)
+[Open API Reference](api/index.md)
 
   </div>
 </div>

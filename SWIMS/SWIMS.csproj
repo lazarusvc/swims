@@ -17,6 +17,7 @@
 	  // by using the '*' as shown below:
 	  ______________________________________________________ -->
 	  <Version>1.6.0.0</Version>
+	  <RazorCompileOnPublish>true</RazorCompileOnPublish>
 
 	  <!-- Enable XML documentation file generation for DocFX metadata -->
 	  <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -97,6 +98,9 @@
 
 		<!-- build the site -->
 		<Exec WorkingDirectory="$(ProjectDir)wwwroot\docfx" Command="dotnet tool run docfx build --logLevel verbose" />
+
+		<!-- Remove PDF button from dev/api/global toc sections — only user-guide ships the PDF -->
+		<Exec WorkingDirectory="$(ProjectDir)wwwroot\docfx" Command="python3 patch-docs.py &quot;$(ProjectDir)wwwroot\docs&quot;" />
 	</Target>
 	<ProjectExtensions><VisualStudio><UserProperties /></VisualStudio></ProjectExtensions>
 
